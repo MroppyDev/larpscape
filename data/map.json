@@ -9569,6 +9569,71 @@
       "y": 42
     },
     {
+      "type": "larp_pride_sign",
+      "x": 15,
+      "y": 54
+    },
+    {
+      "type": "black_pride_banner",
+      "x": 12,
+      "y": 55
+    },
+    {
+      "type": "monkey_totem",
+      "x": 14,
+      "y": 56
+    },
+    {
+      "type": "larp_campfire",
+      "x": 17,
+      "y": 55
+    },
+    {
+      "type": "foam_weapon_rack",
+      "x": 19,
+      "y": 54
+    },
+    {
+      "type": "chimperton_plaque",
+      "x": 23,
+      "y": 56
+    },
+    {
+      "type": "chimperton_throne",
+      "x": 25,
+      "y": 55
+    },
+    {
+      "type": "chimperton_statue",
+      "x": 27,
+      "y": 54
+    },
+    {
+      "type": "golden_banana_pedestal",
+      "x": 29,
+      "y": 55
+    },
+    {
+      "type": "dentist_chair",
+      "x": 36,
+      "y": 55
+    },
+    {
+      "type": "tick_aquarium",
+      "x": 38,
+      "y": 54
+    },
+    {
+      "type": "dental_lamp",
+      "x": 40,
+      "y": 56
+    },
+    {
+      "type": "tick_nest",
+      "x": 42,
+      "y": 55
+    },
+    {
       "type": "fountain",
       "x": 300,
       "y": 268

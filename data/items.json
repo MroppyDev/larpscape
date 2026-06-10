@@ -1932,5 +1932,43 @@
     "value": 200,
     "equipSlot": "neck",
     "defBonus": 1
+  },
+  "foam_sword": {
+    "id": "foam_sword",
+    "name": "Foam sword",
+    "examine": "A rubber blade for LARP combat. Thwacks harmlessly.",
+    "value": 45,
+    "equipSlot": "weapon",
+    "strBonus": 1
+  },
+  "larp_pride_cape": {
+    "id": "larp_pride_cape",
+    "name": "LARP pride cape",
+    "examine": "Black velvet lined with rainbow satin. Dramatic entrance guaranteed.",
+    "value": 180,
+    "equipSlot": "body",
+    "defBonus": 1
+  },
+  "chimperton_medallion": {
+    "id": "chimperton_medallion",
+    "name": "Chimperton medallion",
+    "examine": "Commemorates Danquavious Chimperton III. Smells faintly of banana.",
+    "value": 250,
+    "equipSlot": "neck",
+    "defBonus": 1
+  },
+  "tick_jerky": {
+    "id": "tick_jerky",
+    "name": "Tick jerky",
+    "examine": "Dried ticks from the Dentist Tick Eat clinic. Chewy.",
+    "value": 12,
+    "edible": { "heals": 2 }
+  },
+  "fluoride_ration": {
+    "id": "fluoride_ration",
+    "name": "Fluoride ration",
+    "examine": "Minty paste in a tube. Not technically food, but Glen approves.",
+    "value": 25,
+    "edible": { "heals": 5 }
   }
 }

@@ -869,6 +869,97 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       g.add(lm(boxG(1.3, 0.1, 0.15, '#2a2418'), 0, 1.45, 0));
       return g;
     }
+    case 'larp_pride_sign': {
+      g.add(lm(boxG(0.12, 1.0, 0.12, '#6b4a2c'), 0, 0.5, 0));
+      g.add(lm(boxG(0.9, 0.55, 0.06, '#1a1410'), 0, 1.05, 0));
+      g.add(lm(boxG(0.7, 0.08, 0.02, '#c040e0'), 0, 1.32, 0));
+      return g;
+    }
+    case 'larp_campfire': {
+      g.add(lm(cylG(0.35, 0.4, 0.08, '#4a3a2a', 8), 0, 0.04, 0));
+      const fire = gm(coneG(0.2, 0.35, '#e86020', 6, 0.1), 0, 0.28, 0);
+      fire.name = 'fxflame';
+      g.add(fire);
+      for (let i = 0; i < 3; i++) g.add(lm(cylG(0.04, 0.04, 0.25, '#5a4a3a', 5), -0.2 + i * 0.2, 0.12, 0.15));
+      return g;
+    }
+    case 'foam_weapon_rack': {
+      g.add(lm(boxG(0.12, 0.9, 0.5, '#6b4a2c'), -0.35, 0.45, 0));
+      g.add(lm(boxG(0.12, 0.9, 0.5, '#6b4a2c'), 0.35, 0.45, 0));
+      g.add(lm(boxG(0.75, 0.08, 0.35, '#8a7a5c'), 0, 0.92, 0));
+      for (let i = 0; i < 4; i++) g.add(lm(boxG(0.06, 0.55, 0.06, '#e040a0'), -0.28 + i * 0.18, 0.65, 0.08));
+      return g;
+    }
+    case 'monkey_totem': {
+      g.add(lm(cylG(0.28, 0.32, 0.5, '#1a1410', 8), 0, 0.25, 0));
+      g.add(lm(icoG(0.18, '#3a3028', 8), 0, 0.62, 0));
+      g.add(lm(boxG(0.35, 0.06, 0.02, '#c040e0'), 0.2, 0.85, 0));
+      return g;
+    }
+    case 'black_pride_banner': {
+      g.add(lm(boxG(0.1, 1.1, 0.08, '#6b4a2c'), 0, 0.55, 0));
+      g.add(lm(boxG(0.55, 0.7, 0.04, '#1a1410'), 0, 0.75, 0));
+      g.add(lm(boxG(0.5, 0.06, 0.02, '#c040e0'), 0, 1.08, 0));
+      return g;
+    }
+    case 'chimperton_throne': {
+      g.add(lm(boxG(0.7, 0.45, 0.55, '#8a6020'), 0, 0.22, 0));
+      g.add(lm(boxG(0.75, 0.55, 0.1, '#d8a020'), 0, 0.52, 0));
+      g.add(lm(boxG(0.12, 0.7, 0.12, '#6b4a2c'), -0.38, 0.35, 0));
+      g.add(lm(boxG(0.12, 0.7, 0.12, '#6b4a2c'), 0.38, 0.35, 0));
+      return g;
+    }
+    case 'chimperton_statue': {
+      g.add(lm(boxG(0.5, 0.15, 0.5, '#6b5a4a'), 0, 0.07, 0));
+      g.add(lm(cylG(0.14, 0.16, 0.55, '#9a7a50', 8), 0, 0.42, 0));
+      g.add(lm(icoG(0.14, '#9a7a50', 8), 0, 0.78, 0));
+      g.add(lm(cylG(0.06, 0.08, 0.22, '#d8a020', 6), 0.12, 0.55, 0.1));
+      return g;
+    }
+    case 'chimperton_plaque': {
+      g.add(lm(boxG(0.7, 0.5, 0.08, '#8a7a5c'), 0, 0.25, 0));
+      g.add(lm(boxG(0.12, 0.6, 0.12, '#6b4a2c'), 0, 0.55, 0));
+      g.add(lm(boxG(0.55, 0.35, 0.04, '#d8a020'), 0, 0.72, 0));
+      return g;
+    }
+    case 'golden_banana_pedestal': {
+      g.add(lm(boxG(0.45, 0.35, 0.45, '#6b5a4a'), 0, 0.17, 0));
+      g.add(lm(cylG(0.22, 0.26, 0.12, '#b0c8d8', 10), 0, 0.42, 0));
+      g.add(lm(cylG(0.08, 0.1, 0.28, '#d8a020', 6), 0.05, 0.58, 0));
+      return g;
+    }
+    case 'dentist_chair': {
+      g.add(lm(boxG(0.55, 0.35, 0.75, '#c8c0b8'), 0, 0.17, 0));
+      g.add(lm(boxG(0.5, 0.45, 0.08, '#a8a098'), 0, 0.42, 0));
+      g.add(lm(cylG(0.04, 0.04, 0.55, '#8a8a90', 5), -0.28, 0.55, 0.3));
+      g.add(lm(cylG(0.04, 0.04, 0.55, '#8a8a90', 5), 0.28, 0.55, 0.3));
+      return g;
+    }
+    case 'tick_aquarium': {
+      g.add(lm(boxG(0.65, 0.45, 0.45, '#6b5a4a'), 0, 0.22, 0));
+      g.add(lm(boxG(0.55, 0.35, 0.06, '#90c8e8'), 0, 0.52, 0));
+      for (let i = 0; i < 4; i++) {
+        const tx = -0.15 + hash2(i, 44) * 0.3, tz = -0.12 + hash2(i, 45) * 0.24;
+        g.add(lm(icoG(0.04, '#2a2018', 6), tx, 0.48 + hash2(i, 46) * 0.08, tz));
+      }
+      return g;
+    }
+    case 'dental_lamp': {
+      g.add(lm(cylG(0.04, 0.04, 0.9, '#8a8a90', 5), 0, 0.45, 0));
+      g.add(lm(cylG(0.18, 0.22, 0.08, '#e8f0f8', 10), 0, 0.92, 0));
+      const bulb = gm(icoG(0.1, '#f8f8ff', 8), 0, 0.98, 0);
+      bulb.name = 'fxflame';
+      g.add(bulb);
+      return g;
+    }
+    case 'tick_nest': {
+      g.add(lm(cylG(0.32, 0.38, 0.12, '#5a4a30', 8), 0, 0.06, 0));
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        g.add(lm(icoG(0.05, '#3a2818', 6), Math.cos(a) * 0.15, 0.14, Math.sin(a) * 0.15));
+      }
+      return g;
+    }
     case 'ge_booth': {
       // grand gilded exchange booth
       g.add(lm(boxG(1.1, 0.78, 0.7, '#6e5232'), 0, 0.39, 0));               // counter
@@ -2071,6 +2162,9 @@ function syncObjects(now: number, px: number, pz: number) {
       const noSpin = rkey.startsWith('agility') || rkey === 'bank_booth' || rkey === 'ge_booth'
         || rkey === 'slot_machine' || rkey === 'blackjack_table' || rkey === 'roulette_table' || rkey === 'coinflip_pedestal'
         || rkey === 'hedon_bar' || rkey === 'hot_tub' || rkey === 'disco_ball' || rkey === 'pride_fountain' || rkey === 'pride_stage'
+        || rkey === 'larp_pride_sign' || rkey === 'larp_campfire' || rkey === 'foam_weapon_rack' || rkey === 'monkey_totem'
+        || rkey === 'chimperton_throne' || rkey === 'chimperton_statue' || rkey === 'chimperton_plaque' || rkey === 'golden_banana_pedestal'
+        || rkey === 'dentist_chair' || rkey === 'tick_aquarium' || rkey === 'dental_lamp' || rkey === 'tick_nest'
         || rkey === 'ice_ledge' || rkey === 'rope_bridge' || rkey === 'rock_climb' || rkey === 'snow_slope';
       node.rotation.y = noSpin
         ? 0
@@ -2675,6 +2769,9 @@ export function buildMinimapBase() {
     else if (o.type === 'slot_machine' || o.type === 'blackjack_table' || o.type === 'roulette_table' || o.type === 'coinflip_pedestal') col = '#c02060';
     else if (o.type === 'hedon_bar' || o.type === 'disco_ball' || o.type === 'hot_tub') col = '#e040a0';
     else if (o.type === 'rainbow_banner' || o.type === 'pride_fountain' || o.type === 'pride_stage' || o.type === 'dance_floor') col = '#c040e0';
+    else if (o.type === 'larp_pride_sign' || o.type === 'larp_campfire' || o.type === 'foam_weapon_rack' || o.type === 'monkey_totem' || o.type === 'black_pride_banner') col = '#1a1410';
+    else if (o.type === 'chimperton_throne' || o.type === 'chimperton_statue' || o.type === 'chimperton_plaque' || o.type === 'golden_banana_pedestal') col = '#d8a020';
+    else if (o.type === 'dentist_chair' || o.type === 'tick_aquarium' || o.type === 'dental_lamp' || o.type === 'tick_nest') col = '#90c8e8';
     else if (o.type === 'fountain') col = '#70c0f0';
     else if (o.type === 'altar' || o.type === 'air_altar') col = '#b050e0';
     else if (o.type === 'furnace' || o.type === 'anvil' || o.type === 'range') col = '#c06028';

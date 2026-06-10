@@ -303,6 +303,92 @@
       "examine": "A small stage with very large feelings.",
       "blocks": true
     },
+    "larp_pride_sign": {
+      "id": "larp_pride_sign",
+      "name": "LARP pride sign",
+      "examine": "Black Monkey LARP Pride update — foam swords, rainbow flags, zero shame.",
+      "action": "Read",
+      "blocks": true
+    },
+    "larp_campfire": {
+      "id": "larp_campfire",
+      "name": "LARP campfire",
+      "examine": "Smoke and dramatic backstory rise together.",
+      "action": "LARP",
+      "blocks": true
+    },
+    "foam_weapon_rack": {
+      "id": "foam_weapon_rack",
+      "name": "Foam weapon rack",
+      "examine": "Rubber blades that thunk instead of cut.",
+      "action": "Trade",
+      "blocks": true
+    },
+    "monkey_totem": {
+      "id": "monkey_totem",
+      "name": "Monkey totem",
+      "examine": "A chimp knight carved in black-painted oak, cape fluttering in imagined wind.",
+      "blocks": true
+    },
+    "black_pride_banner": {
+      "id": "black_pride_banner",
+      "name": "Black pride banner",
+      "examine": "Jet-black fabric edged in rainbow thread — LARP pride edition.",
+      "blocks": false
+    },
+    "chimperton_throne": {
+      "id": "chimperton_throne",
+      "name": "Chimperton throne",
+      "examine": "Gilded seat fit for Danquavious Chimperton III and his magnificent ego.",
+      "action": "Pay-respects",
+      "blocks": true
+    },
+    "chimperton_statue": {
+      "id": "chimperton_statue",
+      "name": "Chimperton statue",
+      "examine": "Bronze likeness of the Third. The banana is anatomically generous.",
+      "blocks": true
+    },
+    "chimperton_plaque": {
+      "id": "chimperton_plaque",
+      "name": "Chimperton plaque",
+      "examine": "Danquavious Chimperton III update — read the inscription.",
+      "action": "Read",
+      "blocks": true
+    },
+    "golden_banana_pedestal": {
+      "id": "golden_banana_pedestal",
+      "name": "Golden banana pedestal",
+      "examine": "A sacred banana under glass. Peeling forbidden by royal decree.",
+      "action": "Admire",
+      "blocks": true
+    },
+    "dentist_chair": {
+      "id": "dentist_chair",
+      "name": "Dentist chair",
+      "examine": "Leather recliner with excellent lumbar support and mild existential dread.",
+      "action": "Get-checked",
+      "blocks": true
+    },
+    "tick_aquarium": {
+      "id": "tick_aquarium",
+      "name": "Tick aquarium",
+      "examine": "Ticks swim in brine behind glass. Glen calls it the tasting tank.",
+      "action": "Sample",
+      "blocks": true
+    },
+    "dental_lamp": {
+      "id": "dental_lamp",
+      "name": "Dental lamp",
+      "examine": "Blinding white light for finding cavities and regretting life choices.",
+      "blocks": true
+    },
+    "tick_nest": {
+      "id": "tick_nest",
+      "name": "Tick nest",
+      "examine": "Fresh ticks awaiting the Dentist Tick Eat update's daily special.",
+      "blocks": true
+    },
     "fountain": {
       "id": "fountain",
       "name": "Fountain",

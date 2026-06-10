@@ -3,6 +3,7 @@
 import './city';
 import './gambling';
 import './hedonism_pride';
+import './starter_south';
 import './gun_guild';
 import './boss_warlord';
 import './boss_bog';
