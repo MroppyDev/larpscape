@@ -10,4 +10,3 @@ server/data.db-*
 
 # Personal MIDI uploads (user-supplied, not for distribution)
 public/music/*.mid
-!public/music/market_day.mid
