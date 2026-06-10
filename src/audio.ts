@@ -1,11 +1,11 @@
 // Music + SFX engine.
 //
-// Music plays through the user's local SoundFont (/soundfont.sf2) via the
-// spessasynth_lib AudioWorklet synthesizer. The font (~32 MB) is fetched
-// asynchronously after init(); while it loads — or if it fails — the engine
-// transparently falls back to the original Web Audio oscillator step-sequencer,
-// so music always works. When the font finishes loading mid-track, the engine
-// switches voices at the next play()/loop boundary.
+// Music plays through the bundled OSRS-style SoundFont (/soundfont.sf2) via the
+// spessasynth_lib AudioWorklet synthesizer. The font (~32 MB) ships in public/
+// and is fetched asynchronously after init(); while it loads — or if it fails —
+// the engine transparently falls back to the built-in Web Audio oscillator
+// step-sequencer, so music always works. When the font finishes loading mid-track,
+// the engine switches voices at the next play()/loop boundary.
 //
 // All nine compositions are ORIGINAL works written for Larpscape; this file
 // re-voices them with General-MIDI-style instrument programs per channel.
@@ -68,8 +68,8 @@ function synthChannels(track: Track): number[] {
   });
 }
 
-// Vite serves /public, so the soundfont (the user's own local file — never
-// bundled or committed) is fetched at runtime from the site root.
+// Vite copies public/ to the site root (dev + production dist/), so the bundled
+// soundfont is always available at /soundfont.sf2 without any player setup.
 const SOUNDFONT_URL = '/soundfont.sf2';
 // Vite's documented asset recipe: a static `new URL(relativePath, import.meta.url)`
 // is rewritten in dev and emitted as a hashed asset in production builds, so the

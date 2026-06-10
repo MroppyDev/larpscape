@@ -230,8 +230,8 @@ cloned. 60fps target on a laptop.
 
 `spessasynth_lib` v4.3.7 is installed — READ its package (node_modules/spessasynth_lib:
 package.json, README, dist/types) to learn the REAL API before writing code. The
-soundfont is served at `/soundfont.sf2` (32 MB; fetch as ArrayBuffer; it is the user's
-local file — never commit/redistribute it).
+soundfont is served at `/soundfont.sf2` (32 MB; fetch as ArrayBuffer; bundled in
+`public/soundfont.sf2` and copied to `dist/` on build).
 
 Keep the module API exactly: `audio` instance with `init()`, `play(track)`, `stop()`,
 `unlock(name)`, `unlocked`, `current`, `onTrackChange`, `setMusicVolume`, `setSfxVolume`,

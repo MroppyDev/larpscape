@@ -10,8 +10,7 @@ them in manifest.json as an array of {name, file} entries, for example:
     ]
 
 Each entry appears as an always-unlocked track in the in-game music list and
-plays through the same SoundFont synthesizer as the built-in soundtrack
-(a loaded /soundfont.sf2 is required for MIDI playback).
+plays through the same bundled SoundFont synthesizer as the built-in soundtrack.
 
 IMPORTANT — legal note:
 This folder is for your PERSONAL files on your PERSONAL machine only.

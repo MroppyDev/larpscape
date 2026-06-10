@@ -35,7 +35,7 @@ location /ws {
 
 Use a process manager (systemd, pm2) to keep it alive. Set `PORT` to override 8080.
 
-**WARNING before public hosting:** remove any copyrighted local audio files from
-`public/` (e.g. `public/soundfont.sf2` and any personal `.mid` files in `public/music/`)
-before building/deploying — those are local-only user files and must not be
-redistributed. Everything that ships must be original work.
+**Before public hosting:** do not ship personal `.mid` files in `public/music/` —
+those are local-only uploads. The bundled `public/soundfont.sf2` is a community
+OSRS-style GM bank used to voice the original in-game compositions; game music itself
+is original work.

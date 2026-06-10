@@ -8,6 +8,5 @@ dist-admin/
 server/data.db
 server/data.db-*
 
-# Personal audio assets (user-supplied, not for distribution)
-public/soundfont.sf2
+# Personal MIDI uploads (user-supplied, not for distribution)
 public/music/*.mid

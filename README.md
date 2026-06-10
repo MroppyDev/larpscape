@@ -12,8 +12,8 @@ escrowed collection, last-price lookups). "Play offline" keeps the old
 localStorage-only mode. v1 is client-authoritative: the server runs accounts,
 saves, presence, chat, and the GE honestly, but trusts clients about gameplay.
 
-**Before hosting publicly:** delete `public/soundfont.sf2` and any personal `.mid`
-files in `public/music/` — user-supplied, personal-use audio must not be distributed.
+**Before hosting publicly:** do not ship personal `.mid` files in `public/music/` —
+those are local-only uploads and must not be distributed.
 
 ## Content (Phase 5)
 
@@ -98,10 +98,10 @@ scroll to zoom, click the compass to face north. The minimap rotates with the ca
 
 ## Music
 
-Nine original compositions play through a SoundFont synthesizer (spessasynth_lib) using
-a user-supplied `.sf2` placed at `public/soundfont.sf2` — that file is personal-use only
-and should never be committed or distributed. If the soundfont is missing or still
-loading, the engine falls back to the built-in oscillator synth. Tracks unlock as you
+Sixteen original compositions play through a SoundFont synthesizer (spessasynth_lib) using
+the bundled OSRS-style GM soundfont at `public/soundfont.sf2` (~32 MB, shipped with the
+game). While the font is downloading or if it fails to load, the engine falls back to the
+built-in oscillator synth so music always plays. Tracks unlock as you
 explore regions (Newbie Meadow, Riverside, Goblin Strut, Boghollow, Stonecourt) and the
 music switches automatically as you cross region boundaries. Manage playback from the
 music tab.
