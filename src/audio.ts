@@ -79,6 +79,23 @@ const WORKLET_URL = new URL(
   import.meta.url,
 );
 
+// Start downloading the ~32 MB font as soon as this module loads — no AudioContext
+// needed. init() / loadSoundFont() reuse this buffer instead of fetching again.
+let fontBufPromise: Promise<ArrayBuffer> | null = null;
+function prefetchSoundFont(): Promise<ArrayBuffer> {
+  if (!fontBufPromise) {
+    fontBufPromise = fetch(SOUNDFONT_URL).then((r) => {
+      if (!r.ok) throw new Error(`soundfont fetch failed: ${r.status}`);
+      return r.arrayBuffer();
+    }).catch((err) => {
+      fontBufPromise = null;
+      throw err;
+    });
+  }
+  return fontBufPromise;
+}
+prefetchSoundFont();
+
 class AudioEngine {
   ctx: AudioContext | null = null;
   master: GainNode | null = null;
@@ -97,6 +114,8 @@ class AudioEngine {
   // ---- SoundFont engine state ----
   private synth: WorkletSynthesizer | null = null;
   private fontLoading = false;
+  /** Resolves once the SoundFont synth is ready (or load failed — fallback stays available). */
+  private fontReady: Promise<void> | null = null;
   /** MIDI-file sequencer for custom tracks (created lazily on first use). */
   private sequencer: Sequencer | null = null;
   /** midiUrl -> fetched file bytes, so re-plays don't re-download. */
@@ -119,10 +138,21 @@ class AudioEngine {
     this.sfxGain = this.ctx.createGain();
     this.sfxGain.gain.value = 0.5;
     this.sfxGain.connect(this.master);
-    // Kick off the SoundFont load in the background; oscillators cover the gap.
-    void this.loadSoundFont();
-    // Pull in any personal MIDI tracks the player dropped into /public/music.
+    void this.ctx.resume();
+    if (!this.fontReady) this.fontReady = this.loadSoundFont();
     void this.loadMusicManifest();
+  }
+
+  /** Begin downloading the font (safe before AudioContext exists). */
+  prefetch() { void prefetchSoundFont(); }
+
+  /** Warm the audio engine on first user gesture so the font loads during login / name entry. */
+  warmUp() { this.init(); }
+
+  /** Wait until the SoundFont synth is ready (or failed). Music should await this. */
+  whenReady(): Promise<void> {
+    this.init();
+    return this.fontReady ?? Promise.resolve();
   }
 
   /** Fetch /music/manifest.json and append its entries as always-unlocked
@@ -153,22 +183,22 @@ class AudioEngine {
     try {
       const ctx = this.ctx;
       const [fontBuf] = await Promise.all([
-        fetch(SOUNDFONT_URL).then((r) => {
-          if (!r.ok) throw new Error(`soundfont fetch failed: ${r.status}`);
-          return r.arrayBuffer();
-        }),
+        prefetchSoundFont(),
         ctx.audioWorklet.addModule(WORKLET_URL.href),
       ]);
       const synth = new WorkletSynthesizer(ctx);
-      synth.connect(this.musicGain!); // music volume slider governs the synth too
+      synth.connect(this.musicGain!);
       await synth.soundBankManager.addSoundBank(fontBuf, 'main');
       await synth.isReady;
       this.buildProgramMap(synth);
       this.synth = synth;
-      // If a track is mid-loop on oscillators, schedule() flips to the synth
-      // voices at the next loop boundary; a fresh play() switches immediately.
-      // A custom MIDI track selected while the font was loading starts now.
-      if (this.current?.midiUrl) void this.playMidi(this.current);
+      // Track already queued while the font was loading — start it on the synth now.
+      if (this.current?.midiUrl) {
+        void this.playMidi(this.current);
+      } else if (this.current && this.timer !== null) {
+        this.useSynth = true;
+        this.applyVoices(this.current, ctx.currentTime);
+      }
     } catch (err) {
       console.warn('[audio] SoundFont engine unavailable; staying on oscillator fallback.', err);
     } finally {
@@ -201,12 +231,16 @@ class AudioEngine {
   /** Start a track. `manual = true` marks it as a deliberate player pick
    *  (music tab / playlist) so the region auto-switcher backs off. */
   play(track: Track, manual = false) {
+    void this.playTrack(track, manual);
+  }
+
+  private async playTrack(track: Track, manual: boolean) {
     this.init();
+    await this.whenReady();
     this.stop();
     this.manualLock = manual;
     this.current = track;
     if (track.midiUrl) {
-      // Custom .mid file — routed through the SoundFont sequencer.
       void this.playMidi(track);
       this.onTrackChange?.();
       return;

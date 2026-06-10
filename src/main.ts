@@ -13,6 +13,10 @@ import { render, renderMinimap, buildMinimapBase, markTick } from './render';
 import { audio, TRACKS, trackForRegion } from './audio';
 import { TICK_MS } from './defs';
 
+// Start downloading the SoundFont immediately; warm the synth on first click so
+// it's ready by the time the player hits "Click here to play".
+document.addEventListener('pointerdown', () => audio.warmUp(), { once: true });
+
 let lastRegionTrack = '';
 let booted = false;
 
