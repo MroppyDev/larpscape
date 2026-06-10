@@ -1,5 +1,9 @@
 # Larpscape
 
+## Wiki
+
+The game encyclopedia lives at **[wiki.larpscape.net](https://wiki.larpscape.net)** — items, quests, NPCs, shops, skills, locations, and live Grand Exchange prices. Content is generated from `data/*.json` via `npm run wiki:build-data`; the site builds with `npm run wiki:build` → `dist-wiki/`.
+
 ## Multiplayer
 
 Run `npm run server` (port 8080) alongside `npm run dev`, or for production:

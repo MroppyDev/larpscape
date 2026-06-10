@@ -1740,5 +1740,21 @@
     "size": 1,
     "attackable": false,
     "drops": []
+  },
+  "casino_dealer": {
+    "id": "casino_dealer",
+    "name": "Dealer Pip",
+    "examine": "Runs the starter-town casino with a smile sharp enough to cut cards.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8a2040",
+    "size": 1,
+    "attackable": false,
+    "drops": []
   }
 }

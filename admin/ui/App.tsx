@@ -89,6 +89,8 @@ export default function App() {
         <div className="foot">
           <a href="https://larpscape.net" target="_blank" rel="noreferrer">larpscape.net</a>
           {' · '}
+          <a href="https://wiki.larpscape.net" target="_blank" rel="noreferrer">wiki</a>
+          {' · '}
           <a onClick={logout} style={{ cursor: 'pointer' }}>Sign out</a>
         </div>
       </div>

@@ -397,6 +397,17 @@ app.get('/api/ge/price/:item', requireAuth, (req: AuthedRequest, res) => {
   res.json({ last: row ? row.price : null });
 });
 
+// Public bulk GE prices for the wiki (last traded price per item, no auth).
+app.get('/api/ge/prices', (_req, res) => {
+  const rows = db.prepare(
+    'SELECT item, price FROM trades t INNER JOIN (SELECT item AS i, MAX(id) AS mid FROM trades GROUP BY item) latest ON t.item = latest.i AND t.id = latest.mid',
+  ).all() as { item: string; price: number }[];
+  const prices: Record<string, number> = {};
+  for (const r of rows) prices[r.item] = r.price;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.json({ prices });
+});
+
 // ---------------------------------------------------------------------------
 // Static frontend (production)
 // ---------------------------------------------------------------------------

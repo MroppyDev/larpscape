@@ -229,6 +229,34 @@
       "action": "Exchange",
       "blocks": true
     },
+    "slot_machine": {
+      "id": "slot_machine",
+      "name": "Slot machine",
+      "examine": "Three reels, one lever, and the faint smell of false hope.",
+      "action": "Play",
+      "blocks": true
+    },
+    "blackjack_table": {
+      "id": "blackjack_table",
+      "name": "Blackjack table",
+      "examine": "Green felt, stiff cards, and a dealer who never blinks.",
+      "action": "Play",
+      "blocks": true
+    },
+    "roulette_table": {
+      "id": "roulette_table",
+      "name": "Roulette table",
+      "examine": "A spinning wheel that treats probability like a personal insult.",
+      "action": "Play",
+      "blocks": true
+    },
+    "coinflip_pedestal": {
+      "id": "coinflip_pedestal",
+      "name": "Coinflip pedestal",
+      "examine": "Challenge another adventurer to a fair flip. Heads you win, tails you learn.",
+      "action": "Coinflip",
+      "blocks": true
+    },
     "fountain": {
       "id": "fountain",
       "name": "Fountain",

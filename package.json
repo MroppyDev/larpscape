@@ -12,7 +12,10 @@
     "validate": "tsx scripts/validate-content.ts",
     "admin:dev": "vite --config admin/vite.config.ts",
     "admin:build": "vite build --config admin/vite.config.ts",
-    "admin:server": "tsx admin/server/index.ts"
+    "admin:server": "tsx admin/server/index.ts",
+    "wiki:build-data": "tsx scripts/build-wiki.ts",
+    "wiki:dev": "npm run wiki:build-data && vite --config wiki/vite.config.ts",
+    "wiki:build": "npm run wiki:build-data && vite build --config wiki/vite.config.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

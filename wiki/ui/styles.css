@@ -1,0 +1,369 @@
+/* Larpscape Wiki — OSRS Wiki inspired styling */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --wiki-blue: #3366cc;
+  --wiki-blue-dark: #2a4b8d;
+  --wiki-blue-header: #1a3a6e;
+  --wiki-cream: #f8f4e8;
+  --wiki-cream-dark: #e8e0cc;
+  --wiki-border: #a2a9b1;
+  --wiki-text: #202122;
+  --wiki-link: #3366cc;
+  --wiki-link-hover: #2a4b8d;
+  --wiki-infobox-bg: #f8f9fa;
+  --wiki-infobox-border: #a2a9b1;
+  --wiki-table-header: #eaecf0;
+  --wiki-sidebar-bg: #f8f4e8;
+  --font-serif: 'Linux Libertine', 'Georgia', 'Times New Roman', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--wiki-cream);
+  color: var(--wiki-text);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+a { color: var(--wiki-link); text-decoration: none; }
+a:hover { text-decoration: underline; color: var(--wiki-link-hover); }
+
+/* Header — OSRS blue bar */
+.wiki-header {
+  background: linear-gradient(180deg, var(--wiki-blue-header) 0%, var(--wiki-blue-dark) 100%);
+  border-bottom: 3px solid #0d2240;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.wiki-header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.wiki-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff !important;
+  text-decoration: none !important;
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+}
+
+.wiki-logo:hover { opacity: 0.9; text-decoration: none !important; }
+.wiki-logo-icon { font-size: 1.5rem; }
+
+.wiki-search {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 480px;
+}
+
+.wiki-search input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #0d2240;
+  border-radius: 2px;
+  font-size: 14px;
+  font-family: var(--font-sans);
+}
+
+.wiki-search button {
+  padding: 6px 14px;
+  background: #4a7bc8;
+  color: #fff;
+  border: 1px solid #0d2240;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.wiki-search button:hover { background: #5a8bd8; }
+
+.wiki-topnav a {
+  color: #cce0ff !important;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Layout */
+.wiki-body {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 800px) {
+  .wiki-body { grid-template-columns: 1fr; }
+  .wiki-sidebar { display: none; }
+}
+
+/* Sidebar */
+.wiki-sidebar {
+  background: var(--wiki-sidebar-bg);
+  border-right: 1px solid var(--wiki-border);
+  padding: 16px 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+.sidebar-block {
+  margin-bottom: 20px;
+}
+
+.sidebar-block h3 {
+  margin: 0 0 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--wiki-border);
+  font-size: 13px;
+  color: var(--wiki-blue-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sidebar-block ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-block li { margin: 3px 0; }
+
+.sidebar-game p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #54595d;
+}
+
+.play-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #4a7b2a;
+  color: #fff !important;
+  border-radius: 3px;
+  font-weight: 600;
+  text-decoration: none !important;
+  font-size: 13px;
+}
+
+.play-btn:hover { background: #5a9b3a; }
+
+/* Main content */
+.wiki-content {
+  background: #fff;
+  padding: 20px 28px 40px;
+  border-left: 1px solid var(--wiki-border);
+  min-width: 0;
+}
+
+.breadcrumb {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #54595d;
+  margin-bottom: 8px;
+}
+
+.bc-current { color: var(--wiki-text); }
+
+.first-heading {
+  font-size: 1.8em;
+  font-weight: normal;
+  border-bottom: 1px solid var(--wiki-border);
+  padding-bottom: 4px;
+  margin: 0 0 16px;
+  font-family: var(--font-serif);
+}
+
+.mw-parser-output { font-size: 0.95em; }
+.mw-parser-output p { margin: 0.6em 0; }
+.mw-parser-output h2 {
+  font-size: 1.5em;
+  font-weight: normal;
+  border-bottom: 1px solid var(--wiki-border);
+  padding-bottom: 2px;
+  margin: 1.2em 0 0.5em;
+  clear: both;
+}
+.mw-parser-output h3 {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 1em 0 0.4em;
+}
+
+.mw-parser-output ul {
+  margin: 0.4em 0;
+  padding-left: 1.6em;
+}
+
+.mw-parser-output li { margin: 0.2em 0; }
+
+/* Article body with infobox float */
+.article-body { position: relative; }
+.article-body::after { content: ''; display: table; clear: both; }
+
+/* Infobox — OSRS style right float */
+.infobox {
+  float: right;
+  clear: right;
+  width: 280px;
+  margin: 0 0 16px 20px;
+  background: var(--wiki-infobox-bg);
+  border: 1px solid var(--wiki-infobox-border);
+  border-collapse: collapse;
+  font-size: 0.88em;
+  font-family: var(--font-sans);
+}
+
+.infobox-title {
+  background: var(--wiki-blue);
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+  padding: 6px 8px;
+  font-size: 1.05em;
+}
+
+.infobox table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.infobox th {
+  text-align: left;
+  vertical-align: top;
+  padding: 4px 8px;
+  background: #eaecf0;
+  border: 1px solid var(--wiki-border);
+  width: 40%;
+  font-weight: normal;
+  color: #202122;
+}
+
+.infobox td {
+  padding: 4px 8px;
+  border: 1px solid var(--wiki-border);
+  background: #f8f9fa;
+}
+
+/* Wikitable */
+.wikitable {
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
+  font-family: var(--font-sans);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.wikitable thead,
+.wikitable tbody { display: table; width: 100%; }
+
+.wikitable th {
+  background: var(--wiki-table-header);
+  border: 1px solid var(--wiki-border);
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: bold;
+}
+
+.wikitable td {
+  border: 1px solid var(--wiki-border);
+  padding: 5px 10px;
+  background: #f8f9fa;
+}
+
+.wikitable tbody tr:nth-child(even) td { background: #fff; }
+.wikitable tbody tr:hover td { background: #eaf3ff; }
+
+/* GE prices */
+.ge-price { font-style: italic; color: #54595d; }
+.ge-has-price { font-style: normal; color: #202122; font-weight: 600; }
+.ge-no-price { color: #72777d; }
+
+/* Category list */
+.cat-list {
+  columns: 2;
+  column-gap: 24px;
+  font-family: var(--font-sans);
+  font-size: 0.9em;
+}
+
+@media (max-width: 600px) { .cat-list { columns: 1; } }
+
+/* Search results */
+.search-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.search-results li {
+  border-bottom: 1px solid var(--wiki-border);
+  padding: 12px 0;
+}
+
+.search-results a { font-size: 1.1em; font-weight: 600; }
+.search-cat {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8em;
+  color: #54595d;
+  background: #eaecf0;
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.search-results p {
+  margin: 4px 0 0;
+  font-size: 0.9em;
+  color: #54595d;
+}
+
+.article-meta {
+  margin-top: 32px;
+  padding-top: 12px;
+  border-top: 1px solid var(--wiki-border);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #54595d;
+}
+
+/* Footer */
+.wiki-footer {
+  background: var(--wiki-cream-dark);
+  border-top: 1px solid var(--wiki-border);
+  padding: 16px 28px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #54595d;
+  text-align: center;
+}
+
+.wiki-footer p { margin: 4px 0; }
+
+/* Internal wiki links in generated HTML */
+a.wiki-link { color: var(--wiki-link); }
+a.wiki-link:visited { color: #795cb2; }

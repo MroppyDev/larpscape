@@ -28,10 +28,11 @@ if [[ "${LARPSCAPE_UPDATE_REEXECED:-}" != "1" ]]; then
   exec bash "$APP_DIR/deploy/update.sh" "$@"
 fi
 
-echo "==> Installing dependencies + building client + admin console"
+echo "==> Installing dependencies + building client + admin console + wiki"
 npm ci
 npm run build
 npm run admin:build
+npm run wiki:build
 
 # Keep systemd units / nginx config in sync with the repo
 if ! cmp -s deploy/larpscape.service /etc/systemd/system/larpscape.service; then
@@ -51,6 +52,10 @@ fi
 if [[ -f deploy/nginx-larpscape-admin.conf ]]; then
   cp deploy/nginx-larpscape-admin.conf /etc/nginx/sites-available/larpscape-admin
   ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
+fi
+if [[ -f deploy/nginx-larpscape-wiki.conf ]]; then
+  cp deploy/nginx-larpscape-wiki.conf /etc/nginx/sites-available/larpscape-wiki
+  ln -sf /etc/nginx/sites-available/larpscape-wiki /etc/nginx/sites-enabled/larpscape-wiki
 fi
 rm -f /etc/nginx/sites-enabled/default
 echo "==> Syncing nginx vhosts"

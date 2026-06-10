@@ -88,12 +88,21 @@ if ! certbot certificates 2>/dev/null | grep -q "Certificate Name: admin.$DOMAIN
     --register-unsafely-without-email \
     || echo "    certbot for admin.$DOMAIN failed (DNS probably not pointed yet) — re-run after DNS propagates"
 fi
+if ! certbot certificates 2>/dev/null | grep -q "Certificate Name: wiki.$DOMAIN"; then
+  certbot certonly --nginx -d "wiki.$DOMAIN" --non-interactive --agree-tos \
+    --register-unsafely-without-email \
+    || echo "    certbot for wiki.$DOMAIN failed (DNS probably not pointed yet) — re-run after DNS propagates"
+fi
 # Re-copy repo nginx configs (source of truth) now that certs exist, then reload.
 if [[ -f "$APP_DIR/deploy/nginx-larpscape.conf" ]]; then
   cp "$APP_DIR/deploy/nginx-larpscape.conf" /etc/nginx/sites-available/larpscape
 fi
 if [[ -f "$APP_DIR/deploy/nginx-larpscape-admin.conf" ]]; then
   cp "$APP_DIR/deploy/nginx-larpscape-admin.conf" /etc/nginx/sites-available/larpscape-admin
+fi
+if [[ -f "$APP_DIR/deploy/nginx-larpscape-wiki.conf" ]]; then
+  cp "$APP_DIR/deploy/nginx-larpscape-wiki.conf" /etc/nginx/sites-available/larpscape-wiki
+  ln -sf /etc/nginx/sites-available/larpscape-wiki /etc/nginx/sites-enabled/larpscape-wiki
 fi
 if nginx -t 2>/dev/null; then
   systemctl reload nginx

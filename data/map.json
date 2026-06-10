@@ -9507,6 +9507,26 @@
       "type": "barrel",
       "x": 121,
       "y": 35
+    },
+    {
+      "type": "slot_machine",
+      "x": 29,
+      "y": 47
+    },
+    {
+      "type": "blackjack_table",
+      "x": 32,
+      "y": 47
+    },
+    {
+      "type": "roulette_table",
+      "x": 35,
+      "y": 47
+    },
+    {
+      "type": "coinflip_pedestal",
+      "x": 38,
+      "y": 47
     }
   ]
 }
