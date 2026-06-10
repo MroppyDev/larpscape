@@ -20,8 +20,12 @@ export function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Set WIKI_BASE=/wiki when building the larpscape.net/wiki mirror.
+export const WIKI_BASE = process.env.WIKI_BASE ?? '';
+
 export function link(slug: string, text?: string): string {
-  return `<a href="/${slug}" class="wiki-link">${esc(text ?? slug)}</a>`;
+  const href = slug ? `${WIKI_BASE}/${slug}` : (WIKI_BASE || '/');
+  return `<a href="${href}" class="wiki-link">${esc(text ?? slug)}</a>`;
 }
 
 export function p(text: string): string {

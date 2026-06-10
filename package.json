@@ -15,7 +15,8 @@
     "admin:server": "tsx admin/server/index.ts",
     "wiki:build-data": "tsx scripts/build-wiki.ts",
     "wiki:dev": "npm run wiki:build-data && vite --config wiki/vite.config.ts",
-    "wiki:build": "npm run wiki:build-data && vite build --config wiki/vite.config.ts"
+    "wiki:build": "npm run wiki:build-data && vite build --config wiki/vite.config.ts",
+    "wiki:build-path": "bash deploy/build-wiki-path.sh"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

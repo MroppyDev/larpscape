@@ -33,6 +33,7 @@ npm ci
 npm run build
 npm run admin:build
 npm run wiki:build
+bash deploy/build-wiki-path.sh
 
 # Keep systemd units / nginx config in sync with the repo
 if ! cmp -s deploy/larpscape.service /etc/systemd/system/larpscape.service; then

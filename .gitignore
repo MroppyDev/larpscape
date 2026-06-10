@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist-admin/
 dist-wiki/
+dist-wiki-path/
 wiki/ui/data/
 *.local
 .DS_Store

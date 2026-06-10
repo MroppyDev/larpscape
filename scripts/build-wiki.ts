@@ -19,6 +19,9 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(__dirname, '../wiki/ui/data/wiki-data.json');
+if (process.env.WIKI_BASE) {
+  console.log(`Building wiki data with base path: ${process.env.WIKI_BASE}`);
+}
 
 type ItemDef = typeof itemsJson[string];
 type NpcDef = typeof npcsJson[string];
