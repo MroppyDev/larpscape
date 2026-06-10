@@ -152,6 +152,7 @@ body {
 .chat-line.game { color: #000; }
 .chat-line.level { color: #000080; }
 .chat-line.player-msg { color: #0000ff; }
+.chat-line.server-msg { color: #8b0000; font-weight: bold; }
 .chat-line.examine { color: #000; }
 #chat-input-row {
   border-top: 2px solid var(--stone-mid); padding: 3px 6px;

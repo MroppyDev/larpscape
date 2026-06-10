@@ -1,0 +1,24 @@
+[Unit]
+Description=Larpscape game server
+After=network.target
+
+[Service]
+Type=simple
+User=larpscape
+Group=larpscape
+WorkingDirectory=/opt/larpscape
+EnvironmentFile=/etc/larpscape/env
+ExecStart=/opt/larpscape/node_modules/.bin/tsx server/index.ts
+Restart=always
+RestartSec=2
+# Give the graceful-shutdown broadcast time to deliver before SIGKILL
+TimeoutStopSec=10
+Environment=NODE_ENV=production
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/larpscape/server
+
+[Install]
+WantedBy=multi-user.target

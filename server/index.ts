@@ -15,6 +15,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
+// Shared secret for ops endpoints (broadcast). Empty = endpoints disabled.
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
 
 // ---------------------------------------------------------------------------
 // Database
@@ -318,6 +320,30 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Admin / ops
+// ---------------------------------------------------------------------------
+
+function broadcastSystem(text: string) {
+  const payload = JSON.stringify({ t: 'system', text });
+  let n = 0;
+  for (const c of clients) {
+    if (c.ws.readyState === WebSocket.OPEN) { c.ws.send(payload); n++; }
+  }
+  return n;
+}
+
+// POST /api/admin/broadcast { text } — header: x-admin-token. Used by the deploy
+// script to announce restarts in-game before the service bounces.
+app.post('/api/admin/broadcast', (req, res) => {
+  if (!ADMIN_TOKEN || req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    res.status(401).json({ error: 'unauthorized' }); return;
+  }
+  const text = typeof req.body?.text === 'string' ? req.body.text.slice(0, 200).trim() : '';
+  if (!text) { res.status(400).json({ error: 'text required' }); return; }
+  res.json({ ok: true, delivered: broadcastSystem(text) });
+});
+
 // 404 for unknown API routes
 app.use('/api', (_req, res) => { res.status(404).json({ error: 'not found' }); });
 
@@ -407,3 +433,20 @@ setInterval(() => {
 server.listen(PORT, () => {
   console.log(`[server] Larpscape server listening on http://localhost:${PORT}`);
 });
+
+// Graceful shutdown: announce in-game, give the message a moment to deliver,
+// then close sockets so clients flip into reconnect mode while the service restarts.
+let shuttingDown = false;
+function shutdown(signal: string) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[server] ${signal} received — broadcasting restart notice`);
+  broadcastSystem('Server is restarting for an update — you will be reconnected automatically.');
+  setTimeout(() => {
+    for (const c of clients) { try { c.ws.close(4003, 'server restart'); } catch { /* ignore */ } }
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 3000).unref();
+  }, 1200);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

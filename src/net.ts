@@ -179,6 +179,8 @@ function handleWsMessage(raw: string) {
     msg(from + ': ' + m.text, 'player-msg');
     const rp = state.remotePlayers.find((r) => r.name === from);
     if (rp) rp.chat = { text: m.text, until: performance.now() + 4000 };
+  } else if (m.t === 'system' && typeof m.text === 'string') {
+    msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
     net.username = m.name;
   }
