@@ -36,6 +36,22 @@ if [[ -f deploy/larpscape-admin.service ]] && ! cmp -s deploy/larpscape-admin.se
   systemctl daemon-reload
 fi
 
+# Keep nginx vhosts in sync (game on :8080, admin on :8081; apex must have its own TLS block)
+if [[ -f deploy/nginx-larpscape.conf ]]; then
+  cp deploy/nginx-larpscape.conf /etc/nginx/sites-available/larpscape
+  ln -sf /etc/nginx/sites-available/larpscape /etc/nginx/sites-enabled/larpscape
+fi
+if [[ -f deploy/nginx-larpscape-admin.conf ]]; then
+  cp deploy/nginx-larpscape-admin.conf /etc/nginx/sites-available/larpscape-admin
+  ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
+fi
+rm -f /etc/nginx/sites-enabled/default
+if nginx -t 2>/dev/null; then
+  systemctl reload nginx
+else
+  echo "    nginx config test failed — run certbot if TLS certs are missing, then re-deploy"
+fi
+
 chown -R larpscape:larpscape "$APP_DIR"
 
 if systemctl is-active --quiet larpscape; then

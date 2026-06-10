@@ -70,34 +70,40 @@ if [[ -f "$APP_DIR/deploy/nginx-larpscape.conf" ]]; then
   cp "$APP_DIR/deploy/nginx-larpscape.conf" /etc/nginx/sites-available/larpscape
   ln -sf /etc/nginx/sites-available/larpscape /etc/nginx/sites-enabled/larpscape
   rm -f /etc/nginx/sites-enabled/default
-  nginx -t && systemctl reload nginx
 fi
 if [[ -f "$APP_DIR/deploy/nginx-larpscape-admin.conf" ]]; then
   cp "$APP_DIR/deploy/nginx-larpscape-admin.conf" /etc/nginx/sites-available/larpscape-admin
   ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
-  nginx -t && systemctl reload nginx
+fi
+
+echo "==> certbot (TLS) — only works after DNS points here"
+apt-get install -y certbot python3-certbot-nginx
+if ! certbot certificates 2>/dev/null | grep -q "Certificate Name: $DOMAIN"; then
+  certbot certonly --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos \
+    --register-unsafely-without-email \
+    || echo "    certbot for $DOMAIN failed (DNS probably not pointed yet) — re-run after DNS propagates"
+fi
+if ! certbot certificates 2>/dev/null | grep -q "Certificate Name: admin.$DOMAIN"; then
+  certbot certonly --nginx -d "admin.$DOMAIN" --non-interactive --agree-tos \
+    --register-unsafely-without-email \
+    || echo "    certbot for admin.$DOMAIN failed (DNS probably not pointed yet) — re-run after DNS propagates"
+fi
+# Re-copy repo nginx configs (source of truth) now that certs exist, then reload.
+if [[ -f "$APP_DIR/deploy/nginx-larpscape.conf" ]]; then
+  cp "$APP_DIR/deploy/nginx-larpscape.conf" /etc/nginx/sites-available/larpscape
+fi
+if [[ -f "$APP_DIR/deploy/nginx-larpscape-admin.conf" ]]; then
+  cp "$APP_DIR/deploy/nginx-larpscape-admin.conf" /etc/nginx/sites-available/larpscape-admin
+fi
+if nginx -t 2>/dev/null; then
+  systemctl reload nginx
+else
+  echo "    nginx config test failed — check cert paths under /etc/letsencrypt/live/"
 fi
 
 echo "==> Firewall"
 ufw allow OpenSSH >/dev/null
 ufw allow 'Nginx Full' >/dev/null
 ufw --force enable >/dev/null
-
-echo "==> certbot (TLS) — only works after $DOMAIN DNS points here"
-apt-get install -y certbot python3-certbot-nginx
-if certbot certificates 2>/dev/null | grep -q "$DOMAIN"; then
-  echo "    certificate already present"
-else
-  certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos \
-    --register-unsafely-without-email --redirect \
-    || echo "    certbot failed (DNS probably not pointed yet) — re-run: certbot --nginx -d $DOMAIN -d www.$DOMAIN"
-fi
-if certbot certificates 2>/dev/null | grep -q "admin.$DOMAIN"; then
-  echo "    admin certificate already present"
-else
-  certbot --nginx -d "admin.$DOMAIN" --non-interactive --agree-tos \
-    --register-unsafely-without-email --redirect \
-    || echo "    certbot for admin.$DOMAIN failed (DNS probably not pointed yet) — re-run: certbot --nginx -d admin.$DOMAIN"
-fi
 
 echo "==> Done. Push code from your machine, then run deploy/update.sh"
