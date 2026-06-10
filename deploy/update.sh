@@ -21,6 +21,13 @@ git fetch origin
 BRANCH="$(git remote show origin | sed -n 's/.*HEAD branch: //p')"
 git reset --hard "origin/${BRANCH:-master}"
 
+# Re-exec from the freshly checked-out script. Bash keeps the pre-pull inode
+# otherwise, so nginx/systemd sync from the new commit would be skipped.
+if [[ "${LARPSCAPE_UPDATE_REEXECED:-}" != "1" ]]; then
+  export LARPSCAPE_UPDATE_REEXECED=1
+  exec bash "$APP_DIR/deploy/update.sh" "$@"
+fi
+
 echo "==> Installing dependencies + building client + admin console"
 npm ci
 npm run build
@@ -46,10 +53,12 @@ if [[ -f deploy/nginx-larpscape-admin.conf ]]; then
   ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
 fi
 rm -f /etc/nginx/sites-enabled/default
-if nginx -t 2>/dev/null; then
+echo "==> Syncing nginx vhosts"
+if nginx -t; then
   systemctl reload nginx
 else
   echo "    nginx config test failed — run certbot if TLS certs are missing, then re-deploy"
+  exit 1
 fi
 
 chown -R larpscape:larpscape "$APP_DIR"
