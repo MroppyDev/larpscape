@@ -1,0 +1,278 @@
+{
+  "general": {
+    "name": "General Store",
+    "stock": [
+      {
+        "item": "bronze_axe",
+        "qty": 10
+      },
+      {
+        "item": "bronze_pickaxe",
+        "qty": 10
+      },
+      {
+        "item": "tinderbox",
+        "qty": 10
+      },
+      {
+        "item": "small_net",
+        "qty": 10
+      },
+      {
+        "item": "bronze_sword",
+        "qty": 5
+      },
+      {
+        "item": "wooden_shield",
+        "qty": 5
+      },
+      {
+        "item": "bread",
+        "qty": 10
+      },
+      {
+        "item": "knife",
+        "qty": 10
+      },
+      {
+        "item": "hammer",
+        "qty": 10
+      },
+      {
+        "item": "needle",
+        "qty": 10
+      },
+      {
+        "item": "thread",
+        "qty": 100
+      },
+      {
+        "item": "shears",
+        "qty": 10
+      },
+      {
+        "item": "bucket",
+        "qty": 10
+      },
+      {
+        "item": "fishing_rod",
+        "qty": 10
+      },
+      {
+        "item": "fishing_bait",
+        "qty": 500
+      },
+      {
+        "item": "bird_snare",
+        "qty": 10
+      },
+      {
+        "item": "vial_of_water",
+        "qty": 50
+      },
+      {
+        "item": "chisel",
+        "qty": 10
+      }
+    ]
+  },
+  "magic": {
+    "name": "Mira's Rune Supplies",
+    "stock": [
+      {
+        "item": "air_rune",
+        "qty": 500
+      },
+      {
+        "item": "mind_rune",
+        "qty": 500
+      },
+      {
+        "item": "water_rune",
+        "qty": 300
+      },
+      {
+        "item": "earth_rune",
+        "qty": 300
+      },
+      {
+        "item": "fire_rune",
+        "qty": 300
+      },
+      {
+        "item": "chaos_rune",
+        "qty": 250
+      },
+      {
+        "item": "eye_of_newt",
+        "qty": 50
+      }
+    ]
+  },
+  "gardener": {
+    "name": "Old Fen's Seed Stall",
+    "stock": [
+      {
+        "item": "potato_seed",
+        "qty": 100
+      },
+      {
+        "item": "cabbage_seed",
+        "qty": 100
+      },
+      {
+        "item": "rake",
+        "qty": 10
+      },
+      {
+        "item": "seed_dibber",
+        "qty": 10
+      }
+    ]
+  },
+  "aldgate_armoury": {
+    "name": "Aldgate Armoury",
+    "stock": [
+      {
+        "item": "steel_sword",
+        "qty": 3
+      },
+      {
+        "item": "steel_scimitar",
+        "qty": 3
+      },
+      {
+        "item": "steel_full_helm",
+        "qty": 3
+      },
+      {
+        "item": "steel_platebody",
+        "qty": 2
+      },
+      {
+        "item": "steel_platelegs",
+        "qty": 2
+      },
+      {
+        "item": "steel_kiteshield",
+        "qty": 2
+      },
+      {
+        "item": "mithril_sword",
+        "qty": 1
+      },
+      {
+        "item": "mithril_full_helm",
+        "qty": 1
+      },
+      {
+        "item": "iron_arrow",
+        "qty": 200
+      }
+    ]
+  },
+  "aldgate_food": {
+    "name": "The Gilded Loaf",
+    "stock": [
+      {
+        "item": "bread",
+        "qty": 30
+      },
+      {
+        "item": "cake",
+        "qty": 10
+      },
+      {
+        "item": "cooked_meat",
+        "qty": 20
+      }
+    ]
+  },
+  "brackwater_fish": {
+    "name": "Pell's Fresh Catch",
+    "stock": [
+      {
+        "item": "lobster_pot",
+        "qty": 10
+      },
+      {
+        "item": "harpoon",
+        "qty": 10
+      },
+      {
+        "item": "fishing_rod",
+        "qty": 10
+      },
+      {
+        "item": "small_net",
+        "qty": 10
+      },
+      {
+        "item": "fishing_bait",
+        "qty": 500
+      },
+      {
+        "item": "lobster",
+        "qty": 5
+      },
+      {
+        "item": "swordfish",
+        "qty": 3
+      }
+    ]
+  },
+  "nomad_supplies": {
+    "name": "Zahra's Wandering Wares",
+    "stock": [
+      {
+        "item": "bread",
+        "qty": 20
+      },
+      {
+        "item": "cooked_meat",
+        "qty": 15
+      },
+      {
+        "item": "cake",
+        "qty": 5
+      },
+      {
+        "item": "chisel",
+        "qty": 10
+      },
+      {
+        "item": "tinderbox",
+        "qty": 10
+      },
+      {
+        "item": "vial_of_water",
+        "qty": 50
+      }
+    ]
+  },
+  "gem_stall": {
+    "name": "The Glitter Counter",
+    "stock": [
+      {
+        "item": "uncut_sapphire",
+        "qty": 1
+      },
+      {
+        "item": "sapphire",
+        "qty": 1
+      },
+      {
+        "item": "chisel",
+        "qty": 5
+      },
+      {
+        "item": "gold_ring",
+        "qty": 2
+      },
+      {
+        "item": "gold_amulet",
+        "qty": 2
+      }
+    ]
+  }
+}

@@ -6,7 +6,7 @@
 // option — this pack registers ONLY 'Talk-to' idle flavor.
 import {
   state, msg, startDialogue, openShop, level,
-  registerNpcSpawn, registerNpcAction, registerObjectAction,
+  registerNpcAction, registerObjectAction,
   addItem, addXp, hasTool, freeSlots,
 } from '../game';
 import { audio } from '../audio';
@@ -28,17 +28,7 @@ function onceMsg(text: string) {
   }
 }
 
-// ---------------- Spawns ----------------
-
-// Fishmonger Pell on the main street, in front of the warehouse row.
-registerNpcSpawn('fishmonger', 107, 187);
-
-// Harbormaster Quill at the foot of the eastern dock, watching the tide.
-registerNpcSpawn('harbormaster', 118, 210);
-
-// Dock workers hauling crates between the warehouses and the water.
-registerNpcSpawn('man', 100, 198);
-registerNpcSpawn('man', 118, 194);
+// Spawns live in data/spawns.json (server-authoritative world).
 
 // ---------------- NPC actions ----------------
 

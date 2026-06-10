@@ -1,0 +1,267 @@
+{
+  "npcSpawns": [
+    {
+      "id": "goblin",
+      "x": 56,
+      "y": 30
+    },
+    {
+      "id": "goblin",
+      "x": 60,
+      "y": 34
+    },
+    {
+      "id": "goblin",
+      "x": 64,
+      "y": 28
+    },
+    {
+      "id": "goblin",
+      "x": 58,
+      "y": 44
+    },
+    {
+      "id": "goblin",
+      "x": 63,
+      "y": 42
+    },
+    {
+      "id": "goblin",
+      "x": 68,
+      "y": 36
+    },
+    {
+      "id": "goblin",
+      "x": 55,
+      "y": 38
+    },
+    {
+      "id": "cow",
+      "x": 57,
+      "y": 10
+    },
+    {
+      "id": "cow",
+      "x": 61,
+      "y": 13
+    },
+    {
+      "id": "cow",
+      "x": 65,
+      "y": 9
+    },
+    {
+      "id": "cow",
+      "x": 67,
+      "y": 16
+    },
+    {
+      "id": "cow",
+      "x": 59,
+      "y": 17
+    },
+    {
+      "id": "chicken",
+      "x": 30,
+      "y": 10
+    },
+    {
+      "id": "chicken",
+      "x": 33,
+      "y": 12
+    },
+    {
+      "id": "chicken",
+      "x": 36,
+      "y": 10
+    },
+    {
+      "id": "chicken",
+      "x": 31,
+      "y": 14
+    },
+    {
+      "id": "chicken",
+      "x": 35,
+      "y": 14
+    },
+    {
+      "id": "man",
+      "x": 32,
+      "y": 36
+    },
+    {
+      "id": "man",
+      "x": 25,
+      "y": 34
+    },
+    {
+      "id": "man",
+      "x": 38,
+      "y": 42
+    },
+    {
+      "id": "giant_rat",
+      "x": 18,
+      "y": 62
+    },
+    {
+      "id": "giant_rat",
+      "x": 26,
+      "y": 72
+    },
+    {
+      "id": "giant_rat",
+      "x": 22,
+      "y": 67
+    },
+    {
+      "id": "shopkeeper",
+      "x": 35,
+      "y": 49
+    },
+    {
+      "id": "banker",
+      "x": 17,
+      "y": 31
+    },
+    {
+      "id": "sheep",
+      "x": 17,
+      "y": 12
+    },
+    {
+      "id": "sheep",
+      "x": 20,
+      "y": 15
+    },
+    {
+      "id": "sheep",
+      "x": 23,
+      "y": 11
+    },
+    {
+      "id": "sheep",
+      "x": 18,
+      "y": 17
+    },
+    {
+      "id": "sheep",
+      "x": 22,
+      "y": 14
+    },
+    {
+      "id": "tanner",
+      "x": 37,
+      "y": 56
+    },
+    {
+      "id": "slayer_master",
+      "x": 30,
+      "y": 35
+    },
+    {
+      "id": "magic_tutor",
+      "x": 42,
+      "y": 30
+    },
+    {
+      "id": "gardener",
+      "x": 36,
+      "y": 23
+    },
+    {
+      "id": "cook",
+      "x": 17,
+      "y": 43
+    },
+    {
+      "id": "carpenter",
+      "x": 23,
+      "y": 53
+    },
+    { "id": "city_guard", "x": 79, "y": 37 },
+    { "id": "city_guard", "x": 79, "y": 39 },
+    { "id": "city_guard", "x": 94, "y": 30 },
+    { "id": "city_guard", "x": 112, "y": 41 },
+    { "id": "ge_clerk", "x": 101, "y": 30 },
+    { "id": "ge_clerk", "x": 105, "y": 30 },
+    { "id": "banker", "x": 103, "y": 27 },
+    { "id": "innkeeper", "x": 89, "y": 22 },
+    { "id": "man", "x": 97, "y": 36 },
+    { "id": "man", "x": 109, "y": 34 },
+    { "id": "armourer", "x": 116, "y": 23 },
+    { "id": "grocer", "x": 116, "y": 44 },
+    { "id": "goblin_warlord", "x": 146, "y": 22 },
+    { "id": "bog_horror", "x": 24, "y": 96 },
+    { "id": "shadow_drake", "x": 140, "y": 152 },
+    { "id": "ice_troll", "x": 185, "y": 14 },
+    { "id": "ice_troll", "x": 212, "y": 46 },
+    { "id": "ice_troll", "x": 192, "y": 60 },
+    { "id": "ice_troll", "x": 205, "y": 80 },
+    { "id": "ice_wolf", "x": 188, "y": 20 },
+    { "id": "ice_wolf", "x": 215, "y": 28 },
+    { "id": "ice_wolf", "x": 198, "y": 72 },
+    { "id": "mountain_guide", "x": 172, "y": 54 },
+    { "id": "ice_queen", "x": 205, "y": 20 },
+    { "id": "scorpion", "x": 36, "y": 180 },
+    { "id": "scorpion", "x": 52, "y": 196 },
+    { "id": "scorpion", "x": 14, "y": 206 },
+    { "id": "scorpion", "x": 58, "y": 208 },
+    { "id": "desert_bandit", "x": 28, "y": 190 },
+    { "id": "desert_bandit", "x": 40, "y": 199 },
+    { "id": "desert_bandit", "x": 24, "y": 209 },
+    { "id": "desert_bandit", "x": 34, "y": 208 },
+    { "id": "desert_nomad", "x": 13, "y": 178 },
+    { "id": "gem_trader", "x": 18, "y": 178 },
+    { "id": "bandit_king", "x": 30, "y": 200 },
+    { "id": "magma_crawler", "x": 165, "y": 135 },
+    { "id": "magma_crawler", "x": 172, "y": 120 },
+    { "id": "magma_crawler", "x": 158, "y": 148 },
+    { "id": "ash_fiend", "x": 195, "y": 140 },
+    { "id": "ash_fiend", "x": 205, "y": 122 },
+    { "id": "magma_fiend", "x": 210, "y": 150 },
+    { "id": "fishmonger", "x": 107, "y": 187 },
+    { "id": "harbormaster", "x": 118, "y": 210 },
+    { "id": "man", "x": 100, "y": 198 },
+    { "id": "man", "x": 118, "y": 194 }
+  ],
+  "groundSpawns": [
+    {
+      "item": "egg",
+      "x": 31,
+      "y": 11,
+      "respawnTicks": 50
+    },
+    {
+      "item": "egg",
+      "x": 35,
+      "y": 13,
+      "respawnTicks": 50
+    },
+    {
+      "item": "grimy_guam",
+      "x": 19,
+      "y": 74,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 28,
+      "y": 62,
+      "respawnTicks": 80
+    },
+    {
+      "item": "bread",
+      "x": 97,
+      "y": 31,
+      "respawnTicks": 100
+    },
+    {
+      "item": "vial_of_water",
+      "x": 105,
+      "y": 31,
+      "respawnTicks": 100
+    }
+  ]
+}

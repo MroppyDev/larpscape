@@ -6,7 +6,7 @@ import {
   registerObjectAction, registerNpcAction, registerItemAction,
   registerItemOnObject, registerItemOnItem, registerTickHook,
   addItem, removeItem, removeFromSlot, invCount, hasItem, hasTool, freeSlots,
-  addXp, level, openShop, openBank, rechargePrayer,
+  addXp, level, openShop, openBank, rechargePrayer, sendInteract,
   Npc, MakeOption,
 } from './game';
 import {
@@ -358,11 +358,10 @@ fletchCombo('headless_arrow', 'iron_arrowtips', 'iron_arrow');
 // ============================================================================
 registerNpcAction('sheep', 'Shear', (n: Npc) => {
   if (!hasTool('shears')) { msg('You need a pair of shears to shear this sheep.'); return 'done'; }
-  if ((n.meta.shearedUntil ?? 0) > state.tick) { msg('This sheep has already been sheared. Give the wool a moment to grow back.'); return 'done'; }
+  if (n.meta.sheared) { msg('This sheep has already been sheared. Give the wool a moment to grow back.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
-  n.meta.shearedUntil = state.tick + 50;
-  addItem('wool');
-  msg('You get some wool.');
+  // wool state is shared world state: the server validates and replies 'shorn'
+  if (!sendInteract(n, 'Shear')) msg('You are not connected to the server.');
   return 'done';
 });
 

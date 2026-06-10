@@ -3,52 +3,12 @@
 // centre (~x100-106, y28-34). Exact tiles below are plausible open-street picks;
 // the architect reconciles any collisions with world.ts at integration.
 import {
-  registerNpcSpawn, registerNpcAction, registerObjectAction,
+  registerNpcAction, registerObjectAction,
   startDialogue, msg, state, events, openShop, level,
 } from '../game';
-import { NPCS } from '../defs';
 
-// ---------------- New NPC definitions owned by this pack ----------------
-// (gear agent defines city_guard / ge_clerk / innkeeper; these two are ours)
-
-NPCS['armourer'] = {
-  id: 'armourer', name: 'Hetta the Armourer', examine: 'Arms folded, like everything she sells.',
-  combatLevel: 0, hitpoints: 10, attack: 1, strength: 1, defence: 1, attackSpeed: 4,
-  respawnTicks: 50, color: '#7a8694', size: 1, attackable: false, drops: [],
-};
-
-NPCS['grocer'] = {
-  id: 'grocer', name: 'Pim the Grocer', examine: 'Smells faintly of fresh bread and ambition.',
-  combatLevel: 0, hitpoints: 10, attack: 1, strength: 1, defence: 1, attackSpeed: 4,
-  respawnTicks: 50, color: '#a8854f', size: 1, attackable: false, drops: [],
-};
-
-// ---------------- Spawns ----------------
-
-// City guards: two by the west gate, two patrol-posted on the main streets.
-registerNpcSpawn('city_guard', 79, 37);   // gate, north side
-registerNpcSpawn('city_guard', 79, 39);   // gate, south side
-registerNpcSpawn('city_guard', 94, 30);   // street NW of plaza
-registerNpcSpawn('city_guard', 112, 41);  // street SE of plaza
-
-// Grand Exchange clerks on the plaza, near the booths.
-registerNpcSpawn('ge_clerk', 101, 30);
-registerNpcSpawn('ge_clerk', 105, 30);
-
-// Banker on the plaza by the bank booths.
-registerNpcSpawn('banker', 103, 27);
-
-// Innkeeper inside an inn building (NW city block, ~x86-92 / y20-25).
-// Spawn ONLY — the quest pack owns all innkeeper dialogue/actions.
-registerNpcSpawn('innkeeper', 89, 22);
-
-// Townsfolk on the streets.
-registerNpcSpawn('man', 97, 36);
-registerNpcSpawn('man', 109, 34);
-
-// Shopkeepers inside their buildings: armoury (NE block) and food shop (SE block).
-registerNpcSpawn('armourer', 116, 23);
-registerNpcSpawn('grocer', 116, 44);
+// NPC definitions + spawns live in data/npcs.json and data/spawns.json
+// (server-authoritative world). This pack registers actions/dialogue only.
 
 // ---------------- Actions ----------------
 

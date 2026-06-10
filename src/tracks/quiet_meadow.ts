@@ -1,25 +1,28 @@
 // 'Quiet Meadow' — the hunter meadow. Calm pastoral in G major, 64 bpm.
 //
+// OSRS-style orchestration (think "Harmony" / "Dream" / "Lullaby" through the
+// Sound Canvas font): breathy GM flute carries the hook where the pan flute
+// used to, a harp answers in its breaths with rippling arpeggios, lush slow
+// strings hold one guide tone per bar, a soft choir "ooh" halo doubles the
+// harmony a step removed, woody cello walks the half-note bass, and celesta
+// sparkle replaces the ocarina birdsong. No drums — the meadow stays quiet.
+//
 // Form (32 bars): A (1-8) theme · A' (9-16) theme varied, borrowed iv (Cm)
 // · B (17-24) Em contrast w/ deceptive cadence and borrowed bIII (Bb)
 // · A'' (25-32) return, resolving back into the loop on a pickup D.
 //
-// Motif: a two-bar "rise-reach-settle" pan-flute hook (D ^ G ^ A-B | A v G-E),
+// Motif: a two-bar "rise-reach-settle" flute hook (D ^ G ^ A-B | A v G-E),
 // sequenced up a third in bar 3, re-stated higher in A', re-harmonized over
 // Cm in bar 14/28, and inverted in feel through the B section.
 // The world leitmotif (C E G A G E) appears ONCE, transposed to G major
 // (G B D E D B) in the harp at bar 16, filling the lead's breath.
-// Counterpoint: harp answers the flute in its gaps (call-and-response).
-// Bass: cello half-note roots with walking approach tones and one octave pop.
-// Birdsong: sparse ocarina flicks at vel 2-3, octave 6, 8-bar ostinato.
-// No drums — the meadow stays quiet.
 import { Track, seq, P } from './notation';
 
 export const track: Track = {
   name: 'Quiet Meadow', bpm: 64, loopBars: 32,
   channels: [
-    // Lead — pan flute, the hook. 32 bars (256 steps); defines the loop.
-    { program: P.PAN_FLUTE, gain: 0.17, octave: 5, wave: 'triangle', pan: 0, notes: seq(
+    // Lead — breathy OSRS flute, the hook. 32 bars (256 steps); defines the loop.
+    { program: P.FLUTE, gain: 0.16, octave: 5, wave: 'triangle', pan: 0, notes: seq(
       // A — theme
       'D:4 -   G:6 -   A:5 B:7 -   -  ' + //  1 G    motif a: rise, reach
       'A:6 -   G:5 E:4 G:5 -   -   -  ' + //  2 Cmaj7 settle
@@ -58,7 +61,7 @@ export const track: Track = {
       'G:6 -   -   -   -   -   D:3 -  '   // 32 G    pickup D loops into bar 1
     ) },
     // Counter — harp answering in the lead's gaps; carries the leitmotif once.
-    { program: P.HARP, gain: 0.11, octave: 4, wave: 'sine', pan: -0.4, notes: seq(
+    { program: P.HARP, gain: 0.13, octave: 4, wave: 'sine', pan: -0.4, notes: seq(
       '.   .   .   .   .   .   B:3 .  ' + //  1
       '.   .   .   .   A:4 G:3 E:3 -  ' + //  2 echo of the settle
       '.   .   .   .   .   .   E:3 .  ' + //  3
@@ -92,8 +95,8 @@ export const track: Track = {
       'D:3 -   F#:3 -  A:4 -   C5:3 - ' + // 31
       'G:4 -   D:3 -   B3:2 -  -   -  '   // 32 fading roll into the seam
     ) },
-    // Pad — slow string swells, one guide tone per bar (mostly chord thirds).
-    { program: P.SLOW_STRINGS, gain: 0.07, octave: 4, wave: 'sine', pan: 0.3, notes: seq(
+    // Pad — lush slow string swells, one guide tone per bar (mostly chord thirds).
+    { program: P.SLOW_STRINGS, gain: 0.08, octave: 4, wave: 'sine', pan: 0.3, notes: seq(
       'B3:3 - - - - - - -   E:3 - - - - - - -   G:3 - - - - - - -   F#:3 - - - - - - - ' + //  1-4
       'B3:3 - - - - - - -   C:3 - - - - - - -   E:3 - - - - - - -   F#:3 - - - - - - - ' + //  5-8
       'D:4 - - - - - - -    E:3 - - - - - - -   G:3 - - - - - - -   F#:3 - - - - - - - ' + //  9-12
@@ -103,7 +106,18 @@ export const track: Track = {
       'B3:3 - - - - - - -   E:3 - - - - - - -   G:3 - - - - - - -   D#:3 - - - - - - - ' + // 25-28
       'B3:4 - - - - - - -   E:4 - - - - - - -   F#:3 - - - - - - -  B3:2 - - - - - - - '   // 29-32
     ) },
-    // Bass — cello, moving half-note line with walking approach tones.
+    // Halo — soft choir oohs on chord roots/fifths, two-bar breaths under the pad.
+    { program: P.VOICE_OOH, gain: 0.06, octave: 4, wave: 'sine', pan: -0.2, notes: seq(
+      'G:2 - - - - - - -   - - - - - - - -    G:2 - - - - - - -   D:2 - - - - - - -  ' + //  1-4  G..  Em D
+      'D:2 - - - - - - -   - - - - - - - -    G:2 - - - - - - -   A:2 - - - - - - -  ' + //  5-8  G..  C  D
+      'G:2 - - - - - - -   - - - - - - - -    B3:2 - - - - - - -  -  - - - - - - -   ' + //  9-12 G..  Em Bm
+      'G:2 - - - - - - -   G:2 - - - - - - -  A:2 - - - - - - -   D:2 - - - - - - -  ' + // 13-16 C Cm D G
+      'E:2 - - - - - - -   - - - - - - - -    D:2 - - - - - - -   A:2 - - - - - - -  ' + // 17-20 Em.. G/B D
+      'B3:2 - - - - - - -  A#3:2 - - - - - - - A:2 - - - - - - -  F#:2 - - - - - - - ' + // 21-24 Em Bb Am D
+      'G:2 - - - - - - -   - - - - - - - -    G:2 - - - - - - -   C:2 - - - - - - -  ' + // 25-28 G.. Em Cm
+      'D:2 - - - - - - -   C:2 - - - - - - -  A:2 - - - - - - -   G:2 - - - - - - -  '   // 29-32 G C D G
+    ) },
+    // Bass — woody cello, moving half-note line with walking approach tones.
     { program: P.CELLO, gain: 0.12, octave: 2, wave: 'sine', pan: 0, notes: seq(
       'G:5 -  - - D3:3 -  -    -   ' + //  1 G
       'C3:5 - - - G:3 -   -    -   ' + //  2 C
@@ -138,8 +152,8 @@ export const track: Track = {
       'D3:5 - - - A:3 -   C3:3 -   ' + // 31 D
       'G:5 -  - - D:3 -   -    -   '   // 32 G, low D breath before the loop
     ) },
-    // Birdsong — ocarina flicks, octave 6, G-pentatonic, 8-bar ostinato (loops 4x).
-    { program: P.OCARINA, gain: 0.05, octave: 6, wave: 'sine', pan: 0.5, notes: seq(
+    // Sparkle — celesta flicks where the birdsong was, G-pentatonic, 8-bar ostinato.
+    { program: P.CELESTA, gain: 0.06, octave: 6, wave: 'sine', pan: 0.5, notes: seq(
       '.   .   .   .   .   .   G:2 A:3 ' +
       'B:2 .   .   .   .   .   .   .   ' +
       '.   .   .   .   D:2 E:3 D:2 .   ' +

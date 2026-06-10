@@ -1,4 +1,4 @@
-// Boot: login/offline bootstrap -> init -> 600ms tick loop + render loop.
+// Boot: login bootstrap (server required) -> init -> 600ms tick loop + render loop.
 
 import { initGame, gameTick, state, saveGame } from './game';
 import './content';
@@ -17,7 +17,8 @@ let lastRegionTrack = '';
 let booted = false;
 
 async function boot() {
-  // net.bootstrap shows login/register/offline UI and resolves with the save (or null)
+  // net.bootstrap shows the login/register UI and only resolves once a server
+  // session exists (the world sim lives on the server — no offline play)
   const save = await net.bootstrap();
   initGame(save);
   buildMinimapBase();

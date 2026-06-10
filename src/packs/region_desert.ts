@@ -4,8 +4,8 @@
 // (palisade 24-36/195-205); nomad tent 10-15/176-181; gem_stall at 17,178;
 // fire_altar at 50,180. Imported for side effects via src/packs/index.ts.
 import {
-  state, events, msg, level, saveGame,
-  registerNpcSpawn, registerNpcAction, registerObjectAction, registerTickHook,
+  state, events, msg, level,
+  registerNpcAction, registerObjectAction, registerFx, registerDamageModifier,
   startDialogue, openShop,
   addItem, removeItem, invCount, freeSlots, addXp,
   Npc,
@@ -31,25 +31,7 @@ function stunPlayer(dmg: number, ticks: number) {
   events.onStatsChange();
 }
 
-// ---------------- Spawns ----------------
-// Scorpions roam the open sand, away from the camp interior (24-36/195-205).
-registerNpcSpawn('scorpion', 36, 180);
-registerNpcSpawn('scorpion', 52, 196);
-registerNpcSpawn('scorpion', 14, 206);
-registerNpcSpawn('scorpion', 58, 208);
-
-// Desert bandits loiter around (not inside) the camp palisade.
-registerNpcSpawn('desert_bandit', 28, 190);
-registerNpcSpawn('desert_bandit', 40, 199);
-registerNpcSpawn('desert_bandit', 24, 209);
-registerNpcSpawn('desert_bandit', 34, 208);
-
-// Nomad Zahra inside her tent; the gem trader minds the stall beside it.
-registerNpcSpawn('desert_nomad', 13, 178);
-registerNpcSpawn('gem_trader', 18, 178);
-
-// Saif the Red Smile holds court in the camp's clear centre.
-registerNpcSpawn('bandit_king', 30, 200);
+// Spawns live in data/spawns.json (server-authoritative world).
 
 // ---------------- Nomad Zahra ----------------
 registerNpcAction('desert_nomad', 'Trade', (_n: Npc) => {
@@ -151,101 +133,15 @@ registerObjectAction('fire_altar', 'Craft-rune', () => {
 });
 
 // ---------------- Bandit king: Saif the Red Smile ----------------
-// Blade flurry every ~7 ticks while in melee: telegraph, then two rapid hits
-// of up to 5 each. On first engagement he whistles a nearby bandit onto you.
-interface FlurryState { ticksInCombat: number; telegraphed: boolean; calledHelp: boolean; }
-const flurryStates = new WeakMap<Npc, FlurryState>();
+// Blade flurry + call-for-help run server-side (server/bosses.ts); this pack
+// renders the fx events.
+registerFx('saif_telegraph', () => msg('Saif twirls his blades...'));
+registerFx('saif_miss', () => msg('Saif\'s blades carve only sunlight.'));
+registerFx('saif_call', () => msg('Saif whistles sharply — a desert bandit answers his king\'s call!'));
 
-const FLURRY_INTERVAL = 7;
-const FLURRY_MAX = 5; // per hit, two hits
-
-function playerDeathFallback() {
-  // Mirror game.ts playerDeath (not exported): die, then respawn at 22,38.
-  const p = state.player;
-  p.dead = true;
-  p.curHp = 0;
-  p.activePrayers.clear();
-  msg('Oh dear, you are dead!');
-  window.setTimeout(() => {
-    p.x = 22; p.y = 38; p.prevX = 22; p.prevY = 38;
-    p.path = []; p.action = null;
-    p.curHp = level('Hitpoints');
-    p.dead = false;
-    p.energy = 100;
-    for (const n of state.npcs) if (n.target === 'player') n.target = null;
-    events.onStatsChange();
-    saveGame();
-  }, 2000);
-}
-
-function applyFlurryDamage() {
-  const p = state.player;
-  if (p.dead) return;
-  let total = 0;
-  for (let i = 0; i < 2; i++) {
-    if (p.curHp - total <= 0) break;
-    total += randInt(1, FLURRY_MAX);
-  }
-  p.curHp -= total;
-  p.hitsplat = { dmg: total, until: performance.now() + 900 };
+registerDamageModifier('saif_flurry', (dmg) => {
   msg('Saif\'s twin blades bite twice in a blur!');
-  audio.sfx('hit');
-  events.onStatsChange();
-  if (p.curHp <= 0) playerDeathFallback();
-}
-
-function callNearestBandit(king: Npc) {
-  let best: Npc | null = null;
-  let bestDist = Infinity;
-  for (const n of state.npcs) {
-    if (n.def.id !== 'desert_bandit' || n.dead || n.target === 'player') continue;
-    const d = Math.abs(n.x - king.x) + Math.abs(n.y - king.y);
-    if (d < bestDist) { bestDist = d; best = n; }
-  }
-  if (best) {
-    best.target = 'player';
-    msg('Saif whistles sharply — a desert bandit answers his king\'s call!');
-  }
-}
-
-registerTickHook(() => {
-  for (const n of state.npcs) {
-    if (n.def.id !== 'bandit_king') continue;
-    if (n.dead) { flurryStates.delete(n); continue; }
-
-    let s = flurryStates.get(n);
-    if (!s) { s = { ticksInCombat: 0, telegraphed: false, calledHelp: false }; flurryStates.set(n, s); }
-
-    if (n.target !== 'player' || state.player.dead) {
-      s.ticksInCombat = 0;
-      s.telegraphed = false;
-      if (n.target !== 'player') s.calledHelp = false;
-      continue;
-    }
-
-    if (!s.calledHelp) {
-      s.calledHelp = true;
-      callNearestBandit(n);
-    }
-
-    // Resolve a telegraphed flurry from the previous tick.
-    if (s.telegraphed) {
-      s.telegraphed = false;
-      const p = state.player;
-      const adjacent = Math.abs(p.x - n.x) <= 1 && Math.abs(p.y - n.y) <= 1
-        && !(p.x === n.x && p.y === n.y);
-      if (adjacent) applyFlurryDamage();
-      else msg('Saif\'s blades carve only sunlight.');
-      s.ticksInCombat = 0;
-      continue;
-    }
-
-    s.ticksInCombat++;
-    if (s.ticksInCombat >= FLURRY_INTERVAL) {
-      msg('Saif twirls his blades...');
-      s.telegraphed = true;
-    }
-  }
+  return dmg;
 });
 
 // ---------------- Look-at flavor ----------------

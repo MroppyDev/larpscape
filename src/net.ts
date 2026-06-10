@@ -1,7 +1,12 @@
-// Network layer: login/register UI, server save provider, presence websocket, chat relay.
-// Contract (SPEC.md Phase 5 "net.ts contract"). Offline mode always keeps working.
+// Network layer: login/register UI, server save provider, world-state
+// websocket (NPCs/combat/ground items are server-authoritative), chat relay.
+// Login is REQUIRED: there is no offline mode — the world lives on the server.
 
-import { state, msg, setSaveProvider } from './game';
+import {
+  state, msg, setSaveProvider, netLink, combatSnapshot,
+  netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
+  netYouKilled, netGot, netFx, netShorn, netDeny,
+} from './game';
 import type { RemotePlayer } from './game';
 
 const TOKEN_KEY = 'bs-token';
@@ -116,6 +121,7 @@ let posTimer: ReturnType<typeof setInterval> | null = null;
 let lastSentX = -1;
 let lastSentY = -1;
 let lastSentApp = '';
+let lastSentStats = '';
 
 function currentApp(): Record<string, string | null> {
   const app: Record<string, string | null> = {};
@@ -174,6 +180,26 @@ function handleWsMessage(raw: string) {
   if (!m || typeof m !== 'object') return;
   if (m.t === 'players' && Array.isArray(m.players)) {
     handlePlayers(m.players);
+  } else if (m.t === 'world') {
+    netWorldSnapshot(m); // full NPC + ground resync (connect/reconnect)
+  } else if (m.t === 'w') {
+    netWorldDelta(m); // per-tick NPC/ground deltas
+  } else if (m.t === 'hit') {
+    netHit(m);
+  } else if (m.t === 'youHit') {
+    netYouHit(m);
+  } else if (m.t === 'npcHitYou') {
+    netNpcHitYou(m);
+  } else if (m.t === 'youKilled') {
+    netYouKilled(m);
+  } else if (m.t === 'got') {
+    netGot(m);
+  } else if (m.t === 'fx') {
+    netFx(m);
+  } else if (m.t === 'shorn') {
+    netShorn();
+  } else if (m.t === 'deny') {
+    netDeny(m);
   } else if (m.t === 'chat' && typeof m.text === 'string') {
     const from = typeof m.from === 'string' ? m.from : '???';
     msg(from + ': ' + m.text, 'player-msg');
@@ -197,10 +223,12 @@ function openWs() {
   }
   ws.onopen = () => {
     wsBackoff = 1000;
-    lastSentX = -1; lastSentY = -1; lastSentApp = ''; // force a fresh pos send
+    lastSentX = -1; lastSentY = -1; lastSentApp = ''; lastSentStats = ''; // force fresh sends
+    netLink.send = (m) => wsSend(m); // game.ts intents (swing/pickup/drop/interact)
+    if (state.player) wsSend(combatSnapshot());
   };
   ws.onmessage = (ev) => { if (typeof ev.data === 'string') handleWsMessage(ev.data); };
-  ws.onclose = () => { ws = null; scheduleReconnect(); };
+  ws.onclose = () => { ws = null; netLink.send = null; scheduleReconnect(); };
   ws.onerror = () => { try { ws?.close(); } catch { /* ignore */ } };
 }
 
@@ -222,7 +250,14 @@ function startPresence() {
       const appKey = JSON.stringify(app);
       if (x !== lastSentX || y !== lastSentY || appKey !== lastSentApp) {
         lastSentX = x; lastSentY = y; lastSentApp = appKey;
-        wsSend({ t: 'pos', x, y, app });
+        wsSend({ t: 'pos', x, y, app, d: state.player.dead });
+      }
+      // combat stats snapshot (server uses it for aggro + retaliation rolls)
+      const stats = combatSnapshot();
+      const statsKey = JSON.stringify(stats);
+      if (statsKey !== lastSentStats) {
+        lastSentStats = statsKey;
+        wsSend(stats);
       }
     }, 600);
   }
@@ -248,7 +283,6 @@ function buildLoginPanel(): {
   pass: HTMLInputElement;
   loginBtn: HTMLButtonElement;
   regBtn: HTMLButtonElement;
-  offBtn: HTMLButtonElement;
   err: HTMLDivElement;
 } {
   const style = document.createElement('style');
@@ -278,7 +312,6 @@ function buildLoginPanel(): {
     <div class="bs-login-row">
       <button id="bs-login-go">Login</button>
       <button id="bs-login-reg">Register</button>
-      <button id="bs-login-off">Play offline</button>
     </div>
     <div class="bs-login-err" id="bs-login-err"></div>
   `;
@@ -299,7 +332,6 @@ function buildLoginPanel(): {
     pass: panel.querySelector('#bs-login-pass') as HTMLInputElement,
     loginBtn: panel.querySelector('#bs-login-go') as HTMLButtonElement,
     regBtn: panel.querySelector('#bs-login-reg') as HTMLButtonElement,
-    offBtn: panel.querySelector('#bs-login-off') as HTMLButtonElement,
     err: panel.querySelector('#bs-login-err') as HTMLDivElement,
   };
 }
@@ -336,13 +368,14 @@ async function bootstrap(): Promise<any | null> {
     } catch (e: any) {
       net.token = null;
       if (e instanceof TypeError || /fetch/i.test(String(e?.message))) {
-        // server unreachable: keep the buttons but fall straight to offline play
-        ui.err.textContent = 'Server unreachable, playing offline.';
-        return null;
+        // server unreachable: the world lives on the server, so all we can do
+        // is ask the player to retry from the login form
+        ui.err.textContent = 'Server unreachable — please try again in a moment.';
+      } else {
+        // token invalid/expired — clear and show the form
+        try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
+        ui.err.textContent = 'Session expired — please log in again.';
       }
-      // token invalid/expired — clear and show the form
-      try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
-      ui.err.textContent = 'Session expired — please log in again.';
     }
   }
 
@@ -357,7 +390,6 @@ async function bootstrap(): Promise<any | null> {
     const setBusy = (busy: boolean) => {
       ui.loginBtn.disabled = busy;
       ui.regBtn.disabled = busy;
-      ui.offBtn.disabled = busy;
     };
 
     const attempt = async (path: '/api/login' | '/api/register') => {
@@ -381,7 +413,7 @@ async function bootstrap(): Promise<any | null> {
       } catch (e: any) {
         net.token = null;
         ui.err.textContent =
-          e instanceof TypeError ? 'Server unreachable — try Play offline.'
+          e instanceof TypeError ? 'Server unreachable — please try again in a moment.'
           : String(e?.message || 'Login failed.');
       } finally {
         setBusy(false);
@@ -393,9 +425,6 @@ async function bootstrap(): Promise<any | null> {
     ui.pass.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') void attempt('/api/login');
     });
-    ui.offBtn.addEventListener('click', () => {
-      ui.panel.remove();
-      finish(null); // leave the local save provider in place
-    });
+    // no offline mode: bootstrap only resolves once a session exists
   });
 }

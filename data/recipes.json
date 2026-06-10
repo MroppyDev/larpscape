@@ -1,0 +1,1005 @@
+{
+  "cookables": [
+    {
+      "raw": "raw_shrimps",
+      "cooked": "shrimps",
+      "burnt": "burnt_fish",
+      "level": 1,
+      "xp": 30,
+      "stopBurn": 34
+    },
+    {
+      "raw": "raw_anchovies",
+      "cooked": "anchovies",
+      "burnt": "burnt_fish",
+      "level": 1,
+      "xp": 30,
+      "stopBurn": 34
+    },
+    {
+      "raw": "raw_sardine",
+      "cooked": "sardine",
+      "burnt": "burnt_fish",
+      "level": 1,
+      "xp": 40,
+      "stopBurn": 38
+    },
+    {
+      "raw": "raw_herring",
+      "cooked": "herring",
+      "burnt": "burnt_fish",
+      "level": 5,
+      "xp": 50,
+      "stopBurn": 41
+    },
+    {
+      "raw": "raw_beef",
+      "cooked": "cooked_meat",
+      "burnt": "burnt_meat",
+      "level": 1,
+      "xp": 30,
+      "stopBurn": 31
+    },
+    {
+      "raw": "raw_chicken",
+      "cooked": "cooked_chicken",
+      "burnt": "burnt_meat",
+      "level": 1,
+      "xp": 30,
+      "stopBurn": 31
+    },
+    {
+      "raw": "raw_bird_meat",
+      "cooked": "roast_bird_meat",
+      "burnt": "burnt_meat",
+      "level": 1,
+      "xp": 30,
+      "stopBurn": 30
+    },
+    {
+      "raw": "raw_lobster",
+      "cooked": "lobster",
+      "burnt": "burnt_fish",
+      "level": 40,
+      "xp": 120,
+      "stopBurn": 74
+    },
+    {
+      "raw": "raw_swordfish",
+      "cooked": "swordfish",
+      "burnt": "burnt_fish",
+      "level": 45,
+      "xp": 140,
+      "stopBurn": 86
+    },
+    {
+      "raw": "raw_shark",
+      "cooked": "shark",
+      "burnt": "burnt_fish",
+      "level": 80,
+      "xp": 210,
+      "stopBurn": 94
+    }
+  ],
+  "smeltables": [
+    {
+      "bar": "bronze_bar",
+      "level": 1,
+      "xp": 6.2,
+      "inputs": [
+        {
+          "item": "copper_ore",
+          "qty": 1
+        },
+        {
+          "item": "tin_ore",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "bar": "iron_bar",
+      "level": 15,
+      "xp": 12.5,
+      "inputs": [
+        {
+          "item": "iron_ore",
+          "qty": 1
+        }
+      ],
+      "successChance": 0.5
+    },
+    {
+      "bar": "steel_bar",
+      "level": 30,
+      "xp": 17.5,
+      "inputs": [
+        {
+          "item": "iron_ore",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "bar": "mithril_bar",
+      "level": 50,
+      "xp": 30,
+      "inputs": [
+        {
+          "item": "mithril_ore",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 4
+        }
+      ]
+    },
+    {
+      "bar": "adamantite_bar",
+      "level": 70,
+      "xp": 37.5,
+      "inputs": [
+        {
+          "item": "adamantite_ore",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 6
+        }
+      ]
+    },
+    {
+      "bar": "gold_bar",
+      "level": 40,
+      "xp": 22.5,
+      "inputs": [
+        {
+          "item": "gold_ore",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "bar": "rune_bar",
+      "level": 85,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "runite_ore",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 8
+        }
+      ]
+    }
+  ],
+  "smithables": [
+    {
+      "output": "bronze_arrowtips",
+      "outputQty": 15,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 5,
+      "xp": 12.5
+    },
+    {
+      "output": "nails",
+      "outputQty": 15,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 4,
+      "xp": 12.5
+    },
+    {
+      "output": "bronze_sword",
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 4,
+      "xp": 12.5
+    },
+    {
+      "output": "bronze_scimitar",
+      "bar": "bronze_bar",
+      "bars": 2,
+      "level": 5,
+      "xp": 25
+    },
+    {
+      "output": "bronze_full_helm",
+      "bar": "bronze_bar",
+      "bars": 2,
+      "level": 7,
+      "xp": 25
+    },
+    {
+      "output": "bronze_kiteshield",
+      "bar": "bronze_bar",
+      "bars": 3,
+      "level": 12,
+      "xp": 37.5
+    },
+    {
+      "output": "bronze_platelegs",
+      "bar": "bronze_bar",
+      "bars": 3,
+      "level": 16,
+      "xp": 37.5
+    },
+    {
+      "output": "bronze_platebody",
+      "bar": "bronze_bar",
+      "bars": 5,
+      "level": 18,
+      "xp": 62.5
+    },
+    {
+      "output": "iron_arrowtips",
+      "outputQty": 15,
+      "bar": "iron_bar",
+      "bars": 1,
+      "level": 20,
+      "xp": 25
+    },
+    {
+      "output": "iron_sword",
+      "bar": "iron_bar",
+      "bars": 1,
+      "level": 19,
+      "xp": 25
+    },
+    {
+      "output": "iron_scimitar",
+      "bar": "iron_bar",
+      "bars": 2,
+      "level": 20,
+      "xp": 50
+    },
+    {
+      "output": "iron_full_helm",
+      "bar": "iron_bar",
+      "bars": 2,
+      "level": 22,
+      "xp": 50
+    },
+    {
+      "output": "iron_kiteshield",
+      "bar": "iron_bar",
+      "bars": 3,
+      "level": 27,
+      "xp": 75
+    },
+    {
+      "output": "iron_platelegs",
+      "bar": "iron_bar",
+      "bars": 3,
+      "level": 31,
+      "xp": 75
+    },
+    {
+      "output": "iron_platebody",
+      "bar": "iron_bar",
+      "bars": 5,
+      "level": 33,
+      "xp": 125
+    },
+    {
+      "output": "steel_sword",
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 34,
+      "xp": 37.5
+    },
+    {
+      "output": "steel_scimitar",
+      "bar": "steel_bar",
+      "bars": 2,
+      "level": 35,
+      "xp": 75
+    },
+    {
+      "output": "steel_full_helm",
+      "bar": "steel_bar",
+      "bars": 2,
+      "level": 37,
+      "xp": 75
+    },
+    {
+      "output": "steel_kiteshield",
+      "bar": "steel_bar",
+      "bars": 3,
+      "level": 42,
+      "xp": 112.5
+    },
+    {
+      "output": "steel_platelegs",
+      "bar": "steel_bar",
+      "bars": 3,
+      "level": 46,
+      "xp": 112.5
+    },
+    {
+      "output": "steel_platebody",
+      "bar": "steel_bar",
+      "bars": 5,
+      "level": 48,
+      "xp": 187.5
+    },
+    {
+      "output": "mithril_sword",
+      "bar": "mithril_bar",
+      "bars": 1,
+      "level": 54,
+      "xp": 50
+    },
+    {
+      "output": "mithril_arrowtips",
+      "outputQty": 15,
+      "bar": "mithril_bar",
+      "bars": 1,
+      "level": 55,
+      "xp": 50
+    },
+    {
+      "output": "mithril_scimitar",
+      "bar": "mithril_bar",
+      "bars": 2,
+      "level": 55,
+      "xp": 100
+    },
+    {
+      "output": "mithril_full_helm",
+      "bar": "mithril_bar",
+      "bars": 2,
+      "level": 57,
+      "xp": 100
+    },
+    {
+      "output": "mithril_kiteshield",
+      "bar": "mithril_bar",
+      "bars": 3,
+      "level": 62,
+      "xp": 150
+    },
+    {
+      "output": "mithril_platelegs",
+      "bar": "mithril_bar",
+      "bars": 3,
+      "level": 66,
+      "xp": 150
+    },
+    {
+      "output": "mithril_platebody",
+      "bar": "mithril_bar",
+      "bars": 5,
+      "level": 68,
+      "xp": 250
+    },
+    {
+      "output": "adamant_sword",
+      "bar": "adamantite_bar",
+      "bars": 1,
+      "level": 74,
+      "xp": 62.5
+    },
+    {
+      "output": "adamant_arrowtips",
+      "outputQty": 15,
+      "bar": "adamantite_bar",
+      "bars": 1,
+      "level": 75,
+      "xp": 62.5
+    },
+    {
+      "output": "adamant_scimitar",
+      "bar": "adamantite_bar",
+      "bars": 2,
+      "level": 75,
+      "xp": 125
+    },
+    {
+      "output": "adamant_full_helm",
+      "bar": "adamantite_bar",
+      "bars": 2,
+      "level": 77,
+      "xp": 125
+    },
+    {
+      "output": "adamant_kiteshield",
+      "bar": "adamantite_bar",
+      "bars": 3,
+      "level": 82,
+      "xp": 187.5
+    },
+    {
+      "output": "adamant_platelegs",
+      "bar": "adamantite_bar",
+      "bars": 3,
+      "level": 86,
+      "xp": 187.5
+    },
+    {
+      "output": "adamant_platebody",
+      "bar": "adamantite_bar",
+      "bars": 5,
+      "level": 88,
+      "xp": 312.5
+    },
+    {
+      "output": "rune_sword",
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 85,
+      "xp": 75
+    },
+    {
+      "output": "rune_arrowtips",
+      "outputQty": 15,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 86,
+      "xp": 75
+    },
+    {
+      "output": "rune_scimitar",
+      "bar": "rune_bar",
+      "bars": 2,
+      "level": 87,
+      "xp": 150
+    },
+    {
+      "output": "rune_full_helm",
+      "bar": "rune_bar",
+      "bars": 2,
+      "level": 89,
+      "xp": 150
+    },
+    {
+      "output": "rune_kiteshield",
+      "bar": "rune_bar",
+      "bars": 3,
+      "level": 93,
+      "xp": 225
+    },
+    {
+      "output": "rune_platelegs",
+      "bar": "rune_bar",
+      "bars": 3,
+      "level": 96,
+      "xp": 225
+    },
+    {
+      "output": "rune_platebody",
+      "bar": "rune_bar",
+      "bars": 5,
+      "level": 99,
+      "xp": 375
+    }
+  ],
+  "fletchables": [
+    {
+      "output": "arrow_shaft",
+      "outputQty": 15,
+      "level": 1,
+      "xp": 5,
+      "inputs": [
+        {
+          "item": "logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "headless_arrow",
+      "outputQty": 15,
+      "level": 1,
+      "xp": 15,
+      "inputs": [
+        {
+          "item": "arrow_shaft",
+          "qty": 15
+        },
+        {
+          "item": "feather",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "bronze_arrow",
+      "outputQty": 15,
+      "level": 1,
+      "xp": 19.5,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "bronze_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "iron_arrow",
+      "outputQty": 15,
+      "level": 15,
+      "xp": 37.5,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "iron_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "mithril_arrow",
+      "outputQty": 15,
+      "level": 45,
+      "xp": 112.5,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "mithril_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "adamant_arrow",
+      "outputQty": 15,
+      "level": 60,
+      "xp": 150,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "adamant_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "shortbow_u",
+      "level": 5,
+      "xp": 5,
+      "inputs": [
+        {
+          "item": "logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "shortbow",
+      "level": 5,
+      "xp": 5,
+      "inputs": [
+        {
+          "item": "shortbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "oak_shortbow",
+      "level": 20,
+      "xp": 33,
+      "inputs": [
+        {
+          "item": "oak_logs",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "rune_arrow",
+      "outputQty": 15,
+      "level": 75,
+      "xp": 187.5,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "rune_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "maple_shortbow_u",
+      "level": 50,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "maple_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "maple_shortbow",
+      "level": 50,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "maple_shortbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "yew_shortbow_u",
+      "level": 65,
+      "xp": 67.5,
+      "inputs": [
+        {
+          "item": "yew_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "yew_shortbow",
+      "level": 65,
+      "xp": 67.5,
+      "inputs": [
+        {
+          "item": "yew_shortbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "magic_shortbow_u",
+      "level": 80,
+      "xp": 83.3,
+      "inputs": [
+        {
+          "item": "magic_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "magic_shortbow",
+      "level": 80,
+      "xp": 83.3,
+      "inputs": [
+        {
+          "item": "magic_shortbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "craftables": [
+    {
+      "output": "ball_of_wool",
+      "level": 1,
+      "xp": 2.5,
+      "inputs": [
+        {
+          "item": "wool",
+          "qty": 1
+        }
+      ],
+      "station": "spinning_wheel"
+    },
+    {
+      "output": "bowstring",
+      "level": 10,
+      "xp": 15,
+      "inputs": [
+        {
+          "item": "flax",
+          "qty": 1
+        }
+      ],
+      "station": "spinning_wheel"
+    },
+    {
+      "output": "leather_gloves",
+      "level": 1,
+      "xp": 13.8,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "leather_boots",
+      "level": 7,
+      "xp": 16.2,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "leather_body",
+      "level": 14,
+      "xp": 25,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "gold_ring",
+      "level": 5,
+      "xp": 15,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "gold_amulet",
+      "level": 8,
+      "xp": 30,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "sapphire_ring",
+      "level": 20,
+      "xp": 40,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "sapphire",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "sapphire_amulet",
+      "level": 24,
+      "xp": 65,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "sapphire",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "ruby_ring",
+      "level": 34,
+      "xp": 70,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "ruby",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "ruby_amulet",
+      "level": 50,
+      "xp": 85,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "ruby",
+          "qty": 1
+        }
+      ],
+      "station": null
+    }
+  ],
+  "gemCuts": [
+    {
+      "uncut": "uncut_sapphire",
+      "cut": "sapphire",
+      "level": 20,
+      "xp": 50
+    },
+    {
+      "uncut": "uncut_emerald",
+      "cut": "emerald",
+      "level": 27,
+      "xp": 67.5
+    },
+    {
+      "uncut": "uncut_ruby",
+      "cut": "ruby",
+      "level": 34,
+      "xp": 85
+    }
+  ],
+  "herbs": [
+    {
+      "grimy": "grimy_guam",
+      "clean": "guam_leaf",
+      "level": 3,
+      "xp": 2.5
+    },
+    {
+      "grimy": "grimy_marrentill",
+      "clean": "marrentill",
+      "level": 5,
+      "xp": 3.8
+    },
+    {
+      "grimy": "grimy_ranarr",
+      "clean": "ranarr_weed",
+      "level": 25,
+      "xp": 7.5
+    },
+    {
+      "grimy": "grimy_irit",
+      "clean": "irit_leaf",
+      "level": 40,
+      "xp": 8.8
+    }
+  ],
+  "potions": [
+    {
+      "output": "attack_potion",
+      "level": 3,
+      "xp": 25,
+      "herb": "guam_leaf",
+      "secondary": "eye_of_newt"
+    },
+    {
+      "output": "defence_potion",
+      "level": 9,
+      "xp": 37.5,
+      "herb": "marrentill",
+      "secondary": "eye_of_newt"
+    },
+    {
+      "output": "prayer_potion",
+      "level": 38,
+      "xp": 87.5,
+      "herb": "ranarr_weed",
+      "secondary": "eye_of_newt"
+    },
+    {
+      "output": "super_attack",
+      "level": 45,
+      "xp": 100,
+      "herb": "irit_leaf",
+      "secondary": "eye_of_newt"
+    }
+  ],
+  "seeds": [
+    {
+      "seed": "potato_seed",
+      "produce": "potato",
+      "level": 1,
+      "plantXp": 8,
+      "harvestXp": 9,
+      "growTicks": 100
+    },
+    {
+      "seed": "cabbage_seed",
+      "produce": "cabbage",
+      "level": 7,
+      "plantXp": 10,
+      "harvestXp": 11.5,
+      "growTicks": 150
+    },
+    {
+      "seed": "sweetcorn_seed",
+      "produce": "sweetcorn",
+      "level": 20,
+      "plantXp": 17,
+      "harvestXp": 19,
+      "growTicks": 220
+    },
+    {
+      "seed": "watermelon_seed",
+      "produce": "watermelon",
+      "level": 47,
+      "plantXp": 48.5,
+      "harvestXp": 54.5,
+      "growTicks": 350
+    }
+  ],
+  "constructionBuilds": [
+    {
+      "name": "Crude chair",
+      "level": 1,
+      "xp": 58,
+      "planks": 2,
+      "nails": 2
+    },
+    {
+      "name": "Wooden chair",
+      "level": 8,
+      "xp": 87,
+      "planks": 3,
+      "nails": 3
+    },
+    {
+      "name": "Wooden table",
+      "level": 12,
+      "xp": 115,
+      "planks": 4,
+      "nails": 4
+    },
+    {
+      "name": "Wooden bookcase",
+      "level": 22,
+      "xp": 145,
+      "planks": 5,
+      "nails": 5
+    }
+  ]
+}

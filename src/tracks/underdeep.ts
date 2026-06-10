@@ -1,8 +1,11 @@
 // 'Underdeep' — the first cavern.
 //
-// D minor, 52 bpm, 32 bars. Vast and echoing: pan-flute fragments drift over
-// a halo-pad drone, a distant choir answers in the silences, contrabass
-// pedals with slow chromatic walks, deep toms loop an 8-bar heartbeat.
+// D minor, 52 bpm, 32 bars. OSRS-style cavern orchestration ("Underground" /
+// "Dunjun"): a breathy pan flute calls into the dark over lush slow strings,
+// dark choir oohs answer from the walls, contrabass pedals with slow chromatic
+// walks, a distant horn doubles the final restatement, celesta drips like
+// cave water, timpani rolls mark the section turns, deep toms loop an 8-bar
+// heartbeat.
 //
 // Motif: "call into the dark" — a rising D-F-G-A that hangs unresolved, then
 // falls back G-F-E-D like an echo dying out. Form: A (1-8) states it over
@@ -16,8 +19,8 @@ import { Track, seq, P } from './notation';
 export const track: Track = {
   name: 'Underdeep', bpm: 52, loopBars: 32,
   channels: [
-    // Lead — pan flute, slow fragments with long rests (full 32-bar form)
-    { program: P.PAN_FLUTE, gain: 0.17, octave: 4, wave: 'triangle', pan: 0.15, notes: seq(`
+    // Lead — breathy pan flute, slow fragments with long rests (full 32-bar form)
+    { program: P.PAN_FLUTE, gain: 0.16, octave: 4, wave: 'triangle', pan: 0.15, notes: seq(`
       D:5 - - - F:6 - - -
       G:7 - - - - - A:6 -
       A:7 - - - - - - -
@@ -50,9 +53,9 @@ export const track: Track = {
       . . . . . . . .
       . . . . A:4 - E:3 -
       D:4 - - - - - - -`) },
-    // Counter — distant choir answering in the phrase gaps; sings the world
+    // Counter — dark choir oohs answering in the phrase gaps; sings the world
     // leitmotif in minor (D F A Bb A F) at bars 29-31 as the lead falls silent.
-    { program: P.CHOIR, gain: 0.11, octave: 3, wave: 'sine', pan: -0.3, notes: seq(`
+    { program: P.VOICE_OOH, gain: 0.11, octave: 3, wave: 'sine', pan: -0.3, notes: seq(`
       . . . . . . . .
       . . . . . . . .
       . . . . D4:4 - C4:3 -
@@ -85,8 +88,8 @@ export const track: Track = {
       A4:5 - - - F4:4 - - -
       D4:3 - - - - - - -
       A:3 - - - - - - -`) },
-    // Drone — halo pad, one slow chord tone at a time, the cavern's breath
-    { program: P.HALO_PAD, gain: 0.08, octave: 3, wave: 'sine', pan: 0.25, notes: seq(`
+    // Drone — lush slow strings, one low chord tone at a time, the cavern's breath
+    { program: P.SLOW_STRINGS, gain: 0.09, octave: 3, wave: 'sine', pan: 0.25, notes: seq(`
       A:3 - - - - - - -
       - - - - - - - -
       F:3 - - - - - - -
@@ -119,7 +122,7 @@ export const track: Track = {
       - - - - - - - -
       A:2 - - - - - - -
       D:3 - - - - - - -`) },
-    // Bass — contrabass: long pedals broken by low octave drops and slow
+    // Bass — woody contrabass: long pedals broken by low octave drops and slow
     // chromatic walks (G -> G# -> A into the dominant; F -> G into Gm)
     { program: P.CONTRABASS, gain: 0.14, octave: 2, wave: 'sine', notes: seq(`
       D:6 - - - - - - -
@@ -154,9 +157,74 @@ export const track: Track = {
       - - - - - - - -
       A:4 - - - - - - -
       D:5 - - - - - - -`) },
+    // Distant horn — silent through A, sustains dark tones under the borrowed
+    // B-section chords, then doubles the A' restatement an octave below the lead
+    { program: P.HORN, gain: 0.09, octave: 3, wave: 'triangle', pan: -0.2, notes: seq(`
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      A:3 - - - - - - -
+      A#:4 - - - - - - -
+      F:4 - - - - - - -
+      - - - - - - - -
+      G#:4 - - - - - - -
+      - - - - - - - -
+      G:4 - - - - - - -
+      - - - - - - - -
+      A:4 - - - - - - -
+      - - - - - - C#:3 -
+      D4:5 - - - F4:6 - - -
+      G4:6 - - - - - A4:5 -
+      A4:7 - - - - - - -
+      G4:5 - F4:4 - E4:3 - - -
+      D4:4 - - - - - - -
+      . . . . . . . .
+      . . . . . . . .
+      D:3 - - - - - - -`) },
+    // Drips — celesta, water falling from the cavern roof (8-bar loop,
+    // D/F/A/E pitches that glint against whatever chord is below)
+    { program: P.CELESTA, gain: 0.07, octave: 5, wave: 'sine', pan: 0.4, notes: seq(`
+      . . . D6:3 . . . .
+      . . . . . . A:2 .
+      . . . . . . . .
+      F:3 . . . . . . .
+      . . . . . D6:2 . .
+      . . . . . . . .
+      . . E:2 . . . . .
+      . . . . . . A6:3 .`) },
+    // Timpani — soft rolls marking the section turns (16-bar loop: pickup
+    // into bars 8/24, dominant-to-tonic strokes into bars 16/32)
+    { program: P.TIMPANI, gain: 0.10, octave: 2, wave: 'sine', pan: -0.15, notes: seq(`
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . D:3 .
+      . . . . A:3 . A:4 .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      . . . . . . . .
+      A:4 . A:3 . D:5 - - -`) },
     // Percussion — deep toms, an 8-bar heartbeat that fills into each
     // section turn (loops independently beneath the 32-bar form)
-    { program: 0, gain: 0.07, octave: 3, wave: 'square', drums: true, pan: -0.1, notes: seq(`
+    { program: 0, gain: 0.08, octave: 3, wave: 'square', drums: true, pan: -0.1, notes: seq(`
       T:4 . . . . . . .
       . . . . . . T:2 .
       . . . . T:3 . . .

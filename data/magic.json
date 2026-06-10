@@ -1,0 +1,252 @@
+{
+  "spells": [
+    {
+      "id": "wind_strike",
+      "name": "Wind Strike",
+      "level": 1,
+      "xp": 5.5,
+      "maxHit": 2,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 1
+        },
+        {
+          "item": "mind_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "water_strike",
+      "name": "Water Strike",
+      "level": 5,
+      "xp": 7.5,
+      "maxHit": 4,
+      "runes": [
+        {
+          "item": "water_rune",
+          "qty": 1
+        },
+        {
+          "item": "air_rune",
+          "qty": 1
+        },
+        {
+          "item": "mind_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "earth_strike",
+      "name": "Earth Strike",
+      "level": 9,
+      "xp": 9.5,
+      "maxHit": 6,
+      "runes": [
+        {
+          "item": "earth_rune",
+          "qty": 2
+        },
+        {
+          "item": "air_rune",
+          "qty": 1
+        },
+        {
+          "item": "mind_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_strike",
+      "name": "Fire Strike",
+      "level": 13,
+      "xp": 11.5,
+      "maxHit": 8,
+      "runes": [
+        {
+          "item": "fire_rune",
+          "qty": 3
+        },
+        {
+          "item": "air_rune",
+          "qty": 2
+        },
+        {
+          "item": "mind_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "wind_bolt",
+      "name": "Wind Bolt",
+      "level": 17,
+      "xp": 13.5,
+      "maxHit": 9,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 2
+        },
+        {
+          "item": "chaos_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "water_bolt",
+      "name": "Water Bolt",
+      "level": 23,
+      "xp": 16.5,
+      "maxHit": 10,
+      "runes": [
+        {
+          "item": "water_rune",
+          "qty": 2
+        },
+        {
+          "item": "air_rune",
+          "qty": 2
+        },
+        {
+          "item": "chaos_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "earth_bolt",
+      "name": "Earth Bolt",
+      "level": 29,
+      "xp": 19.5,
+      "maxHit": 11,
+      "runes": [
+        {
+          "item": "earth_rune",
+          "qty": 3
+        },
+        {
+          "item": "air_rune",
+          "qty": 2
+        },
+        {
+          "item": "chaos_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_bolt",
+      "name": "Fire Bolt",
+      "level": 35,
+      "xp": 22.5,
+      "maxHit": 12,
+      "runes": [
+        {
+          "item": "fire_rune",
+          "qty": 4
+        },
+        {
+          "item": "air_rune",
+          "qty": 3
+        },
+        {
+          "item": "chaos_rune",
+          "qty": 1
+        }
+      ]
+    }
+  ],
+  "prayers": [
+    {
+      "id": "stout_skin",
+      "name": "Stout Skin",
+      "level": 1,
+      "drain": 1,
+      "boost": "defence",
+      "mult": 1.05
+    },
+    {
+      "id": "surge_of_might",
+      "name": "Surge of Might",
+      "level": 4,
+      "drain": 1,
+      "boost": "strength",
+      "mult": 1.05
+    },
+    {
+      "id": "keen_eye",
+      "name": "Keen Eye",
+      "level": 7,
+      "drain": 1,
+      "boost": "attack",
+      "mult": 1.05
+    },
+    {
+      "id": "stone_hide",
+      "name": "Stone Hide",
+      "level": 10,
+      "drain": 2,
+      "boost": "defence",
+      "mult": 1.1
+    },
+    {
+      "id": "giants_strength",
+      "name": "Giant's Strength",
+      "level": 13,
+      "drain": 2,
+      "boost": "strength",
+      "mult": 1.1
+    },
+    {
+      "id": "hawks_focus",
+      "name": "Hawk's Focus",
+      "level": 16,
+      "drain": 2,
+      "boost": "attack",
+      "mult": 1.1
+    }
+  ],
+  "slayerTargets": [
+    {
+      "npc": "chicken",
+      "level": 1
+    },
+    {
+      "npc": "cow",
+      "level": 1
+    },
+    {
+      "npc": "giant_rat",
+      "level": 1
+    },
+    {
+      "npc": "goblin",
+      "level": 1
+    },
+    {
+      "npc": "man",
+      "level": 3
+    },
+    {
+      "npc": "scorpion",
+      "level": 5
+    },
+    {
+      "npc": "ice_troll",
+      "level": 15
+    },
+    {
+      "npc": "magma_crawler",
+      "level": 30
+    },
+    {
+      "npc": "ash_fiend",
+      "level": 50
+    }
+  ]
+}

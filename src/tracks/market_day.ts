@@ -1,18 +1,22 @@
-// 'Market Day' — market bustle. Fast, busy, joyous.
+// 'Market Day' — market bustle. Fast, busy, joyous. OSRS faire-band scoring.
 // Form: A (8) A' (8, sequenced up a third, deceptive cadence) B (8, D minor,
-// lyrical lead over pedal bass while the xylophone takes the chatter) A'' (8,
+// lyrical lead over pedal bass while the harpsichord takes the chatter) A'' (8,
 // theme fortissimo, peak on high A, run back to the top). Key: F major.
 // Motif: "market call" — leap-and-chatter figure F-G-A...C6, answered a bar
-// later by the settle A-G-F-D. Xylophone answers the piccolo between phrases
-// (call-and-response between stalls). World leitmotif (C E G A G E) appears
-// transposed to F (F A C D C A) in the xylophone at the start of A''.
+// later by the settle A-G-F-D. Harpsichord answers the recorder between
+// phrases (call-and-response between stalls). World leitmotif (C E G A G E)
+// appears transposed to F (F A C D C A) in the harpsichord at the start of A''.
+// Orchestration ("Yesteryear"/"Faire" style): breathy recorder crier, plucky
+// harpsichord stall-keeper, lute-like nylon-guitar off-beat strums (picked
+// arpeggios in B), a soft accordion drone underneath, woody acoustic bass,
+// and tambourine/shaker/hand-drum street percussion.
 import { Track, seq, P } from './notation';
 
 export const track: Track = {
   name: 'Market Day', bpm: 150, loopBars: 32, swing: 0.16,
   channels: [
-    // ---- Piccolo lead (the crier) -------------------------------- 256 steps
-    { program: P.PICCOLO, gain: 0.18, octave: 5, wave: 'square', pan: 0.2,
+    // ---- Recorder lead (the crier) -------------------------------- 256 steps
+    { program: P.RECORDER, gain: 0.18, octave: 5, wave: 'square', pan: 0.2,
       notes: seq(
         // A — theme (bars 1-8): F Dm Gm C7 F D7 Gm-C7 F
         'F:6 .  F:5 G   A:7  .   C6:9 .  ' +
@@ -51,8 +55,8 @@ export const track: Track = {
         'G:6 Bb:7 D6:7 F6:8 E6:7 C6:6 Bb:5 G:4 ' +
         'F:7 -  A:5 C6:6 F6:8 -  -    .  ') },
 
-    // ---- Xylophone counter (the answering stall) ----------------- 256 steps
-    { program: P.XYLOPHONE, gain: 0.13, octave: 5, wave: 'triangle', pan: -0.4,
+    // ---- Harpsichord counter (the answering stall) ---------------- 256 steps
+    { program: P.HARPSICHORD, gain: 0.12, octave: 5, wave: 'sawtooth', pan: -0.4,
       notes: seq(
         // A — short answers in the lead's gaps
         '.  .  .  .  .  .    .    .   ' +
@@ -72,7 +76,7 @@ export const track: Track = {
         '.  .  .  C6:4 . A:4 .    F:4 ' +
         '.  .  .  .  .  .    .    .   ' +
         '.  .  .  .  .  D6:5 C6:4 A:4 ' +
-        // B — xylophone takes the chatter under the long lead notes
+        // B — harpsichord takes the chatter under the long lead notes
         '.  .  D:4 E:4 F:5  .    A:5  .  ' +
         '.  .  Bb:4 . D:5  .    F:5  .  ' +
         '.  .  G:4 A:4 Bb:5 .    D6:5 .  ' +
@@ -91,8 +95,8 @@ export const track: Track = {
         '.  .  .  .  .  .    .    .   ' +
         '.  .  .  .  .  C6:5 D6:5 E6:6') },
 
-    // ---- Accordion comp (off-beat stabs; sustains in B) ---------- 256 steps
-    { program: P.ACCORDION, gain: 0.07, octave: 4, wave: 'sawtooth', pan: 0.35,
+    // ---- Nylon guitar / lute (off-beat strums; picked arps in B) -- 256 steps
+    { program: P.NYLON_GUITAR, gain: 0.10, octave: 4, wave: 'triangle', pan: 0.35,
       notes: seq(
         // A: F Dm Gm C7 F D7 Gm-C7 F
         '.  A:4  .  C5:4 .  A:3  .  C5:4 ' +
@@ -112,15 +116,15 @@ export const track: Track = {
         '.  A:4  .  C5:4 .  A:3  .  C5:4 ' +
         '.  Bb:4 .  D5:4 .  E:4  .  Bb:4 ' +
         '.  F:4  .  A:4  .  F:3  .  A:4  ' +
-        // B: sustained guide tones (texture contrast)
-        'F:4  - - - - - - - ' +
-        'F:3  - - - - - - - ' +
-        'Bb:3 - - - - - - - ' +
-        'C#5:4 - - - - - - - ' +
-        'F:4  - - - - - - - ' +
-        'D:3  - - - - - - - ' +
-        'Bb:3 - - - - - - - ' +
-        'Bb:3 - - - C5:4 - - - ' +
+        // B: gentle picked arpeggios (lute texture under the lyrical lead)
+        'D3:4 .  A3:3 .  D:4  .  A3:3 .  ' +
+        'Bb2:4 . F3:3 .  Bb3:4 . F3:3 .  ' +
+        'G3:4 .  D:3  .  Bb3:4 . D:3  .  ' +
+        'A3:4 .  C#:3 .  G:4  .  E:3  .  ' +
+        'D3:4 .  A3:3 .  D:4  .  A3:3 .  ' +
+        'Bb2:4 . F3:3 .  Bb3:4 . F3:3 .  ' +
+        'G3:4 .  D:3  .  Bb3:4 . D:3  .  ' +
+        'G3:4 .  Bb3:4 . C:4  .  E:4  .  ' +
         // A'': F Dm Gm C7 Bb D7 Gm-C7 F
         '.  A:4  .  C5:4 .  A:3  .  C5:4 ' +
         '.  F:4  .  A:4  .  F:3  .  A:4  ' +
@@ -131,8 +135,48 @@ export const track: Track = {
         '.  Bb:4 .  D5:4 .  E:4  .  Bb:4 ' +
         '.  A:4  .  C5:5 .  A:4  .  C5:3 ') },
 
-    // ---- Pizzicato walking bass ---------------------------------- 256 steps
-    { program: P.PIZZICATO, gain: 0.17, octave: 3, wave: 'triangle', pan: -0.1,
+    // ---- Accordion drone (sustained guide tones, whole track) ----- 256 steps
+    { program: P.ACCORDION, gain: 0.06, octave: 4, wave: 'sawtooth', pan: -0.2,
+      notes: seq(
+        // A: F Dm Gm C7 F D7 Gm-C7 F
+        'A:3  - - - - - - - ' +
+        'F:3  - - - - - - - ' +
+        'Bb:3 - - - - - - - ' +
+        'E:3  - - - - - - - ' +
+        'A:3  - - - - - - - ' +
+        'F#:3 - - - - - - - ' +
+        'Bb:3 - - - E:3 - - - ' +
+        'A:3  - - - - - - - ' +
+        // A': F Dm Gm C7 Bb F Gm-C7 Dm
+        'A:3  - - - - - - - ' +
+        'F:3  - - - - - - - ' +
+        'Bb:3 - - - - - - - ' +
+        'E:3  - - - - - - - ' +
+        'D:3  - - - - - - - ' +
+        'A:3  - - - - - - - ' +
+        'Bb:3 - - - E:3 - - - ' +
+        'F:3  - - - - - - - ' +
+        // B: Dm Bb Gm A7 Dm Bb Gm C7 — bellows swell a touch
+        'F:4  - - - - - - - ' +
+        'D:4  - - - - - - - ' +
+        'Bb:4 - - - - - - - ' +
+        'C#:4 - - - - - - - ' +
+        'F:4  - - - - - - - ' +
+        'D:4  - - - - - - - ' +
+        'Bb:4 - - - - - - - ' +
+        'Bb:4 - - - C5:4 - - - ' +
+        // A'': F Dm Gm C7 Bb D7 Gm-C7 F
+        'A:3  - - - - - - - ' +
+        'F:3  - - - - - - - ' +
+        'Bb:3 - - - - - - - ' +
+        'E:3  - - - - - - - ' +
+        'D:3  - - - - - - - ' +
+        'F#:3 - - - - - - - ' +
+        'Bb:3 - - - E:3 - - - ' +
+        'A:4  - - - - - - - ') },
+
+    // ---- Acoustic bass, walking (woody OSRS low end) -------------- 256 steps
+    { program: P.ACOUSTIC_BASS, gain: 0.16, octave: 3, wave: 'triangle', pan: -0.1,
       notes: seq(
         // A — walking quarters with octave pops
         'F:6  . A:4  . C4:5 . D4:4 . ' +
@@ -171,16 +215,16 @@ export const track: Track = {
         'G:7  . Bb:5 . C4:6 D4:4 E4:5 . ' +
         'F:7  . A:5  . F:6  . E:4  . ') },
 
-    // ---- Hand percussion (8-bar loop, fill at every section turn) - 64 steps
+    // ---- Street percussion: tambourine, shaker, hand drum --------- 64 steps
     { program: 0, gain: 0.12, octave: 3, wave: 'square', drums: true,
       notes: seq(
-        'K:6 X:2 M:5 X:3 K:4 X:2 M:5 B:4 ' +
-        'K:6 X:2 M:5 X:3 X:4 K:3 M:5 X:3 ' +
-        'K:6 X:2 M:5 X:3 K:4 X:2 M:5 B:4 ' +
-        'K:6 X:2 M:5 X:3 X:4 K:3 M:5 X:3 ' +
-        'K:6 X:2 M:5 X:3 K:4 X:2 M:5 B:4 ' +
-        'K:6 X:2 M:5 X:3 X:4 K:3 M:5 X:3 ' +
-        'K:6 X:2 M:5 X:3 K:4 X:2 M:5 B:4 ' +
-        'K:6 X:2 M:5 .   T:5 T:6 U:6 U:7 ') },
+        'K:6 X:2 B:5 X:3 K:4 X:2 B:5 X:3 ' +
+        'K:6 X:2 B:5 X:3 X:4 K:3 B:5 M:4 ' +
+        'K:6 X:2 B:5 X:3 K:4 X:2 B:5 X:3 ' +
+        'K:6 X:2 B:5 X:3 X:4 K:3 B:5 M:4 ' +
+        'K:6 X:2 B:5 X:3 K:4 X:2 B:5 X:3 ' +
+        'K:6 X:2 B:5 X:3 X:4 K:3 B:5 M:4 ' +
+        'K:6 X:2 B:5 X:3 K:4 X:2 B:5 X:3 ' +
+        'K:6 X:2 B:5 .   T:5 T:6 U:6 B:7 ') },
   ],
 };

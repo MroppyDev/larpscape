@@ -1,0 +1,1712 @@
+{
+  "man": {
+    "id": "man",
+    "name": "Man",
+    "examine": "One of the many citizens of the realm.",
+    "combatLevel": 2,
+    "hitpoints": 7,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 25,
+    "color": "#b08868",
+    "size": 1,
+    "attackable": true,
+    "pickpocket": {
+      "level": 1,
+      "xp": 8,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            3,
+            3
+          ]
+        }
+      ],
+      "stunDmg": 1
+    },
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          3,
+          25
+        ],
+        "chance": 0.6
+      }
+    ]
+  },
+  "goblin": {
+    "id": "goblin",
+    "name": "Goblin",
+    "examine": "An ugly green creature.",
+    "combatLevel": 2,
+    "hitpoints": 5,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 20,
+    "color": "#5a8a3a",
+    "size": 0.9,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          1,
+          16
+        ],
+        "chance": 0.5
+      },
+      {
+        "item": "bronze_sword",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.04
+      }
+    ]
+  },
+  "chicken": {
+    "id": "chicken",
+    "name": "Chicken",
+    "examine": "Yep, definitely a chicken.",
+    "combatLevel": 1,
+    "hitpoints": 3,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 15,
+    "color": "#e8e0d0",
+    "size": 0.6,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_chicken",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "feather",
+        "qty": [
+          5,
+          15
+        ],
+        "chance": 0.75
+      },
+      {
+        "item": "egg",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.1
+      }
+    ]
+  },
+  "cow": {
+    "id": "cow",
+    "name": "Cow",
+    "examine": "Converts grass into beef.",
+    "combatLevel": 2,
+    "hitpoints": 8,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 25,
+    "color": "#d8d0c0",
+    "size": 1.15,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "cowhide",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_beef",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      }
+    ]
+  },
+  "giant_rat": {
+    "id": "giant_rat",
+    "name": "Giant rat",
+    "examine": "Overgrown vermin.",
+    "combatLevel": 3,
+    "hitpoints": 5,
+    "attack": 2,
+    "strength": 3,
+    "defence": 2,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 20,
+    "color": "#7a6a5a",
+    "size": 0.8,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_beef",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.5
+      }
+    ]
+  },
+  "shopkeeper": {
+    "id": "shopkeeper",
+    "name": "Shop keeper",
+    "examine": "He can sell you adventuring supplies.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8888c0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "banker": {
+    "id": "banker",
+    "name": "Banker",
+    "examine": "He looks after your money.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#404060",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "sheep": {
+    "id": "sheep",
+    "name": "Sheep",
+    "examine": "A walking jumper that hasn't been knitted yet.",
+    "combatLevel": 0,
+    "hitpoints": 5,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "option": "Shear",
+    "respawnTicks": 30,
+    "color": "#ece8e0",
+    "size": 0.9,
+    "attackable": false,
+    "drops": []
+  },
+  "tanner": {
+    "id": "tanner",
+    "name": "Tanner",
+    "examine": "Turns cowhides into leather, for a modest fee.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a07040",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "slayer_master": {
+    "id": "slayer_master",
+    "name": "Brogan",
+    "examine": "A gruff slayer master with a list of grudges.",
+    "combatLevel": 0,
+    "hitpoints": 30,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#704848",
+    "size": 1.05,
+    "attackable": false,
+    "drops": []
+  },
+  "magic_tutor": {
+    "id": "magic_tutor",
+    "name": "Mira the Magic Tutor",
+    "examine": "Her sleeves smell faintly of ozone.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6060b0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "gardener": {
+    "id": "gardener",
+    "name": "Old Fen",
+    "examine": "Knows every weed in the realm by first name.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#688048",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "cook": {
+    "id": "cook",
+    "name": "Cook Edda",
+    "examine": "Runs the castle kitchen with an iron ladle.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#c0c0c8",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "carpenter": {
+    "id": "carpenter",
+    "name": "Carpenter Lenny",
+    "examine": "Measures twice, saws once, sweeps never.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#90683c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "goblin_warlord": {
+    "id": "goblin_warlord",
+    "name": "Goblin warlord",
+    "examine": "The biggest, meanest goblin in the fort. The banner is load-bearing.",
+    "combatLevel": 28,
+    "hitpoints": 60,
+    "attack": 24,
+    "strength": 26,
+    "defence": 22,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 200,
+    "color": "#3f6f2a",
+    "size": 1.6,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "warlord_banner",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          40,
+          220
+        ],
+        "chance": 1
+      },
+      {
+        "item": "warlord_helm",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.1
+      },
+      {
+        "item": "mithril_sword",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.03
+      },
+      {
+        "item": "mithril_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.08
+      },
+      {
+        "item": "steel_scimitar",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.06
+      }
+    ]
+  },
+  "bog_horror": {
+    "id": "bog_horror",
+    "name": "Bog horror",
+    "examine": "A heap of swamp that decided to hold grudges.",
+    "combatLevel": 45,
+    "hitpoints": 90,
+    "attack": 38,
+    "strength": 42,
+    "defence": 36,
+    "attackSpeed": 5,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 250,
+    "color": "#465a36",
+    "size": 1.8,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "horror_hide",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "bog_heart",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          60,
+          300
+        ],
+        "chance": 0.8
+      },
+      {
+        "item": "grimy_guam",
+        "qty": [
+          1,
+          3
+        ],
+        "chance": 0.5
+      },
+      {
+        "item": "grimy_marrentill",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.35
+      },
+      {
+        "item": "potato_seed",
+        "qty": [
+          2,
+          6
+        ],
+        "chance": 0.3
+      },
+      {
+        "item": "cabbage_seed",
+        "qty": [
+          2,
+          6
+        ],
+        "chance": 0.3
+      }
+    ]
+  },
+  "shadow_drake": {
+    "id": "shadow_drake",
+    "name": "Shadow drake",
+    "examine": "A cave-dwelling drake the colour of a bad night.",
+    "combatLevel": 70,
+    "hitpoints": 150,
+    "attack": 60,
+    "strength": 64,
+    "defence": 58,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 300,
+    "color": "#3a3050",
+    "size": 2.2,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "drake_scale",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "ember_crystal",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          120,
+          600
+        ],
+        "chance": 1
+      },
+      {
+        "item": "drake_sword",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.05
+      },
+      {
+        "item": "adamantite_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.1
+      },
+      {
+        "item": "mithril_bar",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.12
+      }
+    ]
+  },
+  "city_guard": {
+    "id": "city_guard",
+    "name": "City guard",
+    "examine": "Keeps the peace in Aldgate, mostly by leaning on things.",
+    "combatLevel": 21,
+    "hitpoints": 22,
+    "attack": 18,
+    "strength": 17,
+    "defence": 16,
+    "attackSpeed": 5,
+    "respawnTicks": 50,
+    "color": "#8090a8",
+    "size": 1.05,
+    "attackable": true,
+    "pickpocket": {
+      "level": 40,
+      "xp": 46.8,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            30,
+            30
+          ]
+        }
+      ],
+      "stunDmg": 2
+    },
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          5,
+          45
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "bread",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.15
+      },
+      {
+        "item": "iron_sword",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.04
+      }
+    ]
+  },
+  "ge_clerk": {
+    "id": "ge_clerk",
+    "name": "Exchange clerk",
+    "examine": "Buys low, sells high, blinks rarely.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "option": "Exchange",
+    "respawnTicks": 50,
+    "color": "#b89c50",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "innkeeper": {
+    "id": "innkeeper",
+    "name": "Innkeeper",
+    "examine": "Polishes the same tankard all day. It gleams.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#9a5a40",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "ice_troll": {
+    "id": "ice_troll",
+    "name": "Ice troll",
+    "examine": "A boulder with opinions and frostbite.",
+    "combatLevel": 28,
+    "hitpoints": 45,
+    "attack": 24,
+    "strength": 26,
+    "defence": 24,
+    "attackSpeed": 5,
+    "respawnTicks": 40,
+    "color": "#9ab8c8",
+    "size": 1.4,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          10,
+          80
+        ],
+        "chance": 0.6
+      },
+      {
+        "item": "iron_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.2
+      },
+      {
+        "item": "coal",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.12
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.03
+      }
+    ]
+  },
+  "ice_wolf": {
+    "id": "ice_wolf",
+    "name": "Ice wolf",
+    "examine": "A wolf the colour of a hard winter.",
+    "combatLevel": 38,
+    "hitpoints": 60,
+    "attack": 34,
+    "strength": 35,
+    "defence": 32,
+    "attackSpeed": 4,
+    "respawnTicks": 45,
+    "color": "#c8d8e4",
+    "size": 1.2,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_beef",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.4
+      }
+    ]
+  },
+  "scorpion": {
+    "id": "scorpion",
+    "name": "Scorpion",
+    "examine": "All armour, attitude, and arithmetic of stings.",
+    "combatLevel": 14,
+    "hitpoints": 20,
+    "attack": 12,
+    "strength": 13,
+    "defence": 11,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 25,
+    "color": "#b07838",
+    "size": 0.9,
+    "attackable": true,
+    "drops": []
+  },
+  "desert_bandit": {
+    "id": "desert_bandit",
+    "name": "Desert bandit",
+    "examine": "Travels light: a blade, a grin, and your purse.",
+    "combatLevel": 26,
+    "hitpoints": 40,
+    "attack": 23,
+    "strength": 24,
+    "defence": 21,
+    "attackSpeed": 4,
+    "respawnTicks": 35,
+    "color": "#a8845c",
+    "size": 1,
+    "attackable": true,
+    "pickpocket": {
+      "level": 35,
+      "xp": 65.8,
+      "stunDmg": 3,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            20,
+            50
+          ]
+        },
+        {
+          "item": "uncut_sapphire",
+          "qty": [
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          10,
+          60
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.04
+      },
+      {
+        "item": "uncut_emerald",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.02
+      }
+    ]
+  },
+  "magma_crawler": {
+    "id": "magma_crawler",
+    "name": "Magma crawler",
+    "examine": "A many-legged ember that never learned to cool down.",
+    "combatLevel": 54,
+    "hitpoints": 80,
+    "attack": 46,
+    "strength": 48,
+    "defence": 44,
+    "attackSpeed": 4,
+    "respawnTicks": 60,
+    "color": "#c84818",
+    "size": 1.3,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          30,
+          150
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "gold_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.15
+      },
+      {
+        "item": "coal",
+        "qty": [
+          1,
+          3
+        ],
+        "chance": 0.2
+      },
+      {
+        "item": "fire_rune",
+        "qty": [
+          5,
+          15
+        ],
+        "chance": 0.25
+      }
+    ]
+  },
+  "ash_fiend": {
+    "id": "ash_fiend",
+    "name": "Ash fiend",
+    "examine": "A scorched silhouette with a temper to match its habitat.",
+    "combatLevel": 82,
+    "hitpoints": 120,
+    "attack": 70,
+    "strength": 72,
+    "defence": 68,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 80,
+    "color": "#584848",
+    "size": 1.5,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          60,
+          300
+        ],
+        "chance": 0.8
+      },
+      {
+        "item": "chaos_rune",
+        "qty": [
+          5,
+          20
+        ],
+        "chance": 0.3
+      },
+      {
+        "item": "runite_ore",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.02
+      },
+      {
+        "item": "uncut_ruby",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.05
+      },
+      {
+        "item": "grimy_irit",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.15
+      }
+    ]
+  },
+  "ice_queen": {
+    "id": "ice_queen",
+    "name": "Maraza the Rimebound",
+    "examine": "A queen frozen mid-fury, several centuries ago. Still furious.",
+    "combatLevel": 90,
+    "hitpoints": 180,
+    "attack": 76,
+    "strength": 80,
+    "defence": 74,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 300,
+    "color": "#a0d0e8",
+    "size": 1.9,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          150,
+          700
+        ],
+        "chance": 1
+      },
+      {
+        "item": "rimeglass_blade",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.05
+      },
+      {
+        "item": "runite_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.08
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.3
+      },
+      {
+        "item": "prayer_potion",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.15
+      }
+    ]
+  },
+  "bandit_king": {
+    "id": "bandit_king",
+    "name": "Saif the Red Smile",
+    "examine": "King of the dunes by vote. He counted the votes himself.",
+    "combatLevel": 55,
+    "hitpoints": 120,
+    "attack": 48,
+    "strength": 50,
+    "defence": 44,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 250,
+    "color": "#a83828",
+    "size": 1.5,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          200,
+          900
+        ],
+        "chance": 1
+      },
+      {
+        "item": "red_sash",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.08
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.35
+      },
+      {
+        "item": "uncut_ruby",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.15
+      },
+      {
+        "item": "gold_bar",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.2
+      }
+    ]
+  },
+  "magma_fiend": {
+    "id": "magma_fiend",
+    "name": "Korr the Molten",
+    "examine": "The deep speaks in fire, and Korr is its loudest word.",
+    "combatLevel": 110,
+    "hitpoints": 250,
+    "attack": 92,
+    "strength": 96,
+    "defence": 88,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 400,
+    "color": "#e85818",
+    "size": 2.4,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "molten_core",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          300,
+          1200
+        ],
+        "chance": 1
+      },
+      {
+        "item": "molten_gauntlets",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.06
+      },
+      {
+        "item": "rune_bar",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.05
+      },
+      {
+        "item": "rune_sword",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.02
+      },
+      {
+        "item": "runite_ore",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.1
+      }
+    ]
+  },
+  "fishmonger": {
+    "id": "fishmonger",
+    "name": "Fishmonger Pell",
+    "examine": "Smells of the sea and sound business sense.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4878a0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "harbormaster": {
+    "id": "harbormaster",
+    "name": "Harbormaster Quill",
+    "examine": "Keeps the tide schedule in her head and the docks in line.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#385878",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "mountain_guide": {
+    "id": "mountain_guide",
+    "name": "Guide Torvald",
+    "examine": "Has fallen off every ledge on the mountain, once each.",
+    "combatLevel": 0,
+    "hitpoints": 20,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8898a8",
+    "size": 1.05,
+    "attackable": false,
+    "drops": []
+  },
+  "desert_nomad": {
+    "id": "desert_nomad",
+    "name": "Nomad Zahra",
+    "examine": "Sells what the desert forgot you would need.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#c0a060",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "gem_trader": {
+    "id": "gem_trader",
+    "name": "Gem trader",
+    "examine": "Eyes like a jeweller's loupe and prices to match.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7858a0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "bear": {
+    "id": "bear",
+    "name": "Bear",
+    "examine": "A great brown bear. It was here first, and it knows it.",
+    "combatLevel": 21,
+    "hitpoints": 32,
+    "attack": 18,
+    "strength": 20,
+    "defence": 16,
+    "attackSpeed": 5,
+    "respawnTicks": 35,
+    "color": "#6a4a30",
+    "size": 1.3,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "bear_fur",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_beef",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.5
+      }
+    ]
+  },
+  "dire_wolf": {
+    "id": "dire_wolf",
+    "name": "Dire wolf",
+    "examine": "A wolf grown too big for its forest, and too hungry for yours.",
+    "combatLevel": 25,
+    "hitpoints": 38,
+    "attack": 22,
+    "strength": 23,
+    "defence": 19,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 35,
+    "color": "#5a584e",
+    "size": 1.15,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "raw_beef",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.4
+      }
+    ]
+  },
+  "forest_spider": {
+    "id": "forest_spider",
+    "name": "Forest spider",
+    "examine": "A spider the size of a wheelbarrow, with none of the charm.",
+    "combatLevel": 24,
+    "hitpoints": 35,
+    "attack": 21,
+    "strength": 21,
+    "defence": 18,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 30,
+    "color": "#3c4a2c",
+    "size": 1.05,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "spider_silk",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.6
+      }
+    ]
+  },
+  "ruin_wraith": {
+    "id": "ruin_wraith",
+    "name": "Ruin wraith",
+    "examine": "A cold shape that remembers the ruins when they had roofs.",
+    "combatLevel": 45,
+    "hitpoints": 70,
+    "attack": 39,
+    "strength": 40,
+    "defence": 37,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 55,
+    "color": "#7a8898",
+    "size": 1.35,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "grave_dust",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          20,
+          120
+        ],
+        "chance": 0.6
+      },
+      {
+        "item": "grimy_ranarr",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.08
+      }
+    ]
+  },
+  "pirate": {
+    "id": "pirate",
+    "name": "Pirate",
+    "examine": "A wrecker of Gullswreck Cove. Everything he owns belonged to someone else.",
+    "combatLevel": 30,
+    "hitpoints": 45,
+    "attack": 26,
+    "strength": 27,
+    "defence": 24,
+    "attackSpeed": 4,
+    "respawnTicks": 40,
+    "color": "#7a3838",
+    "size": 1.05,
+    "attackable": true,
+    "pickpocket": {
+      "level": 45,
+      "xp": 75,
+      "stunDmg": 3,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            25,
+            60
+          ]
+        },
+        {
+          "item": "fishing_bait",
+          "qty": [
+            3,
+            10
+          ]
+        }
+      ]
+    },
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          10,
+          90
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "fishing_bait",
+        "qty": [
+          2,
+          12
+        ],
+        "chance": 0.3
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.04
+      },
+      {
+        "item": "uncut_emerald",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.02
+      }
+    ]
+  },
+  "pirate_captain": {
+    "id": "pirate_captain",
+    "name": "Captain Saltjaw",
+    "examine": "Master of the cove's wreckers. His grin has more gold than teeth.",
+    "combatLevel": 60,
+    "hitpoints": 130,
+    "attack": 52,
+    "strength": 54,
+    "defence": 48,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 250,
+    "color": "#902828",
+    "size": 1.6,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "wreck_chart",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          200,
+          900
+        ],
+        "chance": 1
+      },
+      {
+        "item": "boarding_cutlass",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.1
+      },
+      {
+        "item": "uncut_ruby",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.12
+      },
+      {
+        "item": "raw_swordfish",
+        "qty": [
+          1,
+          3
+        ],
+        "chance": 0.25
+      }
+    ]
+  },
+  "cinder_imp": {
+    "id": "cinder_imp",
+    "name": "Cinder imp",
+    "examine": "A pocket-sized arsonist with a giggle like cracking embers.",
+    "combatLevel": 35,
+    "hitpoints": 50,
+    "attack": 30,
+    "strength": 31,
+    "defence": 28,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 45,
+    "color": "#c05020",
+    "size": 0.85,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "coins",
+        "qty": [
+          15,
+          100
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "fire_rune",
+        "qty": [
+          3,
+          12
+        ],
+        "chance": 0.4
+      },
+      {
+        "item": "ember_crystal",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.01
+      }
+    ]
+  },
+  "village_elder": {
+    "id": "village_elder",
+    "name": "Elder Maeryn",
+    "examine": "Eldermere's memory, conscience, and final word on everything.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8a7a58",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "boatman": {
+    "id": "boatman",
+    "name": "Boatman Wick",
+    "examine": "Rows anywhere for a fair price and a dry story.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#406078",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "trapper": {
+    "id": "trapper",
+    "name": "Trapper Hode",
+    "examine": "Smells of woodsmoke and pelts. Counts furs the way bankers count coins.",
+    "combatLevel": 0,
+    "hitpoints": 15,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#705838",
+    "size": 1.05,
+    "attackable": false,
+    "drops": []
+  },
+  "wayfarer": {
+    "id": "wayfarer",
+    "name": "Wayfarer Sorrel",
+    "examine": "A travelling merchant whose pack holds a little of everywhere.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a08848",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "armourer": {
+    "id": "armourer",
+    "name": "Hetta the Armourer",
+    "examine": "Arms folded, like everything she sells.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a8694",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "grocer": {
+    "id": "grocer",
+    "name": "Pim the Grocer",
+    "examine": "Smells faintly of fresh bread and ambition.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a8854f",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  }
+}

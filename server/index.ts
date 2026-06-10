@@ -12,6 +12,11 @@ import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 import bcrypt from 'bcryptjs';
 import { WebSocketServer, WebSocket } from 'ws';
+import {
+  initSim, tickSim, fullSnapshot, dropPlayer,
+  handleSwing, handlePickup, handleDrop, handleInteract,
+  type PlayerView,
+} from './sim';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -65,6 +70,33 @@ CREATE TABLE IF NOT EXISTS trades (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_trades_item ON trades (item, id);
+CREATE TABLE IF NOT EXISTS bans (
+  user_id INTEGER PRIMARY KEY REFERENCES users(id),
+  reason TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS mutes (
+  user_id INTEGER PRIMARY KEY REFERENCES users(id),
+  until INTEGER,
+  reason TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS chat_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  username TEXT NOT NULL,
+  text TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_chat_log_id ON chat_log (id);
+CREATE TABLE IF NOT EXISTS save_backups (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  save TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  label TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_save_backups_user ON save_backups (user_id, id);
 `);
 
 // ---------------------------------------------------------------------------
@@ -114,6 +146,69 @@ function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   next();
 }
 
+function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!ADMIN_TOKEN || req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+    res.status(401).json({ error: 'unauthorized' }); return;
+  }
+  next();
+}
+
+// ---------------------------------------------------------------------------
+// Moderation helpers
+// ---------------------------------------------------------------------------
+
+function isBanned(userId: number): boolean {
+  return !!db.prepare('SELECT 1 FROM bans WHERE user_id = ?').get(userId);
+}
+
+// Mute check with lazy cleanup of expired rows.
+function isMuted(userId: number): boolean {
+  const row = db.prepare('SELECT until FROM mutes WHERE user_id = ?')
+    .get(userId) as { until: number | null } | undefined;
+  if (!row) return false;
+  if (row.until !== null && row.until <= Date.now()) {
+    db.prepare('DELETE FROM mutes WHERE user_id = ?').run(userId);
+    return false;
+  }
+  return true;
+}
+
+let chatLogCounter = 0;
+function logChat(userId: number, username: string, text: string) {
+  db.prepare('INSERT INTO chat_log (user_id, username, text, created_at) VALUES (?,?,?,?)')
+    .run(userId, username, text, Date.now());
+  if (++chatLogCounter % 200 === 0) {
+    db.prepare(`DELETE FROM chat_log WHERE id <= (
+      SELECT id FROM chat_log ORDER BY id DESC LIMIT 1 OFFSET 20000
+    )`).run();
+  }
+}
+
+// Snapshot a user's current save into save_backups (no-op if no save yet),
+// keeping at most 10 backups per user.
+function backupSave(userId: number, label: string) {
+  const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
+    .get(userId) as { save: string } | undefined;
+  if (!row) return;
+  db.prepare('INSERT INTO save_backups (user_id, save, created_at, label) VALUES (?,?,?,?)')
+    .run(userId, row.save, Date.now(), label);
+  db.prepare(`DELETE FROM save_backups WHERE user_id = ? AND id NOT IN (
+    SELECT id FROM save_backups WHERE user_id = ? ORDER BY id DESC LIMIT 10
+  )`).run(userId, userId);
+}
+
+function kickClient(userId: number, code: number, reason: string): boolean {
+  let kicked = false;
+  for (const c of clients) {
+    if (c.userId !== userId) continue;
+    try { c.ws.close(code, reason); } catch { /* ignore */ }
+    clients.delete(c);
+    dropPlayer(c.userId);
+    kicked = true;
+  }
+  return kicked;
+}
+
 // ---------------------------------------------------------------------------
 // REST
 // ---------------------------------------------------------------------------
@@ -148,6 +243,7 @@ app.post('/api/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.passhash)) {
     res.status(401).json({ error: 'invalid username or password' }); return;
   }
+  if (isBanned(user.id)) { res.status(403).json({ error: 'account banned' }); return; }
   const token = createSession(user.id);
   res.json({ token, username: user.username });
 });
@@ -335,13 +431,216 @@ function broadcastSystem(text: string) {
 
 // POST /api/admin/broadcast { text } — header: x-admin-token. Used by the deploy
 // script to announce restarts in-game before the service bounces.
-app.post('/api/admin/broadcast', (req, res) => {
-  if (!ADMIN_TOKEN || req.headers['x-admin-token'] !== ADMIN_TOKEN) {
-    res.status(401).json({ error: 'unauthorized' }); return;
-  }
+app.post('/api/admin/broadcast', requireAdmin, (req, res) => {
   const text = typeof req.body?.text === 'string' ? req.body.text.slice(0, 200).trim() : '';
   if (!text) { res.status(400).json({ error: 'text required' }); return; }
   res.json({ ok: true, delivered: broadcastSystem(text) });
+});
+
+// GET /api/admin/online — currently connected players.
+app.get('/api/admin/online', requireAdmin, (_req, res) => {
+  const players = [];
+  for (const c of clients) {
+    players.push({ userId: c.userId, name: c.name, x: c.x, y: c.y, app: c.app });
+  }
+  res.json({ players, count: players.length });
+});
+
+// GET /api/admin/stats — quick server health/usage numbers.
+app.get('/api/admin/stats', requireAdmin, (_req, res) => {
+  const count = (sql: string, ...args: unknown[]) =>
+    (db.prepare(sql).get(...args) as { n: number }).n;
+  const dayStart = new Date().setHours(0, 0, 0, 0);
+  res.json({
+    uptimeSec: Math.round(process.uptime()),
+    online: clients.size,
+    users: count('SELECT COUNT(*) AS n FROM users'),
+    characters: count('SELECT COUNT(*) AS n FROM characters'),
+    activeOffers: count('SELECT COUNT(*) AS n FROM offers WHERE active = 1'),
+    tradesToday: count('SELECT COUNT(*) AS n FROM trades WHERE created_at >= ?', dayStart),
+    chatLines: count('SELECT COUNT(*) AS n FROM chat_log'),
+  });
+});
+
+// GET /api/admin/users?q=<substr>&offset=<n> — paged user list with mod status.
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+  const q = typeof req.query.q === 'string' ? req.query.q.slice(0, 32) : '';
+  const offset = Math.max(0, Math.floor(Number(req.query.offset) || 0));
+  const like = '%' + q.replace(/[%_\\]/g, (ch) => '\\' + ch) + '%';
+  const total = (db.prepare(`SELECT COUNT(*) AS n FROM users WHERE username LIKE ? ESCAPE '\\'`)
+    .get(like) as { n: number }).n;
+  const rows = db.prepare(
+    `SELECT u.id, u.username, u.created_at,
+            b.user_id AS ban_id, m.until AS mute_until, m.user_id AS mute_id,
+            c.updated_at AS save_updated_at
+       FROM users u
+       LEFT JOIN bans b ON b.user_id = u.id
+       LEFT JOIN mutes m ON m.user_id = u.id AND (m.until IS NULL OR m.until > ?)
+       LEFT JOIN characters c ON c.user_id = u.id
+      WHERE u.username LIKE ? ESCAPE '\\'
+      ORDER BY u.id LIMIT 50 OFFSET ?`
+  ).all(Date.now(), like, offset) as Array<{
+    id: number; username: string; created_at: number;
+    ban_id: number | null; mute_until: number | null; mute_id: number | null;
+    save_updated_at: number | null;
+  }>;
+  res.json({
+    users: rows.map((r) => ({
+      id: r.id, username: r.username, createdAt: r.created_at,
+      banned: r.ban_id !== null,
+      mutedUntil: r.mute_id === null ? null : (r.mute_until ?? 'permanent'),
+      saveUpdatedAt: r.save_updated_at,
+    })),
+    total,
+  });
+});
+
+// GET /api/admin/character/:userId — save + backup list.
+app.get('/api/admin/character/:userId', requireAdmin, (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  const row = db.prepare('SELECT save, updated_at FROM characters WHERE user_id = ?')
+    .get(userId) as { save: string; updated_at: number } | undefined;
+  let save: unknown = null;
+  try { if (row) save = JSON.parse(row.save); } catch { save = null; }
+  const backups = db.prepare(
+    'SELECT id, created_at, label FROM save_backups WHERE user_id = ? ORDER BY id DESC'
+  ).all(userId) as Array<{ id: number; created_at: number; label: string | null }>;
+  res.json({
+    save,
+    updatedAt: row ? row.updated_at : null,
+    backups: backups.map((b) => ({ id: b.id, createdAt: b.created_at, label: b.label })),
+  });
+});
+
+// PUT /api/admin/character/:userId { save } — backs up the current save first.
+app.put('/api/admin/character/:userId', requireAdmin, (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  const { save } = req.body ?? {};
+  if (save === undefined || save === null || typeof save !== 'object') {
+    res.status(400).json({ error: 'save must be an object' }); return;
+  }
+  const text = JSON.stringify(save);
+  if (text.length > 512 * 1024) { res.status(413).json({ error: 'save too large' }); return; }
+  backupSave(userId, 'pre-admin-edit');
+  db.prepare(`INSERT INTO characters (user_id, save, updated_at) VALUES (?,?,?)
+              ON CONFLICT(user_id) DO UPDATE SET save = excluded.save, updated_at = excluded.updated_at`)
+    .run(userId, text, Date.now());
+  res.json({ ok: true });
+});
+
+// POST /api/admin/character/:userId/rollback { backupId } — restore a backup.
+app.post('/api/admin/character/:userId/rollback', requireAdmin, (req, res) => {
+  const userId = Number(req.params.userId);
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  const { backupId } = req.body ?? {};
+  if (!isPosInt(backupId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad backupId' }); return; }
+  const backup = db.prepare('SELECT save FROM save_backups WHERE id = ? AND user_id = ?')
+    .get(backupId, userId) as { save: string } | undefined;
+  if (!backup) { res.status(404).json({ error: 'backup not found' }); return; }
+  backupSave(userId, 'pre-rollback');
+  db.prepare(`INSERT INTO characters (user_id, save, updated_at) VALUES (?,?,?)
+              ON CONFLICT(user_id) DO UPDATE SET save = excluded.save, updated_at = excluded.updated_at`)
+    .run(userId, backup.save, Date.now());
+  res.json({ ok: true });
+});
+
+// POST /api/admin/kick { userId }
+app.post('/api/admin/kick', requireAdmin, (req, res) => {
+  const { userId } = req.body ?? {};
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  const wasOnline = kickClient(userId, 4004, 'kicked');
+  res.json({ ok: true, wasOnline });
+});
+
+// POST /api/admin/ban { userId, reason? } — also kills sessions and kicks.
+app.post('/api/admin/ban', requireAdmin, (req, res) => {
+  const { userId, reason } = req.body ?? {};
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  const reasonText = typeof reason === 'string' ? reason.slice(0, 200) : null;
+  db.prepare('INSERT OR REPLACE INTO bans (user_id, reason, created_at) VALUES (?,?,?)')
+    .run(userId, reasonText, Date.now());
+  db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+  const wasOnline = kickClient(userId, 4006, 'banned');
+  res.json({ ok: true, wasOnline });
+});
+
+// POST /api/admin/unban { userId }
+app.post('/api/admin/unban', requireAdmin, (req, res) => {
+  const { userId } = req.body ?? {};
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  db.prepare('DELETE FROM bans WHERE user_id = ?').run(userId);
+  res.json({ ok: true });
+});
+
+// POST /api/admin/mute { userId, minutes?, reason? } — minutes absent/0 = permanent.
+app.post('/api/admin/mute', requireAdmin, (req, res) => {
+  const { userId, minutes, reason } = req.body ?? {};
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  if (minutes !== undefined && minutes !== 0 && !isPosInt(minutes, 60 * 24 * 365)) {
+    res.status(400).json({ error: 'bad minutes' }); return;
+  }
+  const until = minutes ? Date.now() + minutes * 60_000 : null;
+  const reasonText = typeof reason === 'string' ? reason.slice(0, 200) : null;
+  db.prepare('INSERT OR REPLACE INTO mutes (user_id, until, reason, created_at) VALUES (?,?,?,?)')
+    .run(userId, until, reasonText, Date.now());
+  res.json({ ok: true, until });
+});
+
+// POST /api/admin/unmute { userId }
+app.post('/api/admin/unmute', requireAdmin, (req, res) => {
+  const { userId } = req.body ?? {};
+  if (!isPosInt(userId, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad userId' }); return; }
+  db.prepare('DELETE FROM mutes WHERE user_id = ?').run(userId);
+  res.json({ ok: true });
+});
+
+// GET /api/admin/chat?limit=<n<=500>&before=<id> — chat log, newest first.
+app.get('/api/admin/chat', requireAdmin, (req, res) => {
+  const limit = Math.min(500, Math.max(1, Math.floor(Number(req.query.limit) || 100)));
+  const before = Math.floor(Number(req.query.before) || 0);
+  const rows = (before > 0
+    ? db.prepare('SELECT * FROM chat_log WHERE id < ? ORDER BY id DESC LIMIT ?').all(before, limit)
+    : db.prepare('SELECT * FROM chat_log ORDER BY id DESC LIMIT ?').all(limit)
+  ) as Array<{ id: number; user_id: number; username: string; text: string; created_at: number }>;
+  res.json({
+    lines: rows.map((r) => ({
+      id: r.id, userId: r.user_id, username: r.username, text: r.text, createdAt: r.created_at,
+    })),
+  });
+});
+
+// GET /api/admin/ge — outstanding offers (with owner) + recent trades.
+app.get('/api/admin/ge', requireAdmin, (_req, res) => {
+  const offers = db.prepare(
+    `SELECT o.*, u.username FROM offers o JOIN users u ON u.id = o.user_id
+      WHERE o.active = 1 OR o.coins_owed > 0 OR o.items_owed > 0
+      ORDER BY o.id DESC`
+  ).all() as Array<OfferRow & { username: string }>;
+  const trades = db.prepare('SELECT * FROM trades ORDER BY id DESC LIMIT 100')
+    .all() as Array<{ id: number; item: string; qty: number; price: number; created_at: number }>;
+  res.json({
+    offers: offers.map((o) => ({ ...offerJson(o), userId: o.user_id, username: o.username })),
+    trades,
+  });
+});
+
+// POST /api/admin/ge/cancel { id } — abort any offer, releasing escrow to its owner.
+app.post('/api/admin/ge/cancel', requireAdmin, (req, res) => {
+  const { id } = req.body ?? {};
+  if (!isPosInt(id, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad id' }); return; }
+  const o = db.prepare('SELECT * FROM offers WHERE id = ?').get(id) as OfferRow | undefined;
+  if (!o) { res.status(404).json({ error: 'offer not found' }); return; }
+  if (o.active) {
+    const remaining = o.qty - o.filled;
+    if (o.kind === 'buy') o.coins_owed += remaining * o.price; // release coin escrow
+    else o.items_owed += remaining;                            // return unsold items
+    o.active = 0;
+    db.prepare('UPDATE offers SET active=0, coins_owed=?, items_owed=? WHERE id=?')
+      .run(o.coins_owed, o.items_owed, o.id);
+  }
+  res.json({ offer: offerJson(o) });
 });
 
 // 404 for unknown API routes
@@ -359,26 +658,51 @@ interface Client {
   app: unknown; // equipment appearance ids, opaque to the server
   lastPos: number;
   alive: boolean;
+  view: PlayerView; // shared with the world sim (combat stats snapshot etc.)
 }
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
 const clients = new Set<Client>();
 
+function wsBroadcast(msg: unknown) {
+  const payload = JSON.stringify(msg);
+  for (const c of clients) {
+    if (c.ws.readyState === WebSocket.OPEN) c.ws.send(payload);
+  }
+}
+
+initSim(wsBroadcast);
+
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url ?? '/ws', 'http://localhost');
   const user = userForToken(url.searchParams.get('token') ?? '');
   if (!user) { ws.close(4001, 'unauthorized'); return; }
+  if (isBanned(user.id)) { ws.close(4006, 'banned'); return; }
 
   // Drop any previous connection for the same account.
   for (const c of clients) if (c.userId === user.id) { c.ws.close(4002, 'replaced'); clients.delete(c); }
 
+  const view: PlayerView = {
+    userId: user.id, name: user.username,
+    x: 0, y: 0, dead: false,
+    cb: 3, effDef: 1, defBonus: 0,
+    send: (msg: unknown) => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    },
+  };
   const client: Client = {
     ws, userId: user.id, name: user.username,
     x: 0, y: 0, app: null, lastPos: 0, alive: true,
+    view,
   };
   clients.add(client);
   ws.send(JSON.stringify({ t: 'hello', name: user.username }));
+  // authoritative world state: full NPC + ground item snapshot on connect
+  ws.send(JSON.stringify(fullSnapshot()));
+
+  const clampStat = (n: unknown, lo: number, hi: number, dflt: number) =>
+    typeof n === 'number' && Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
 
   ws.on('message', (raw) => {
     let msg: any;
@@ -391,10 +715,34 @@ wss.on('connection', (ws, req) => {
       if (typeof msg.x === 'number' && Number.isFinite(msg.x)) client.x = Math.round(msg.x);
       if (typeof msg.y === 'number' && Number.isFinite(msg.y)) client.y = Math.round(msg.y);
       if (msg.app !== undefined) client.app = msg.app;
+      view.x = client.x;
+      view.y = client.y;
+      if (typeof msg.d === 'boolean') view.dead = msg.d;
+    } else if (msg.t === 'stats') {
+      // client-reported combat snapshot (trusted, clamped)
+      view.cb = clampStat(msg.cb, 1, 126, view.cb);
+      view.effDef = clampStat(msg.effDef, 1, 200, view.effDef);
+      view.defBonus = clampStat(msg.defBonus, 0, 500, view.defBonus);
+      if (typeof msg.d === 'boolean') view.dead = msg.d;
+    } else if (msg.t === 'swing') {
+      handleSwing(view, msg);
+    } else if (msg.t === 'pickup') {
+      handlePickup(view, msg);
+    } else if (msg.t === 'drop') {
+      handleDrop(view, msg);
+    } else if (msg.t === 'interact') {
+      handleInteract(view, msg);
     } else if (msg.t === 'chat') {
       if (typeof msg.text !== 'string') return;
       const text = msg.text.slice(0, 80).replace(/[\x00-\x1f]/g, '').trim();
       if (!text) return;
+      logChat(client.userId, client.name, text);
+      if (isMuted(client.userId)) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ t: 'system', text: 'You are muted.' }));
+        }
+        return;
+      }
       const payload = JSON.stringify({ t: 'chat', from: client.name, text });
       for (const c of clients) {
         if (c !== client && c.ws.readyState === WebSocket.OPEN) c.ws.send(payload);
@@ -403,21 +751,28 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('pong', () => { client.alive = true; });
-  ws.on('close', () => clients.delete(client));
-  ws.on('error', () => clients.delete(client));
+  ws.on('close', () => { clients.delete(client); dropPlayer(client.userId); });
+  ws.on('error', () => { clients.delete(client); dropPlayer(client.userId); });
 });
 
-// Players snapshot broadcast (~every 600ms), excluding self.
+// World tick (600ms, matches the client TICK_MS): NPC sim + delta broadcast,
+// then the presence snapshot for remote-player rendering.
 setInterval(() => {
+  const players = new Map<number, PlayerView>();
+  for (const c of clients) {
+    if (c.ws.readyState === WebSocket.OPEN) players.set(c.userId, c.view);
+  }
+  tickSim(players);
+
   if (clients.size === 0) return;
   for (const c of clients) {
     if (c.ws.readyState !== WebSocket.OPEN) continue;
-    const players = [];
+    const others = [];
     for (const o of clients) {
       if (o === c) continue;
-      players.push({ name: o.name, x: o.x, y: o.y, app: o.app });
+      others.push({ name: o.name, x: o.x, y: o.y, app: o.app });
     }
-    c.ws.send(JSON.stringify({ t: 'players', players }));
+    c.ws.send(JSON.stringify({ t: 'players', players: others }));
   }
 }, 600);
 

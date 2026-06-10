@@ -4,7 +4,7 @@
 
 import {
   state, msg, addItem, removeItem, invCount, addXp,
-  registerNpcAction, registerTickHook, startDialogue, showOptions,
+  registerNpcAction, onKill, startDialogue, showOptions,
   DialogueLine, Npc,
 } from './game';
 
@@ -206,20 +206,14 @@ registerNpcAction('gardener', 'Talk-to', (_n: Npc) => {
   return 'done';
 });
 
-// ---------------- Goblin kill tracking (no kill-event hook; poll dead-state edges) ----------------
-const lastDead = new Map<Npc, boolean>();
-registerTickHook(() => {
-  if (!state.player) return;
-  const questing = stage(SEEDS) === 1;
-  for (const n of state.npcs) {
-    if (n.def.id !== 'goblin') continue;
-    const was = lastDead.get(n) ?? n.dead;
-    if (questing && !was && n.dead && killCount() < KILLS_NEEDED) {
-      state.player.quests[SEEDS_KILLS] = killCount() + 1;
-      const k = killCount();
-      if (k < KILLS_NEEDED) msg(`Goblin driven off! (${k}/${KILLS_NEEDED})`);
-      else msg(`That's all ${KILLS_NEEDED} goblins driven off. Old Fen will be pleased.`, 'level');
-    }
-    lastDead.set(n, n.dead);
-  }
+// ---------------- Goblin kill tracking ----------------
+// Server-authoritative kills: only the player who landed the killing blow
+// receives the youKilled event, so quest credit goes to the killer alone.
+onKill((defId) => {
+  if (!state.player || defId !== 'goblin') return;
+  if (stage(SEEDS) !== 1 || killCount() >= KILLS_NEEDED) return;
+  state.player.quests[SEEDS_KILLS] = killCount() + 1;
+  const k = killCount();
+  if (k < KILLS_NEEDED) msg(`Goblin driven off! (${k}/${KILLS_NEEDED})`);
+  else msg(`That's all ${KILLS_NEEDED} goblins driven off. Old Fen will be pleased.`, 'level');
 });

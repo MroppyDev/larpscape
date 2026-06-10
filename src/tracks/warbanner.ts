@@ -1,7 +1,18 @@
 // 'Warbanner' — the warlord's fort.
 // A menacing war-march in E Phrygian, 32 bars, straight time (no swing).
 //
-// FORM (8-bar sections): A (low trombone riff states the motif) —
+// OSRS-STYLE ORCHESTRATION (for the OSRS GM soundfont): the war-march riff
+//   now belongs to a bold French horn section (P.HORN) — the classic
+//   "Attack"/"Warriors' Guild" battle-brass voice — answered by ringing
+//   trumpet calls panned hard against it. Lush slow strings (P.SLOW_STRINGS)
+//   replace the tremolo bed and hold long chord roots; a low choir
+//   (P.CHOIR) chants sustained thirds/fifths beneath them for menace.
+//   Tuba keeps the driving eighth-note ground with octave pops and
+//   chromatic walk-ups, while the timpani part is expanded into a
+//   hammering E-pedal ostinato with pickup rolls. Snare-led march kit
+//   (OSRS drum bank) with ghost drags and tom fills at every section turn.
+//
+// FORM (8-bar sections): A (low horn riff states the motif) —
 //   A2 (motif sequenced up, peak driven to E4) — B (trumpet's defiant
 //   theme over a descending Em-F-Dm-Am-G-F progression, closing on an
 //   E-major Phrygian-dominant cadence with G#) — A' (full-band restate,
@@ -14,19 +25,16 @@
 // LEITMOTIF: the world theme "rise, reach, settle" (C E G A G E) opens
 //   section B transformed to E minor — E G B C B G — as the defiant
 //   trumpet's first phrase (bars 17-18).
-// COUNTERPOINT: trumpet jabs answer the trombone in its rests through A
-//   and A'; in B the roles flip and the trombone pulses low root-fifth
-//   answers under the trumpet. Tremolo strings carry the harmony,
-//   timpani hammers an E pedal (8-bar ostinato), tuba drives eighths
-//   with octave pops and chromatic walk-up turnarounds; snare-led march
-//   kit with ghost-note drags and tom fills at every section turn.
+// COUNTERPOINT: trumpet jabs answer the horns in their rests through A
+//   and A'; in B the roles flip and the horns pulse low root-fifth
+//   answers under the trumpet.
 import { Track, seq, P } from './notation';
 
 export const track: Track = {
   name: 'Warbanner', bpm: 112, loopBars: 32,
   channels: [
-    // ---- LEAD: trombone — the war-march riff -----------------------------
-    { program: P.TROMBONE, gain: 0.22, octave: 3, wave: 'sawtooth', pan: -0.15,
+    // ---- LEAD: horn section — the war-march riff -------------------------
+    { program: P.HORN, gain: 0.21, octave: 3, wave: 'sawtooth', pan: -0.2,
       notes: seq(`
         E:8 . E:4 F:6 G:9 - F:6 E:5
         D:6 E:7 F:8 - E:6 D:5 E:8 .
@@ -64,8 +72,8 @@ export const track: Track = {
         C4:8 B:7 A:6 G:7 F:8 - D:6 -
         F:8 G:7 F:6 D:5 E:9 - - .
       `) },
-    // ---- COUNTER: trumpet jabs in the gaps; defiant lead in B ------------
-    { program: P.TRUMPET, gain: 0.15, octave: 4, wave: 'square', pan: 0.35,
+    // ---- COUNTER: trumpet calls in the gaps; defiant lead in B -----------
+    { program: P.TRUMPET, gain: 0.16, octave: 4, wave: 'square', pan: 0.35,
       notes: seq(`
         . . . . . . . .
         . . . . . . E:4 G:5
@@ -103,8 +111,8 @@ export const track: Track = {
         . . C5:6 . . . A:5 .
         B:6 D5:6 B:5 G:5 E:7 - - .
       `) },
-    // ---- HARMONY: tremolo strings — sustained chord roots ----------------
-    { program: P.TREMOLO_STRINGS, gain: 0.08, octave: 3, wave: 'sawtooth',
+    // ---- HARMONY: lush slow strings — sustained chord roots --------------
+    { program: P.SLOW_STRINGS, gain: 0.1, octave: 3, wave: 'sawtooth',
       pan: 0.15,
       notes: seq(`
         E:5 - - - - - - -
@@ -143,8 +151,47 @@ export const track: Track = {
         F:6 - - - - - - -
         E:5 - - - - - - -
       `) },
+    // ---- MENACE: low choir — chanted thirds and fifths under the strings -
+    { program: P.CHOIR, gain: 0.08, octave: 3, wave: 'triangle', pan: -0.35,
+      notes: seq(`
+        B:5 - - - - - - -
+        G:5 - - - - - - -
+        D4:5 - - - - - - -
+        C4:5 - - - - - - -
+        B:5 - - - - - - -
+        A:5 - - - - - - -
+        C4:5 - - - - - - -
+        A:5 - - - B:5 - - -
+
+        B:5 - - - - - - -
+        G:5 - - - - - - -
+        G:5 - - - - - - -
+        E:5 - - - - - - -
+        B:5 - - - - - - -
+        E:5 - - - G:5 - - -
+        C4:5 - - - - - - -
+        B:5 - - - - - - -
+
+        B:6 - - - - - - -
+        G:5 - - - - - - -
+        A:5 - - - - - - -
+        A:5 - - - - - - -
+        E:5 - - - - - - -
+        D4:5 - - - - - - -
+        C4:5 - - - - - - -
+        B:6 - - - - - G#:5 -
+
+        B:6 - - - - - - -
+        G:6 - - - - - - -
+        D4:6 - - - - - - -
+        C4:6 - - - - - - -
+        B:6 - - - - - - -
+        E:6 - - - - - - -
+        C4:6 - - - - - - -
+        B:7 - - - E:5 - - -
+      `) },
     // ---- BASS: tuba — driving eighths, octave pops, chromatic walks ------
-    { program: P.TUBA, gain: 0.18, octave: 2, wave: 'triangle', pan: 0,
+    { program: P.TUBA, gain: 0.17, octave: 2, wave: 'triangle', pan: 0,
       notes: seq(`
         E:8 . E:4 E:5 B2:6 . E:5 .
         E:8 . E:4 E:5 D:6 . E:5 .
@@ -182,17 +229,17 @@ export const track: Track = {
         F:8 . F:5 F3:6 C3:6 . F:5 .
         F:7 E:6 D:6 C:5 B2:7 . D#:6 .
       `) },
-    // ---- COLOR: timpani E-pedal hammer (8-bar ostinato) ------------------
-    { program: P.TIMPANI, gain: 0.12, octave: 2, wave: 'sine', pan: -0.3,
+    // ---- COLOR: timpani E-pedal hammer with pickup rolls (8-bar loop) ----
+    { program: P.TIMPANI, gain: 0.13, octave: 2, wave: 'sine', pan: -0.3,
       notes: seq(`
+        E:8 . . . E:5 . . .
+        E:7 . . . . . E:4 E:5
+        E:8 . . . . . . .
+        B2:6 . . . E:6 . B2:5 .
+        E:8 . . . E:5 . . .
         E:7 . . . . . . .
-        . . . . . . . .
-        . . . . . . . .
-        . . . . . . B2:5 .
-        E:7 . . . . . . .
-        . . . . . . . .
-        . . . . . . . .
-        E:6 . . . B2:5 . E:7 .
+        E:7 . . . B2:5 . . .
+        E:6 E:5 E:6 E:7 B2:6 . E:8 .
       `) },
     // ---- DRUMS: snare-led march with ghost drags, fills at the turns -----
     { program: 0, gain: 0.16, octave: 3, wave: 'square', drums: true,

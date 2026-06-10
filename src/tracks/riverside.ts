@@ -1,16 +1,22 @@
-// 'Riverside' — the river banks. Wistful 6/8 in A minor, water-borne harp
-// arpeggios under a lyrical flute. Form: A (theme, 8 bars) / A' (sequenced up
-// a third, deceptive cadence E7->F) / B (turn to C major, borrowed Fm, the
-// world leitmotif C E G A G E quoted in the violin) / A'' (theme varied,
-// peak at A5, cadence resolving back into bar 1). 32 bars of 6/8 = 192 steps.
+// 'Riverside' — the river banks. Wistful 6/8 in A minor, recomposed as a
+// classic OSRS-style chamber piece: breathy recorder carries the lyrical
+// theme, an english horn answers in the gaps (quoting the world leitmotif
+// C E G A G E in the B section), harp ripples water-figures through every
+// bar, slow strings hold one misty guide-tone per bar, a soft choir swells
+// in under the C-major B section, woody upright bass keeps the dotted lilt,
+// and quiet timpani rolls mark the section cadences. Form unchanged:
+// A (theme, 8 bars) / A' (sequenced up a third, deceptive cadence E7->F) /
+// B (turn to C major, borrowed Fm) / A'' (theme varied, peak at A5,
+// cadence resolving back into bar 1). 32 bars of 6/8 = 192 steps.
 import { Track, seq, P } from './notation';
 
 export const track: Track = {
-  name: 'Riverside', bpm: 78, loopBars: 32,
+  name: 'Riverside', bpm: 78, loopBars: 24,
   channels: [
-    // Lead — flute, the singable hook: a rise A-C-E that settles back, stated
-    // in bars 1-2, sequenced up a third in A', floated in B, peaked in A''.
-    { program: P.FLUTE, gain: 0.22, octave: 4, wave: 'triangle', pan: 0.15, notes: seq(
+    // Lead — recorder (the OSRS voice), the singable hook: a rise A-C-E that
+    // settles back, stated in bars 1-2, sequenced up a third in A', floated
+    // in B, peaked in A''.
+    { program: P.RECORDER, gain: 0.21, octave: 4, wave: 'triangle', pan: 0.15, notes: seq(
       // A — theme (bars 1-8): Am Em F C | Dm Am E7 Am
       'A:6 -    C5:7 -    E5:8 D5:6 ' +
       'C5:7 -   A:6  -    -    E:3  ' +
@@ -47,9 +53,9 @@ export const track: Track = {
       'C5:7 -   A:6  F:5  -    -    ' +
       'B:5 -    G#:6 B:7  D5:8 E5:8 ' +
       'C5:8 -   A:7  -    -    E:3  ') },
-    // Counter — violin answering in the lead's gaps; quotes the world
+    // Counter — english horn answering in the lead's gaps; quotes the world
     // leitmotif (C E G A G E) across bars 17-18 of the B section.
-    { program: P.VIOLIN, gain: 0.12, octave: 4, wave: 'sawtooth', pan: -0.3, notes: seq(
+    { program: P.ENGLISH_HORN, gain: 0.10, octave: 4, wave: 'sawtooth', pan: -0.3, notes: seq(
       '. .      .    .    .    .    ' +
       '. .      E:4  F:5  E:4  D:4  ' +
       'C:4 -    -    .    .    .    ' +
@@ -83,7 +89,7 @@ export const track: Track = {
       '. G#3:4  -    B3:5 -    .    ' +
       'A3:5 -   -    E:4  -    .    ') },
     // Water — harp arpeggios rippling through every bar of the harmony.
-    { program: P.HARP, gain: 0.12, octave: 3, wave: 'triangle', pan: 0.35, notes: seq(
+    { program: P.HARP, gain: 0.13, octave: 3, wave: 'triangle', pan: 0.35, notes: seq(
       'A:5 E4:3 A4:4 C5:5 E4:3 C5:3 ' +    // Am
       'E:5 B:3  E4:4 G4:5 B:3  G4:3 ' +    // Em
       'F:5 C4:3 F4:4 A4:5 C4:3 A4:3 ' +    // F
@@ -117,7 +123,7 @@ export const track: Track = {
       'E:5 B:3  D4:4 G#4:5 B4:3 G#4:3 ' +  // E7
       'A:5 E4:3 A4:4 C5:5 E4:3 C5:3 ') },  // Am
     // Mist — slow strings holding one smooth guide-tone per bar.
-    { program: P.SLOW_STRINGS, gain: 0.07, octave: 4, wave: 'sine', pan: -0.15, notes: seq(
+    { program: P.SLOW_STRINGS, gain: 0.08, octave: 4, wave: 'sine', pan: -0.15, notes: seq(
       'C:3 - - - - -  B3:3 - - - - -  A3:3 - - - - -  G3:3 - - - - - ' +
       'A3:3 - - - - - C:3 - - - - -   B3:3 - - - - -  A3:3 - - - - - ' +
       'E:3 - - - - -  D:3 - - - - -   C:3 - - - - -   C:3 - - - - - ' +
@@ -126,9 +132,23 @@ export const track: Track = {
       'A3:3 - - - - - G#3:3 - - - - - G3:3 - - - - -  G#3:3 - - - - - ' +
       'C:3 - - - - -  B3:3 - - - - -  A3:3 - - - - -  G3:3 - - - - - ' +
       'A3:3 - - - - - A3:3 - - - - -  B3:3 - - - - -  A3:4 - - - - - ') },
-    // Bass — plucked upright in a dotted-quarter lilt, walking approaches
+    // Veil — choir "aah" swelling in under the B section's turn to C major,
+    // then a hushed amen on the final cadence.
+    { program: P.CHOIR, gain: 0.07, octave: 4, wave: 'sine', pan: 0.1, notes: seq(
+      // A, A' (bars 1-16): tacet
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      // B (bars 17-24): C G Am Em | F Fm C E7
+      'E:2 - - - - -  D:3 - - - - -  C:3 - - - - -  B3:3 - - - - - ' +
+      'C:4 - - - - -  C:4 - - - - -  C:3 - - - - -  B3:3 - - - - - ' +
+      // A'' (bars 25-30): tacet; final cadence (bars 31-32): E7 -> Am
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  B3:2 - - - - -  A3:3 - - - - - ') },
+    // Bass — woody upright in a dotted-quarter lilt, walking approaches
     // into each new chord, a small run-up at the end of B.
-    { program: P.ACOUSTIC_BASS, gain: 0.15, octave: 2, wave: 'sine', pan: 0, notes: seq(
+    { program: P.ACOUSTIC_BASS, gain: 0.14, octave: 2, wave: 'sine', pan: 0, notes: seq(
       'A:6 -   -    E:4  -    G:2  ' +
       'E:6 -   -    B:4  -    E:2  ' +
       'F:6 -   -    C3:4 -    A:2  ' +
@@ -161,5 +181,19 @@ export const track: Track = {
       'F:6 -   -    C3:4 -    D:3  ' +
       'E:6 -   -    G#:4 -    B:3  ' +
       'A:7 -   -    E:4  G:3  -    ') },
+    // Drums of the deep — soft timpani rolls marking each section cadence.
+    { program: P.TIMPANI, gain: 0.10, octave: 2, wave: 'sine', pan: -0.1, notes: seq(
+      // bars 1-7: tacet; bar 8: arrival on Am
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  A:4 - - . . . ' +
+      // bars 9-15: tacet; bar 16: half-cadence on E7
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  E:3 . . E:4 - - ' +
+      // bars 17-23: tacet; bar 24: end of B on E7
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  . . . . . .  E:4 - - . . . ' +
+      // bars 25-30: tacet; bars 31-32: final cadence E7 -> Am
+      '. . . . . .  . . . . . .  . . . . . .  . . . . . . ' +
+      '. . . . . .  . . . . . .  E:3 . . E:4 . E:5  A:5 - - . . . ') },
   ],
 };

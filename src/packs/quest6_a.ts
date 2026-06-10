@@ -9,7 +9,7 @@
 
 import {
   state, msg, addItem, addXp,
-  registerNpcAction, registerTickHook, startDialogue, showOptions,
+  registerNpcAction, onKill, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
@@ -212,33 +212,17 @@ registerNpcAction('desert_nomad', 'Ask-about-bandits', (_n: Npc) => {
 });
 
 // ============================================================
-// Boss kill tracking — no kill-event hook; poll dead-state edges.
+// Boss kill tracking — server youKilled events (killer gets the credit).
 // ============================================================
 
-const lastDeadCrown = new Map<Npc, boolean>();
-const lastDeadSmile = new Map<Npc, boolean>();
-
-registerTickHook(() => {
+onKill((defId) => {
   if (!state.player) return;
-  const crownQuesting = crownStage() === 1;
-  const smileQuesting = smileStage() === 1;
-  if (!crownQuesting && !smileQuesting) return;
-  for (const n of state.npcs) {
-    if (crownQuesting && n.def.id === 'ice_queen') {
-      const was = lastDeadCrown.get(n) ?? n.dead;
-      if (!was && n.dead && !marazaSlain()) {
-        state.player.quests[CROWN_KILL] = (state.player.quests[CROWN_KILL] ?? 0) + 1;
-        msg('Maraza the Rimebound shatters! The summit storm begins to break. Guide Torvald should hear of this.', 'level');
-      }
-      lastDeadCrown.set(n, n.dead);
-    }
-    if (smileQuesting && n.def.id === 'bandit_king') {
-      const was = lastDeadSmile.get(n) ?? n.dead;
-      if (!was && n.dead && !saifSlain()) {
-        state.player.quests[SMILE_KILL] = (state.player.quests[SMILE_KILL] ?? 0) + 1;
-        msg('Saif the Red Smile falls, grin and all. Nomad Zahra will want to hear of this.', 'level');
-      }
-      lastDeadSmile.set(n, n.dead);
-    }
+  if (defId === 'ice_queen' && crownStage() === 1 && !marazaSlain()) {
+    state.player.quests[CROWN_KILL] = (state.player.quests[CROWN_KILL] ?? 0) + 1;
+    msg('Maraza the Rimebound shatters! The summit storm begins to break. Guide Torvald should hear of this.', 'level');
+  }
+  if (defId === 'bandit_king' && smileStage() === 1 && !saifSlain()) {
+    state.player.quests[SMILE_KILL] = (state.player.quests[SMILE_KILL] ?? 0) + 1;
+    msg('Saif the Red Smile falls, grin and all. Nomad Zahra will want to hear of this.', 'level');
   }
 });

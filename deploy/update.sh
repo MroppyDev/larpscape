@@ -21,13 +21,18 @@ git fetch origin
 BRANCH="$(git remote show origin | sed -n 's/.*HEAD branch: //p')"
 git reset --hard "origin/${BRANCH:-master}"
 
-echo "==> Installing dependencies + building client"
+echo "==> Installing dependencies + building client + admin console"
 npm ci
 npm run build
+npm run admin:build
 
-# Keep systemd unit / nginx config in sync with the repo
+# Keep systemd units / nginx config in sync with the repo
 if ! cmp -s deploy/larpscape.service /etc/systemd/system/larpscape.service; then
   cp deploy/larpscape.service /etc/systemd/system/larpscape.service
+  systemctl daemon-reload
+fi
+if [[ -f deploy/larpscape-admin.service ]] && ! cmp -s deploy/larpscape-admin.service /etc/systemd/system/larpscape-admin.service; then
+  cp deploy/larpscape-admin.service /etc/systemd/system/larpscape-admin.service
   systemctl daemon-reload
 fi
 
@@ -43,8 +48,11 @@ if systemctl is-active --quiet larpscape; then
   sleep "$WARN_SECONDS"
 fi
 
-echo "==> Restarting service"
+echo "==> Restarting services"
 systemctl restart larpscape
+if [[ -f /etc/systemd/system/larpscape-admin.service ]]; then
+  systemctl restart larpscape-admin || true
+fi
 sleep 2
 systemctl --no-pager --lines=5 status larpscape
 echo "==> Deploy complete"

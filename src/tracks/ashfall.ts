@@ -1,21 +1,28 @@
 // 'Ashfall' — the magma depths, lair of the final boss.
 //
-// C minor, 56 bpm, 32 bars. Doom with grandeur.
+// C minor, 56 bpm, 32 bars. Doom with grandeur — scored OSRS-style after
+// "TzHaar!" / "Fire and Brimstone" / "Inferno" through the SC-88 soundfont:
+//   * powerful FRENCH HORN carries the chromatic dread motif (the classic
+//     RuneScape low-brass voice), answered by a dark TROMBONE counter-line
+//   * menacing TREMOLO-STRING ostinato pulsing 8ths under everything
+//   * dark CHOIR aahs blooming on long tones, CONTRABASS growling the
+//     pedal/chromatic-walk bass, pounding TIMPANI and doom TOMS
+//   * shrieking PICCOLO erupts only at the section peaks (infernal winds)
 // FORM:  A  (bars 1-8)   — the dread motif: a chromatic crawl C -> C# -> D -> D#
 //                          that falls back and sinks to the leading tone, never
 //                          resolving. Stated low, then sequenced up a minor 3rd.
-//        A' (bars 9-16)  — motif an octave up, horn counter-line answering in
-//                          the gaps, development drives to a G4 peak.
+//        A' (bars 9-16)  — motif an octave up, trombone counter-line answering
+//                          in the gaps, development drives to a G4 peak.
 //        B  (bars 17-24) — the dark bloom: bVI (Ab, spelled G#) opens up and
 //                          the world leitmotif (C E G A G E) is quoted in
 //                          minor — C Eb G Ab G Eb — over Ab / Fm / Db / G7b9.
 //        A''(bars 25-32) — heaviest statement: lead climbs the full chromatic
-//                          ladder to G while the horn mirrors it with a
+//                          ladder to G while the counter mirrors it with a
 //                          chromatic lament descent; ends hanging on the
 //                          dominant so the loop seam falls back onto C.
 import { Track, seq, P } from './notation';
 
-// ---- lead: low trombone, the chromatic dread motif --------------------------
+// ---- lead: french horn, the chromatic dread motif ----------------------------
 const LEAD = [
   // A — motif, low and slow
   'C:6 - - - - - C#:4 -',
@@ -56,7 +63,7 @@ const LEAD = [
   'G:7 - - - F:5 - B2:6 -',
 ];
 
-// ---- counter: horn, answers in the gaps; chromatic lament in A'' ------------
+// ---- counter: trombone, answers in the gaps; chromatic lament in A'' ---------
 const COUNTER = [
   '. . . . . . . .',
   '. . . . . . . .',
@@ -93,7 +100,47 @@ const COUNTER = [
   'D:6 - - - - - - -',
 ];
 
-// ---- choir: long ominous tones, blooming in B --------------------------------
+// ---- ostinato: tremolo strings, menacing pulsing 8ths on the harmony ---------
+const OST = [
+  // A — quiet seethe on the C pedal
+  'C:4 C:2 C:3 C:2 G:4 C:2 D#:3 C:2',
+  'C:4 C:2 C:3 C:2 G:4 C:2 D#:3 C:2',
+  'C:4 C:2 C:3 C:2 G:4 C:2 D#:3 C:2',
+  'G:5 G:2 G:3 G:2 D:4 G:2 B:3 G:2',
+  'C:4 C:2 C:3 C:2 G:4 C:2 D#:3 C:2',
+  'F:4 F:2 F:3 F:2 C:4 F:2 G#:3 F:2',
+  'C:4 C:2 C:3 C:2 G:4 C:2 D#:3 C:2',
+  'G:5 G:2 G:3 G:3 D:4 G:3 B:4 G:3',
+  // A' — a notch hotter
+  'C:5 C:3 C:4 C:3 G:5 C:3 D#:4 C:3',
+  'C:5 C:3 C:4 C:3 G:5 C:3 D#:4 C:3',
+  'C:5 C:3 C:4 C:3 G:5 C:3 D#:4 C:3',
+  'G:6 G:3 G:4 G:3 D:5 G:3 B:4 G:3',
+  'C:5 C:3 C:4 C:3 G:5 C:3 D#:4 C:3',
+  'F:5 F:3 F:4 F:3 C:5 F:3 G#:4 F:3',
+  'G:6 G:3 G:4 G:3 D:5 G:3 B:4 G:3',
+  'G:6 G:3 G:4 G:4 D:5 G:4 B:5 G:4',
+  // B — the bloom: bVI / iv / bII / V
+  'G#:5 G#:3 G#:4 G#:3 D#:5 G#:3 C4:4 G#:3',
+  'G#:5 G#:3 G#:4 G#:3 D#:5 G#:3 C4:4 G#:3',
+  'F:5 F:3 F:4 F:3 C:5 F:3 G#:4 F:3',
+  'F:5 F:3 F:4 F:3 C:5 F:3 G#:4 F:3',
+  'C#:5 C#:3 C#:4 C#:3 G#:5 C#:3 F:4 C#:3',
+  'C#:5 C#:3 C#:4 C#:3 G#:5 C#:3 F:4 C#:3',
+  'G:5 G:3 G:4 G:3 D:5 G:3 B:4 G:3',
+  'G:6 G:3 G:4 G:4 D:5 G:4 B:5 G:5',
+  // A'' — full boil
+  'C:6 C:4 C:5 C:4 G:6 C:4 D#:5 C:4',
+  'C:6 C:4 C:5 C:4 G:6 C:4 D#:5 C:4',
+  'C:6 C:4 C:5 C:4 G:6 C:4 D#:5 C:4',
+  'G:6 G:4 G:5 G:4 D:6 G:4 B:5 G:4',
+  'C:6 C:4 C:5 C:4 G:6 C:4 D#:5 C:4',
+  'D#:6 D#:4 D#:5 D#:4 A#:6 D#:4 G:5 D#:4',
+  'G:7 G:4 G:5 G:5 D:6 G:5 B:6 G:5',
+  'G:7 G:5 G:6 G:5 D:6 G:5 B:6 G:6',
+];
+
+// ---- choir: long ominous aahs, blooming in B ----------------------------------
 const CHOIR = [
   'G:3 - - - - - - -',
   '- - - - - - - -',
@@ -129,7 +176,7 @@ const CHOIR = [
   'D:6 - - - - - - -',
 ];
 
-// ---- bass: tuba — pedal vs chromatic walk, octave pops -----------------------
+// ---- bass: contrabass — pedal vs chromatic walk, octave pops ------------------
 const BASS = [
   'C:7 - - - . . C3:4 .',
   'C:6 - - - . . G1:4 .',
@@ -165,7 +212,7 @@ const BASS = [
   'G1:7 - - - F1:5 - G1:6 -',
 ];
 
-// ---- timpani: downbeat strikes, crescendo rolls at section turns -------------
+// ---- timpani: downbeat strikes, crescendo rolls at section turns --------------
 const TIMP = [
   'C:8 . . . . . . .',
   '. . . . . . C:3 .',
@@ -201,7 +248,46 @@ const TIMP = [
   'G1:6 . G1:6 G1:7 G1:7 G1:8 G1:8 G1:9',
 ];
 
-// ---- drums: sparse doom toms; fills only at section turns --------------------
+// ---- shriek: piccolo — infernal high winds, only at the section peaks ---------
+const SHRIEK = [
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  // A' peak — first scream
+  'G5:7 - - - F5:6 - D#5:5 -',
+  'D5:4 - - - . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  // end of the bloom — wail over the dominant
+  '. . . . G5:6 - G#5:7 -',
+  'G5:8 - - - F5:5 - - -',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  '. . . . . . . .',
+  // final chromatic climb, doubled two octaves up
+  'D#5:7 - - - E5:7 - F5:8 -',
+  'F#5:8 - - - G5:9 - - -',
+  'G5:7 - - - - - - -',
+];
+
+// ---- drums: sparse doom toms; fills only at section turns ---------------------
 const DRUMS = [
   'C:6 . . . . . . .',
   'K:5 . . . . . T:3 .',
@@ -240,17 +326,21 @@ const DRUMS = [
 export const track: Track = {
   name: 'Ashfall', bpm: 56, loopBars: 32,
   channels: [
-    { program: P.TROMBONE, gain: 0.22, octave: 3, wave: 'sawtooth', pan: 0,
+    { program: P.HORN, gain: 0.20, octave: 3, wave: 'sawtooth', pan: 0,
       notes: seq(LEAD.join(' ')) },
-    { program: P.HORN, gain: 0.12, octave: 4, wave: 'square', pan: 0.35,
+    { program: P.TROMBONE, gain: 0.11, octave: 4, wave: 'square', pan: 0.35,
       notes: seq(COUNTER.join(' ')) },
+    { program: P.TREMOLO_STRINGS, gain: 0.09, octave: 3, wave: 'sawtooth', pan: 0.2,
+      notes: seq(OST.join(' ')) },
     { program: P.CHOIR, gain: 0.11, octave: 3, wave: 'triangle', pan: -0.3,
       notes: seq(CHOIR.join(' ')) },
-    { program: P.TUBA, gain: 0.16, octave: 2, wave: 'sawtooth', pan: -0.1,
+    { program: P.CONTRABASS, gain: 0.15, octave: 2, wave: 'sawtooth', pan: -0.1,
       notes: seq(BASS.join(' ')) },
     { program: P.TIMPANI, gain: 0.15, octave: 2, wave: 'sine', pan: -0.15,
       notes: seq(TIMP.join(' ')) },
-    { program: 0, gain: 0.14, octave: 3, wave: 'sine', pan: 0.1, drums: true,
+    { program: P.PICCOLO, gain: 0.07, octave: 5, wave: 'triangle', pan: 0.45,
+      notes: seq(SHRIEK.join(' ')) },
+    { program: 0, gain: 0.13, octave: 3, wave: 'sine', pan: 0.1, drums: true,
       notes: seq(DRUMS.join(' ')) },
   ],
 };

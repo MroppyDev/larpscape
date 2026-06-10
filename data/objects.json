@@ -1,0 +1,573 @@
+{
+  "objs": {
+    "tree": {
+      "id": "tree",
+      "name": "Tree",
+      "examine": "A leafy tree.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "oak": {
+      "id": "oak",
+      "name": "Oak tree",
+      "examine": "A grand and sturdy oak.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "willow": {
+      "id": "willow",
+      "name": "Willow tree",
+      "examine": "A weeping willow trailing its branches in the breeze.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "stump": {
+      "id": "stump",
+      "name": "Tree stump",
+      "examine": "Someone has chopped this tree down.",
+      "blocks": true
+    },
+    "rocks_copper": {
+      "id": "rocks_copper",
+      "name": "Copper rocks",
+      "examine": "A mineable vein of copper ore.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_tin": {
+      "id": "rocks_tin",
+      "name": "Tin rocks",
+      "examine": "A mineable vein of tin ore.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_iron": {
+      "id": "rocks_iron",
+      "name": "Iron rocks",
+      "examine": "A mineable vein of iron ore.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_coal": {
+      "id": "rocks_coal",
+      "name": "Coal rocks",
+      "examine": "A dark seam of coal runs through this rock.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_essence": {
+      "id": "rocks_essence",
+      "name": "Essence rocks",
+      "examine": "A pale rock thrumming with raw magic. It never seems to run dry.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_mithril": {
+      "id": "rocks_mithril",
+      "name": "Mithril rocks",
+      "examine": "A vein glinting pale blue in the dark.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_adamantite": {
+      "id": "rocks_adamantite",
+      "name": "Adamantite rocks",
+      "examine": "A vein of green-flecked adamantite. Bring a good pick and patience.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_empty": {
+      "id": "rocks_empty",
+      "name": "Rocks",
+      "examine": "There is no ore left in this rock.",
+      "blocks": true
+    },
+    "fishing_spot": {
+      "id": "fishing_spot",
+      "name": "Fishing spot",
+      "examine": "I can see fish swimming in the water.",
+      "action": "Net",
+      "blocks": false
+    },
+    "rod_fishing_spot": {
+      "id": "rod_fishing_spot",
+      "name": "Fishing spot",
+      "examine": "Ripples here suggest fish with a taste for bait.",
+      "action": "Bait",
+      "blocks": false
+    },
+    "range": {
+      "id": "range",
+      "name": "Cooking range",
+      "examine": "A hot cooking range.",
+      "action": "Cook",
+      "blocks": true
+    },
+    "bank_booth": {
+      "id": "bank_booth",
+      "name": "Bank booth",
+      "examine": "It's a bank booth.",
+      "action": "Bank",
+      "blocks": true
+    },
+    "fire": {
+      "id": "fire",
+      "name": "Fire",
+      "examine": "A warm crackling fire.",
+      "action": "Cook",
+      "blocks": false
+    },
+    "furnace": {
+      "id": "furnace",
+      "name": "Furnace",
+      "examine": "Hot enough to turn rocks into regrets — or bars.",
+      "action": "Smelt",
+      "blocks": true
+    },
+    "anvil": {
+      "id": "anvil",
+      "name": "Anvil",
+      "examine": "An anvil. It has heard a lot of hammering.",
+      "action": "Smith",
+      "blocks": true
+    },
+    "spinning_wheel": {
+      "id": "spinning_wheel",
+      "name": "Spinning wheel",
+      "examine": "Spins wool and flax into useful things.",
+      "action": "Spin",
+      "blocks": true
+    },
+    "altar": {
+      "id": "altar",
+      "name": "Altar",
+      "examine": "A quiet altar. Good for the soul.",
+      "action": "Pray-at",
+      "blocks": true
+    },
+    "air_altar": {
+      "id": "air_altar",
+      "name": "Air altar",
+      "examine": "A weathered stone circle where the wind never stops.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "flax_plant": {
+      "id": "flax_plant",
+      "name": "Flax",
+      "examine": "A clump of flax with delicate blue flowers.",
+      "action": "Pick",
+      "blocks": false
+    },
+    "farming_patch": {
+      "id": "farming_patch",
+      "name": "Farming patch",
+      "examine": "A patch of soil ready for honest work.",
+      "action": "Inspect",
+      "blocks": false
+    },
+    "bake_stall": {
+      "id": "bake_stall",
+      "name": "Bake stall",
+      "examine": "Fresh baking, lightly guarded.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "workbench": {
+      "id": "workbench",
+      "name": "Workbench",
+      "examine": "A sturdy bench for building furniture.",
+      "action": "Build",
+      "blocks": true
+    },
+    "agility_log": {
+      "id": "agility_log",
+      "name": "Log balance",
+      "examine": "A log laid across a muddy gap. Probably fine.",
+      "action": "Walk-across",
+      "blocks": false
+    },
+    "agility_rope": {
+      "id": "agility_rope",
+      "name": "Rope swing",
+      "examine": "A rope of questionable provenance.",
+      "action": "Swing-on",
+      "blocks": false
+    },
+    "agility_wall": {
+      "id": "agility_wall",
+      "name": "Climbing wall",
+      "examine": "A rough wall with convenient handholds.",
+      "action": "Climb",
+      "blocks": false
+    },
+    "agility_ledge": {
+      "id": "agility_ledge",
+      "name": "Narrow ledge",
+      "examine": "A ledge best crossed without looking down.",
+      "action": "Balance-across",
+      "blocks": false
+    },
+    "snare_set": {
+      "id": "snare_set",
+      "name": "Bird snare",
+      "examine": "A set snare, waiting patiently.",
+      "action": "Check",
+      "blocks": false
+    },
+    "snare_caught": {
+      "id": "snare_caught",
+      "name": "Bird snare",
+      "examine": "Something small and feathery has been caught!",
+      "action": "Check",
+      "blocks": false
+    },
+    "ge_booth": {
+      "id": "ge_booth",
+      "name": "Grand Exchange booth",
+      "examine": "Where fortunes are made, lost, and argued about.",
+      "action": "Exchange",
+      "blocks": true
+    },
+    "fountain": {
+      "id": "fountain",
+      "name": "Fountain",
+      "examine": "The pride of the Aldgate plaza. Coins at the bottom, hopes attached.",
+      "blocks": true
+    },
+    "stalagmite": {
+      "id": "stalagmite",
+      "name": "Stalagmite",
+      "examine": "A stone spike, patiently growing upward for centuries.",
+      "blocks": true
+    },
+    "cave_mouth": {
+      "id": "cave_mouth",
+      "name": "Cave mouth",
+      "examine": "A dark opening breathing cool air from somewhere deep below.",
+      "blocks": false
+    },
+    "maple": {
+      "id": "maple",
+      "name": "Maple tree",
+      "examine": "A maple tree wearing autumn all year round.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "yew": {
+      "id": "yew",
+      "name": "Yew tree",
+      "examine": "An ancient yew. It has outlived everyone who planted it.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "magic_tree": {
+      "id": "magic_tree",
+      "name": "Magic tree",
+      "examine": "Its leaves glitter. The tree pretends not to notice.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "rocks_gold": {
+      "id": "rocks_gold",
+      "name": "Gold rocks",
+      "examine": "A vein winking with honest-to-goodness gold.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_runite": {
+      "id": "rocks_runite",
+      "name": "Runite rocks",
+      "examine": "Storm-grey ore in the living rock. The rarest of finds.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "rocks_gem": {
+      "id": "rocks_gem",
+      "name": "Gem rocks",
+      "examine": "A rough seam glittering with buried colour.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "lobster_spot": {
+      "id": "lobster_spot",
+      "name": "Fishing spot",
+      "examine": "The water here churns with armoured tempers.",
+      "action": "Cage",
+      "blocks": false
+    },
+    "harpoon_spot": {
+      "id": "harpoon_spot",
+      "name": "Fishing spot",
+      "examine": "Big shapes glide beneath the surface. Bring a harpoon.",
+      "action": "Harpoon",
+      "blocks": false
+    },
+    "fire_altar": {
+      "id": "fire_altar",
+      "name": "Fire altar",
+      "examine": "A scorched stone ring where the air shimmers with heat.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "gem_stall": {
+      "id": "gem_stall",
+      "name": "Gem stall",
+      "examine": "Glittering wares, watchfully guarded.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "ice_ledge": {
+      "id": "ice_ledge",
+      "name": "Icy ledge",
+      "examine": "A glassy ledge with no patience for hesitation.",
+      "action": "Balance-across",
+      "blocks": false
+    },
+    "rope_bridge": {
+      "id": "rope_bridge",
+      "name": "Rope bridge",
+      "examine": "Two ropes, some planks, and a long view down.",
+      "action": "Cross",
+      "blocks": false
+    },
+    "rock_climb": {
+      "id": "rock_climb",
+      "name": "Rock face",
+      "examine": "A cliff with handholds, allegedly.",
+      "action": "Climb",
+      "blocks": false
+    },
+    "snow_slope": {
+      "id": "snow_slope",
+      "name": "Snow slope",
+      "examine": "A steep slope of packed snow. Gravity offers a shortcut.",
+      "action": "Slide-down",
+      "blocks": false
+    },
+    "bush": {
+      "id": "bush",
+      "name": "Bush",
+      "examine": "A bush, doing bush things.",
+      "blocks": false
+    },
+    "fern": {
+      "id": "fern",
+      "name": "Fern",
+      "examine": "A fern that predates most kingdoms and all of their taxes.",
+      "blocks": false
+    },
+    "boulder_small": {
+      "id": "boulder_small",
+      "name": "Boulder",
+      "examine": "A boulder that rolled here once and called it a day.",
+      "blocks": false
+    },
+    "mushroom_patch": {
+      "id": "mushroom_patch",
+      "name": "Mushrooms",
+      "examine": "A huddle of mushrooms holding a quiet meeting.",
+      "blocks": false
+    },
+    "reeds": {
+      "id": "reeds",
+      "name": "Reeds",
+      "examine": "Reeds whispering gossip to the wind.",
+      "blocks": false
+    },
+    "lilypad": {
+      "id": "lilypad",
+      "name": "Lilypad",
+      "examine": "A frog's idea of prime real estate.",
+      "blocks": false
+    },
+    "driftwood": {
+      "id": "driftwood",
+      "name": "Driftwood",
+      "examine": "Wood that took the scenic route here.",
+      "blocks": false
+    },
+    "barrel": {
+      "id": "barrel",
+      "name": "Barrel",
+      "examine": "A barrel. Contents: speculation.",
+      "blocks": true
+    },
+    "crate": {
+      "id": "crate",
+      "name": "Crate",
+      "examine": "A crate marked \"this side up\", lying on its side.",
+      "blocks": true
+    },
+    "cactus": {
+      "id": "cactus",
+      "name": "Cactus",
+      "examine": "It waves hello. Do not wave back.",
+      "blocks": true
+    },
+    "ice_spike": {
+      "id": "ice_spike",
+      "name": "Ice spike",
+      "examine": "A frozen spear the mountain made all by itself.",
+      "blocks": true
+    },
+    "snow_pine": {
+      "id": "snow_pine",
+      "name": "Snowy pine",
+      "examine": "A pine wearing more snow than it can politely carry.",
+      "blocks": true
+    },
+    "dead_tree_deco": {
+      "id": "dead_tree_deco",
+      "name": "Dead tree",
+      "examine": "It gave up leaves years ago and never looked back.",
+      "blocks": true
+    }
+  },
+  "skillObjs": {
+    "tree": {
+      "level": 1,
+      "xp": 25,
+      "item": "logs",
+      "depleteChance": 0.125,
+      "respawn": 8,
+      "lowRate": 0.25,
+      "highRate": 0.9
+    },
+    "oak": {
+      "level": 15,
+      "xp": 37.5,
+      "item": "oak_logs",
+      "depleteChance": 0.125,
+      "respawn": 14,
+      "lowRate": 0.15,
+      "highRate": 0.8
+    },
+    "willow": {
+      "level": 30,
+      "xp": 67.5,
+      "item": "willow_logs",
+      "depleteChance": 0.125,
+      "respawn": 18,
+      "lowRate": 0.12,
+      "highRate": 0.75
+    },
+    "rocks_copper": {
+      "level": 1,
+      "xp": 17.5,
+      "item": "copper_ore",
+      "depleteChance": 1,
+      "respawn": 4,
+      "lowRate": 0.3,
+      "highRate": 0.95
+    },
+    "rocks_tin": {
+      "level": 1,
+      "xp": 17.5,
+      "item": "tin_ore",
+      "depleteChance": 1,
+      "respawn": 4,
+      "lowRate": 0.3,
+      "highRate": 0.95
+    },
+    "rocks_iron": {
+      "level": 15,
+      "xp": 35,
+      "item": "iron_ore",
+      "depleteChance": 1,
+      "respawn": 9,
+      "lowRate": 0.2,
+      "highRate": 0.9
+    },
+    "rocks_coal": {
+      "level": 30,
+      "xp": 50,
+      "item": "coal",
+      "depleteChance": 1,
+      "respawn": 15,
+      "lowRate": 0.15,
+      "highRate": 0.85
+    },
+    "rocks_essence": {
+      "level": 1,
+      "xp": 5,
+      "item": "rune_essence",
+      "depleteChance": 0,
+      "respawn": 0,
+      "lowRate": 0.5,
+      "highRate": 0.98
+    },
+    "rocks_mithril": {
+      "level": 55,
+      "xp": 80,
+      "item": "mithril_ore",
+      "depleteChance": 1,
+      "respawn": 25,
+      "lowRate": 0.1,
+      "highRate": 0.75
+    },
+    "rocks_adamantite": {
+      "level": 70,
+      "xp": 95,
+      "item": "adamantite_ore",
+      "depleteChance": 1,
+      "respawn": 40,
+      "lowRate": 0.08,
+      "highRate": 0.65
+    },
+    "maple": {
+      "level": 45,
+      "xp": 100,
+      "item": "maple_logs",
+      "depleteChance": 0.125,
+      "respawn": 24,
+      "lowRate": 0.1,
+      "highRate": 0.7
+    },
+    "yew": {
+      "level": 60,
+      "xp": 175,
+      "item": "yew_logs",
+      "depleteChance": 0.125,
+      "respawn": 40,
+      "lowRate": 0.08,
+      "highRate": 0.6
+    },
+    "magic_tree": {
+      "level": 75,
+      "xp": 250,
+      "item": "magic_logs",
+      "depleteChance": 0.125,
+      "respawn": 60,
+      "lowRate": 0.05,
+      "highRate": 0.45
+    },
+    "rocks_gold": {
+      "level": 40,
+      "xp": 65,
+      "item": "gold_ore",
+      "depleteChance": 1,
+      "respawn": 20,
+      "lowRate": 0.12,
+      "highRate": 0.8
+    },
+    "rocks_runite": {
+      "level": 85,
+      "xp": 125,
+      "item": "runite_ore",
+      "depleteChance": 1,
+      "respawn": 80,
+      "lowRate": 0.05,
+      "highRate": 0.5
+    },
+    "rocks_gem": {
+      "level": 40,
+      "xp": 65,
+      "item": "uncut_sapphire",
+      "depleteChance": 1,
+      "respawn": 25,
+      "lowRate": 0.12,
+      "highRate": 0.8
+    }
+  }
+}

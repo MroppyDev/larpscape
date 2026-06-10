@@ -1,0 +1,18 @@
+[Unit]
+Description=Larpscape admin console
+After=network.target
+
+[Service]
+Type=simple
+User=larpscape
+Group=larpscape
+WorkingDirectory=/opt/larpscape
+EnvironmentFile=/etc/larpscape/env
+ExecStart=/opt/larpscape/node_modules/.bin/tsx admin/server/index.ts
+Restart=always
+RestartSec=2
+Environment=NODE_ENV=production
+Environment=RESTART_CMD=sudo /usr/bin/systemctl restart larpscape
+
+[Install]
+WantedBy=multi-user.target

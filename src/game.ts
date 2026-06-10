@@ -7,13 +7,16 @@ import {
 } from './defs';
 import {
   buildWorld, blocked, findPath, objects, objectAt, removeObject,
-  WorldObject, GroundItem, key, groundSpawns,
+  WorldObject, GroundItem, key,
 } from './world';
 import { audio, trackForRegion, TRACKS } from './audio';
 
 export interface ItemStack { id: string; qty: number; }
 
+// Client-side mirror of a server NPC. The server owns position/hp/death;
+// this object exists so render.ts/ui.ts can keep working unchanged.
 export interface Npc {
+  sid: number;               // server NPC id
   def: NpcDef;
   x: number; y: number;
   prevX: number; prevY: number;
@@ -21,7 +24,7 @@ export interface Npc {
   hp: number;
   dead: boolean;
   respawnAt: number;
-  target: 'player' | null;
+  target: 'player' | null;   // 'player' = targeting ME (drives attack anims)
   attackCooldown: number;
   wanderCooldown: number;
   hitsplat: { dmg: number; until: number } | null;
@@ -162,6 +165,31 @@ export function registerItemOnItem(a: string, b: string, handler: (slotA: number
   itemOnItem.set([a, b].sort().join('|'), { firstId: a, handler });
 }
 export function registerTickHook(fn: () => void) { tickHooks.push(fn); }
+
+// ---------------- Server connection hooks (set by net.ts) ----------------
+// game.ts never imports net.ts (net imports game); the websocket sender is
+// injected here once the connection is up.
+export const netLink = { send: null as null | ((m: any) => void) };
+function netSend(m: any): boolean {
+  if (!netLink.send) return false;
+  netLink.send(m);
+  return true;
+}
+
+// fx events from the server (boss telegraphs etc.) — packs register renderers
+export type FxHandler = (npc: Npc | null) => void;
+const fxHandlers = new Map<string, FxHandler>();
+export function registerFx(kind: string, h: FxHandler) { fxHandlers.set(kind, h); }
+
+// damage modifiers by fx kind (prayer halving, movement dodges) — applied
+// client-side because the server can't observe prayers or sub-tick movement
+export type DamageModifier = (dmg: number, npc: Npc | null) => number;
+const damageModifiers = new Map<string, DamageModifier>();
+export function registerDamageModifier(kind: string, m: DamageModifier) { damageModifiers.set(kind, m); }
+
+// kill notifications (quest + slayer tracking)
+const killListeners: ((defId: string) => void)[] = [];
+export function onKill(fn: (defId: string) => void) { killListeners.push(fn); }
 
 export function requestMake(opts: MakeOption[], cb: (id: string | null, qty: number) => void) {
   events.onRequestMake(opts, cb);
@@ -306,12 +334,6 @@ export let saveProvider: SaveProvider = {
 };
 export function setSaveProvider(p: SaveProvider) { saveProvider = p; }
 
-// Extra NPC spawns registered by content packs before initGame runs.
-const extraNpcSpawns: { id: string; x: number; y: number }[] = [];
-export function registerNpcSpawn(id: string, x: number, y: number) {
-  extraNpcSpawns.push({ id, x, y });
-}
-
 function freshPlayer(): Player {
   const xp = SKILLS.map(() => 0);
   xp[skillIdx('Hitpoints')] = XP_TABLE[10];
@@ -396,55 +418,174 @@ export function initGame(savedData?: any) {
     addItem('bread'); addItem('coins', 25);
   }
   if (blocked(state.player.x, state.player.y)) { state.player.x = 22; state.player.y = 38; }
-  spawnNpcs();
-  initGroundSpawns();
+  // NPCs + ground items are server-authoritative: the mirrors fill in when the
+  // websocket delivers the world snapshot (net.ts -> netWorldSnapshot).
   msg(loaded ? `Welcome back to Larpscape, ${state.player.name}.` : 'Welcome to Larpscape.');
 }
 
-function spawnNpcs() {
-  const spawn = (id: string, x: number, y: number) => {
-    const def = NPCS[id];
+// ---------------- Server world mirror ----------------
+// state.npcs / state.groundItems mirror the authoritative server sim. Objects
+// are kept stable across updates so render.ts instance caches stay valid.
+const npcBySid = new Map<number, Npc>();
+
+interface NpcWire { i: number; d: string; x: number; y: number; hp: number; dead: boolean; sh: boolean; t: string | null; }
+interface GroundWire { g: number; item: string; qty: number; x: number; y: number; }
+
+function applyNpcWire(w: NpcWire) {
+  let n = npcBySid.get(w.i);
+  if (!n) {
+    const def = NPCS[w.d];
     if (!def) return;
-    state.npcs.push({
-      def, x, y, prevX: x, prevY: y, spawnX: x, spawnY: y,
-      hp: def.hitpoints, dead: false, respawnAt: 0, target: null,
+    n = {
+      sid: w.i, def, x: w.x, y: w.y, prevX: w.x, prevY: w.y, spawnX: w.x, spawnY: w.y,
+      hp: w.hp, dead: w.dead, respawnAt: 0, target: null,
       attackCooldown: 0, wanderCooldown: 0, hitsplat: null, lastDamagedAt: -100, meta: {},
-    });
-  };
-  for (const [x, y] of [[56, 30], [60, 34], [64, 28], [58, 44], [63, 42], [68, 36], [55, 38]]) spawn('goblin', x, y);
-  for (const [x, y] of [[57, 10], [61, 13], [65, 9], [67, 16], [59, 17]]) spawn('cow', x, y);
-  for (const [x, y] of [[30, 10], [33, 12], [36, 10], [31, 14], [35, 14]]) spawn('chicken', x, y);
-  spawn('man', 32, 36); spawn('man', 25, 34); spawn('man', 38, 42);
-  spawn('giant_rat', 18, 62); spawn('giant_rat', 26, 72); spawn('giant_rat', 22, 67);
-  spawn('shopkeeper', 35, 49);
-  spawn('banker', 17, 31);
-  // overhaul NPCs
-  for (const [x, y] of [[17, 12], [20, 15], [23, 11], [18, 17], [22, 14]]) spawn('sheep', x, y);
-  spawn('tanner', 37, 56);
-  spawn('slayer_master', 30, 35);
-  spawn('magic_tutor', 42, 30);
-  spawn('gardener', 36, 23);
-  spawn('cook', 17, 43);
-  spawn('carpenter', 23, 53);
-  // pack-registered spawns (bosses, city NPCs, etc.)
-  for (const s of extraNpcSpawns) spawn(s.id, s.x, s.y);
+    };
+    npcBySid.set(w.i, n);
+    state.npcs.push(n);
+  }
+  if (w.x !== n.x || w.y !== n.y) {
+    const jump = Math.max(Math.abs(w.x - n.x), Math.abs(w.y - n.y));
+    if (jump > 3 || n.dead) { n.prevX = w.x; n.prevY = w.y; } // teleport/respawn: snap
+    else { n.prevX = n.x; n.prevY = n.y; }
+    n.x = w.x; n.y = w.y;
+  }
+  n.hp = w.hp;
+  if (w.dead && !n.dead) {
+    n.hitsplat = null;
+    if (state.player?.action?.npc === n) state.player.action = null;
+  }
+  if (!w.dead && n.dead) { n.meta = {}; n.hitsplat = null; } // respawned
+  n.dead = w.dead;
+  n.target = w.t !== null && w.t === state.player?.name ? 'player' : null;
+  if (w.sh) {
+    n.meta.sheared = true;
+    n.meta.shearedUntil = Infinity; // server owns the timer; cleared on next delta
+  } else {
+    delete n.meta.sheared;
+    n.meta.shearedUntil = 0;
+  }
 }
 
-// respawning ground item spawns (eggs, herbs)
-const spawnState: { item: string; x: number; y: number; respawnTicks: number; nextAt: number }[] = [];
-function initGroundSpawns() {
-  for (const s of groundSpawns ?? []) spawnState.push({ ...s, nextAt: 0 });
+function applyGroundWire(w: GroundWire) {
+  if (state.groundItems.some((g) => g.gid === w.g)) return;
+  state.groundItems.push({ gid: w.g, item: w.item, qty: w.qty, x: w.x, y: w.y, expiresAt: Infinity });
 }
-function tickGroundSpawns() {
-  for (const s of spawnState) {
-    const present = state.groundItems.some((g) => g.x === s.x && g.y === s.y && g.item === s.item);
-    if (present) continue;
-    if (s.nextAt === 0) { s.nextAt = state.tick + s.respawnTicks; continue; }
-    if (state.tick >= s.nextAt) {
-      state.groundItems.push({ item: s.item, qty: 1, x: s.x, y: s.y, expiresAt: Infinity });
-      s.nextAt = 0;
+
+export function netWorldSnapshot(data: { npcs: NpcWire[]; ground: GroundWire[] }) {
+  // full resync (connect/reconnect): rebuild, keeping existing objects stable
+  const seen = new Set<number>();
+  for (const w of data.npcs ?? []) { applyNpcWire(w); seen.add(w.i); }
+  for (let i = state.npcs.length - 1; i >= 0; i--) {
+    if (!seen.has(state.npcs[i].sid)) {
+      npcBySid.delete(state.npcs[i].sid);
+      state.npcs.splice(i, 1);
     }
   }
+  state.groundItems.length = 0;
+  for (const w of data.ground ?? []) applyGroundWire(w);
+}
+
+export function netWorldDelta(data: { n?: NpcWire[]; ga?: GroundWire[]; gr?: number[] }) {
+  for (const w of data.n ?? []) applyNpcWire(w);
+  for (const w of data.ga ?? []) applyGroundWire(w);
+  for (const gid of data.gr ?? []) {
+    const i = state.groundItems.findIndex((g) => g.gid === gid);
+    if (i >= 0) {
+      if (state.player?.action?.ground === state.groundItems[i]) state.player.action = null;
+      state.groundItems.splice(i, 1);
+    }
+  }
+}
+
+// someone (possibly me) hit an NPC — show the splat + update hp everywhere
+export function netHit(msg: { npc: number; dmg: number; hp: number; by: string }) {
+  const n = npcBySid.get(msg.npc);
+  if (!n) return;
+  n.hp = msg.hp;
+  n.hitsplat = { dmg: msg.dmg, until: performance.now() + 900 };
+  n.lastDamagedAt = state.tick;
+  if (msg.by === state.player?.name) audio.sfx(msg.dmg > 0 ? 'hit' : 'miss');
+}
+
+// my swing landed — grant xp (mode comes back from the server)
+export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'magic' }) {
+  const p = state.player;
+  if (!p || msg.dmg <= 0) return;
+  if (msg.mode === 'melee') {
+    if (p.combatStyle === 'accurate') addXp('Attack', msg.dmg * 4);
+    else if (p.combatStyle === 'aggressive') addXp('Strength', msg.dmg * 4);
+    else addXp('Defence', msg.dmg * 4);
+  } else if (msg.mode === 'ranged') {
+    addXp('Ranged', msg.dmg * 4);
+  } else {
+    addXp('Magic', msg.dmg * 2);
+  }
+  addXp('Hitpoints', msg.dmg * 1.33);
+}
+
+// an NPC hit me — apply fx-specific modifiers, then the damage
+export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string }) {
+  const p = state.player;
+  if (!p || p.dead) return;
+  const n = npcBySid.get(msg.npc) ?? null;
+  let dmg = msg.dmg;
+  if (msg.fx) {
+    const mod = damageModifiers.get(msg.fx);
+    if (mod) dmg = mod(dmg, n);
+    if (dmg < 0) return; // modifier fully dodged the hit (incl. the splat)
+  }
+  p.curHp -= dmg;
+  p.hitsplat = { dmg, until: performance.now() + 900 };
+  audio.sfx(dmg > 0 ? 'hit' : 'miss');
+  events.onStatsChange();
+  if (p.curHp <= 0) playerDeath();
+}
+
+// I got the killing blow — slayer credit + quest kill listeners
+export function netYouKilled(m: { npc: number; def: string }) {
+  const p = state.player;
+  if (!p) return;
+  const task = p.slayerTask;
+  const def = NPCS[m.def];
+  if (task && task.npc === m.def && task.remaining > 0 && def) {
+    task.remaining--;
+    addXp('Slayer', def.hitpoints);
+    if (task.remaining === 0) {
+      msg("You've completed your slayer task; return to Brogan for another.", 'level');
+      addXp('Slayer', 20);
+    }
+  }
+  for (const fn of killListeners) fn(m.def);
+}
+
+// picked-up ground item arrives
+export function netGot(m: { item: string; qty: number }) {
+  if (addItem(m.item, m.qty)) {
+    if (m.item === 'coins') audio.sfx('coins');
+  } else msg("You don't have enough inventory space.");
+}
+
+// boss telegraphs and other server fx
+export function netFx(m: { npc: number; kind: string }) {
+  const n = npcBySid.get(m.npc) ?? null;
+  fxHandlers.get(m.kind)?.(n);
+}
+
+export function npcBySidLookup(sid: number): Npc | undefined { return npcBySid.get(sid); }
+
+// shared-state NPC interactions go through the server (currently: shearing)
+export function sendInteract(npc: Npc, option: string): boolean {
+  return netSend({ t: 'interact', npc: npc.sid, option });
+}
+
+export function netShorn() {
+  addItem('wool');
+  msg('You get some wool.');
+}
+
+export function netDeny(m: { what: string }) {
+  if (m.what === 'shear') msg('This sheep has already been sheared. Give the wool a moment to grow back.');
 }
 
 // ---------------- Click handling ----------------
@@ -530,9 +671,8 @@ export function gameTick() {
     const o = objects[i];
     if (o.expiresAt && state.tick >= o.expiresAt) removeObject(o);
   }
-  state.groundItems = state.groundItems.filter((gi) => state.tick < gi.expiresAt);
+  // ground items + NPCs are server-owned mirrors; only visuals expire locally
   state.projectiles = state.projectiles.filter((pr) => performance.now() < pr.startMs + pr.durMs + 200);
-  tickGroundSpawns();
 
   if (p.dead) return;
 
@@ -542,7 +682,6 @@ export function gameTick() {
 
   movePlayer();
   performAction();
-  tickNpcs();
   for (const fn of tickHooks) fn();
 
   if (p.attackCooldown > 0) p.attackCooldown--;
@@ -585,10 +724,13 @@ function performAction() {
     const gi = a.ground;
     if (!state.groundItems.includes(gi)) { p.action = null; return; }
     if (p.x === gi.x && p.y === gi.y) {
-      if (addItem(gi.item, gi.qty)) {
-        state.groundItems.splice(state.groundItems.indexOf(gi), 1);
-        if (gi.item === 'coins') audio.sfx('coins');
-      } else msg("You don't have enough inventory space.");
+      const def = ITEMS[gi.item];
+      if (freeSlots() === 0 && !(def?.stackable && hasItem(gi.item))) {
+        msg("You don't have enough inventory space.");
+      } else if (!netSend({ t: 'pickup', gid: gi.gid })) {
+        msg('You are not connected to the server.');
+      }
+      // the item arrives via the server's 'got' reply; removal via ground delta
       p.action = null;
     }
     return;
@@ -751,8 +893,12 @@ export function dropItem(slot: number) {
   const p = state.player;
   const it = p.inventory[slot];
   if (!it) return;
+  // server owns ground items: only drop while connected, or the item is lost
+  if (!netSend({ t: 'drop', item: it.id, qty: it.qty })) {
+    msg('You cannot drop items while disconnected.');
+    return;
+  }
   p.inventory[slot] = null;
-  state.groundItems.push({ item: it.id, qty: it.qty, x: p.x, y: p.y, expiresAt: state.tick + 200 });
   events.onInvChange();
 }
 
@@ -768,13 +914,6 @@ export function equipBonus(kind: 'att' | 'str' | 'def' | 'ranged'): number {
       : d.defBonus ?? 0;
   }
   return b;
-}
-
-function rollHit(attLvl: number, attBonus: number, defLvl: number, defBonus: number): boolean {
-  const attRoll = (attLvl + 8) * (attBonus + 64);
-  const defRoll = (defLvl + 8) * (defBonus + 64);
-  const chance = attRoll > defRoll ? 1 - (defRoll + 2) / (2 * (attRoll + 1)) : attRoll / (2 * (defRoll + 1));
-  return Math.random() < chance;
 }
 
 export type AttackMode = 'melee' | 'ranged' | 'magic';
@@ -804,6 +943,10 @@ function rangedMaxHit(): number {
   return Math.floor(0.5 + eff * (equipBonus('ranged') + 64) / 640);
 }
 
+// Combat resolution is server-authoritative: the client paths into range,
+// consumes ammo/runes, plays the swing, and sends an intent. Hit rolls, NPC
+// hp, deaths and drops all happen on the server (see server/sim.ts); xp lands
+// when the server's youHit event comes back.
 function tickPlayerCombat(npc: Npc) {
   const p = state.player;
   if (npc.dead) { p.action = null; return; }
@@ -819,7 +962,7 @@ function tickPlayerCombat(npc: Npc) {
   }
   p.path = [];
   p.lastFacing = { dx: Math.sign(npc.x - p.x), dy: Math.sign(npc.y - p.y) };
-  npc.target = 'player';
+  npc.target = 'player'; // optimistic; the server delta confirms
   if (p.attackCooldown > 0) return;
 
   if (mode === 'magic') return castOnNpc(npc);
@@ -828,15 +971,10 @@ function tickPlayerCombat(npc: Npc) {
   p.attackCooldown = weaponSpeed();
   const styleAtt = p.combatStyle === 'accurate' ? 3 : 0;
   const effAtt = Math.floor(level('Attack') * prayerMult('attack')) + styleAtt;
-  const hit = rollHit(effAtt, equipBonus('att'), npc.def.defence, 0);
-  const dmg = hit ? Math.floor(Math.random() * (playerMaxHit() + 1)) : 0;
-  applyDamageToNpc(npc, dmg);
-  if (dmg > 0) {
-    if (p.combatStyle === 'accurate') addXp('Attack', dmg * 4);
-    else if (p.combatStyle === 'aggressive') addXp('Strength', dmg * 4);
-    else addXp('Defence', dmg * 4);
-    addXp('Hitpoints', dmg * 1.33);
-  }
+  netSend({
+    t: 'swing', npc: npc.sid, mode: 'melee',
+    eff: effAtt, bonus: equipBonus('att'), maxHit: playerMaxHit(), speed: weaponSpeed(),
+  });
 }
 
 function shootNpc(npc: Npc) {
@@ -844,18 +982,17 @@ function shootNpc(npc: Npc) {
   const ammo = p.equipment.ammo;
   if (!ammo || !ammo.id.endsWith('_arrow')) { msg('You have no arrows equipped.'); p.action = null; return; }
   p.attackCooldown = weaponSpeed();
+  const ammoId = ammo.id;
   ammo.qty--;
   if (ammo.qty <= 0) p.equipment.ammo = null;
   events.onInvChange();
   audio.sfx('bow');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 300, kind: 'arrow' });
-  const hit = rollHit(level('Ranged'), equipBonus('ranged'), npc.def.defence, 0);
-  const dmg = hit ? Math.floor(Math.random() * (rangedMaxHit() + 1)) : 0;
-  window.setTimeout(() => { /* visual delay only */ }, 0);
-  applyDamageToNpc(npc, dmg);
-  if (dmg > 0) { addXp('Ranged', dmg * 4); addXp('Hitpoints', dmg * 1.33); }
-  // ~20% arrow recovery on the ground
-  if (Math.random() < 0.2) state.groundItems.push({ item: ammo.id ?? 'bronze_arrow', qty: 1, x: npc.x, y: npc.y, expiresAt: state.tick + 100 });
+  netSend({
+    t: 'swing', npc: npc.sid, mode: 'ranged',
+    eff: level('Ranged'), bonus: equipBonus('ranged'), maxHit: rangedMaxHit(), speed: weaponSpeed(),
+    ammo: ammoId,
+  });
 }
 
 function castOnNpc(npc: Npc) {
@@ -868,110 +1005,21 @@ function castOnNpc(npc: Npc) {
   for (const r of spell.runes) removeItem(r.item, r.qty);
   audio.sfx('spell');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 400, kind: 'spell' });
-  // magic accuracy: magic level vs flat defence
-  const hit = rollHit(level('Magic'), 0, npc.def.defence, 0);
-  const dmg = hit ? Math.floor(Math.random() * (spell.maxHit + 1)) : 0;
-  applyDamageToNpc(npc, dmg);
-  addXp('Magic', spell.xp + dmg * 2);
-  if (dmg > 0) addXp('Hitpoints', dmg * 1.33);
+  netSend({
+    t: 'swing', npc: npc.sid, mode: 'magic',
+    eff: level('Magic'), bonus: 0, maxHit: spell.maxHit, speed: 5,
+  });
+  addXp('Magic', spell.xp); // base cast xp; dmg*2 lands with youHit
 }
 
-export function applyDamageToNpc(npc: Npc, dmg: number) {
+export function playerDeath() {
   const p = state.player;
-  npc.hp -= dmg;
-  npc.hitsplat = { dmg, until: performance.now() + 900 };
-  npc.lastDamagedAt = state.tick;
-  audio.sfx(dmg > 0 ? 'hit' : 'miss');
-  if (npc.hp <= 0) {
-    npc.dead = true;
-    npc.respawnAt = state.tick + npc.def.respawnTicks;
-    npc.target = null;
-    if (p.action?.npc === npc) p.action = null;
-    // slayer task credit
-    const task = p.slayerTask;
-    if (task && task.npc === npc.def.id && task.remaining > 0) {
-      task.remaining--;
-      addXp('Slayer', npc.def.hitpoints);
-      if (task.remaining === 0) {
-        msg("You've completed your slayer task; return to Brogan for another.", 'level');
-        addXp('Slayer', 20);
-      }
-    }
-    for (const d of npc.def.drops) {
-      if (Math.random() < d.chance) {
-        const qty = d.qty[0] + Math.floor(Math.random() * (d.qty[1] - d.qty[0] + 1));
-        state.groundItems.push({ item: d.item, qty, x: npc.x, y: npc.y, expiresAt: state.tick + 200 });
-      }
-    }
-  }
-}
-
-function tickNpcs() {
-  const p = state.player;
-  const playerCb = combatLevel();
-  for (const n of state.npcs) {
-    n.prevX = n.x; n.prevY = n.y;
-    if (n.dead) {
-      if (state.tick >= n.respawnAt) {
-        n.dead = false; n.hp = n.def.hitpoints;
-        n.x = n.spawnX; n.y = n.spawnY; n.prevX = n.x; n.prevY = n.y;
-        n.target = null; n.meta = {};
-      }
-      continue;
-    }
-    if (n.attackCooldown > 0) n.attackCooldown--;
-
-    // aggression
-    if (!n.target && n.def.aggressive && !p.dead && playerCb <= n.def.combatLevel * 2 + 1) {
-      const dist = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y));
-      if (dist <= 4) n.target = 'player';
-    }
-
-    if (n.target === 'player' && !p.dead) {
-      const dist = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y));
-      const distFromSpawn = Math.max(Math.abs(n.spawnX - n.x), Math.abs(n.spawnY - n.y));
-      if (dist > 12 || distFromSpawn > 16) { n.target = null; continue; }
-      if (dist > 1) {
-        const dx = Math.sign(p.x - n.x), dy = Math.sign(p.y - n.y);
-        const tryMoves = [[dx, dy], [dx, 0], [0, dy]];
-        for (const [mx, my] of tryMoves) {
-          if ((mx || my) && !blocked(n.x + mx, n.y + my, true) && !(n.x + mx === p.x && n.y + my === p.y)) {
-            n.x += mx; n.y += my; break;
-          }
-        }
-      } else if (n.attackCooldown === 0) {
-        n.attackCooldown = n.def.attackSpeed;
-        const effDef = Math.floor(level('Defence') * prayerMult('defence')) + (p.combatStyle === 'defensive' ? 3 : 0);
-        const hit = rollHit(n.def.attack, 0, effDef, equipBonus('def'));
-        const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
-        const dmg = hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
-        p.curHp -= dmg;
-        p.hitsplat = { dmg, until: performance.now() + 900 };
-        audio.sfx(dmg > 0 ? 'hit' : 'miss');
-        events.onStatsChange();
-        if (p.curHp <= 0) playerDeath();
-      }
-    } else {
-      if (n.wanderCooldown > 0) { n.wanderCooldown--; continue; }
-      if (Math.random() < 0.2) {
-        const dx = Math.floor(Math.random() * 3) - 1;
-        const dy = Math.floor(Math.random() * 3) - 1;
-        const nx = n.x + dx, ny = n.y + dy;
-        if (Math.abs(nx - n.spawnX) <= 5 && Math.abs(ny - n.spawnY) <= 5 && !blocked(nx, ny, true) && !(nx === p.x && ny === p.y)) {
-          n.x = nx; n.y = ny;
-        }
-        n.wanderCooldown = 2 + Math.floor(Math.random() * 4);
-      }
-    }
-  }
-}
-
-function playerDeath() {
-  const p = state.player;
+  if (p.dead) return;
   p.dead = true;
   p.curHp = 0;
   p.activePrayers.clear();
   msg('Oh dear, you are dead!');
+  events.onStatsChange();
   window.setTimeout(() => {
     p.x = 22; p.y = 38; p.prevX = 22; p.prevY = 38;
     p.path = []; p.action = null;
@@ -982,6 +1030,18 @@ function playerDeath() {
     events.onStatsChange();
     saveGame();
   }, 2000);
+}
+
+// Combat snapshot the server uses for NPC retaliation rolls + aggro checks.
+export function combatSnapshot() {
+  const p = state.player;
+  return {
+    t: 'stats',
+    cb: combatLevel(),
+    effDef: Math.floor(level('Defence') * prayerMult('defence')) + (p.combatStyle === 'defensive' ? 3 : 0),
+    defBonus: equipBonus('def'),
+    d: p.dead,
+  };
 }
 
 // ---------------- Bank / shop ----------------

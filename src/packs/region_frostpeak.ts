@@ -7,28 +7,14 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, events, level, addXp, saveGame, startDialogue,
-  registerNpcSpawn, registerNpcAction, registerObjectAction, registerTickHook,
+  state, msg, level, addXp, startDialogue,
+  registerNpcAction, registerObjectAction, registerFx, registerDamageModifier,
   Npc,
 } from '../game';
 import { blocked } from '../world';
 import { audio } from '../audio';
 
-// ============================================================================
-// SPAWNS — scattered on the ROCK/SNOW massif, clear of the agility course
-// (x188-200/y30-48), the pass road (y51-53) and Maraza's lair (~200-211/15-25).
-// ============================================================================
-registerNpcSpawn('ice_troll', 185, 14);
-registerNpcSpawn('ice_troll', 212, 46);
-registerNpcSpawn('ice_troll', 192, 60);
-registerNpcSpawn('ice_troll', 205, 80);
-registerNpcSpawn('ice_wolf', 188, 20);
-registerNpcSpawn('ice_wolf', 215, 28);
-registerNpcSpawn('ice_wolf', 198, 72);
-// Guide Torvald by the mountain pass entrance into the foothills
-registerNpcSpawn('mountain_guide', 172, 54);
-// Maraza the Rimebound, on the ice shelf of her lair
-registerNpcSpawn('ice_queen', 205, 20);
+// Spawns live in data/spawns.json (server-authoritative world).
 
 // ============================================================================
 // GUIDE TORVALD — flavor + agility tips
@@ -96,70 +82,23 @@ for (let idx = 0; idx < FROST_COURSE.length; idx++) {
 
 // ============================================================================
 // MARAZA THE RIMEBOUND — rime shards mechanic
+// The volley timing runs server-side (server/bosses.ts); the moving-reduction
+// is applied here because the server can't see sub-tick movement.
 // ============================================================================
 const QUEEN_ID = 'ice_queen';
-const SHARD_INTERVAL = 9;   // ticks between volleys while engaged
-const SHARD_MAX = 10;       // max hit; 60% if the player is moving that tick
-const SHARD_RANGE = 4;
 
-function playerDies() {
-  const p = state.player;
-  if (p.dead) return;
-  p.dead = true;
-  p.curHp = 0;
-  p.activePrayers.clear();
-  msg('Oh dear, you are dead!');
-  events.onStatsChange();
-  window.setTimeout(() => {
-    p.x = 22; p.y = 38; p.prevX = 22; p.prevY = 38;
-    p.path = []; p.action = null;
-    p.curHp = level('Hitpoints');
-    p.dead = false;
-    p.energy = 100;
-    for (const n of state.npcs) if (n.target === 'player') n.target = null;
-    events.onStatsChange();
-    saveGame();
-  }, 2000);
-}
+registerFx('queen_telegraph', () => msg('Frost gathers around Maraza...'));
+registerFx('queen_dodge', () => msg('Rime shards splinter across the ice where you stood.'));
 
-function looseShards() {
-  const p = state.player;
-  let dmg = Math.floor(Math.random() * (SHARD_MAX + 1));
-  const moving = p.path.length > 0;
+registerDamageModifier('queen_shards', (dmg) => {
+  const moving = state.player.path.length > 0;
   if (moving && dmg > 0) {
     dmg = Math.floor(dmg * 0.6);
     msg('The rime shards shatter on the ice behind you as you keep moving!');
   } else {
     msg('A volley of rime shards slams into you!');
   }
-  p.curHp -= dmg;
-  p.hitsplat = { dmg, until: performance.now() + 900 };
-  audio.sfx(dmg > 0 ? 'hit' : 'miss');
-  events.onStatsChange();
-  if (p.curHp <= 0) playerDies();
-}
-
-registerTickHook(() => {
-  const p = state.player;
-  for (const n of state.npcs) {
-    if (n.def.id !== QUEEN_ID) continue;
-    if (n.dead || p.dead || n.target !== 'player') { delete n.meta.shardAt; continue; }
-    const dist = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y));
-    if (dist > SHARD_RANGE) { delete n.meta.shardAt; continue; }
-    if (n.meta.shardAt === undefined) {
-      n.meta.shardAt = state.tick + SHARD_INTERVAL;
-      continue;
-    }
-    if (state.tick === n.meta.shardAt - 1) {
-      msg('Frost gathers around Maraza...');
-    } else if (state.tick >= n.meta.shardAt) {
-      // re-check range at the moment of the volley — getting clear avoids it
-      const d2 = Math.max(Math.abs(p.x - n.x), Math.abs(p.y - n.y));
-      if (d2 <= SHARD_RANGE) looseShards();
-      else msg('Rime shards splinter across the ice where you stood.');
-      n.meta.shardAt = state.tick + SHARD_INTERVAL;
-    }
-  }
+  return dmg;
 });
 
 // ---- flavor ----------------------------------------------------------------
