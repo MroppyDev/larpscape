@@ -2302,6 +2302,12 @@ export function tabIcon(name: string): HTMLCanvasElement {
         shape('#2e9440', () => { g.ellipse(6, 15, 2.6, 2, -0.3, 0, 7); });
         shape('#2e9440', () => { g.ellipse(13, 13, 2.6, 2, -0.3, 0, 7); });
         break;
+      case 'friends':
+        shape('#3a8a3a', () => { g.arc(7, 9, 4.5, 0, 7); });
+        shape('#3a8a3a', () => { g.arc(13, 9, 4.5, 0, 7); });
+        line('#2a6a2a', 1.4, () => { g.moveTo(5, 14); g.quadraticCurveTo(10, 17, 15, 14); });
+        shape('#5ae05a', () => { g.arc(16, 5, 2.2, 0, 7); }, '#2a6a2a');
+        break;
       case 'settings': {
         for (let i = 0; i < 8; i++) {
           const a = (i / 8) * Math.PI * 2;

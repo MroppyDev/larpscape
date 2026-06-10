@@ -522,5 +522,17 @@ export function trackForRegion(x: number, y: number): string {
   if (x >= 29 && x <= 41 && y >= 40 && y <= 62) return 'Market Day';
   if (x >= 60 && x <= 70 && y >= 58 && y <= 68) return 'Whispering Stones';
   if (x >= 56 && x <= 72 && y >= 70 && y <= 84) return 'Quiet Meadow';
+  if (x >= 61 && x <= 68 && y >= 38 && y <= 44) return 'Rainbow Avenue';
+  if (x >= 54 && x <= 60 && y >= 38 && y <= 44) return 'Market Day';
+  // Phase 7 expansion (500×500 map) — checked after all legacy boxes above.
+  if (x >= 278 && x <= 322 && y >= 238 && y <= 282) return 'Quiet Meadow';
+  if (x >= 338 && x <= 425 && y >= 298 && y <= 385) return 'Whispering Stones';
+  if (x >= 398 && x <= 442 && y >= 98 && y <= 142) return 'Warbanner';
+  if (x >= 58 && x <= 102 && y >= 358 && y <= 402) return 'Brackwater Tide';
+  if (x >= 298 && x <= 358 && y >= 228 && y <= 268) return 'Riverside';
+  if (x >= 418 && x <= 478 && y >= 278 && y <= 338) return 'Boghollow';
+  if (x >= 278 && x <= 418 && y >= 400 && y <= 478) return 'Sunscorch';
+  if (x >= 448 && x <= 492 && y >= 448 && y <= 492) return 'Ashfall';
+  if (x > 260 && y < 140) return 'Rimewind';
   return 'Newbie Meadow';
 }

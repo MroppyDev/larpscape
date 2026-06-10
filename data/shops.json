@@ -298,5 +298,58 @@
       { "item": "adamant_bullet_casing", "qty": 50 },
       { "item": "rune_bullet_casing", "qty": 25 }
     ]
+  },
+  "eldermere_general": {
+    "name": "Eldermere General Store",
+    "stock": [
+      { "item": "bronze_axe", "qty": 10 },
+      { "item": "bronze_pickaxe", "qty": 10 },
+      { "item": "tinderbox", "qty": 10 },
+      { "item": "bread", "qty": 10 },
+      { "item": "knife", "qty": 10 },
+      { "item": "hammer", "qty": 10 },
+      { "item": "bucket", "qty": 10 },
+      { "item": "shears", "qty": 10 },
+      { "item": "fishing_rod", "qty": 10 },
+      { "item": "fishing_bait", "qty": 200 }
+    ]
+  },
+  "stonewatch_trapper": {
+    "name": "Hode's Fur & Trap",
+    "stock": [
+      { "item": "bird_snare", "qty": 15 },
+      { "item": "harpoon", "qty": 5 },
+      { "item": "knife", "qty": 10 }
+    ]
+  },
+  "wayfarer": {
+    "name": "Sorrel's Wandering Wares",
+    "stock": [
+      { "item": "air_rune", "qty": 200 },
+      { "item": "mind_rune", "qty": 200 },
+      { "item": "water_rune", "qty": 100 },
+      { "item": "earth_rune", "qty": 100 },
+      { "item": "potato_seed", "qty": 30 },
+      { "item": "cabbage_seed", "qty": 30 },
+      { "item": "bread", "qty": 15 },
+      { "item": "tinderbox", "qty": 5 },
+      { "item": "uncut_sapphire", "qty": 1 }
+    ]
+  },
+  "hedon_lounge": {
+    "name": "Hedon Lounge",
+    "stock": [
+      { "item": "sparkling_cocktail", "qty": 50 },
+      { "item": "cake", "qty": 20 },
+      { "item": "bread", "qty": 30 }
+    ]
+  },
+  "pride_stall": {
+    "name": "Pride Stall",
+    "stock": [
+      { "item": "rainbow_scarf", "qty": 10 },
+      { "item": "ball_of_wool", "qty": 20 },
+      { "item": "feather", "qty": 50 }
+    ]
   }
 }

@@ -6,8 +6,10 @@ import {
   state, msg, setSaveProvider, netLink, combatSnapshot,
   netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
   netYouKilled, netGot, netFx, netShorn, netDeny,
+  netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
 } from './game';
 import type { RemotePlayer } from './game';
+import { loadFriends, setFriendOnline } from './friends';
 
 const TOKEN_KEY = 'bs-token';
 const USER_KEY = 'bs-username';
@@ -141,7 +143,7 @@ function sendChat(text: string) {
   if (t && net.online) wsSend({ t: 'chat', text: t });
 }
 
-function handlePlayers(players: { name: string; x: number; y: number; app: any }[]) {
+function handlePlayers(players: { name: string; x: number; y: number; app: any; cb?: number; hp?: number; maxHp?: number; d?: boolean }[]) {
   const prev = new Map<string, RemotePlayer>();
   for (const rp of state.remotePlayers) prev.set(rp.name, rp);
   const next: RemotePlayer[] = [];
@@ -164,10 +166,17 @@ function handlePlayers(players: { name: string; x: number; y: number; app: any }
       }
       // unchanged position: leave prev/x/updatedAt alone so in-flight interpolation finishes
       old.app = p.app ?? old.app;
+      if (typeof p.cb === 'number') old.cb = p.cb;
+      if (typeof p.hp === 'number') old.hp = p.hp;
+      if (typeof p.maxHp === 'number') old.maxHp = p.maxHp;
+      if (typeof p.d === 'boolean') old.dead = p.d;
       if (old.chat && performance.now() > old.chat.until) old.chat = undefined;
       next.push(old);
     } else {
-      next.push({ name: p.name, x: p.x, y: p.y, prevX: p.x, prevY: p.y, updatedAt: performance.now(), app: p.app ?? {} });
+      next.push({
+        name: p.name, x: p.x, y: p.y, prevX: p.x, prevY: p.y, updatedAt: performance.now(),
+        app: p.app ?? {}, cb: p.cb, hp: p.hp, maxHp: p.maxHp, dead: p.d,
+      });
     }
   }
   state.remotePlayers.length = 0;
@@ -209,6 +218,25 @@ function handleWsMessage(raw: string) {
     msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
     net.username = m.name;
+    void loadFriends();
+  } else if (m.t === 'friend_status' && typeof m.username === 'string' && typeof m.online === 'boolean') {
+    setFriendOnline(m.username, m.online);
+  } else if (m.t === 'cf_offer' && typeof m.id === 'string' && typeof m.from === 'string' && typeof m.amount === 'number') {
+    import('./packs/gambling').then((g) => g.showCoinflipOffer(m.id, m.from, m.amount));
+  } else if (m.t === 'cf_result' && typeof m.winner === 'string' && typeof m.loser === 'string' && typeof m.amount === 'number') {
+    import('./packs/gambling').then((g) => g.handleCoinflipResult(m.winner, m.loser, m.amount, m.flip ?? 'heads'));
+  } else if (m.t === 'cf_declined' && typeof m.from === 'string') {
+    msg(`${m.from} declined your coinflip challenge.`, 'game');
+  } else if (m.t === 'pvpHitYou') {
+    netPvpHitYou(m);
+  } else if (m.t === 'pvpYouHit') {
+    netPvpYouHit(m);
+  } else if (m.t === 'pvpHit') {
+    netPvpHit(m);
+  } else if (m.t === 'pvpDeath') {
+    netPvpDeath(m);
+  } else if (m.t === 'pvpKill') {
+    netPvpKill(m);
   }
 }
 
@@ -346,6 +374,7 @@ function goOnline(token: string, username: string | null, save: any) {
   } catch { /* ignore */ }
   installServerProvider(save);
   startPresence();
+  void loadFriends();
 }
 
 async function bootstrap(): Promise<any | null> {

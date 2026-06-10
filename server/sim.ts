@@ -54,6 +54,8 @@ export interface PlayerView {
   cb: number;       // combat level (aggro checks)
   effDef: number;   // effective defence level incl. prayer/style
   defBonus: number; // equipment defence bonus
+  hp: number;
+  maxHp: number;
   send: (msg: unknown) => void;
 }
 
@@ -347,7 +349,60 @@ function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView) {
   }
 }
 
+function findPlayerByName(name: string, exceptId?: number): PlayerView | null {
+  const want = name.toLowerCase();
+  for (const pl of players.values()) {
+    if (exceptId !== undefined && pl.userId === exceptId) continue;
+    if (pl.name.toLowerCase() === want) return pl;
+  }
+  return null;
+}
+
+function handleSwingPvp(p: PlayerView, msg: any) {
+  if (p.dead) return;
+  const targetName = typeof msg.target === 'string' ? msg.target.slice(0, 12).trim() : '';
+  if (!targetName) return;
+  const target = findPlayerByName(targetName, p.userId);
+  if (!target || target.dead) return;
+
+  const mode = msg.mode === 'ranged' || msg.mode === 'gun' || msg.mode === 'magic' ? msg.mode : 'melee';
+  const reach = mode === 'melee' ? 1 : 6;
+  if (chebyshev(p.x, p.y, target.x, target.y) > reach + 2) return;
+  if (mode !== 'melee' && chebyshev(p.x, p.y, target.x, target.y) === 0) return;
+
+  const now = Date.now();
+  if (now < (nextSwingAt.get(p.userId) ?? 0)) return;
+  const speed = clamp(msg.speed, 2, 8, 4);
+  nextSwingAt.set(p.userId, now + speed * 600 - 150);
+
+  const eff = clamp(msg.eff, 1, 200, 1);
+  const bonus = clamp(msg.bonus, 0, 200, 0);
+  const maxHit = clamp(msg.maxHit, 0, 60, 0);
+
+  const hit = rollHit(eff, bonus, target.effDef, target.defBonus);
+  const dmg = hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
+
+  target.hp = Math.max(0, target.hp - dmg);
+  const hpPayload = { hp: target.hp, maxHp: target.maxHp };
+
+  target.send({ t: 'pvpHitYou', from: p.name, dmg, ...hpPayload });
+  p.send({ t: 'pvpYouHit', target: target.name, dmg, mode, ...hpPayload });
+  broadcast({ t: 'pvpHit', from: p.name, target: target.name, dmg, ...hpPayload });
+
+  if (target.hp <= 0) {
+    target.dead = true;
+    target.hp = 0;
+    target.send({ t: 'pvpDeath', by: p.name });
+    p.send({ t: 'pvpKill', target: target.name });
+    broadcast({ t: 'pvpDeath', who: target.name, by: p.name });
+  }
+}
+
 export function handleSwing(p: PlayerView, msg: any) {
+  if (typeof msg.target === 'string' && msg.target.trim()) {
+    handleSwingPvp(p, msg);
+    return;
+  }
   const n = npcById.get(Number(msg.npc));
   if (!n || n.dead || !n.def.attackable || p.dead) return;
 

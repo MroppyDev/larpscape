@@ -44,6 +44,8 @@ const NON_BLOCKING = new Set([
   'ice_ledge', 'rope_bridge', 'rock_climb', 'snow_slope', 'fire_altar',
   'lobster_spot', 'harpoon_spot',
   'bush', 'fern', 'boulder_small', 'mushroom_patch', 'reeds', 'lilypad', 'driftwood',
+  'dance_floor', 'rainbow_banner',
+  'chair', 'banner', 'rug_deco',
 ]);
 
 // Static blocking-object lookup (baked map objects only).

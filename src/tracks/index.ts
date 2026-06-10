@@ -16,10 +16,11 @@ import { track as rimewind } from './rimewind';
 import { track as sunscorch } from './sunscorch';
 import { track as brackwaterTide } from './brackwater_tide';
 import { track as ashfall } from './ashfall';
+import { track as rainbowAvenue } from './rainbow_avenue';
 
 export const BASE_TRACKS: Track[] = [
   newbieMeadow, riverside, goblinStrut, boghollow, stonecourt,
   shepherdsRest, marketDay, whisperingStones, quietMeadow,
   aldgateStreets, warbanner, underdeep,
-  rimewind, sunscorch, brackwaterTide, ashfall,
+  rimewind, sunscorch, brackwaterTide, ashfall, rainbowAvenue,
 ];

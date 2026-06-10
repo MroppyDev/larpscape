@@ -257,6 +257,52 @@
       "action": "Coinflip",
       "blocks": true
     },
+    "hedon_bar": {
+      "id": "hedon_bar",
+      "name": "Hedon bar",
+      "examine": "Sticky countertops and excellent decisions waiting to happen.",
+      "action": "Trade",
+      "blocks": true
+    },
+    "dance_floor": {
+      "id": "dance_floor",
+      "name": "Dance floor",
+      "examine": "The tiles remember every questionable move ever attempted here.",
+      "action": "Dance",
+      "blocks": false
+    },
+    "hot_tub": {
+      "id": "hot_tub",
+      "name": "Hot tub",
+      "examine": "Bubbling water hot enough to melt bad decisions into stories.",
+      "action": "Relax",
+      "blocks": true
+    },
+    "disco_ball": {
+      "id": "disco_ball",
+      "name": "Disco ball",
+      "examine": "A thousand tiny mirrors judging your rhythm.",
+      "blocks": true
+    },
+    "rainbow_banner": {
+      "id": "rainbow_banner",
+      "name": "Rainbow banner",
+      "examine": "Six stripes of courage hung where everyone can see them.",
+      "blocks": false
+    },
+    "pride_fountain": {
+      "id": "pride_fountain",
+      "name": "Pride fountain",
+      "examine": "Water arcs in every colour. Coins at the bottom carry wishes.",
+      "action": "Make-a-wish",
+      "blocks": true
+    },
+    "pride_stage": {
+      "id": "pride_stage",
+      "name": "Pride stage",
+      "examine": "A small stage with very large feelings.",
+      "blocks": true
+    },
     "fountain": {
       "id": "fountain",
       "name": "Fountain",
@@ -449,6 +495,66 @@
       "id": "dead_tree_deco",
       "name": "Dead tree",
       "examine": "It gave up leaves years ago and never looked back.",
+      "blocks": true
+    },
+    "chair": {
+      "id": "chair",
+      "name": "Chair",
+      "examine": "A wooden chair.",
+      "blocks": false
+    },
+    "table": {
+      "id": "table",
+      "name": "Table",
+      "examine": "A sturdy table.",
+      "blocks": true
+    },
+    "bed": {
+      "id": "bed",
+      "name": "Bed",
+      "examine": "A bed. It looks well-used.",
+      "blocks": true
+    },
+    "bookshelf": {
+      "id": "bookshelf",
+      "name": "Bookshelf",
+      "examine": "Shelves groaning under the weight of books.",
+      "blocks": true
+    },
+    "banner": {
+      "id": "banner",
+      "name": "Banner",
+      "examine": "A colourful banner.",
+      "blocks": false
+    },
+    "rug_deco": {
+      "id": "rug_deco",
+      "name": "Rug",
+      "examine": "A woven rug.",
+      "blocks": false
+    },
+    "cauldron": {
+      "id": "cauldron",
+      "name": "Cauldron",
+      "examine": "A black iron cauldron.",
+      "blocks": true
+    },
+    "hay_bale": {
+      "id": "hay_bale",
+      "name": "Hay bale",
+      "examine": "A bale of hay.",
+      "blocks": true
+    },
+    "lamp_post": {
+      "id": "lamp_post",
+      "name": "Lamp post",
+      "examine": "A wrought-iron lamp post.",
+      "blocks": true
+    },
+    "weapon_rack": {
+      "id": "weapon_rack",
+      "name": "Weapon rack",
+      "examine": "Weapons racked in neat rows.",
       "blocks": true
     }
   },

@@ -126,6 +126,26 @@
       "y": 48
     },
     {
+      "id": "party_host",
+      "x": 57,
+      "y": 40
+    },
+    {
+      "id": "bartender_fizz",
+      "x": 55,
+      "y": 41
+    },
+    {
+      "id": "pride_marshal",
+      "x": 64,
+      "y": 41
+    },
+    {
+      "id": "drag_icon",
+      "x": 62,
+      "y": 40
+    },
+    {
       "id": "banker",
       "x": 17,
       "y": 31
@@ -185,53 +205,646 @@
       "x": 23,
       "y": 53
     },
-    { "id": "city_guard", "x": 79, "y": 37 },
-    { "id": "city_guard", "x": 79, "y": 39 },
-    { "id": "city_guard", "x": 94, "y": 30 },
-    { "id": "city_guard", "x": 112, "y": 41 },
-    { "id": "ge_clerk", "x": 101, "y": 30 },
-    { "id": "ge_clerk", "x": 105, "y": 30 },
-    { "id": "banker", "x": 103, "y": 27 },
-    { "id": "innkeeper", "x": 89, "y": 22 },
-    { "id": "man", "x": 97, "y": 36 },
-    { "id": "man", "x": 109, "y": 34 },
-    { "id": "armourer", "x": 116, "y": 23 },
-    { "id": "gun_trainer", "x": 118, "y": 21 },
-    { "id": "gun_guild_master", "x": 114, "y": 21 },
-    { "id": "grocer", "x": 116, "y": 44 },
-    { "id": "goblin_warlord", "x": 146, "y": 22 },
-    { "id": "bog_horror", "x": 24, "y": 96 },
-    { "id": "shadow_drake", "x": 140, "y": 152 },
-    { "id": "ice_troll", "x": 185, "y": 14 },
-    { "id": "ice_troll", "x": 212, "y": 46 },
-    { "id": "ice_troll", "x": 192, "y": 60 },
-    { "id": "ice_troll", "x": 205, "y": 80 },
-    { "id": "ice_wolf", "x": 188, "y": 20 },
-    { "id": "ice_wolf", "x": 215, "y": 28 },
-    { "id": "ice_wolf", "x": 198, "y": 72 },
-    { "id": "mountain_guide", "x": 172, "y": 54 },
-    { "id": "ice_queen", "x": 205, "y": 20 },
-    { "id": "scorpion", "x": 36, "y": 180 },
-    { "id": "scorpion", "x": 52, "y": 196 },
-    { "id": "scorpion", "x": 14, "y": 206 },
-    { "id": "scorpion", "x": 58, "y": 208 },
-    { "id": "desert_bandit", "x": 28, "y": 190 },
-    { "id": "desert_bandit", "x": 40, "y": 199 },
-    { "id": "desert_bandit", "x": 24, "y": 209 },
-    { "id": "desert_bandit", "x": 34, "y": 208 },
-    { "id": "desert_nomad", "x": 13, "y": 178 },
-    { "id": "gem_trader", "x": 18, "y": 178 },
-    { "id": "bandit_king", "x": 30, "y": 200 },
-    { "id": "magma_crawler", "x": 165, "y": 135 },
-    { "id": "magma_crawler", "x": 172, "y": 120 },
-    { "id": "magma_crawler", "x": 158, "y": 148 },
-    { "id": "ash_fiend", "x": 195, "y": 140 },
-    { "id": "ash_fiend", "x": 205, "y": 122 },
-    { "id": "magma_fiend", "x": 210, "y": 150 },
-    { "id": "fishmonger", "x": 107, "y": 187 },
-    { "id": "harbormaster", "x": 118, "y": 210 },
-    { "id": "man", "x": 100, "y": 198 },
-    { "id": "man", "x": 118, "y": 194 }
+    {
+      "id": "city_guard",
+      "x": 79,
+      "y": 37
+    },
+    {
+      "id": "city_guard",
+      "x": 79,
+      "y": 39
+    },
+    {
+      "id": "city_guard",
+      "x": 94,
+      "y": 30
+    },
+    {
+      "id": "city_guard",
+      "x": 112,
+      "y": 41
+    },
+    {
+      "id": "ge_clerk",
+      "x": 101,
+      "y": 30
+    },
+    {
+      "id": "ge_clerk",
+      "x": 105,
+      "y": 30
+    },
+    {
+      "id": "banker",
+      "x": 103,
+      "y": 27
+    },
+    {
+      "id": "innkeeper",
+      "x": 89,
+      "y": 22
+    },
+    {
+      "id": "man",
+      "x": 97,
+      "y": 36
+    },
+    {
+      "id": "man",
+      "x": 109,
+      "y": 34
+    },
+    {
+      "id": "armourer",
+      "x": 116,
+      "y": 23
+    },
+    {
+      "id": "gun_trainer",
+      "x": 118,
+      "y": 21
+    },
+    {
+      "id": "gun_guild_master",
+      "x": 114,
+      "y": 21
+    },
+    {
+      "id": "grocer",
+      "x": 116,
+      "y": 44
+    },
+    {
+      "id": "goblin_warlord",
+      "x": 146,
+      "y": 22
+    },
+    {
+      "id": "bog_horror",
+      "x": 24,
+      "y": 96
+    },
+    {
+      "id": "shadow_drake",
+      "x": 140,
+      "y": 152
+    },
+    {
+      "id": "ice_troll",
+      "x": 185,
+      "y": 14
+    },
+    {
+      "id": "ice_troll",
+      "x": 212,
+      "y": 46
+    },
+    {
+      "id": "ice_troll",
+      "x": 192,
+      "y": 60
+    },
+    {
+      "id": "ice_troll",
+      "x": 205,
+      "y": 80
+    },
+    {
+      "id": "ice_wolf",
+      "x": 188,
+      "y": 20
+    },
+    {
+      "id": "ice_wolf",
+      "x": 215,
+      "y": 28
+    },
+    {
+      "id": "ice_wolf",
+      "x": 198,
+      "y": 72
+    },
+    {
+      "id": "mountain_guide",
+      "x": 172,
+      "y": 54
+    },
+    {
+      "id": "ice_queen",
+      "x": 205,
+      "y": 20
+    },
+    {
+      "id": "scorpion",
+      "x": 36,
+      "y": 180
+    },
+    {
+      "id": "scorpion",
+      "x": 52,
+      "y": 196
+    },
+    {
+      "id": "scorpion",
+      "x": 14,
+      "y": 206
+    },
+    {
+      "id": "scorpion",
+      "x": 58,
+      "y": 208
+    },
+    {
+      "id": "desert_bandit",
+      "x": 28,
+      "y": 190
+    },
+    {
+      "id": "desert_bandit",
+      "x": 40,
+      "y": 199
+    },
+    {
+      "id": "desert_bandit",
+      "x": 24,
+      "y": 209
+    },
+    {
+      "id": "desert_bandit",
+      "x": 34,
+      "y": 208
+    },
+    {
+      "id": "desert_nomad",
+      "x": 13,
+      "y": 178
+    },
+    {
+      "id": "gem_trader",
+      "x": 18,
+      "y": 178
+    },
+    {
+      "id": "bandit_king",
+      "x": 30,
+      "y": 200
+    },
+    {
+      "id": "magma_crawler",
+      "x": 165,
+      "y": 135
+    },
+    {
+      "id": "magma_crawler",
+      "x": 172,
+      "y": 120
+    },
+    {
+      "id": "magma_crawler",
+      "x": 158,
+      "y": 148
+    },
+    {
+      "id": "ash_fiend",
+      "x": 195,
+      "y": 140
+    },
+    {
+      "id": "ash_fiend",
+      "x": 205,
+      "y": 122
+    },
+    {
+      "id": "magma_fiend",
+      "x": 210,
+      "y": 150
+    },
+    {
+      "id": "fishmonger",
+      "x": 107,
+      "y": 187
+    },
+    {
+      "id": "harbormaster",
+      "x": 118,
+      "y": 210
+    },
+    {
+      "id": "man",
+      "x": 100,
+      "y": 198
+    },
+    {
+      "id": "man",
+      "x": 118,
+      "y": 194
+    },
+    {
+      "id": "village_elder",
+      "x": 300,
+      "y": 265
+    },
+    {
+      "id": "wayfarer",
+      "x": 345,
+      "y": 310
+    },
+    {
+      "id": "trapper",
+      "x": 420,
+      "y": 122
+    },
+    {
+      "id": "boatman",
+      "x": 78,
+      "y": 382
+    },
+    {
+      "id": "bear",
+      "x": 292,
+      "y": 363
+    },
+    {
+      "id": "bear",
+      "x": 290,
+      "y": 344
+    },
+    {
+      "id": "bear",
+      "x": 397,
+      "y": 344
+    },
+    {
+      "id": "bear",
+      "x": 261,
+      "y": 322
+    },
+    {
+      "id": "bear",
+      "x": 366,
+      "y": 361
+    },
+    {
+      "id": "bear",
+      "x": 415,
+      "y": 334
+    },
+    {
+      "id": "bear",
+      "x": 387,
+      "y": 392
+    },
+    {
+      "id": "bear",
+      "x": 357,
+      "y": 320
+    },
+    {
+      "id": "dire_wolf",
+      "x": 293,
+      "y": 84
+    },
+    {
+      "id": "dire_wolf",
+      "x": 313,
+      "y": 82
+    },
+    {
+      "id": "dire_wolf",
+      "x": 309,
+      "y": 106
+    },
+    {
+      "id": "dire_wolf",
+      "x": 282,
+      "y": 53
+    },
+    {
+      "id": "dire_wolf",
+      "x": 327,
+      "y": 114
+    },
+    {
+      "id": "dire_wolf",
+      "x": 321,
+      "y": 79
+    },
+    {
+      "id": "forest_spider",
+      "x": 369,
+      "y": 353
+    },
+    {
+      "id": "forest_spider",
+      "x": 352,
+      "y": 345
+    },
+    {
+      "id": "forest_spider",
+      "x": 361,
+      "y": 325
+    },
+    {
+      "id": "forest_spider",
+      "x": 365,
+      "y": 337
+    },
+    {
+      "id": "forest_spider",
+      "x": 364,
+      "y": 357
+    },
+    {
+      "id": "forest_spider",
+      "x": 380,
+      "y": 323
+    },
+    {
+      "id": "forest_spider",
+      "x": 376,
+      "y": 328
+    },
+    {
+      "id": "forest_spider",
+      "x": 363,
+      "y": 331
+    },
+    {
+      "id": "forest_spider",
+      "x": 388,
+      "y": 349
+    },
+    {
+      "id": "forest_spider",
+      "x": 385,
+      "y": 320
+    },
+    {
+      "id": "forest_spider",
+      "x": 387,
+      "y": 337
+    },
+    {
+      "id": "forest_spider",
+      "x": 385,
+      "y": 346
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 447,
+      "y": 315
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 443,
+      "y": 306
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 457,
+      "y": 291
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 447,
+      "y": 318
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 435,
+      "y": 298
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 453,
+      "y": 299
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 469,
+      "y": 294
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 464,
+      "y": 301
+    },
+    {
+      "id": "pirate",
+      "x": 92,
+      "y": 394
+    },
+    {
+      "id": "pirate",
+      "x": 78,
+      "y": 388
+    },
+    {
+      "id": "pirate",
+      "x": 75,
+      "y": 377
+    },
+    {
+      "id": "pirate",
+      "x": 76,
+      "y": 386
+    },
+    {
+      "id": "pirate",
+      "x": 96,
+      "y": 385
+    },
+    {
+      "id": "pirate",
+      "x": 81,
+      "y": 378
+    },
+    {
+      "id": "pirate",
+      "x": 294,
+      "y": 408
+    },
+    {
+      "id": "pirate",
+      "x": 313,
+      "y": 414
+    },
+    {
+      "id": "pirate",
+      "x": 250,
+      "y": 413
+    },
+    {
+      "id": "pirate",
+      "x": 285,
+      "y": 409
+    },
+    {
+      "id": "cinder_imp",
+      "x": 475,
+      "y": 468
+    },
+    {
+      "id": "cinder_imp",
+      "x": 462,
+      "y": 463
+    },
+    {
+      "id": "cinder_imp",
+      "x": 465,
+      "y": 464
+    },
+    {
+      "id": "cinder_imp",
+      "x": 475,
+      "y": 481
+    },
+    {
+      "id": "cinder_imp",
+      "x": 470,
+      "y": 476
+    },
+    {
+      "id": "cinder_imp",
+      "x": 474,
+      "y": 482
+    },
+    {
+      "id": "cinder_imp",
+      "x": 470,
+      "y": 488
+    },
+    {
+      "id": "cinder_imp",
+      "x": 468,
+      "y": 473
+    },
+    {
+      "id": "cinder_imp",
+      "x": 465,
+      "y": 472
+    },
+    {
+      "id": "cinder_imp",
+      "x": 490,
+      "y": 480
+    },
+    {
+      "id": "cow",
+      "x": 307,
+      "y": 266
+    },
+    {
+      "id": "cow",
+      "x": 294,
+      "y": 277
+    },
+    {
+      "id": "cow",
+      "x": 318,
+      "y": 268
+    },
+    {
+      "id": "cow",
+      "x": 291,
+      "y": 259
+    },
+    {
+      "id": "chicken",
+      "x": 292,
+      "y": 263
+    },
+    {
+      "id": "chicken",
+      "x": 305,
+      "y": 268
+    },
+    {
+      "id": "chicken",
+      "x": 292,
+      "y": 258
+    },
+    {
+      "id": "chicken",
+      "x": 302,
+      "y": 270
+    },
+    {
+      "id": "chicken",
+      "x": 292,
+      "y": 269
+    },
+    {
+      "id": "chicken",
+      "x": 308,
+      "y": 268
+    },
+    {
+      "id": "goblin",
+      "x": 301,
+      "y": 447
+    },
+    {
+      "id": "goblin",
+      "x": 332,
+      "y": 456
+    },
+    {
+      "id": "goblin",
+      "x": 351,
+      "y": 444
+    },
+    {
+      "id": "goblin",
+      "x": 359,
+      "y": 442
+    },
+    {
+      "id": "goblin",
+      "x": 365,
+      "y": 426
+    },
+    {
+      "id": "goblin",
+      "x": 339,
+      "y": 460
+    },
+    {
+      "id": "goblin",
+      "x": 362,
+      "y": 455
+    },
+    {
+      "id": "goblin",
+      "x": 359,
+      "y": 424
+    },
+    {
+      "id": "goblin",
+      "x": 379,
+      "y": 356
+    },
+    {
+      "id": "goblin",
+      "x": 392,
+      "y": 356
+    },
+    {
+      "id": "goblin",
+      "x": 381,
+      "y": 355
+    },
+    {
+      "id": "goblin",
+      "x": 389,
+      "y": 345
+    },
+    {
+      "id": "goblin",
+      "x": 371,
+      "y": 340
+    }
   ],
   "groundSpawns": [
     {
@@ -269,6 +882,384 @@
       "x": 105,
       "y": 31,
       "respawnTicks": 100
+    },
+    {
+      "item": "grimy_guam",
+      "x": 448,
+      "y": 303,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 444,
+      "y": 291,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 461,
+      "y": 319,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 442,
+      "y": 313,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 446,
+      "y": 308,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 446,
+      "y": 314,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 439,
+      "y": 294,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 436,
+      "y": 301,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 449,
+      "y": 296,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 458,
+      "y": 301,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 444,
+      "y": 308,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_guam",
+      "x": 466,
+      "y": 300,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 373,
+      "y": 338,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 374,
+      "y": 360,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 396,
+      "y": 321,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 350,
+      "y": 321,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 374,
+      "y": 357,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 386,
+      "y": 351,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 385,
+      "y": 345,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 380,
+      "y": 359,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 380,
+      "y": 322,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_marrentill",
+      "x": 351,
+      "y": 338,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 355,
+      "y": 346,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 322,
+      "y": 310,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 359,
+      "y": 347,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 367,
+      "y": 310,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 309,
+      "y": 348,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 326,
+      "y": 328,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 331,
+      "y": 336,
+      "respawnTicks": 80
+    },
+    {
+      "item": "grimy_ranarr",
+      "x": 289,
+      "y": 339,
+      "respawnTicks": 80
+    },
+    {
+      "item": "coins",
+      "x": 340,
+      "y": 288,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 337,
+      "y": 323,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 342,
+      "y": 359,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 378,
+      "y": 306,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 339,
+      "y": 327,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 356,
+      "y": 437,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 379,
+      "y": 256,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 374,
+      "y": 307,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 318,
+      "y": 394,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 377,
+      "y": 275,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 352,
+      "y": 428,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 345,
+      "y": 296,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 328,
+      "y": 396,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 321,
+      "y": 446,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 359,
+      "y": 313,
+      "respawnTicks": 120
+    },
+    {
+      "item": "coins",
+      "x": 68,
+      "y": 383,
+      "respawnTicks": 100
+    },
+    {
+      "item": "coins",
+      "x": 85,
+      "y": 379,
+      "respawnTicks": 100
+    },
+    {
+      "item": "coins",
+      "x": 80,
+      "y": 390,
+      "respawnTicks": 100
+    },
+    {
+      "item": "coins",
+      "x": 85,
+      "y": 373,
+      "respawnTicks": 100
+    },
+    {
+      "item": "coins",
+      "x": 75,
+      "y": 388,
+      "respawnTicks": 100
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 86,
+      "y": 384,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 72,
+      "y": 372,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 84,
+      "y": 373,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 85,
+      "y": 382,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 81,
+      "y": 388,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 76,
+      "y": 392,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 322,
+      "y": 251,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 337,
+      "y": 246,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 321,
+      "y": 257,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_shrimps",
+      "x": 322,
+      "y": 247,
+      "respawnTicks": 60
+    },
+    {
+      "item": "raw_anchovies",
+      "x": 324,
+      "y": 249,
+      "respawnTicks": 70
+    },
+    {
+      "item": "raw_anchovies",
+      "x": 332,
+      "y": 243,
+      "respawnTicks": 70
+    },
+    {
+      "item": "raw_anchovies",
+      "x": 319,
+      "y": 248,
+      "respawnTicks": 70
     }
   ]
 }

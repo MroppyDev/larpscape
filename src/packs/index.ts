@@ -1,6 +1,8 @@
 // Content packs — each registers items/NPCs/objects/quests via the game registries.
 // Imported by main.ts before initGame so spawns and quests are in place.
 import './city';
+import './gambling';
+import './hedonism_pride';
 import './gun_guild';
 import './boss_warlord';
 import './boss_bog';

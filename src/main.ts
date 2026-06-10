@@ -5,6 +5,7 @@ import './content';
 import './quests';
 import './packs';
 import './ge';
+import './friends';
 import './tutorial';
 import './worldmap';
 import { net } from './net';

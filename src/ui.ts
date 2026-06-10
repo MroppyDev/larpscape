@@ -9,7 +9,7 @@ import {
   state, events, level, totalLevel, combatLevel, walkTo, msg, skillIdx,
   eatFood, buryBones, equipItem, unequip, dropItem,
   bankDeposit, bankWithdraw, shopBuy, shopSell, getShopStock,
-  attackNpc, pickupItem, interactWithObject, interactWithNpc,
+  attackNpc, attackPlayer, pickupItem, interactWithObject, interactWithNpc,
   useItemOnObject, useItemOnItem,
   itemActions, objectActions, npcActions,
   advanceDialogue, chooseOption, togglePrayer, currentAttackMode,
@@ -22,10 +22,12 @@ import { objects, objectAt, key, WorldObject, GroundItem } from './world';
 import { audio, TRACKS } from './audio';
 import { QUESTS } from './quests';
 import type { EquipSlot } from './defs';
+import { friends, addFriend, removeFriend, loadFriends, startFriendsPolling, isFriend } from './friends';
+import { openCoinflip } from './packs/gambling';
 
 const $ = (id: string) => document.getElementById(id)!;
 
-type TabName = 'combat' | 'skills' | 'quests' | 'inventory' | 'equipment' | 'prayer' | 'magic' | 'music' | 'settings';
+type TabName = 'combat' | 'skills' | 'quests' | 'inventory' | 'equipment' | 'prayer' | 'magic' | 'music' | 'friends' | 'settings';
 let activeTab: TabName = 'inventory';
 let selectedQuest: string | null = null;
 let chatFilter: 'all' | 'game' | 'public' = 'all';
@@ -66,6 +68,8 @@ export function initUI() {
     audio.setSfxVolume(sfxVol);
     if (activeTab === 'music') renderPanel();
   };
+  friends.onChange = () => { if (activeTab === 'friends') renderPanel(); };
+  startFriendsPolling(() => activeTab === 'friends');
 
   updateOrbs();
 }
@@ -104,7 +108,7 @@ function ensureExtraDom() {
 
 // ---------------- Tabs ----------------
 const TOP_TABS: TabName[] = ['combat', 'skills', 'quests', 'inventory', 'equipment'];
-const BOTTOM_TABS: TabName[] = ['prayer', 'magic', 'music', 'settings'];
+const BOTTOM_TABS: TabName[] = ['prayer', 'magic', 'music', 'friends', 'settings'];
 
 function buildTabs() {
   const make = (row: HTMLElement, names: TabName[]) => {
@@ -134,6 +138,7 @@ function renderPanel() {
     case 'prayer': return renderPrayer(panel);
     case 'magic': return renderMagic(panel);
     case 'music': return renderMusic(panel);
+    case 'friends': return renderFriends(panel);
     case 'settings': return renderSettings(panel);
   }
 }
@@ -556,6 +561,64 @@ function renderMusic(panel: HTMLElement) {
 }
 
 // ---------------- Settings ----------------
+function renderFriends(panel: HTMLElement) {
+  const title = document.createElement('div');
+  title.className = 'panel-title';
+  title.textContent = 'Friends';
+  panel.appendChild(title);
+
+  const addRow = document.createElement('div');
+  addRow.className = 'setting-row';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.maxLength = 12;
+  input.placeholder = 'Username';
+  input.style.cssText = 'flex:1;padding:3px 6px;background:#1b1610;color:#e8dcc0;border:1px solid #6b5a36;border-radius:3px;font:inherit;';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'mini-btn';
+  addBtn.textContent = 'Add';
+  addBtn.onclick = () => {
+    const name = input.value.trim();
+    if (name) void addFriend(name).then((ok) => { if (ok) input.value = ''; });
+  };
+  addRow.appendChild(input);
+  addRow.appendChild(addBtn);
+  panel.appendChild(addRow);
+
+  if (!friends.loaded) void loadFriends();
+
+  if (friends.list.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'panel-hint';
+    empty.textContent = 'No friends yet. Add someone or right-click a player.';
+    panel.appendChild(empty);
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'friends-list';
+  for (const f of friends.list) {
+    const row = document.createElement('div');
+    row.className = 'friend-row';
+    const dot = document.createElement('span');
+    dot.className = 'friend-dot' + (f.online ? ' online' : '');
+    dot.title = f.online ? 'Online' : 'Offline';
+    const name = document.createElement('span');
+    name.className = 'friend-name';
+    name.textContent = f.username;
+    const rm = document.createElement('button');
+    rm.className = 'mini-btn';
+    rm.textContent = '×';
+    rm.title = 'Remove friend';
+    rm.onclick = () => { void removeFriend(f.username); };
+    row.appendChild(dot);
+    row.appendChild(name);
+    row.appendChild(rm);
+    list.appendChild(row);
+  }
+  panel.appendChild(list);
+}
+
 function renderSettings(panel: HTMLElement) {
   const title = document.createElement('div');
   title.className = 'panel-title';
@@ -902,6 +965,27 @@ function optionsAt(tx: number, ty: number): MenuOption[] {
         fn: () => { clearUsing(); useItemOnObject(usingSlot, obj); },
       });
     }
+  }
+
+  // other players on tile
+  for (const rp of state.remotePlayers) {
+    if (rp.x !== tx || rp.y !== ty || rp.dead) continue;
+    opts.push({
+      label: 'Attack', target: rp.name,
+      lvl: rp.cb ? `(level-${rp.cb})` : undefined,
+      fn: () => attackPlayer(rp.name),
+    });
+    if (!isFriend(rp.name)) {
+      opts.push({
+        label: 'Add friend', target: rp.name,
+        fn: () => { void addFriend(rp.name); },
+      });
+    }
+    opts.push({
+      label: 'Coinflip', target: rp.name,
+      fn: () => { openCoinflip(rp.name); },
+    });
+    opts.push({ label: 'Examine', target: rp.name, fn: () => msg(`It's ${rp.name}.`, 'examine') });
   }
 
   // NPCs on tile

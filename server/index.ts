@@ -17,6 +17,7 @@ import {
   handleSwing, handlePickup, handleDrop, handleInteract,
   type PlayerView,
 } from './sim';
+import { initSocial } from './social';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -654,11 +655,8 @@ app.post('/api/admin/ge/cancel', requireAdmin, (req, res) => {
   res.json({ offer: offerJson(o) });
 });
 
-// 404 for unknown API routes
-app.use('/api', (_req, res) => { res.status(404).json({ error: 'not found' }); });
-
 // ---------------------------------------------------------------------------
-// WebSocket: presence + chat relay
+// WebSocket clients (declared early for friends/coinflip routes)
 // ---------------------------------------------------------------------------
 
 interface Client {
@@ -672,9 +670,37 @@ interface Client {
   view: PlayerView; // shared with the world sim (combat stats snapshot etc.)
 }
 
+const clients = new Set<Client>();
+
+const social = initSocial({
+  db,
+  getClients: () => {
+    const out: { userId: number; name: string; send: (m: unknown) => void }[] = [];
+    for (const c of clients) {
+      if (c.ws.readyState === WebSocket.OPEN) {
+        out.push({
+          userId: c.userId,
+          name: c.name,
+          send: (m) => { c.ws.send(JSON.stringify(m)); },
+        });
+      }
+    }
+    return out;
+  },
+  usernameRe: USERNAME_RE,
+  isPosInt,
+});
+social.registerRoutes(app, requireAuth);
+
+// 404 for unknown API routes
+app.use('/api', (_req, res) => { res.status(404).json({ error: 'not found' }); });
+
+// ---------------------------------------------------------------------------
+// WebSocket: presence + chat relay
+// ---------------------------------------------------------------------------
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: '/ws' });
-const clients = new Set<Client>();
 
 function wsBroadcast(msg: unknown) {
   const payload = JSON.stringify(msg);
@@ -697,7 +723,7 @@ wss.on('connection', (ws, req) => {
   const view: PlayerView = {
     userId: user.id, name: user.username,
     x: 0, y: 0, dead: false,
-    cb: 3, effDef: 1, defBonus: 0,
+    cb: 3, effDef: 1, defBonus: 0, hp: 10, maxHp: 10,
     send: (msg: unknown) => {
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
     },
@@ -709,6 +735,7 @@ wss.on('connection', (ws, req) => {
   };
   clients.add(client);
   ws.send(JSON.stringify({ t: 'hello', name: user.username }));
+  social.notifyFriendsOnline(user.id, user.username, true);
   // authoritative world state: full NPC + ground item snapshot on connect
   ws.send(JSON.stringify(fullSnapshot()));
 
@@ -734,6 +761,8 @@ wss.on('connection', (ws, req) => {
       view.cb = clampStat(msg.cb, 1, 126, view.cb);
       view.effDef = clampStat(msg.effDef, 1, 200, view.effDef);
       view.defBonus = clampStat(msg.defBonus, 0, 500, view.defBonus);
+      view.hp = clampStat(msg.hp, 0, 999, view.hp);
+      view.maxHp = clampStat(msg.maxHp, 1, 999, view.maxHp);
       if (typeof msg.d === 'boolean') view.dead = msg.d;
     } else if (msg.t === 'swing') {
       handleSwing(view, msg);
@@ -762,8 +791,16 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('pong', () => { client.alive = true; });
-  ws.on('close', () => { clients.delete(client); dropPlayer(client.userId); });
-  ws.on('error', () => { clients.delete(client); dropPlayer(client.userId); });
+  ws.on('close', () => {
+    clients.delete(client);
+    dropPlayer(client.userId);
+    social.notifyFriendsOnline(client.userId, client.name, false);
+  });
+  ws.on('error', () => {
+    clients.delete(client);
+    dropPlayer(client.userId);
+    social.notifyFriendsOnline(client.userId, client.name, false);
+  });
 });
 
 // World tick (600ms, matches the client TICK_MS): NPC sim + delta broadcast,
@@ -781,7 +818,10 @@ setInterval(() => {
     const others = [];
     for (const o of clients) {
       if (o === c) continue;
-      others.push({ name: o.name, x: o.x, y: o.y, app: o.app });
+      others.push({
+        name: o.name, x: o.x, y: o.y, app: o.app,
+        cb: o.view.cb, hp: o.view.hp, maxHp: o.view.maxHp, d: o.view.dead,
+      });
     }
     c.ws.send(JSON.stringify({ t: 'players', players: others }));
   }

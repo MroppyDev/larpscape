@@ -1917,5 +1917,20 @@
     "examine": "Rune casings for the guild's finest ammunition.",
     "stackable": true,
     "value": 120
+  },
+  "sparkling_cocktail": {
+    "id": "sparkling_cocktail",
+    "name": "Sparkling cocktail",
+    "examine": "Bubbles, citrus, and the faint taste of poor choices.",
+    "value": 35,
+    "edible": { "heals": 4 }
+  },
+  "rainbow_scarf": {
+    "id": "rainbow_scarf",
+    "name": "Rainbow scarf",
+    "examine": "Soft wool in every stripe. Wear it loud.",
+    "value": 200,
+    "equipSlot": "neck",
+    "defBonus": 1
   }
 }

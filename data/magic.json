@@ -247,6 +247,22 @@
     {
       "npc": "ash_fiend",
       "level": 50
+    },
+    {
+      "npc": "forest_spider",
+      "level": 24
+    },
+    {
+      "npc": "ruin_wraith",
+      "level": 45
+    },
+    {
+      "npc": "pirate",
+      "level": 30
+    },
+    {
+      "npc": "cinder_imp",
+      "level": 35
     }
   ]
 }

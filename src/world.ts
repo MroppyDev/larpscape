@@ -5,6 +5,34 @@ import mapJson from '../data/map.json';
 
 export const MAP_W = mapJson.width;
 export const MAP_H = mapJson.height;
+export const LEGACY_SIZE = 224;
+
+export interface Poi { id: string; label: string; x: number; y: number; glyph?: string; }
+
+export const POIS: Poi[] = [
+  // legacy region markers (224×224 box)
+  { id: 'castle', label: 'The Castle', x: 21, y: 37 },
+  { id: 'aldgate', label: 'Aldgate', x: 103, y: 30 },
+  { id: 'warlords_fort', label: "Warlord's Fort", x: 146, y: 21 },
+  { id: 'swamp_mine', label: 'Swamp Mine', x: 22, y: 68 },
+  { id: 'deep_bog', label: 'Deep Bog', x: 24, y: 95 },
+  { id: 'underdeep', label: 'The Underdeep', x: 105, y: 135 },
+  { id: 'river', label: 'River', x: 62, y: 28 },
+  { id: 'hunter_meadow', label: 'Hunter Meadow', x: 64, y: 77 },
+  { id: 'frostpeak', label: 'Frostpeak Mountains', x: 196, y: 55 },
+  { id: 'sunscorch_legacy', label: 'Sunscorch Desert', x: 35, y: 190 },
+  { id: 'port_brackwater', label: 'Port Brackwater', x: 105, y: 196 },
+  { id: 'ashen_depths', label: 'Ashen Depths', x: 190, y: 135 },
+  // Phase 7 expansion hubs
+  { id: 'eldermere', label: 'Eldermere', x: 300, y: 260, glyph: '⌂' },
+  { id: 'tanglewood', label: 'Tanglewood', x: 382, y: 342, glyph: '♣' },
+  { id: 'stonewatch', label: 'Stonewatch', x: 420, y: 120, glyph: '⚑' },
+  { id: 'gullswreck', label: 'Gullswreck Cove', x: 80, y: 380, glyph: '⚓' },
+  { id: 'mirrormere', label: 'Mirrormere', x: 328, y: 248, glyph: '≋' },
+  { id: 'eastern_marshes', label: 'Eastern Marshes', x: 448, y: 308, glyph: '≈' },
+  { id: 'southern_savanna', label: 'Southern Savanna', x: 348, y: 439, glyph: '☀' },
+  { id: 'cinderholm', label: 'Cinderholm', x: 470, y: 470, glyph: '♨' },
+];
 
 // terrain codes
 export const T = {
@@ -62,6 +90,8 @@ const NON_BLOCKING = new Set([
   // phase 6: non-blocking ground deco (barrel/crate/cactus/ice_spike/
   // snow_pine/dead_tree_deco/gem_stall stay blocking by default)
   'bush', 'fern', 'boulder_small', 'mushroom_patch', 'reeds', 'lilypad', 'driftwood',
+  'dance_floor', 'rainbow_banner',
+  'chair', 'banner', 'rug_deco',
 ]);
 
 export function blocked(x: number, y: number, forNpc = false): boolean {
@@ -121,4 +151,72 @@ export function findPath(sx: number, sy: number, tx: number, ty: number, acceptA
   }
   path.reverse();
   return path;
+}
+
+// ---- biome lookup (mirrors scripts/world-gen-utils.ts) ----
+
+function hash2(x: number, y: number, seed: number): number {
+  let h = (x * 374761393 + y * 668265263 + seed * 1442695041) | 0;
+  h = (h ^ (h >>> 13)) | 0;
+  h = Math.imul(h, 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+function noise2(x: number, y: number, seed: number): number {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  const fx = x - ix, fy = y - iy;
+  const a = hash2(ix, iy, seed);
+  const b = hash2(ix + 1, iy, seed);
+  const c = hash2(ix, iy + 1, seed);
+  const d = hash2(ix + 1, iy + 1, seed);
+  const ux = fx * fx * (3 - 2 * fx);
+  const uy = fy * fy * (3 - 2 * fy);
+  return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
+}
+
+function fbm(x: number, y: number, seed: number, oct = 4): number {
+  let v = 0, amp = 0.5, freq = 1;
+  for (let i = 0; i < oct; i++) {
+    v += amp * noise2(x * freq, y * freq, seed + i * 97);
+    amp *= 0.5;
+    freq *= 2;
+  }
+  return v;
+}
+
+export type Biome =
+  | 'legacy' | 'sea' | 'coast' | 'plains' | 'forest' | 'marsh' | 'desert'
+  | 'mountain' | 'snow' | 'cave' | 'lava' | 'village' | 'tanglewood';
+
+export function biomeAt(x: number, y: number): Biome {
+  if (x < LEGACY_SIZE && y < LEGACY_SIZE) return 'legacy';
+
+  if (x >= 278 && x <= 322 && y >= 238 && y <= 282) return 'village';
+  if (x >= 338 && x <= 425 && y >= 298 && y <= 385) return 'tanglewood';
+  if (x >= 398 && x <= 442 && y >= 98 && y <= 142) return 'village';
+  if (x >= 58 && x <= 102 && y >= 358 && y <= 402) return 'coast';
+  if (x >= 418 && x <= 478 && y >= 278 && y <= 338) return 'marsh';
+  if (x >= 278 && x <= 418 && y >= 400 && y <= 478) return 'desert';
+  if (x >= 298 && x <= 358 && y >= 228 && y <= 268) return 'coast';
+  if (x >= 448 && x <= 492 && y >= 448 && y <= 492) return 'lava';
+
+  const elev = fbm(x * 0.012, y * 0.012, 42);
+  const moist = fbm(x * 0.015 + 100, y * 0.015, 77);
+  const temp = fbm(x * 0.01 + 50, y * 0.008, 13);
+
+  const edgeDist = Math.min(x, y, MAP_W - 1 - x, MAP_H - 1 - y);
+  if (edgeDist < 8 && elev < 0.42) return 'sea';
+  if (edgeDist < 14 && elev < 0.48) return 'coast';
+
+  if (y < 280 && x > 260 && elev > 0.62) return y < 120 ? 'snow' : 'mountain';
+  if (y < 200 && x > 300 && elev > 0.58) return 'mountain';
+
+  if (x > 380 && y > 300 && elev > 0.7 && moist < 0.35) return 'lava';
+  if (x > 360 && y > 280 && elev > 0.65) return 'cave';
+
+  if (moist > 0.62 && elev < 0.52) return 'marsh';
+  if (temp > 0.58 && moist < 0.38) return 'desert';
+  if (elev > 0.55) return 'mountain';
+  if (moist > 0.48) return 'forest';
+  return 'plains';
 }

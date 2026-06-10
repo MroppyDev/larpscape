@@ -41,9 +41,10 @@ export type ObjectHandler = (o: WorldObject) => InteractResult;
 export type NpcHandler = (n: Npc) => InteractResult;
 
 export interface PendingAction {
-  type: 'attack' | 'pickup' | 'interact-obj' | 'interact-npc';
+  type: 'attack' | 'attack-player' | 'pickup' | 'interact-obj' | 'interact-npc';
   obj?: WorldObject;
   npc?: Npc;
+  playerName?: string;
   ground?: GroundItem;
   handler?: ObjectHandler | NpcHandler;
   onTop?: boolean; // action requires standing on the tile (non-blocking objects)
@@ -98,6 +99,12 @@ export interface RemotePlayer {
   updatedAt?: number; // performance.now() when the position last changed — drives interpolation
   app: Record<string, string | null>; // equipment ids for appearance
   chat?: { text: string; until: number };
+  cb?: number;
+  hp?: number;
+  maxHp?: number;
+  dead?: boolean;
+  hitsplat?: { dmg: number; until: number } | null;
+  lastDamagedAt?: number;
 }
 
 export const state = {
@@ -604,6 +611,52 @@ export function netDeny(m: { what: string }) {
   if (m.what === 'shear') msg('This sheep has already been sheared. Give the wool a moment to grow back.');
 }
 
+export function netPvpHitYou(m: { from: string; dmg: number; hp: number; maxHp?: number }) {
+  const p = state.player;
+  if (!p || p.dead) return;
+  p.curHp = m.hp;
+  p.hitsplat = { dmg: m.dmg, until: performance.now() + 900 };
+  audio.sfx(m.dmg > 0 ? 'hit' : 'miss');
+  events.onStatsChange();
+  if (p.curHp <= 0) playerDeath();
+}
+
+export function netPvpYouHit(m: { target: string; dmg: number; mode: AttackMode }) {
+  const p = state.player;
+  if (!p || m.dmg <= 0) return;
+  if (m.mode === 'melee') {
+    if (p.combatStyle === 'accurate') addXp('Attack', m.dmg * 4);
+    else if (p.combatStyle === 'aggressive') addXp('Strength', m.dmg * 4);
+    else addXp('Defence', m.dmg * 4);
+  } else if (m.mode === 'ranged') addXp('Ranged', m.dmg * 4);
+  else if (m.mode === 'gun') addXp('Gun', m.dmg * 4);
+  else addXp('Magic', m.dmg * 2);
+  addXp('Hitpoints', m.dmg * 1.33);
+}
+
+export function netPvpHit(m: { from: string; target: string; dmg: number; hp: number; maxHp?: number }) {
+  const rp = remoteByName(m.target);
+  if (!rp) return;
+  rp.hp = m.hp;
+  if (m.maxHp) rp.maxHp = m.maxHp;
+  rp.hitsplat = { dmg: m.dmg, until: performance.now() + 900 };
+  rp.lastDamagedAt = state.tick;
+}
+
+export function netPvpDeath(m: { who: string; by?: string }) {
+  if (m.who === state.player?.name) return; // local death handled by pvpHitYou
+  const rp = remoteByName(m.who);
+  if (rp) {
+    rp.dead = true;
+    rp.hp = 0;
+    msg(`${m.who} was defeated by ${m.by ?? 'someone'}.`, 'game');
+  }
+}
+
+export function netPvpKill(m: { target: string }) {
+  msg(`You have defeated ${m.target}!`, 'game');
+}
+
 // ---------------- Click handling ----------------
 export function walkTo(tx: number, ty: number) {
   const p = state.player;
@@ -647,6 +700,12 @@ export function interactWithNpc(n: Npc, option: string) {
 
 export function attackNpc(n: Npc) {
   startAction({ type: 'attack', npc: n }, n.x, n.y);
+}
+
+export function attackPlayer(name: string) {
+  const rp = state.remotePlayers.find((r) => r.name === name);
+  if (!rp) { msg('They are no longer here.'); return; }
+  startAction({ type: 'attack-player', playerName: name }, rp.x, rp.y);
 }
 
 export function pickupItem(gi: GroundItem) {
@@ -753,6 +812,7 @@ function performAction() {
   }
 
   if (a.type === 'attack' && a.npc) { tickPlayerCombat(a.npc); return; }
+  if (a.type === 'attack-player' && a.playerName) { tickPlayerCombatPvp(a.playerName); return; }
 
   if (a.type === 'interact-npc' && a.npc && a.handler) {
     const n = a.npc;
@@ -969,6 +1029,94 @@ function gunMaxHit(): number {
 // consumes ammo/runes, plays the swing, and sends an intent. Hit rolls, NPC
 // hp, deaths and drops all happen on the server (see server/sim.ts); xp lands
 // when the server's youHit event comes back.
+function remoteByName(name: string): RemotePlayer | undefined {
+  return state.remotePlayers.find((r) => r.name === name);
+}
+
+function tickPlayerCombatPvp(targetName: string) {
+  const p = state.player;
+  const rp = remoteByName(targetName);
+  if (!rp || rp.dead) { p.action = null; return; }
+  const mode = currentAttackMode();
+  const reach = mode === 'melee' ? 1 : 6;
+  const dist = Math.max(Math.abs(p.x - rp.x), Math.abs(p.y - rp.y));
+  if (dist > reach || (mode !== 'melee' && dist === 0)) {
+    if (p.path.length === 0) {
+      const path = findPath(p.x, p.y, rp.x, rp.y, true);
+      if (path) p.path = path; else { p.action = null; }
+    }
+    return;
+  }
+  p.path = [];
+  p.lastFacing = { dx: Math.sign(rp.x - p.x), dy: Math.sign(rp.y - p.y) };
+  if (p.attackCooldown > 0) return;
+
+  if (mode === 'magic') return castOnPlayer(targetName, rp);
+  if (mode === 'ranged') return shootPlayer(targetName, rp);
+  if (mode === 'gun') return shootPlayerGun(targetName, rp);
+
+  p.attackCooldown = weaponSpeed();
+  const styleAtt = p.combatStyle === 'accurate' ? 3 : 0;
+  const effAtt = Math.floor(level('Attack') * prayerMult('attack')) + styleAtt;
+  netSend({
+    t: 'swing', target: targetName, mode: 'melee',
+    eff: effAtt, bonus: equipBonus('att'), maxHit: playerMaxHit(), speed: weaponSpeed(),
+  });
+}
+
+function shootPlayer(targetName: string, rp: RemotePlayer) {
+  const p = state.player;
+  const ammo = p.equipment.ammo;
+  if (!ammo || !ammo.id.endsWith('_arrow')) { msg('You have no arrows equipped.'); p.action = null; return; }
+  p.attackCooldown = weaponSpeed();
+  const ammoId = ammo.id;
+  ammo.qty--;
+  if (ammo.qty <= 0) p.equipment.ammo = null;
+  events.onInvChange();
+  audio.sfx('bow');
+  state.projectiles.push({ fromX: p.x, fromY: p.y, toX: rp.x, toY: rp.y, startMs: performance.now(), durMs: 300, kind: 'arrow' });
+  netSend({
+    t: 'swing', target: targetName, mode: 'ranged',
+    eff: level('Ranged'), bonus: equipBonus('ranged'), maxHit: rangedMaxHit(), speed: weaponSpeed(),
+    ammo: ammoId,
+  });
+}
+
+function shootPlayerGun(targetName: string, rp: RemotePlayer) {
+  const p = state.player;
+  const ammo = p.equipment.ammo;
+  if (!ammo || !ammo.id.endsWith('_round')) { msg('You have no rounds equipped.'); p.action = null; return; }
+  p.attackCooldown = weaponSpeed();
+  const ammoId = ammo.id;
+  ammo.qty--;
+  if (ammo.qty <= 0) p.equipment.ammo = null;
+  events.onInvChange();
+  audio.sfx('gun');
+  state.projectiles.push({ fromX: p.x, fromY: p.y, toX: rp.x, toY: rp.y, startMs: performance.now(), durMs: 180, kind: 'bullet' });
+  netSend({
+    t: 'swing', target: targetName, mode: 'gun',
+    eff: level('Gun'), bonus: equipBonus('gun'), maxHit: gunMaxHit(), speed: weaponSpeed(),
+    ammo: ammoId,
+  });
+}
+
+function castOnPlayer(targetName: string, rp: RemotePlayer) {
+  const p = state.player;
+  const spell = SPELLS.find((s) => s.id === p.autocastSpell);
+  if (!spell) { p.action = null; return; }
+  if (!spell.runes.every((r) => invCount(r.item) >= r.qty)) { msg("You don't have enough runes to cast this spell."); p.autocastSpell = null; p.action = null; return; }
+  if (level('Magic') < spell.level) { msg(`You need a Magic level of ${spell.level} to cast ${spell.name}.`); p.autocastSpell = null; p.action = null; return; }
+  p.attackCooldown = 5;
+  for (const r of spell.runes) removeItem(r.item, r.qty);
+  audio.sfx('spell');
+  state.projectiles.push({ fromX: p.x, fromY: p.y, toX: rp.x, toY: rp.y, startMs: performance.now(), durMs: 400, kind: 'spell' });
+  netSend({
+    t: 'swing', target: targetName, mode: 'magic',
+    eff: level('Magic'), bonus: 0, maxHit: spell.maxHit, speed: 5,
+  });
+  addXp('Magic', spell.xp);
+}
+
 function tickPlayerCombat(npc: Npc) {
   const p = state.player;
   if (npc.dead) { p.action = null; return; }
@@ -1076,11 +1224,14 @@ export function playerDeath() {
 // Combat snapshot the server uses for NPC retaliation rolls + aggro checks.
 export function combatSnapshot() {
   const p = state.player;
+  const maxHp = level('Hitpoints');
   return {
     t: 'stats',
     cb: combatLevel(),
     effDef: Math.floor(level('Defence') * prayerMult('defence')) + (p.combatStyle === 'defensive' ? 3 : 0),
     defBonus: equipBonus('def'),
+    hp: p.curHp,
+    maxHp,
     d: p.dead,
   };
 }
