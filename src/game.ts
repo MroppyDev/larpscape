@@ -29,6 +29,7 @@ export interface Npc {
   wanderCooldown: number;
   hitsplat: { dmg: number; until: number } | null;
   lastDamagedAt: number;
+  updatedAt?: number; // performance.now() when the server last moved this NPC — drives interpolation
   meta: Record<string, any>;
 }
 
@@ -439,7 +440,8 @@ function applyNpcWire(w: NpcWire) {
     n = {
       sid: w.i, def, x: w.x, y: w.y, prevX: w.x, prevY: w.y, spawnX: w.x, spawnY: w.y,
       hp: w.hp, dead: w.dead, respawnAt: 0, target: null,
-      attackCooldown: 0, wanderCooldown: 0, hitsplat: null, lastDamagedAt: -100, meta: {},
+      attackCooldown: 0, wanderCooldown: 0, hitsplat: null, lastDamagedAt: -100,
+      updatedAt: performance.now(), meta: {},
     };
     npcBySid.set(w.i, n);
     state.npcs.push(n);
@@ -449,6 +451,7 @@ function applyNpcWire(w: NpcWire) {
     if (jump > 3 || n.dead) { n.prevX = w.x; n.prevY = w.y; } // teleport/respawn: snap
     else { n.prevX = n.x; n.prevY = n.y; }
     n.x = w.x; n.y = w.y;
+    n.updatedAt = performance.now();
   }
   n.hp = w.hp;
   if (w.dead && !n.dead) {

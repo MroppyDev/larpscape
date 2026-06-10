@@ -33,13 +33,20 @@ export function markTick() { lastTickAt = performance.now(); }
 function tickAlpha(): number {
   return Math.min(1, (performance.now() - lastTickAt) / TICK_MS);
 }
+// Server-driven entities interpolate from their network update clock, not the
+// local game tick — otherwise they stutter when the two 600ms loops drift apart.
+function moveAlpha(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }, now: number): number {
+  if (e.updatedAt === undefined) return tickAlpha();
+  if (e.x === e.prevX && e.y === e.prevY) return 1;
+  return Math.min(1, (now - e.updatedAt) / TICK_MS);
+}
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
 export interface Camera { x: number; y: number; } // pixel coords of viewport centre (compat)
 export const camera: Camera = { x: 0, y: 0 };
 
-export function entityPixel(e: { x: number; y: number; prevX: number; prevY: number }): { px: number; py: number } {
-  const t = tickAlpha();
+export function entityPixel(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }): { px: number; py: number } {
+  const t = moveAlpha(e, performance.now());
   return {
     px: (lerp(e.prevX, e.x, t) + 0.5) * TILE,
     py: (lerp(e.prevY, e.y, t) + 0.5) * TILE,
@@ -1903,9 +1910,9 @@ function placeEntity(node: THREE.Group, e: { x: number; y: number; prevX: number
   animateFigure(node, moving, now, attack);
 }
 
-function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number }, hitsplat: { dmg: number; until: number } | null, hpRatio: number | null, height: number) {
+function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }, hitsplat: { dmg: number; until: number } | null, hpRatio: number | null, height: number, alphaOverride?: number) {
   const now = performance.now();
-  const t = tickAlpha();
+  const t = alphaOverride ?? moveAlpha(e, now);
   const fx = lerp(e.prevX, e.x, t) + 0.5;
   const fz = lerp(e.prevY, e.y, t) + 0.5;
   const gy = Math.max(groundH(fx, fz), WATER_LEVEL);
@@ -1946,16 +1953,16 @@ function syncNpcs(now: number, px: number, pz: number) {
       Math.max(Math.abs(state.player.x - n.x), Math.abs(state.player.y - n.y)) <= 1;
     let fdx = n.x - n.prevX, fdy = n.y - n.prevY;
     if (fdx === 0 && fdy === 0 && attacking) { fdx = state.player.x - n.x; fdy = state.player.y - n.y; }
-    placeEntity(inst.node, n, now, fdx, fdy, attacking);
+    const t = moveAlpha(n, now);
+    placeEntity(inst.node, n, now, fdx, fdy, attacking, t);
     // health bar + hitsplat (same rules as the 2D renderer)
     const showHp = performance.now() < (n.hitsplat?.until ?? 0) + 3000 && n.lastDamagedAt > state.tick - 12;
     const size = (n.def as any).size ?? 1;
     const bossShow = !!(n.def as any).boss && n.lastDamagedAt > state.tick - 12;
-    entityOverlays(n, n.hitsplat, !bossShow && showHp ? Math.max(0, n.hp / n.def.hitpoints) : null, 1.1 * size);
+    entityOverlays(n, n.hitsplat, !bossShow && showHp ? Math.max(0, n.hp / n.def.hitpoints) : null, 1.1 * size, t);
     if (bossShow) {
       // wide named boss HP bar pinned above the model
-      const ta = tickAlpha();
-      const bfx = lerp(n.prevX, n.x, ta) + 0.5, bfz = lerp(n.prevY, n.y, ta) + 0.5;
+      const bfx = lerp(n.prevX, n.x, t) + 0.5, bfz = lerp(n.prevY, n.y, t) + 0.5;
       const bgy = Math.max(groundH(bfx, bfz), WATER_LEVEL);
       const s = takeSprite();
       s.material = bossBarMat(n.def.name, Math.max(0, n.hp / n.def.hitpoints));
@@ -2014,7 +2021,7 @@ function syncRemotePlayers(now: number, px: number, pz: number) {
     inst.node.visible = visible;
     if (!visible) continue;
     // remote players interpolate on their own snapshot clock, not the local tick clock
-    const t = Math.min(1, (now - ((rp as any).updatedAt ?? 0)) / 600);
+    const t = moveAlpha(rp, now);
     placeEntity(inst.node, rp, now, rp.x - rp.prevX, rp.y - rp.prevY, false, t);
     const fx = lerp(rp.prevX, rp.x, t) + 0.5, fz = lerp(rp.prevY, rp.y, t) + 0.5;
     const gy = Math.max(groundH(fx, fz), WATER_LEVEL);
