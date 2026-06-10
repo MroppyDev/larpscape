@@ -54,8 +54,13 @@ if [[ -f deploy/nginx-larpscape-admin.conf ]]; then
   ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
 fi
 if [[ -f deploy/nginx-larpscape-wiki.conf ]]; then
+  mkdir -p /var/www/certbot
   cp deploy/nginx-larpscape-wiki.conf /etc/nginx/sites-available/larpscape-wiki
   ln -sf /etc/nginx/sites-available/larpscape-wiki /etc/nginx/sites-enabled/larpscape-wiki
+  # If HTTPS cert already exists, append the SSL vhost
+  if [[ -f /etc/letsencrypt/live/wiki.larpscape.net/fullchain.pem ]] && [[ -f deploy/nginx-larpscape-wiki-ssl.conf ]]; then
+    bash deploy/enable-wiki-ssl.sh
+  fi
 fi
 rm -f /etc/nginx/sites-enabled/default
 echo "==> Syncing nginx vhosts"
