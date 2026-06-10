@@ -1144,9 +1144,19 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     ra.add(lm(boxG(0.03, 0.3, 0.04, bc), 0, handY - 0.13, 0.06, -0.5));
     ra.add(lm(boxG(0.012, 0.52, 0.012, '#d8d0c0'), 0, handY, 0.13));
   } else if (o.weapon === 'pistol') {
-    ra.add(lm(boxG(0.05, 0.06, 0.14, wc), 0, handY - 0.04, 0.08));
-    ra.add(lm(boxG(0.04, 0.18, 0.06, wc), 0, handY - 0.16, 0.1));
-    ra.add(lm(boxG(0.035, 0.08, 0.05, '#3a3a3e'), 0, handY + 0.02, 0.06));
+    const polymer = wc === '#3a3a42';
+    const grip = polymer ? '#3a3a42' : '#5e4226';
+    const barrel = polymer ? '#2a2a30' : '#3a3a3e';
+    // slide + barrel
+    ra.add(lm(boxG(0.055, 0.045, 0.2, wc), 0, handY - 0.07, 0.12));
+    ra.add(lm(boxG(0.03, 0.03, 0.1, barrel), 0, handY - 0.08, 0.22));
+    // grip (angled)
+    ra.add(lm(boxG(0.048, 0.15, 0.07, grip), 0.02, handY + 0.02, 0.07, 0.12, 0, 0.22));
+    // trigger guard + trigger
+    ra.add(lm(boxG(0.012, 0.07, 0.07, wc), -0.01, handY - 0.01, 0.09));
+    ra.add(lm(boxG(0.01, 0.04, 0.02, '#2a2a30'), -0.01, handY - 0.03, 0.1));
+    // muzzle
+    ra.add(lm(cylG(0.018, 0.02, 0.04, barrel, 6), 0, handY - 0.08, 0.28, Math.PI / 2, 0, 0));
   }
   if (o.shieldCol) {
     la.add(lm(boxG(0.05, 0.34, 0.26, o.shieldCol), -0.06, handY - 0.06, 0.02));
@@ -1580,6 +1590,16 @@ function buildNpcTemplate(n: Npc): THREE.Group {
     case 'gem_trader': return makeHumanoid({
       tunic: '#5a3a7a', pants: '#42305a', apron: '#d8b84a', hair: '#2c2218', beard: '#2c2218', scale: size,
     });
+    case 'gun_trainer': return makeHumanoid({
+      tunic: '#4a5a68', pants: '#3a4248', hair: '#2a2a2e', beard: '#4a4a52',
+      weapon: 'pistol', weaponCol: '#3a3a42', scale: size,
+    });
+    case 'gun_guild_master': return makeHumanoid({
+      tunic: '#3a3a42', pants: '#2a2a30', apron: '#8a7a52', hair: '#1a1a1e', beard: '#2a2a2e',
+      weapon: 'pistol', weaponCol: '#6e6e76', scale: size,
+    });
+    case 'armourer': return makeHumanoid({ tunic: '#7a8694', apron: '#5a6470', hair: '#3a2a14', scale: size });
+    case 'grocer': return makeHumanoid({ tunic: '#a8854f', apron: '#e8e0d0', hair: '#5a4026', scale: size });
     default: return makeHumanoid({ tunic: (n.def as any).color ?? '#7a5a3a', hair: '#3a2a14', scale: size });
   }
 }
@@ -1595,6 +1615,15 @@ function metalTint(id: string | undefined | null): string | null {
   if (id.startsWith('warlord')) return '#7c4a32';
   if (id.startsWith('leather')) return '#8a6a42';
   if (id.startsWith('wooden')) return '#7a5630';
+  if (id === 'glock_18') return '#3a3a42';
+  if (id.includes('pistol')) {
+    if (id.startsWith('bronze')) return '#9a6a3a';
+    if (id.startsWith('iron')) return '#6e6e76';
+    if (id.startsWith('steel')) return '#b4bac2';
+    if (id.startsWith('mithril')) return '#5a78c8';
+    if (id.startsWith('adamant')) return '#2e7a4a';
+    if (id.startsWith('rune')) return '#699cb4';
+  }
   return '#8c8c94';
 }
 
@@ -1783,9 +1812,26 @@ function takeSprite(): THREE.Sprite {
   return s;
 }
 
-// projectile darts (arrows)
+// projectile darts (arrows + bullets)
 const arrowPool: THREE.Mesh[] = [];
 let arrowUsed = 0;
+const bulletPool: THREE.Mesh[] = [];
+let bulletUsed = 0;
+function takeBullet(): THREE.Mesh {
+  let m = bulletPool[bulletUsed];
+  if (!m) {
+    const gb = new GeoBuilder();
+    gb.box(0, 0, 0, 0.02, 0.02, 0.06, new THREE.Color('#9a7a40'), 0.02);
+    gb.box(0, 0, 0.04, 0.018, 0.018, 0.05, new THREE.Color('#b8b0a0'), 0.02);
+    gb.box(0, 0, 0.08, 0.012, 0.012, 0.02, new THREE.Color('#6a6a72'), 0.02);
+    m = new THREE.Mesh(gb.build(), litMat);
+    bulletPool.push(m);
+    overlayGroup!.add(m);
+  }
+  bulletUsed++;
+  m.visible = true;
+  return m;
+}
 function takeArrow(): THREE.Mesh {
   let m = arrowPool[arrowUsed];
   if (!m) {
@@ -1818,11 +1864,42 @@ function objectRenderKey(o: WorldObject): string {
 
 function itemTierColor(id: string): string {
   if (id === 'coins') return '#e8c428';
+  if (id === 'glock_18') return '#4a4a52';
+  if (id.includes('pistol')) return '#8c8c94';
+  if (id.endsWith('_round')) return '#c8a848';
+  if (id.endsWith('_bullet_casing')) return '#b8a060';
+  if (id === 'gunpowder') return '#3a3028';
   const v = ITEMS[id]?.value ?? 1;
   if (v >= 500) return '#b060e0';
   if (v >= 100) return '#5a8ae0';
   if (v >= 20) return '#58b048';
   return '#d8d4c8';
+}
+
+const groundGeoCache = new Map<string, THREE.BufferGeometry>();
+function groundItemGeo(id: string): THREE.BufferGeometry {
+  const hit = groundGeoCache.get(id);
+  if (hit) return hit;
+  const gb = new GeoBuilder();
+  if (id === 'glock_18' || id.includes('pistol')) {
+    gb.box(0, 0, 0, 0.1, 0.04, 0.18, new THREE.Color(itemTierColor(id)), 0.03);
+    gb.box(0, -0.02, -0.02, 0.06, 0.1, 0.05, new THREE.Color(id === 'glock_18' ? '#3a3a42' : '#5e4226'), 0.03);
+  } else if (id.endsWith('_round')) {
+    gb.box(0, 0, 0, 0.05, 0.05, 0.08, new THREE.Color('#b8a060'), 0.02);
+    gb.box(0, 0, 0.05, 0.04, 0.04, 0.06, new THREE.Color(itemTierColor(id)), 0.02);
+  } else if (id.endsWith('_bullet_casing')) {
+    gb.box(0, 0, 0, 0.05, 0.07, 0.05, new THREE.Color('#b8a060'), 0.02);
+  } else if (id === 'gunpowder') {
+    gb.box(0, 0, 0, 0.1, 0.1, 0.1, new THREE.Color('#3a3028'), 0.03);
+    gb.box(0, 0.08, 0, 0.05, 0.04, 0.05, new THREE.Color('#2a2018'), 0.03);
+  } else {
+    const geo = tetraG(0.16, itemTierColor(id));
+    groundGeoCache.set(id, geo);
+    return geo;
+  }
+  const geo = gb.build();
+  groundGeoCache.set(id, geo);
+  return geo;
 }
 
 function syncObjects(now: number, px: number, pz: number) {
@@ -1884,7 +1961,7 @@ function syncGroundItems(now: number) {
     seen.add(gi);
     let m = giInst.get(gi);
     if (!m) {
-      m = new THREE.Mesh(tetraG(0.16, itemTierColor(gi.item)), litMat);
+      m = new THREE.Mesh(groundItemGeo(gi.item), litMat);
       giInst.set(gi, m);
       objectGroup!.add(m);
     }
@@ -2069,11 +2146,17 @@ function syncProjectiles(now: number) {
         m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
       }
     } else if (pr.kind === 'bullet') {
-      const s = takeSprite();
-      s.material = orbMat();
-      s.position.set(fx, fy, fz);
-      const sc = 0.22;
-      s.scale.set(sc, sc, 1);
+      const m = takeBullet();
+      m.position.set(fx, fy, fz);
+      const nt = Math.min(1, t + 0.08);
+      const dir = new THREE.Vector3(
+        lerp(pr.fromX, pr.toX, nt) - lerp(pr.fromX, pr.toX, t),
+        0,
+        lerp(pr.fromY, pr.toY, nt) - lerp(pr.fromY, pr.toY, t),
+      );
+      if (dir.lengthSq() > 1e-8) {
+        m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.normalize());
+      }
     } else {
       const s = takeSprite();
       s.material = orbMat();
@@ -2325,6 +2408,7 @@ export function render() {
 
   spriteUsed = 0;
   arrowUsed = 0;
+  bulletUsed = 0;
   const t = tickAlpha();
   const pfx = lerp(p.prevX, p.x, t) + 0.5, pfz = lerp(p.prevY, p.y, t) + 0.5;
   syncObjects(now, pfx, pfz);
@@ -2335,6 +2419,7 @@ export function render() {
   syncProjectiles(now);
   for (let i = spriteUsed; i < spritePool.length; i++) spritePool[i].visible = false;
   for (let i = arrowUsed; i < arrowPool.length; i++) arrowPool[i].visible = false;
+  for (let i = bulletUsed; i < bulletPool.length; i++) bulletPool[i].visible = false;
 
   renderer!.render(scene!, cam3!);
 }

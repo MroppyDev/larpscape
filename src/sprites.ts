@@ -226,6 +226,106 @@ const TIPS_G: Pixmap = [
   '................',
 ];
 
+// Pistol side profile — s slide, g grip, t trigger, b barrel muzzle.
+const PISTOL_G: Pixmap = [
+  '................',
+  '......OOOO......',
+  '....OsHHHHO.....',
+  '....OsLLMMO.....',
+  '...OsLLLMMOb....',
+  '...OssssssOb....',
+  '...OggggggO.....',
+  '...OgggtggO.....',
+  '....OggggO......',
+  '.....OggO.......',
+  '......OO........',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Glock 18 — blocky polymer frame, distinct from metal sidearms.
+const GLOCK_G: Pixmap = [
+  '................',
+  '....OOOOOO......',
+  '...OpHHHHpO.....',
+  '...OpLLLLpO.....',
+  '...OssssssO.....',
+  '...OppppppO.....',
+  '...OptttpO......',
+  '....OppppO......',
+  '.....OpOO.......',
+  '......OO........',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Loaded cartridge — b brass base, M bullet jacket, H tip (stacked for ammo icons).
+const ROUND_G: Pixmap = [
+  '................',
+  '.....OO.........',
+  '....ObHLO.......',
+  '....ObMLO..OO...',
+  '....ObMLO.ObL...',
+  '.....OO..ObM....',
+  '.........Ob.....',
+  '..........OO....',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Empty brass casing.
+const CASING_G: Pixmap = [
+  '................',
+  '................',
+  '.....OO.........',
+  '....ObLLO.......',
+  '....ObddO.......',
+  '....ObLLO.......',
+  '.....OO.........',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Gunpowder keg — n neck, B body, p powder speckle.
+const GUNPOWDER_G: Pixmap = [
+  '................',
+  '......OOO.......',
+  '.....OnnnO......',
+  '....OBBBBBO.....',
+  '....OBppBBO.....',
+  '....OBppBBO.....',
+  '....OBBBBBO.....',
+  '.....ODDDO......',
+  '......OOO.......',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
 const BAR_G: Pixmap = [
   '................',
   '................',
@@ -1866,9 +1966,9 @@ function metalSpec(id: string): [Pixmap, Palette] | null {
     case 'platelegs': return [LEGS_G, base];
     case 'kiteshield': return [KITE_G, base];
     case 'arrow': return [ARROW_G, pal(base, FLETCH)];
-    case 'round': return [TIPS_G, pal(base, FLETCH)];
-    case 'bullet_casing': return [TIPS_G, base];
-    case 'pistol': return [SWORD_G, pal(base, { O: '#1a1a1e', x: '#0a0a0c' })];
+    case 'round': return [ROUND_G, pal(base, { b: ramp.D, M: ramp.M, H: ramp.H, d: ramp.O })];
+    case 'bullet_casing': return [CASING_G, pal(base, { b: ramp.D, d: ramp.O, L: ramp.L })];
+    case 'pistol': return [PISTOL_G, pal(base, WOOD, { g: WOOD.m, t: '#2a2a30', b: ramp.O, s: ramp.L })];
     case 'arrowtips': return [TIPS_G, base];
     case 'bar': return [BAR_G, base];
     case 'axe': return [AXE_G, base];
@@ -1917,8 +2017,8 @@ function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'bucket': return [BUCKET_G, pal(WOOD, { O: '#1f1308', L: '#a87a3c', M: '#7c5424', D: '#523317' })];
     case 'bucket_of_milk': return [BUCKET_G, pal(WOOD, { O: '#1f1308', L: '#a87a3c', M: '#7c5424', D: '#523317', q: '#f4f0e2' })];
     case 'bird_snare': return [SNARE_G, pal(WOOD, { O: '#1f1308', w: '#d8ceae' })];
-    case 'glock_18': return [SWORD_G, { O: '#1a1a1e', d: '#2e2e34', m: '#44444c', l: '#5c5c66', n: '#787882', x: '#0a0a0c' }];
-    case 'gunpowder': return [COINS_G, { O: '#1a1410', D: '#2e2418', M: '#443828', L: '#5a4c38', H: '#726040' }];
+    case 'glock_18': return [GLOCK_G, { O: '#1a1a1e', p: '#3a3a42', P: '#4e4e58', L: '#62626c', H: '#787882', s: '#505058', t: '#2a2a30' }];
+    case 'gunpowder': return [GUNPOWDER_G, { O: '#1a1410', n: '#5a4c38', B: '#443828', p: '#2e2418', D: '#2a2018', d: '#1a1410' }];
     case 'shortbow': return [BOW_G, pal(WOOD, { O: '#241608', s: '#e0dcc8' })];
     case 'oak_shortbow': return [BOW_G, { O: '#170d05', o: '#170d05', d: '#3c2410', m: '#553616', l: '#714c20', n: '#8e662e', s: '#e0dcc8' }];
     case 'shortbow_u': return [BOW_G, pal(WOOD, { O: '#241608' })];
