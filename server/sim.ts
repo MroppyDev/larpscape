@@ -351,7 +351,7 @@ export function handleSwing(p: PlayerView, msg: any) {
   const n = npcById.get(Number(msg.npc));
   if (!n || n.dead || !n.def.attackable || p.dead) return;
 
-  const mode = msg.mode === 'ranged' || msg.mode === 'magic' ? msg.mode : 'melee';
+  const mode = msg.mode === 'ranged' || msg.mode === 'gun' || msg.mode === 'magic' ? msg.mode : 'melee';
   const reach = mode === 'melee' ? 1 : 6;
   // generous slack: positions are reported on a 600ms cadence
   if (chebyshev(p.x, p.y, n.x, n.y) > reach + 2) return;
@@ -372,6 +372,11 @@ export function handleSwing(p: PlayerView, msg: any) {
   // ranged: ~20% arrow recovery on the ground
   if (mode === 'ranged' && typeof msg.ammo === 'string' && /^[a-z][a-z0-9_]{0,47}$/.test(msg.ammo)
     && msg.ammo.endsWith('_arrow') && Math.random() < 0.2) {
+    addGroundItem(msg.ammo, 1, n.x, n.y, sim.tick + 100);
+  }
+  // gun: ~5% round recovery (spent brass is harder to reclaim)
+  if (mode === 'gun' && typeof msg.ammo === 'string' && /^[a-z][a-z0-9_]{0,47}$/.test(msg.ammo)
+    && msg.ammo.endsWith('_round') && Math.random() < 0.05) {
     addGroundItem(msg.ammo, 1, n.x, n.y, sim.tick + 100);
   }
 

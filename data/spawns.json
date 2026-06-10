@@ -191,6 +191,8 @@
     { "id": "man", "x": 97, "y": 36 },
     { "id": "man", "x": 109, "y": 34 },
     { "id": "armourer", "x": 116, "y": 23 },
+    { "id": "gun_trainer", "x": 118, "y": 21 },
+    { "id": "gun_guild_master", "x": 114, "y": 21 },
     { "id": "grocer", "x": 116, "y": 44 },
     { "id": "goblin_warlord", "x": 146, "y": 22 },
     { "id": "bog_horror", "x": 24, "y": 96 },

@@ -1048,7 +1048,7 @@ interface HumanOpts {
   helm?: string; bodyArmor?: string; legArmor?: string;
   hat?: 'wizard' | 'straw' | 'cook'; hatCol?: string;
   apron?: string; eyepatch?: boolean; beard?: string;
-  weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'staff' | null; weaponCol?: string;
+  weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'pistol' | 'staff' | null; weaponCol?: string;
   shieldCol?: string | null;
   goblin?: boolean; scale?: number;
 }
@@ -1143,6 +1143,10 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     ra.add(lm(boxG(0.03, 0.3, 0.04, bc), 0, handY + 0.13, 0.06, 0.5));
     ra.add(lm(boxG(0.03, 0.3, 0.04, bc), 0, handY - 0.13, 0.06, -0.5));
     ra.add(lm(boxG(0.012, 0.52, 0.012, '#d8d0c0'), 0, handY, 0.13));
+  } else if (o.weapon === 'pistol') {
+    ra.add(lm(boxG(0.05, 0.06, 0.14, wc), 0, handY - 0.04, 0.08));
+    ra.add(lm(boxG(0.04, 0.18, 0.06, wc), 0, handY - 0.16, 0.1));
+    ra.add(lm(boxG(0.035, 0.08, 0.05, '#3a3a3e'), 0, handY + 0.02, 0.06));
   }
   if (o.shieldCol) {
     la.add(lm(boxG(0.05, 0.34, 0.26, o.shieldCol), -0.06, handY - 0.06, 0.02));
@@ -1601,6 +1605,7 @@ function figureFromAppearance(ids: Record<string, string | null | undefined>, tu
   let weapon: HumanOpts['weapon'] = null;
   if (wepId) {
     if (wepId.includes('scimitar')) weapon = 'scimitar';
+    else if (wepId.includes('pistol') || wepId === 'glock_18') weapon = 'pistol';
     else if (wepId.includes('bow') && !wepId.includes('bowstring')) weapon = 'bow';
     else if (wepId.includes('pickaxe') || wepId.includes('axe')) weapon = 'axe';
     else if (wepId.includes('staff')) weapon = 'staff';
@@ -2063,6 +2068,12 @@ function syncProjectiles(now: number) {
       if (dir.lengthSq() > 1e-8) {
         m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
       }
+    } else if (pr.kind === 'bullet') {
+      const s = takeSprite();
+      s.material = orbMat();
+      s.position.set(fx, fy, fz);
+      const sc = 0.22;
+      s.scale.set(sc, sc, 1);
     } else {
       const s = takeSprite();
       s.material = orbMat();

@@ -20,7 +20,7 @@ export const SKILLS = [
   'Prayer', 'Crafting', 'Firemaking',
   'Magic', 'Fletching', 'Woodcutting',
   'Runecraft', 'Slayer', 'Farming',
-  'Construction', 'Hunter',
+  'Construction', 'Hunter', 'Gun',
 ] as const;
 export type SkillName = (typeof SKILLS)[number];
 
@@ -61,6 +61,7 @@ export interface ItemDef {
   strBonus?: number;
   defBonus?: number;
   rangedBonus?: number;
+  gunBonus?: number;
   attackSpeed?: number;     // in ticks, for weapons
   levelReq?: { skill: SkillName; level: number }[];
   edible?: { heals: number };

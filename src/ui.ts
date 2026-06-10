@@ -426,7 +426,8 @@ function renderEquipment(panel: HTMLElement) {
     + `Attack: +${equipBonus('att')}<br/>`
     + `Strength: +${equipBonus('str')}<br/>`
     + `Defence: +${equipBonus('def')}<br/>`
-    + `Ranged: +${equipBonus('ranged')}`;
+    + `Ranged: +${equipBonus('ranged')}<br/>`
+    + `Gun: +${equipBonus('gun')}`;
   panel.appendChild(stats);
 }
 

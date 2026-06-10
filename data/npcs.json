@@ -1708,5 +1708,37 @@
     "size": 1,
     "attackable": false,
     "drops": []
+  },
+  "gun_trainer": {
+    "id": "gun_trainer",
+    "name": "Sergeant Vex",
+    "examine": "Former city watch. Teaches the Gun skill to anyone who can keep both eyes open.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4a5a68",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "gun_guild_master": {
+    "id": "gun_guild_master",
+    "name": "Master Flint",
+    "examine": "Head of the Aldgate Gun Guild. His coat has more pockets than sense.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#3a3a42",
+    "size": 1,
+    "attackable": false,
+    "drops": []
   }
 }

@@ -1748,5 +1748,174 @@
     "edible": {
       "heals": 12
     }
+  },
+  "glock_18": {
+    "id": "glock_18",
+    "name": "Glock 18",
+    "examine": "The starter pistol every adventurer gets. Reliable, loud, and slightly alarming.",
+    "value": 200,
+    "equipSlot": "weapon",
+    "gunBonus": 8,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 1 }]
+  },
+  "iron_pistol": {
+    "id": "iron_pistol",
+    "name": "Iron pistol",
+    "examine": "A sturdy iron sidearm with a satisfying heft.",
+    "value": 350,
+    "equipSlot": "weapon",
+    "gunBonus": 14,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 5 }]
+  },
+  "steel_pistol": {
+    "id": "steel_pistol",
+    "name": "Steel pistol",
+    "examine": "Tempered steel slide, crisp trigger, professional disagreement.",
+    "value": 800,
+    "equipSlot": "weapon",
+    "gunBonus": 22,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 20 }]
+  },
+  "mithril_pistol": {
+    "id": "mithril_pistol",
+    "name": "Mithril pistol",
+    "examine": "Light as a whisper, hits like a sermon.",
+    "value": 2500,
+    "equipSlot": "weapon",
+    "gunBonus": 35,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 40 }]
+  },
+  "adamant_pistol": {
+    "id": "adamant_pistol",
+    "name": "Adamant pistol",
+    "examine": "Green-tinged adamant frame built for serious range work.",
+    "value": 6000,
+    "equipSlot": "weapon",
+    "gunBonus": 45,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 55 }]
+  },
+  "rune_pistol": {
+    "id": "rune_pistol",
+    "name": "Rune pistol",
+    "examine": "Storm-grey rune steel. The argument ends before they finish talking.",
+    "value": 15000,
+    "equipSlot": "weapon",
+    "gunBonus": 60,
+    "attackSpeed": 4,
+    "levelReq": [{ "skill": "Gun", "level": 60 }]
+  },
+  "bronze_round": {
+    "id": "bronze_round",
+    "name": "Bronze round",
+    "examine": "A bronze-cased pistol round. Cheap, cheerful, effective.",
+    "stackable": true,
+    "value": 2,
+    "equipSlot": "ammo",
+    "gunBonus": 7,
+    "levelReq": [{ "skill": "Gun", "level": 1 }]
+  },
+  "iron_round": {
+    "id": "iron_round",
+    "name": "Iron round",
+    "examine": "Iron-jacketed ammunition for everyday disputes.",
+    "stackable": true,
+    "value": 4,
+    "equipSlot": "ammo",
+    "gunBonus": 10,
+    "levelReq": [{ "skill": "Gun", "level": 1 }]
+  },
+  "steel_round": {
+    "id": "steel_round",
+    "name": "Steel round",
+    "examine": "Hardened steel rounds that punch through excuses.",
+    "stackable": true,
+    "value": 12,
+    "equipSlot": "ammo",
+    "gunBonus": 18,
+    "levelReq": [{ "skill": "Gun", "level": 20 }]
+  },
+  "mithril_round": {
+    "id": "mithril_round",
+    "name": "Mithril round",
+    "examine": "Blue-tipped mithril rounds — fast and unforgiving.",
+    "stackable": true,
+    "value": 30,
+    "equipSlot": "ammo",
+    "gunBonus": 22,
+    "levelReq": [{ "skill": "Gun", "level": 40 }]
+  },
+  "adamant_round": {
+    "id": "adamant_round",
+    "name": "Adamant round",
+    "examine": "Green-tipped adamant rounds for hardened targets.",
+    "stackable": true,
+    "value": 60,
+    "equipSlot": "ammo",
+    "gunBonus": 31,
+    "levelReq": [{ "skill": "Gun", "level": 55 }]
+  },
+  "rune_round": {
+    "id": "rune_round",
+    "name": "Rune round",
+    "examine": "Storm-grey rune rounds. Overkill is a kind of politeness.",
+    "stackable": true,
+    "value": 150,
+    "equipSlot": "ammo",
+    "gunBonus": 49,
+    "levelReq": [{ "skill": "Gun", "level": 60 }]
+  },
+  "gunpowder": {
+    "id": "gunpowder",
+    "name": "Gunpowder",
+    "examine": "Fine black powder. Handle with respect and a long fuse.",
+    "stackable": true,
+    "value": 5
+  },
+  "bronze_bullet_casing": {
+    "id": "bronze_bullet_casing",
+    "name": "Bronze bullet casing",
+    "examine": "Empty bronze casings waiting for powder and a primer.",
+    "stackable": true,
+    "value": 2
+  },
+  "iron_bullet_casing": {
+    "id": "iron_bullet_casing",
+    "name": "Iron bullet casing",
+    "examine": "Iron casings stamped at the guild foundry.",
+    "stackable": true,
+    "value": 4
+  },
+  "steel_bullet_casing": {
+    "id": "steel_bullet_casing",
+    "name": "Steel bullet casing",
+    "examine": "Hardened steel casings for serious loads.",
+    "stackable": true,
+    "value": 10
+  },
+  "mithril_bullet_casing": {
+    "id": "mithril_bullet_casing",
+    "name": "Mithril bullet casing",
+    "examine": "Feather-light mithril casings.",
+    "stackable": true,
+    "value": 25
+  },
+  "adamant_bullet_casing": {
+    "id": "adamant_bullet_casing",
+    "name": "Adamant bullet casing",
+    "examine": "Adamant casings that barely flex under pressure.",
+    "stackable": true,
+    "value": 50
+  },
+  "rune_bullet_casing": {
+    "id": "rune_bullet_casing",
+    "name": "Rune bullet casing",
+    "examine": "Rune casings for the guild's finest ammunition.",
+    "stackable": true,
+    "value": 120
   }
 }

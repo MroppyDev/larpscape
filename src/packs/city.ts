@@ -45,7 +45,7 @@ registerNpcAction('city_guard', 'Talk-to', (n) => {
   startDialogue([
     { speaker: state.player.name, text: 'Excuse me — which way to everything?' },
     { speaker: n.def.name, text: 'Plaza\'s at the centre: exchange booths, bank, the fountain folk keep drinking out of.' },
-    { speaker: n.def.name, text: 'Inn\'s up the northwest lane, armoury northeast, food shop southeast. West gate takes you back to the old road.' },
+    { speaker: n.def.name, text: 'Inn\'s up the northwest lane, armoury northeast, gun guild just north of the armoury, food shop southeast. West gate takes you back to the old road.' },
     { speaker: n.def.name, text: 'And keep clear of the fort east of here, unless you fancy goblins with ambition.' },
   ]);
   return 'done';

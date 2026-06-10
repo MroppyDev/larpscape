@@ -274,5 +274,29 @@
         "qty": 2
       }
     ]
+  },
+  "gun_guild": {
+    "name": "Aldgate Gun Guild",
+    "stock": [
+      { "item": "glock_18", "qty": 5 },
+      { "item": "iron_pistol", "qty": 3 },
+      { "item": "steel_pistol", "qty": 2 },
+      { "item": "mithril_pistol", "qty": 1 },
+      { "item": "adamant_pistol", "qty": 1 },
+      { "item": "rune_pistol", "qty": 1 },
+      { "item": "bronze_round", "qty": 500 },
+      { "item": "iron_round", "qty": 400 },
+      { "item": "steel_round", "qty": 300 },
+      { "item": "mithril_round", "qty": 200 },
+      { "item": "adamant_round", "qty": 100 },
+      { "item": "rune_round", "qty": 50 },
+      { "item": "gunpowder", "qty": 300 },
+      { "item": "bronze_bullet_casing", "qty": 200 },
+      { "item": "iron_bullet_casing", "qty": 150 },
+      { "item": "steel_bullet_casing", "qty": 100 },
+      { "item": "mithril_bullet_casing", "qty": 75 },
+      { "item": "adamant_bullet_casing", "qty": 50 },
+      { "item": "rune_bullet_casing", "qty": 25 }
+    ]
   }
 }

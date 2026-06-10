@@ -187,6 +187,7 @@ function ItemForm({ item, onChange, onDelete }: {
         <NumField label="Str bonus" value={item.strBonus} step={1} width={90} onChange={(v) => opt('strBonus', v)} />
         <NumField label="Def bonus" value={item.defBonus} step={1} width={90} onChange={(v) => opt('defBonus', v)} />
         <NumField label="Ranged bonus" value={item.rangedBonus} step={1} width={100} onChange={(v) => opt('rangedBonus', v)} />
+        <NumField label="Gun bonus" value={item.gunBonus} step={1} width={100} onChange={(v) => opt('gunBonus', v)} />
         <NumField label="Attack speed" value={item.attackSpeed} min={1} step={1} width={100} onChange={(v) => opt('attackSpeed', v)} />
       </div>
 

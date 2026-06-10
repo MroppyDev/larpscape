@@ -1854,7 +1854,7 @@ const JEWEL_GEMS: Record<string, Palette> = {
 const FLETCH: Palette = { f: '#d8dde2' };
 
 function metalSpec(id: string): [Pixmap, Palette] | null {
-  const m = /^(bronze|iron|steel|mithril|adamantite|adamant|rune)_(sword|scimitar|full_helm|platebody|platelegs|kiteshield|arrow|arrowtips|bar|axe|pickaxe)$/.exec(id);
+  const m = /^(bronze|iron|steel|mithril|adamantite|adamant|rune)_(sword|scimitar|full_helm|platebody|platelegs|kiteshield|arrow|arrowtips|pistol|round|bullet_casing|bar|axe|pickaxe)$/.exec(id);
   if (!m) return null;
   const ramp = METAL[m[1] === 'adamantite' ? 'adamant' : m[1]];
   const base = pal(ramp, WOOD, GOLD, { x: '#0a0a0c' });
@@ -1866,6 +1866,9 @@ function metalSpec(id: string): [Pixmap, Palette] | null {
     case 'platelegs': return [LEGS_G, base];
     case 'kiteshield': return [KITE_G, base];
     case 'arrow': return [ARROW_G, pal(base, FLETCH)];
+    case 'round': return [TIPS_G, pal(base, FLETCH)];
+    case 'bullet_casing': return [TIPS_G, base];
+    case 'pistol': return [SWORD_G, pal(base, { O: '#1a1a1e', x: '#0a0a0c' })];
     case 'arrowtips': return [TIPS_G, base];
     case 'bar': return [BAR_G, base];
     case 'axe': return [AXE_G, base];
@@ -1914,6 +1917,8 @@ function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'bucket': return [BUCKET_G, pal(WOOD, { O: '#1f1308', L: '#a87a3c', M: '#7c5424', D: '#523317' })];
     case 'bucket_of_milk': return [BUCKET_G, pal(WOOD, { O: '#1f1308', L: '#a87a3c', M: '#7c5424', D: '#523317', q: '#f4f0e2' })];
     case 'bird_snare': return [SNARE_G, pal(WOOD, { O: '#1f1308', w: '#d8ceae' })];
+    case 'glock_18': return [SWORD_G, { O: '#1a1a1e', d: '#2e2e34', m: '#44444c', l: '#5c5c66', n: '#787882', x: '#0a0a0c' }];
+    case 'gunpowder': return [COINS_G, { O: '#1a1410', D: '#2e2418', M: '#443828', L: '#5a4c38', H: '#726040' }];
     case 'shortbow': return [BOW_G, pal(WOOD, { O: '#241608', s: '#e0dcc8' })];
     case 'oak_shortbow': return [BOW_G, { O: '#170d05', o: '#170d05', d: '#3c2410', m: '#553616', l: '#714c20', n: '#8e662e', s: '#e0dcc8' }];
     case 'shortbow_u': return [BOW_G, pal(WOOD, { O: '#241608' })];
@@ -2018,6 +2023,12 @@ export function skillIcon(name: string): HTMLCanvasElement {
         line(INK, 2.4, () => { g.moveTo(2, 8); g.lineTo(14, 8); });
         line('#a3743a', 1.2, () => { g.moveTo(2, 8); g.lineTo(13, 8); });
         shape('#cfd4dc', () => { g.moveTo(15, 8); g.lineTo(11.5, 6.4); g.lineTo(11.5, 9.6); g.closePath(); });
+        break;
+      case 'Gun':
+        shape('#2a2a30', () => { g.rect(3, 6.5, 9, 3.5); });
+        shape('#3a3a42', () => { g.rect(10, 5.5, 4, 2.5); });
+        shape('#1a1a1e', () => { g.rect(4, 9.5, 3, 2); });
+        line('#5a5a64', 1.2, () => { g.moveTo(14, 6.5); g.lineTo(15.5, 6.5); });
         break;
       case 'Prayer':
         shape('#e9e7f4', () => { g.rect(6.8, 1.5, 2.4, 13); });

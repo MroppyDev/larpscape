@@ -4,7 +4,7 @@ export const SKILLS = [
   'Attack', 'Hitpoints', 'Mining', 'Strength', 'Agility', 'Smithing',
   'Defence', 'Herblore', 'Fishing', 'Ranged', 'Thieving', 'Cooking',
   'Prayer', 'Crafting', 'Firemaking', 'Magic', 'Fletching', 'Woodcutting',
-  'Runecraft', 'Slayer', 'Farming', 'Construction', 'Hunter',
+  'Runecraft', 'Slayer', 'Farming', 'Construction', 'Hunter', 'Gun',
 ] as const;
 
 export type SkillName = (typeof SKILLS)[number];

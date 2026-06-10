@@ -249,6 +249,30 @@
       "xp": 25
     },
     {
+      "output": "bronze_bullet_casing",
+      "outputQty": 15,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 5,
+      "xp": 12.5
+    },
+    {
+      "output": "iron_bullet_casing",
+      "outputQty": 15,
+      "bar": "iron_bar",
+      "bars": 1,
+      "level": 20,
+      "xp": 25
+    },
+    {
+      "output": "steel_bullet_casing",
+      "outputQty": 15,
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 33,
+      "xp": 37.5
+    },
+    {
       "output": "iron_sword",
       "bar": "iron_bar",
       "bars": 1,
@@ -348,6 +372,14 @@
       "xp": 50
     },
     {
+      "output": "mithril_bullet_casing",
+      "outputQty": 15,
+      "bar": "mithril_bar",
+      "bars": 1,
+      "level": 55,
+      "xp": 50
+    },
+    {
       "output": "mithril_scimitar",
       "bar": "mithril_bar",
       "bars": 2,
@@ -398,6 +430,14 @@
       "xp": 62.5
     },
     {
+      "output": "adamant_bullet_casing",
+      "outputQty": 15,
+      "bar": "adamantite_bar",
+      "bars": 1,
+      "level": 75,
+      "xp": 62.5
+    },
+    {
       "output": "adamant_scimitar",
       "bar": "adamantite_bar",
       "bars": 2,
@@ -441,6 +481,14 @@
     },
     {
       "output": "rune_arrowtips",
+      "outputQty": 15,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 86,
+      "xp": 75
+    },
+    {
+      "output": "rune_bullet_casing",
       "outputQty": 15,
       "bar": "rune_bar",
       "bars": 1,

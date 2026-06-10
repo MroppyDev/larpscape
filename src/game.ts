@@ -49,7 +49,7 @@ export interface PendingAction {
   onTop?: boolean; // action requires standing on the tile (non-blocking objects)
 }
 
-export interface Projectile { fromX: number; fromY: number; toX: number; toY: number; startMs: number; durMs: number; kind: 'arrow' | 'spell'; }
+export interface Projectile { fromX: number; fromY: number; toX: number; toY: number; startMs: number; durMs: number; kind: 'arrow' | 'bullet' | 'spell'; }
 
 export const EQUIP_SLOTS: EquipSlot[] = ['head', 'body', 'legs', 'weapon', 'shield', 'gloves', 'boots', 'ammo', 'neck', 'ring'];
 
@@ -238,8 +238,9 @@ export function combatLevel(): number {
   const base = 0.25 * (level('Defence') + level('Hitpoints') + Math.floor(level('Prayer') / 2));
   const melee = 0.325 * (level('Attack') + level('Strength'));
   const range = 0.325 * Math.floor(level('Ranged') * 1.5);
+  const gun = 0.325 * Math.floor(level('Gun') * 1.5);
   const mage = 0.325 * Math.floor(level('Magic') * 1.5);
-  return Math.floor(base + Math.max(melee, range, mage));
+  return Math.floor(base + Math.max(melee, range, gun, mage));
 }
 
 function aOrAn(s: string) { return /^[AEIOU]/.test(s) ? 'an' : 'a'; }
@@ -389,7 +390,10 @@ function loadSave(p: Player, provided?: any): boolean {
   try {
     p.name = d.name ?? p.name;
     p.x = d.x ?? p.x; p.y = d.y ?? p.y; p.prevX = p.x; p.prevY = p.y;
-    if (Array.isArray(d.xp) && d.xp.length === SKILLS.length) p.xp = d.xp;
+    if (Array.isArray(d.xp)) {
+      if (d.xp.length === SKILLS.length) p.xp = d.xp;
+      else if (d.xp.length === SKILLS.length - 1) p.xp = [...d.xp, 0];
+    }
     p.curHp = d.curHp ?? p.curHp;
     p.prayerPoints = d.prayerPoints ?? p.prayerPoints;
     p.run = d.run ?? false; p.energy = d.energy ?? 100;
@@ -417,6 +421,13 @@ export function initGame(savedData?: any) {
     addItem('bronze_sword'); addItem('wooden_shield'); addItem('bronze_axe');
     addItem('tinderbox'); addItem('small_net'); addItem('bronze_pickaxe');
     addItem('bread'); addItem('coins', 25);
+    addItem('glock_18'); addItem('bronze_round', 50);
+    const p = state.player;
+    const gSlot = p.inventory.findIndex((s) => s?.id === 'glock_18');
+    const aSlot = p.inventory.findIndex((s) => s?.id === 'bronze_round');
+    if (gSlot >= 0) { p.equipment.weapon = { id: 'glock_18', qty: 1 }; p.inventory[gSlot] = null; }
+    if (aSlot >= 0) { p.equipment.ammo = { id: 'bronze_round', qty: 50 }; p.inventory[aSlot] = null; }
+    events.onInvChange();
   }
   if (blocked(state.player.x, state.player.y)) { state.player.x = 22; state.player.y = 38; }
   // NPCs + ground items are server-authoritative: the mirrors fill in when the
@@ -512,7 +523,7 @@ export function netHit(msg: { npc: number; dmg: number; hp: number; by: string }
 }
 
 // my swing landed — grant xp (mode comes back from the server)
-export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'magic' }) {
+export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'gun' | 'magic' }) {
   const p = state.player;
   if (!p || msg.dmg <= 0) return;
   if (msg.mode === 'melee') {
@@ -521,6 +532,8 @@ export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'rang
     else addXp('Defence', msg.dmg * 4);
   } else if (msg.mode === 'ranged') {
     addXp('Ranged', msg.dmg * 4);
+  } else if (msg.mode === 'gun') {
+    addXp('Gun', msg.dmg * 4);
   } else {
     addXp('Magic', msg.dmg * 2);
   }
@@ -906,7 +919,7 @@ export function dropItem(slot: number) {
 }
 
 // ---------------- Combat ----------------
-export function equipBonus(kind: 'att' | 'str' | 'def' | 'ranged'): number {
+export function equipBonus(kind: 'att' | 'str' | 'def' | 'ranged' | 'gun'): number {
   let b = 0;
   for (const it of Object.values(state.player.equipment)) {
     if (!it) continue;
@@ -914,12 +927,13 @@ export function equipBonus(kind: 'att' | 'str' | 'def' | 'ranged'): number {
     b += kind === 'att' ? d.attBonus ?? 0
       : kind === 'str' ? d.strBonus ?? 0
       : kind === 'ranged' ? d.rangedBonus ?? 0
+      : kind === 'gun' ? d.gunBonus ?? 0
       : d.defBonus ?? 0;
   }
   return b;
 }
 
-export type AttackMode = 'melee' | 'ranged' | 'magic';
+export type AttackMode = 'melee' | 'ranged' | 'gun' | 'magic';
 export function currentAttackMode(): AttackMode {
   const p = state.player;
   if (p.autocastSpell) {
@@ -927,6 +941,7 @@ export function currentAttackMode(): AttackMode {
     if (spell && spell.runes.every((r) => invCount(r.item) >= r.qty)) return 'magic';
   }
   const w = p.equipment.weapon ? ITEMS[p.equipment.weapon.id] : null;
+  if (w && (w.id.includes('pistol') || w.id === 'glock_18')) return 'gun';
   if (w && (w.id.includes('shortbow') || w.id === 'shortbow')) return 'ranged';
   return 'melee';
 }
@@ -945,6 +960,10 @@ function rangedMaxHit(): number {
   const eff = level('Ranged') + 8;
   return Math.floor(0.5 + eff * (equipBonus('ranged') + 64) / 640);
 }
+function gunMaxHit(): number {
+  const eff = level('Gun') + 8;
+  return Math.floor(0.5 + eff * (equipBonus('gun') + 64) / 640);
+}
 
 // Combat resolution is server-authoritative: the client paths into range,
 // consumes ammo/runes, plays the swing, and sends an intent. Hit rolls, NPC
@@ -954,7 +973,7 @@ function tickPlayerCombat(npc: Npc) {
   const p = state.player;
   if (npc.dead) { p.action = null; return; }
   const mode = currentAttackMode();
-  const reach = mode === 'melee' ? 1 : 6;
+  const reach = mode === 'melee' ? 1 : 6; // ranged + gun share tile reach
   const dist = Math.max(Math.abs(p.x - npc.x), Math.abs(p.y - npc.y));
   if (dist > reach || (mode !== 'melee' && dist === 0)) {
     if (p.path.length === 0) {
@@ -970,6 +989,7 @@ function tickPlayerCombat(npc: Npc) {
 
   if (mode === 'magic') return castOnNpc(npc);
   if (mode === 'ranged') return shootNpc(npc);
+  if (mode === 'gun') return shootGun(npc);
 
   p.attackCooldown = weaponSpeed();
   const styleAtt = p.combatStyle === 'accurate' ? 3 : 0;
@@ -994,6 +1014,24 @@ function shootNpc(npc: Npc) {
   netSend({
     t: 'swing', npc: npc.sid, mode: 'ranged',
     eff: level('Ranged'), bonus: equipBonus('ranged'), maxHit: rangedMaxHit(), speed: weaponSpeed(),
+    ammo: ammoId,
+  });
+}
+
+function shootGun(npc: Npc) {
+  const p = state.player;
+  const ammo = p.equipment.ammo;
+  if (!ammo || !ammo.id.endsWith('_round')) { msg('You have no rounds equipped.'); p.action = null; return; }
+  p.attackCooldown = weaponSpeed();
+  const ammoId = ammo.id;
+  ammo.qty--;
+  if (ammo.qty <= 0) p.equipment.ammo = null;
+  events.onInvChange();
+  audio.sfx('gun');
+  state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 180, kind: 'bullet' });
+  netSend({
+    t: 'swing', npc: npc.sid, mode: 'gun',
+    eff: level('Gun'), bonus: equipBonus('gun'), maxHit: gunMaxHit(), speed: weaponSpeed(),
     ammo: ammoId,
   });
 }

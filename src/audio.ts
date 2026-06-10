@@ -426,7 +426,7 @@ class AudioEngine {
 
   // ---- SFX (fully synthesized; independent of the SoundFont state) ----
   sfx(kind: 'chop' | 'mine' | 'splash' | 'hit' | 'miss' | 'levelup' | 'fire' | 'eat' | 'coins' | 'bury'
-    | 'smith' | 'smelt' | 'pray' | 'spell' | 'bow' | 'thieve' | 'plant' | 'agility') {
+    | 'smith' | 'smelt' | 'pray' | 'spell' | 'bow' | 'gun' | 'thieve' | 'plant' | 'agility') {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const dest = this.sfxGain!;
@@ -464,6 +464,10 @@ class AudioEngine {
       case 'bow': // string twang
         blip(440, 0, 0.04, 'sawtooth', 0.1); blip(330, 0.03, 0.08, 'triangle', 0.12);
         this.noise(now + 0.02, 0.08, 2500, 0.05);
+        break;
+      case 'gun': // sharp crack
+        this.noise(now, 0.06, 4000, 0.22);
+        blip(90, 0, 0.05, 'square', 0.18); blip(60, 0.02, 0.08, 'triangle', 0.12);
         break;
       case 'thieve': // quick rustle
         this.noise(now, 0.05, 3500, 0.08); this.noise(now + 0.06, 0.05, 3000, 0.06);

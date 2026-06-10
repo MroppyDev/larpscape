@@ -1,4 +1,4 @@
-// Skill content: registers handlers for all 23 skills via the game.ts registries.
+// Skill content: registers handlers for all skills via the game.ts registries.
 // Imported for side effects by main.ts.
 
 import {

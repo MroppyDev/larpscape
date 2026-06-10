@@ -6,7 +6,7 @@ export const SKILL_NAMES = [
   'Attack', 'Hitpoints', 'Mining', 'Strength', 'Agility', 'Smithing',
   'Defence', 'Herblore', 'Fishing', 'Ranged', 'Thieving', 'Cooking',
   'Prayer', 'Crafting', 'Firemaking', 'Magic', 'Fletching', 'Woodcutting',
-  'Runecraft', 'Slayer', 'Farming', 'Construction', 'Hunter',
+  'Runecraft', 'Slayer', 'Farming', 'Construction', 'Hunter', 'Gun',
 ] as const;
 
 export const EQUIP_SLOTS = ['head', 'body', 'legs', 'weapon', 'shield', 'gloves', 'boots', 'ammo', 'neck', 'ring'] as const;
@@ -31,6 +31,7 @@ export const ItemDefSchema = z.object({
   strBonus: z.number().optional(),
   defBonus: z.number().optional(),
   rangedBonus: z.number().optional(),
+  gunBonus: z.number().optional(),
   attackSpeed: z.number().int().positive().optional(),
   levelReq: z.array(z.object({ skill: z.enum(SKILL_NAMES), level: z.number().int().min(1).max(99) })).optional(),
   edible: z.object({ heals: z.number().positive() }).optional(),
