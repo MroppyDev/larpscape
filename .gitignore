@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+
+# Server runtime data
+server/data.db
+server/data.db-*
+
+# Personal audio assets (user-supplied, not for distribution)
+public/soundfont.sf2
+public/music/*.mid

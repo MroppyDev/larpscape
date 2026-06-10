@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Larpscape</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="frame">
+    <div id="client">
+      <div id="left">
+        <div id="viewport-wrap">
+          <canvas id="viewport" width="512" height="334"></canvas>
+          <div id="hover-text"></div>
+          <div id="xp-drops"></div>
+          <div id="welcome-screen">
+            <div class="welcome-box">
+              <h1>Larpscape</h1>
+              <p>A fan-made, original-asset homage to Old School RuneScape.<br/>Not affiliated with Jagex.</p>
+              <input id="name-input" maxlength="12" placeholder="Enter your name" autocomplete="off" spellcheck="false"/>
+              <button id="play-btn">CLICK HERE TO PLAY</button>
+            </div>
+          </div>
+        </div>
+        <div id="chatbox">
+          <div id="chat-tabs"></div>
+          <div id="chat-messages"></div>
+          <div id="dialogue-overlay"></div>
+          <div id="make-strip"></div>
+          <div id="chat-input-row">
+            <span id="chat-name">Adventurer:</span>
+            <input id="chat-input" maxlength="80" autocomplete="off" spellcheck="false"/>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar">
+        <div id="minimap-area">
+          <div id="compass">N</div>
+          <canvas id="minimap" width="152" height="152"></canvas>
+          <div id="orb-hp" class="orb"><span class="orb-num">10</span><span class="orb-icon">♥</span></div>
+          <div id="orb-prayer" class="orb"><span class="orb-num">1</span><span class="orb-icon">✦</span></div>
+          <div id="orb-run" class="orb"><span class="orb-num">100</span><span class="orb-icon">🏃</span></div>
+        </div>
+        <div id="tabs-top" class="tab-row"></div>
+        <div id="panel"></div>
+        <div id="tabs-bottom" class="tab-row"></div>
+      </div>
+    </div>
+  </div>
+  <div id="context-menu"></div>
+  <div id="modal-layer"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
