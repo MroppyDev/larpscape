@@ -84,6 +84,7 @@ function fbm(x: number, y: number, salt: number): number {
 const WATER_FLOOR = -0.55;
 const WATER_LEVEL = -0.18;
 const BRIDGE_DECK = 0.12;
+const WALL_H = 1.7;
 
 let cornerH: Float32Array | null = null;
 let cornerCol: Float32Array | null = null;   // blended per-corner ground colors (r,g,b)
@@ -113,12 +114,32 @@ function tileContrib(t: number, cx: number, cy: number, out: THREE.Color) {
     case TC.DSAND: f = hash2(cx, cy, 22) > 0.86 ? 1.16 : 0.92 + hash2(cx, cy, 23) * 0.12; break; // dune speckle
     case TC.SNOW: f = 0.95 + fbm(cx, cy, 25) * 0.1; break;
     case TC.ICE: f = 1.0 + fbm(cx, cy, 26) * 0.12; break;
-    case TC.GRASS: case TC.FLOWERS: case TC.SWAMP:
-      f = 0.86 + fbm(cx, cy, 24) * 0.26; break;
+    case TC.GRASS: case TC.FLOWERS: case TC.SWAMP: {
+      f = 0.86 + fbm(cx, cy, 24) * 0.26;
+      if (t !== TC.SWAMP) {
+        // low-frequency hue drift (+/-4%) so large fields aren't one uniform green
+        const drift = (vnoise(cx * 0.022, cy * 0.022, 71) - 0.5) * 0.08;
+        out.r *= 1 + drift * 1.6;
+        out.g *= 1 + drift * 0.3;
+        out.b *= 1 - drift * 1.2;
+      }
+      break;
+    }
     case TC.SAND: f = 0.94 + fbm(cx, cy, 24) * 0.12; break;
   }
   out.multiplyScalar(f);
 }
+
+// corner color blend kernel: the 4 touching tiles at full weight, plus the
+// surrounding 4x4 ring (diagonals included) at low weight for wider, softer
+// terrain transitions
+const BLEND_INNER: [number, number][] = [[-1, -1], [0, -1], [-1, 0], [0, 0]];
+const BLEND_OUTER: [number, number][] = [
+  [-2, -2], [-1, -2], [0, -2], [1, -2],
+  [-2, -1], [1, -1], [-2, 0], [1, 0],
+  [-2, 1], [-1, 1], [0, 1], [1, 1],
+];
+const BLEND_OUTER_W = 0.28;
 
 function buildHeights() {
   cornerH = new Float32Array((MAP_W + 1) * (MAP_H + 1));
@@ -127,16 +148,23 @@ function buildHeights() {
   for (let cy = 0; cy <= MAP_H; cy++) {
     for (let cx = 0; cx <= MAP_W; cx++) {
       let h = Infinity;
-      let r = 0, g = 0, b = 0;
-      for (const [ox, oy] of [[-1, -1], [0, -1], [-1, 0], [0, 0]]) {
+      let r = 0, g = 0, b = 0, wSum = 0;
+      for (const [ox, oy] of BLEND_INNER) {
         const t = tAt(cx + ox, cy + oy);
         h = Math.min(h, cornerCandidate(t, cx, cy));
         tileContrib(t, cx, cy, tc);
-        r += tc.r; g += tc.g; b += tc.b;
+        r += tc.r; g += tc.g; b += tc.b; wSum += 1;
+      }
+      for (const [ox, oy] of BLEND_OUTER) {
+        const t = tAt(cx + ox, cy + oy);
+        if (t === TC.WALL) continue; // keep building edges crisp
+        tileContrib(t, cx, cy, tc);
+        r += tc.r * BLEND_OUTER_W; g += tc.g * BLEND_OUTER_W; b += tc.b * BLEND_OUTER_W;
+        wSum += BLEND_OUTER_W;
       }
       const i = cy * (MAP_W + 1) + cx;
       cornerH[i] = h;
-      cornerCol[i * 3] = r / 4; cornerCol[i * 3 + 1] = g / 4; cornerCol[i * 3 + 2] = b / 4;
+      cornerCol[i * 3] = r / wSum; cornerCol[i * 3 + 1] = g / wSum; cornerCol[i * 3 + 2] = b / wSum;
     }
   }
   // distance-to-land BFS (for water depth tint + shoreline foam)
@@ -327,6 +355,7 @@ function buildChunk(cx0: number, cy0: number, lavaGb: GeoBuilder): THREE.Mesh | 
   const plankB = new THREE.Color('#7a5c34');
 
   const c00 = new THREE.Color(), c10 = new THREE.Color(), c01 = new THREE.Color(), c11 = new THREE.Color();
+  const ragC = new THREE.Color();
   for (let y = cy0; y < Math.min(cy0 + CHUNK, MAP_H); y++) {
     for (let x = cx0; x < Math.min(cx0 + CHUNK, MAP_W); x++) {
       const t = tAt(x, y);
@@ -335,6 +364,23 @@ function buildChunk(cx0: number, cy0: number, lavaGb: GeoBuilder): THREE.Mesh | 
       const f = 0.95 + hash2(x, y, 5) * 0.1;
       cC(x, y, c00); cC(x + 1, y, c10); cC(x, y + 1, c01); cC(x + 1, y + 1, c11);
       c00.multiplyScalar(f); c10.multiplyScalar(f); c01.multiplyScalar(f); c11.multiplyScalar(f);
+      if (t === TC.PATH) {
+        // ragged path edges: pull each corner toward a neighboring terrain color
+        // by a hashed amount so the worn track has an irregular border
+        const rag = (cnr: THREE.Color, cx2: number, cy2: number) => {
+          for (const [ox, oy] of BLEND_INNER) {
+            const nx = cx2 + ox, ny = cy2 + oy;
+            if (nx === x && ny === y) continue;
+            const nt = tAt(nx, ny);
+            if (nt !== TC.PATH && nt !== TC.WALL && nt !== TC.WATER && nt !== TC.BRIDGE) {
+              ragC.set(GROUND_COL[nt] ?? GROUND_COL[TC.GRASS]);
+              cnr.lerp(ragC, hash2(cx2, cy2, 77) * 0.4);
+              return;
+            }
+          }
+        };
+        rag(c00, x, y); rag(c10, x + 1, y); rag(c01, x, y + 1); rag(c11, x + 1, y + 1);
+      }
       const h00 = cH(x, y), h10 = cH(x + 1, y), h01 = cH(x, y + 1), h11 = cH(x + 1, y + 1);
       const n00 = cN(x, y), n10 = cN(x + 1, y), n01 = cN(x, y + 1), n11 = cN(x + 1, y + 1);
       // two triangles, alternating diagonal for a less regular look
@@ -356,8 +402,12 @@ function buildChunk(cx0: number, cy0: number, lavaGb: GeoBuilder): THREE.Mesh | 
 
       if (t === TC.WALL) {
         const sc = stone.clone().multiplyScalar(0.92 + hash2(x, y, 6) * 0.14);
-        gb.box(x + 0.5, 0, y + 0.5, 1, 1.7, 1, sc, 0.07);
-        gb.box(x + 0.5, 1.7, y + 0.5, 1.04, 0.12, 1.04, stoneTop, 0.06);
+        // subtle per-tile height variation so long walls don't read as one slab
+        const wh = WALL_H + (hash2(x, y, 64) - 0.5) * 0.06;
+        gb.box(x + 0.5, 0, y + 0.5, 1, wh, 1, sc, 0.07);
+        // lighter stone top cap/trim
+        gb.box(x + 0.5, wh, y + 0.5, 1.04, 0.12, 1.04,
+          stoneTop.clone().multiplyScalar(0.96 + hash2(x, y, 65) * 0.1), 0.06);
       } else if (t === TC.FENCE) {
         const gh = (h00 + h10 + h01 + h11) / 4;
         gb.box(x + 0.5, gh, y + 0.5, 0.09, 0.62, 0.09, fenceCol, 0.08);
@@ -2262,8 +2312,145 @@ function takeArrow(): THREE.Mesh {
   return m;
 }
 
+// ================= SKILLING FX (spark bursts + fishing ripple pulses) =================
+// Pooled glowing tetra sparks for mining/smithing strikes. Fixed-size pool,
+// analytic motion (origin + velocity + gravity from birth time): zero
+// allocation per frame once the pool has warmed up.
+const SPARK_POOL_MAX = 24;
+const SPARK_LIFE = 400;          // ms
+const SPARK_GRAV = 5.5;          // tiles/s^2
+interface Spark { m: THREE.Mesh; ox: number; oy: number; oz: number; vx: number; vy: number; vz: number; born: number; }
+const sparkPool: Spark[] = [];
+let sparkSeed = 12345;
+let lastSparkCycle = -1;
+function sparkRnd() { sparkSeed = (sparkSeed * 16807) % 2147483647; return sparkSeed / 2147483647; }
+
+function emitSparks(x: number, y: number, z: number, now: number) {
+  const n = 6 + Math.floor(sparkRnd() * 5); // 6-10 per strike
+  let emitted = 0;
+  for (let i = 0; i < SPARK_POOL_MAX && emitted < n; i++) {
+    let s = sparkPool[i];
+    if (!s) {
+      const m = new THREE.Mesh(tetraG(0.045, '#ffd86a'), glowMat);
+      m.visible = false;
+      overlayGroup!.add(m);
+      s = { m, ox: 0, oy: 0, oz: 0, vx: 0, vy: 0, vz: 0, born: -1e9 };
+      sparkPool.push(s);
+    }
+    if (now - s.born < SPARK_LIFE) continue; // still in flight
+    const a = sparkRnd() * Math.PI * 2;
+    const sp = 0.5 + sparkRnd() * 0.9;
+    s.ox = x; s.oy = y; s.oz = z;
+    s.vx = Math.cos(a) * sp;
+    s.vz = Math.sin(a) * sp;
+    s.vy = 1.1 + sparkRnd() * 1.5;
+    s.born = now;
+    s.m.visible = true;
+    emitted++;
+  }
+}
+
+function updateSparks(now: number) {
+  for (const s of sparkPool) {
+    const ms = now - s.born;
+    if (ms >= SPARK_LIFE) { s.m.visible = false; continue; }
+    const t = ms / 1000;
+    s.m.position.set(
+      s.ox + s.vx * t,
+      s.oy + s.vy * t - SPARK_GRAV * t * t * 0.5,
+      s.oz + s.vz * t,
+    );
+    const k = 1 - ms / SPARK_LIFE;
+    s.m.scale.setScalar(0.5 + k * 0.9);
+    s.m.rotation.set(t * 9 + s.born % 7, t * 7, 0);
+  }
+}
+
+// occasional extra ripple pulses at the fishing spot while fishing
+const RIPPLE_POOL_MAX = 3;
+const RIPPLE_LIFE = 900;         // ms
+const ripplePulses: { m: THREE.Mesh; born: number }[] = [];
+let nextRippleAt = 0;
+
+function emitRipplePulse(x: number, y: number, z: number, now: number) {
+  for (let i = 0; i < RIPPLE_POOL_MAX; i++) {
+    let r = ripplePulses[i];
+    if (!r) {
+      const m = new THREE.Mesh(ringG(0.3, 0.4, '#dceeff'), rippleMat.clone());
+      m.rotation.x = -Math.PI / 2;
+      m.renderOrder = 3;
+      m.visible = false;
+      overlayGroup!.add(m);
+      r = { m, born: -1e9 };
+      ripplePulses.push(r);
+    }
+    if (now - r.born < RIPPLE_LIFE) continue;
+    r.m.position.set(x, y, z);
+    r.m.visible = true;
+    r.born = now;
+    return;
+  }
+}
+
+function updateRipplePulses(now: number) {
+  for (const r of ripplePulses) {
+    const t = (now - r.born) / RIPPLE_LIFE;
+    if (t >= 1) { r.m.visible = false; continue; }
+    const s = 0.4 + t * 2.2;
+    r.m.scale.set(s, s, 1);
+    (r.m.material as THREE.MeshBasicMaterial).opacity = 0.5 * (1 - t);
+  }
+}
+
+function syncSkillFx(now: number) {
+  const p = state.player;
+  const a = p?.action;
+  let sparkObj: WorldObject | null = null;
+  let fishObj: WorldObject | null = null;
+  if (a && a.type === 'interact-obj' && a.obj && !p.dead) {
+    const t = a.obj.type;
+    const adjacent = Math.max(Math.abs(p.x - a.obj.x), Math.abs(p.y - a.obj.y)) <= 1;
+    const still = p.x === p.prevX && p.y === p.prevY;
+    if (adjacent && still) {
+      if ((t.startsWith('rocks') && t !== 'rocks_empty' && a.obj.depletedUntil === 0)
+        || t === 'anvil' || t === 'furnace') sparkObj = a.obj;
+      else if (t.includes('fishing') || t === 'lobster_spot' || t === 'harpoon_spot') fishObj = a.obj;
+    }
+  }
+  if (sparkObj) {
+    // sync bursts to the 1200ms swing cycle (the mine anim's strike lands ~58% in)
+    const cyc = Math.floor(now / 1200);
+    const ph = (now % 1200) / 1200;
+    if (ph >= 0.58 && cyc !== lastSparkCycle) {
+      lastSparkCycle = cyc;
+      const ox = sparkObj.x + 0.5, oz = sparkObj.y + 0.5;
+      // contact point: object centre nudged toward the player
+      const dx = (p.x + 0.5) - ox, dz = (p.y + 0.5) - oz;
+      const dl = Math.hypot(dx, dz) || 1;
+      emitSparks(ox + (dx / dl) * 0.32, groundH(ox, oz) + 0.45, oz + (dz / dl) * 0.32, now);
+    }
+  }
+  if (fishObj && now >= nextRippleAt) {
+    nextRippleAt = now + 1100 + sparkRnd() * 1400;
+    emitRipplePulse(fishObj.x + 0.5, WATER_LEVEL + 0.09, fishObj.y + 0.5, now);
+  }
+  updateSparks(now);
+  updateRipplePulses(now);
+}
+
 // ================= INSTANCE SYNC =================
-interface ObjInst { rkey: string; node: THREE.Group; fx: THREE.Mesh[]; }
+interface ObjInst {
+  rkey: string;
+  node: THREE.Group;
+  fx: THREE.Mesh[];
+  // tree-fall transition: set when a tree depletes; the old node tips over,
+  // then sinks/fades, then the normal depleted (stump) swap happens
+  fall?: { start: number; baseY: number; mats: THREE.Material[] };
+}
+const TREE_FALL_RE = /^(tree|oak|willow|maple|yew|magic_tree|snow_pine)$/;
+const TREE_TIP_MS = 700;
+const TREE_SINK_MS = 300;
+
 const objInst = new Map<WorldObject, ObjInst>();
 const giInst = new Map<GroundItem, THREE.Mesh>();
 const npcInst = new Map<Npc, { node: THREE.Group; rkey: string }>();
@@ -2323,6 +2510,37 @@ function syncObjects(now: number, px: number, pz: number) {
     const rkey = objectRenderKey(o);
     let inst = objInst.get(o);
     if (inst && inst.rkey !== rkey) {
+      // tree depleting -> play the fall animation on the old node first
+      if (!inst.fall && o.depletedUntil > 0 && TREE_FALL_RE.test(inst.rkey)) {
+        const mats: THREE.Material[] = [];
+        inst.node.traverse((ch) => {
+          const m = ch as THREE.Mesh;
+          if (m.isMesh) {
+            const mm = (m.material as THREE.Material).clone();
+            mm.transparent = true;
+            m.material = mm;
+            m.castShadow = false; // a fading ghost shouldn't throw a shadow
+            mats.push(mm);
+          }
+        });
+        inst.fall = { start: now, baseY: inst.node.position.y, mats };
+      }
+      if (inst.fall && now - inst.fall.start < TREE_TIP_MS + TREE_SINK_MS) {
+        // still falling: animate, defer the stump swap
+        const ft = now - inst.fall.start;
+        const tip = Math.min(1, ft / TREE_TIP_MS);
+        const ease = 1 - (1 - tip) * (1 - tip);
+        // slight bounce as the trunk hits the ground
+        const bounce = tip >= 1 ? 0 : Math.sin(tip * Math.PI * 2.6) * 0.05 * (1 - tip) * tip;
+        inst.node.rotation.z = (70 * Math.PI / 180) * ease + bounce;
+        if (ft > TREE_TIP_MS) {
+          const s = (ft - TREE_TIP_MS) / TREE_SINK_MS;
+          inst.node.position.y = inst.fall.baseY - 0.6 * s;
+          for (const m of inst.fall.mats) m.opacity = 1 - s;
+        }
+        continue;
+      }
+      if (inst.fall) for (const m of inst.fall.mats) m.dispose();
       objectGroup!.remove(inst.node);
       inst = undefined;
     }
@@ -2750,6 +2968,148 @@ function buildFoam(sc: THREE.Scene) {
   sc.add(m);
 }
 
+// ================= BUILDING ROOFS =================
+// Interior FLOOR regions enclosed by WALL tiles get a hipped shingle roof.
+// The roof group whose region contains the player's tile is hidden each frame
+// so stepping inside reveals the interior (OSRS style). Doorway gaps (FLOOR or
+// PATH breaks in the wall ring) don't matter: the region is just the connected
+// set of interior FLOOR tiles, and we hide the roof while standing on any of them.
+let roofRegion: Int32Array | null = null;       // tile -> region id (-1 = outdoors)
+const roofGroups: THREE.Group[] = [];           // region id -> roof group
+let hiddenRoofId = -1;
+
+const ROOF_SHINGLES = ['#8a4a32', '#96583a', '#7c4a3c', '#a06a3c', '#84503a', '#8e5a30'];
+const ROOF_EAVE_Y = WALL_H + 0.08;              // just above the wall top cap
+const ROOF_OVERHANG = 0.3;
+
+// hipped roof over the rect [x0..x1]x[z0..z1] at base height yb
+function buildHipRoof(gb: GeoBuilder, x0: number, z0: number, x1: number, z1: number, base: THREE.Color) {
+  const yb = ROOF_EAVE_Y;
+  const w = x1 - x0, d = z1 - z0;
+  const half = Math.min(w, d) / 2;
+  const yr = yb + Math.min(half * 0.72, 2.3);
+  const dark = base.clone().multiplyScalar(0.8);
+  // ridge runs along the longer axis; equal sides give a pyramid hip (ridge len 0)
+  if (w >= d) {
+    const zm = (z0 + z1) / 2, rx0 = x0 + half, rx1 = x1 - half;
+    // long slopes split into bands for a cheap shingle feel
+    const bands = 3;
+    for (let b = 0; b < bands; b++) {
+      const t0 = b / bands, t1 = (b + 1) / bands;
+      const c = base.clone().multiplyScalar(0.88 + (bands - 1 - b) * 0.09);
+      // south slope (+z)
+      gb.tri(lerp(x0, rx0, t0), lerp(yb, yr, t0), lerp(z1, zm, t0),
+        lerp(x1, rx1, t0), lerp(yb, yr, t0), lerp(z1, zm, t0),
+        lerp(x1, rx1, t1), lerp(yb, yr, t1), lerp(z1, zm, t1), c, 0.05);
+      gb.tri(lerp(x0, rx0, t0), lerp(yb, yr, t0), lerp(z1, zm, t0),
+        lerp(x1, rx1, t1), lerp(yb, yr, t1), lerp(z1, zm, t1),
+        lerp(x0, rx0, t1), lerp(yb, yr, t1), lerp(z1, zm, t1), c, 0.05);
+      // north slope (-z)
+      gb.tri(lerp(x1, rx1, t0), lerp(yb, yr, t0), lerp(z0, zm, t0),
+        lerp(x0, rx0, t0), lerp(yb, yr, t0), lerp(z0, zm, t0),
+        lerp(x0, rx0, t1), lerp(yb, yr, t1), lerp(z0, zm, t1), c, 0.05);
+      gb.tri(lerp(x1, rx1, t0), lerp(yb, yr, t0), lerp(z0, zm, t0),
+        lerp(x0, rx0, t1), lerp(yb, yr, t1), lerp(z0, zm, t1),
+        lerp(x1, rx1, t1), lerp(yb, yr, t1), lerp(z0, zm, t1), c, 0.05);
+    }
+    // hip ends
+    gb.tri(x1, yb, z1, x1, yb, z0, rx1, yr, zm, base.clone().multiplyScalar(0.92), 0.05);
+    gb.tri(x0, yb, z0, x0, yb, z1, rx0, yr, zm, base.clone().multiplyScalar(0.92), 0.05);
+    // ridge beam
+    if (rx1 - rx0 > 0.05) gb.box((rx0 + rx1) / 2, yr - 0.04, zm, rx1 - rx0 + 0.2, 0.1, 0.16, dark, 0.04);
+  } else {
+    const xm = (x0 + x1) / 2, rz0 = z0 + half, rz1 = z1 - half;
+    const bands = 3;
+    for (let b = 0; b < bands; b++) {
+      const t0 = b / bands, t1 = (b + 1) / bands;
+      const c = base.clone().multiplyScalar(0.88 + (bands - 1 - b) * 0.09);
+      // east slope (+x)
+      gb.tri(lerp(x1, xm, t0), lerp(yb, yr, t0), lerp(z1, rz1, t0),
+        lerp(x1, xm, t0), lerp(yb, yr, t0), lerp(z0, rz0, t0),
+        lerp(x1, xm, t1), lerp(yb, yr, t1), lerp(z0, rz0, t1), c, 0.05);
+      gb.tri(lerp(x1, xm, t0), lerp(yb, yr, t0), lerp(z1, rz1, t0),
+        lerp(x1, xm, t1), lerp(yb, yr, t1), lerp(z0, rz0, t1),
+        lerp(x1, xm, t1), lerp(yb, yr, t1), lerp(z1, rz1, t1), c, 0.05);
+      // west slope (-x)
+      gb.tri(lerp(x0, xm, t0), lerp(yb, yr, t0), lerp(z0, rz0, t0),
+        lerp(x0, xm, t0), lerp(yb, yr, t0), lerp(z1, rz1, t0),
+        lerp(x0, xm, t1), lerp(yb, yr, t1), lerp(z1, rz1, t1), c, 0.05);
+      gb.tri(lerp(x0, xm, t0), lerp(yb, yr, t0), lerp(z0, rz0, t0),
+        lerp(x0, xm, t1), lerp(yb, yr, t1), lerp(z1, rz1, t1),
+        lerp(x0, xm, t1), lerp(yb, yr, t1), lerp(z0, rz0, t1), c, 0.05);
+    }
+    gb.tri(x0, yb, z1, x1, yb, z1, xm, yr, rz1, base.clone().multiplyScalar(0.92), 0.05);
+    gb.tri(x1, yb, z0, x0, yb, z0, xm, yr, rz0, base.clone().multiplyScalar(0.92), 0.05);
+    if (rz1 - rz0 > 0.05) gb.box(xm, yr - 0.04, (rz0 + rz1) / 2, 0.16, 0.1, rz1 - rz0 + 0.2, dark, 0.04);
+  }
+}
+
+function buildRoofs(sc: THREE.Scene) {
+  roofRegion = new Int32Array(MAP_W * MAP_H).fill(-1);
+  const seen = new Uint8Array(MAP_W * MAP_H);
+  for (let sy = 0; sy < MAP_H; sy++) {
+    for (let sx = 0; sx < MAP_W; sx++) {
+      if (tAt(sx, sy) !== TC.FLOOR || seen[key(sx, sy)]) continue;
+      // flood-fill this contiguous FLOOR region
+      const tiles: number[] = [];
+      const qx = [sx], qy = [sy];
+      seen[key(sx, sy)] = 1;
+      let minX = sx, maxX = sx, minY = sy, maxY = sy;
+      let wallEdges = 0, totalEdges = 0;
+      for (let head = 0; head < qx.length; head++) {
+        const x = qx[head], y = qy[head];
+        tiles.push(key(x, y));
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + ox, ny = y + oy;
+          const nt = tAt(nx, ny);
+          if (nt === TC.FLOOR) {
+            if (!seen[key(nx, ny)]) { seen[key(nx, ny)] = 1; qx.push(nx); qy.push(ny); }
+          } else {
+            totalEdges++;
+            if (nt === TC.WALL) wallEdges++;
+          }
+        }
+      }
+      // only roof proper buildings: small-ish, and mostly ringed by walls
+      // (a couple of doorway gaps are expected and fine)
+      if (tiles.length < 4 || tiles.length > 800 || totalEdges === 0) continue;
+      if (wallEdges / totalEdges < 0.65) continue;
+
+      const id = roofGroups.length;
+      for (const k of tiles) roofRegion[k] = id;
+
+      // roof spans the interior bbox + the wall ring + eave overhang
+      const gb = new GeoBuilder();
+      const base = new THREE.Color(ROOF_SHINGLES[Math.floor(hash2(minX, minY, 101) * ROOF_SHINGLES.length)])
+        .multiplyScalar(0.92 + hash2(minX, maxY, 102) * 0.16);
+      buildHipRoof(gb,
+        minX - 1 - ROOF_OVERHANG, minY - 1 - ROOF_OVERHANG,
+        maxX + 2 + ROOF_OVERHANG, maxY + 2 + ROOF_OVERHANG, base);
+      const mesh = new THREE.Mesh(gb.build(), litMat);
+      mesh.matrixAutoUpdate = false;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const group = new THREE.Group();
+      group.add(mesh);
+      roofGroups.push(group);
+      sc.add(group);
+    }
+  }
+}
+
+// hide the roof over the region the player is standing in; show all others.
+// only visibility flips — the meshes themselves are static.
+function updateRoofs(px: number, py: number) {
+  if (!roofRegion) return;
+  const id = (px >= 0 && py >= 0 && px < MAP_W && py < MAP_H) ? roofRegion[key(px, py)] : -1;
+  if (id === hiddenRoofId) return;
+  if (hiddenRoofId >= 0 && roofGroups[hiddenRoofId]) roofGroups[hiddenRoofId].visible = true;
+  if (id >= 0 && roofGroups[id]) roofGroups[id].visible = false;
+  hiddenRoofId = id;
+}
+
 // ================= SCENE INIT =================
 function ensureScene(): boolean {
   if (renderer) return true;
@@ -2831,6 +3191,9 @@ function ensureScene(): boolean {
   // shoreline foam strips following the actual coast tiles
   buildFoam(scene);
 
+  // hipped roofs over enclosed FLOOR interiors (hidden while the player is inside)
+  buildRoofs(scene);
+
   objectGroup = new THREE.Group();
   entityGroup = new THREE.Group();
   overlayGroup = new THREE.Group();
@@ -2845,9 +3208,13 @@ function animateWater(now: number) {
   const attr = waterMesh.geometry.getAttribute('position') as THREE.BufferAttribute;
   const arr = attr.array as Float32Array;
   const t = now * 0.0014;
+  // two overlapping sine fields drifting at different rates — slightly larger
+  // amplitude than before, still subtle
   for (let i = 0; i < arr.length; i += 3) {
     const x = waterBase[i], z = waterBase[i + 2];
-    arr[i + 1] = WATER_LEVEL + Math.sin(x * 0.7 + t) * 0.035 + Math.cos(z * 0.55 + t * 1.4) * 0.03;
+    arr[i + 1] = WATER_LEVEL
+      + Math.sin(x * 0.7 + t) * 0.042 + Math.cos(z * 0.55 + t * 1.4) * 0.036
+      + Math.sin((x + z) * 0.31 - t * 0.8) * 0.022 + Math.cos((x - z) * 0.43 + t * 1.1) * 0.016;
   }
   attr.needsUpdate = true;
 }
@@ -2877,14 +3244,19 @@ export function render() {
   animateWater(now);
   // pulse the molten lava glow + shimmer the shore foam
   lavaMat.color.setScalar(0.78 + Math.sin(now * 0.0035) * 0.18 + Math.sin(now * 0.011) * 0.05);
-  foamMat.opacity = 0.3 + (Math.sin(now * 0.0016) * 0.5 + 0.5) * 0.26;
+  // foam pulses out of phase with the wave field (wave clock is now*0.0014)
+  foamMat.opacity = 0.28
+    + (Math.sin(now * 0.0014 + Math.PI) * 0.5 + 0.5) * 0.2
+    + (Math.sin(now * 0.0023 + 1.7) * 0.5 + 0.5) * 0.08;
 
   spriteUsed = 0;
   arrowUsed = 0;
   bulletUsed = 0;
   const t = tickAlpha();
   const pfx = lerp(p.prevX, p.x, t) + 0.5, pfz = lerp(p.prevY, p.y, t) + 0.5;
+  updateRoofs(p.x, p.y);
   syncObjects(now, pfx, pfz);
+  syncSkillFx(now);
   syncGroundItems(now);
   syncNpcs(now, p.x, p.y);
   syncPlayer(now);
