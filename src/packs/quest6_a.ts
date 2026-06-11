@@ -54,7 +54,7 @@ registerNpcAction('mountain_guide', 'Ask-about-the-peak', (_n: Npc) => {
   if (s === 0) {
     startDialogue([
       ...me('These storms — do they ever let up?'),
-      ...say(TORVALD, 'Let up? Friend, I\'ve guided this mountain thirty years and fallen off most of it, and I\'ll tell you plain: this is no weather.'),
+      ...say(TORVALD, 'Let up? Friend, I\'ve guided this mountain thirty years and fallen off every ledge of it — once each, and I\'ll tell you plain: this is no weather.'),
       ...say(TORVALD, 'Real storms wander. These circle the summit like a dog on a chain. Something up there is holding court, and the blizzard is its herald.'),
       ...say(TORVALD, 'I climbed high once, before my knee went. Through the white I saw a throne of blue ice, and on it a figure crowned in rime. Maraza, the old songs call her. The Rimebound.'),
       ...say(TORVALD, 'While she sits that throne, the passes stay shut and good climbers keep dying. Somebody with steadier legs than mine needs to climb up and unseat her — for good.'),

@@ -75,7 +75,14 @@ function Sidebar() {
     { label: 'Skills', slug: 'category/skills' },
     { label: 'Locations', slug: 'category/locations' },
     { label: 'Bosses', slug: 'category/bosses' },
-    { label: 'Grand Exchange', slug: 'guide/grand-exchange' },
+    { label: 'Aldgate Exchange', slug: 'guide/aldgate-exchange' },
+  ];
+
+  const lore = [
+    { label: 'The World of Cantorne', slug: 'lore/world' },
+    { label: 'Factions', slug: 'lore/factions' },
+    { label: 'Bestiary of the Offnote', slug: 'lore/bestiary' },
+    { label: 'All lore pages', slug: 'category/lore' },
   ];
 
   return (
@@ -85,6 +92,14 @@ function Sidebar() {
         <ul>
           <li><Link to="/">Main page</Link></li>
           {cats.map((c) => (
+            <li key={c.slug}><Link to={`/${c.slug}`}>{c.label}</Link></li>
+          ))}
+        </ul>
+      </div>
+      <div className="sidebar-block">
+        <h3>Lore</h3>
+        <ul>
+          {lore.map((c) => (
             <li key={c.slug}><Link to={`/${c.slug}`}>{c.label}</Link></li>
           ))}
         </ul>

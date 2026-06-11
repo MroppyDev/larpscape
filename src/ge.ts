@@ -1,4 +1,4 @@
-// Grand Exchange client — owns the 'ge_booth' Exchange action + modal UI.
+// Aldgate Exchange client — owns the 'ge_booth' Exchange action + modal UI.
 // Talks to the server via net.api (see SPEC.md Phase 5 server contract).
 
 import {
@@ -138,7 +138,7 @@ async function fetchOffers() {
     offers = r.offers ?? [];
     if (open) redraw();
   } catch (e: any) {
-    msg('The Grand Exchange clerk shuffles papers: ' + (e?.message ?? 'connection trouble') + '.');
+    msg('The Aldgate Exchange clerk shuffles papers: ' + (e?.message ?? 'connection trouble') + '.');
   }
 }
 
@@ -172,7 +172,7 @@ async function doCollect(o: GeOffer) {
       if (addItem('coins', r.coins)) got = true;
       else msg('Your pack is too full for the coins!');
     }
-    if (got) msg('You collect from the Grand Exchange.');
+    if (got) msg('You collect from the Aldgate Exchange.');
   } catch (e: any) {
     msg('Collection failed: ' + (e?.message ?? 'unknown error') + '.');
   }
@@ -260,7 +260,7 @@ function shell(): HTMLElement {
   modal.style.left = left + 'px';
   modal.style.top = top + 'px';
   const h = document.createElement('h2');
-  h.textContent = 'Grand Exchange';
+  h.textContent = 'Aldgate Exchange';
   modal.appendChild(h);
   const close = document.createElement('div');
   close.className = 'ge-close';
@@ -541,7 +541,7 @@ function drawSellForm(m: HTMLElement) {
 
 function tryOpenExchange(): 'done' {
   if (!net.online) {
-    msg('The Grand Exchange is closed (offline mode).');
+    msg('The Aldgate Exchange is closed (offline mode).');
     return 'done';
   }
   openModal();

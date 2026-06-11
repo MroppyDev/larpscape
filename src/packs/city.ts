@@ -18,6 +18,7 @@ registerNpcAction('armourer', 'Talk-to', (n) => {
     { speaker: n.def.name, text: 'Steel plate, fitted while you wait. Mithril if your purse can take the dent.' },
     { speaker: state.player.name, text: 'Do you do refunds?' },
     { speaker: n.def.name, text: 'I do a short laugh and then I don\'t.' },
+    { speaker: n.def.name, text: 'Twenty years I\'ve fitted plate in this city. Twenty years I\'ve waited for one customer — ONE — who oils their armour. Aulden put the ring in good steel; the least you lot could do is keep it from rusting flat.' },
   ]);
   return 'done';
 });
@@ -36,6 +37,9 @@ registerNpcAction('ge_clerk', 'Talk-to', (n) => {
   startDialogue([
     { speaker: n.def.name, text: 'Welcome to the Aldgate Exchange. Buyers, sellers, and the occasional optimist.' },
     { speaker: n.def.name, text: 'Step up to any of the gilded booths on the plaza to place an offer.' },
+    { speaker: state.player.name, text: 'Ever tempted to trade yourself?' },
+    { speaker: n.def.name, text: 'Concord neutrality oath: a clerk may not own what they list. I list everything. I own a stool and this quill, and the quill is leased.' },
+    { speaker: n.def.name, text: 'And before you ask — no, it does not bother us that Pip\'s casino out-earns this Exchange on feast days. We have simply never once discussed it, by unanimous vote.' },
   ]);
   return 'done';
 });

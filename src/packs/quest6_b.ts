@@ -146,7 +146,7 @@ registerQuest({
         ? 'Korr the Molten is slain and its molten core sits warm in my pack. Brogan will want to see this with his own eyes.'
         : 'Brogan sent me into the Ashen Depths, far beyond the drake\'s old nest, to slay Korr the Molten and bring back its molten core. Follow the lava east and down — Korr\'s lair is at the deepest end.';
     }
-    return 'Korr the Molten is ash and memory, and its core sits cold on Brogan\'s table. He says the deep is quiet now — and that I made it so. Quest complete!';
+    return 'Korr the Molten is ash and memory, and its core sits on Brogan\'s table, never quite going cold. He says the deep is quiet now — and that I made it so. Quest complete!';
   },
 });
 
@@ -219,7 +219,7 @@ registerNpcAction('slayer_master', 'Ask-about-the-depths', (_n: Npc) => {
       msg('Congratulations! Quest complete!', 'level');
       startDialogue([
         ...say('Brogan', 'First quiet night the miners will have in a season. They\'ll never know who to thank. I will.'),
-        ...say('Brogan', 'The core goes on my table, next to the drake\'s crystal. I\'m building a shelf of things you\'ve killed. It\'s getting crowded.'),
+        ...say('Brogan', 'The core goes on my table, in sight of the drake\'s crystal on the hearth. I\'m building a shelf of things you\'ve killed. It\'s getting crowded.'),
       ]);
     });
     return 'done';

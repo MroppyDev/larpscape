@@ -1,7 +1,7 @@
 // Starter-town casino — slots, blackjack, roulette (vs house) and coinflip (P2P).
 import {
   registerObjectAction, registerNpcAction, msg, removeItem, addItem, invCount,
-  state, startDialogue,
+  state, startDialogue, showOptions,
 } from '../game';
 import { net } from '../net';
 import { audio } from '../audio';
@@ -581,7 +581,28 @@ registerNpcAction('casino_dealer', 'Talk-to', (n) => {
     { speaker: n.def.name, text: 'Want to gamble with another player? Use the coinflip pedestal or right-click them.' },
     { speaker: state.player.name, text: 'Define fair.' },
     { speaker: n.def.name, text: 'The house wins slightly more often. That\'s the definition.' },
-  ]);
+  ], () => {
+    showOptions([
+      { label: 'Why is the casino never closed?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Rest Day law, friend. Five days at midwinter: no contracts signed, no wars declared. The charter says nothing about cards.' },
+          { speaker: n.def.name, text: 'I checked the wording myself, in F.S. 731, before I hung the sign. Best read of my life.' },
+        ]);
+      }},
+      { label: 'Is it true about the Aldgate city seal?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'The old lord-mayor wagered it on a pair of nines. I had three twos and better posture.' },
+          { speaker: n.def.name, text: 'I returned the seal the next morning — framed. The Concord of Weights has run Aldgate ever since, and they\'ve never once asked me to visit. Can\'t imagine why.' },
+        ]);
+      }},
+      { label: 'Who\'s your biggest customer?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'A dealer never names names. But I will say the Court of the Southern Lawn keeps a very healthy deposit here, and His Banana-ness has an excellent poker face.' },
+          { speaker: n.def.name, text: 'It helps that it\'s technically just his face.' },
+        ]);
+      }},
+    ]);
+  });
   return 'done';
 });
 

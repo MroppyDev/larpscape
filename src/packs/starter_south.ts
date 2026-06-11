@@ -2,7 +2,7 @@
 // Districts: x12-20 / x22-30 / x34-42 at y54-57, just south of the castle & general store.
 import {
   registerNpcAction, registerObjectAction,
-  startDialogue, msg, state, events, openShop, level,
+  startDialogue, showOptions, msg, state, events, openShop, level,
 } from '../game';
 
 // ── Black Monkey LARP Pride update ──────────────────────────────────────────
@@ -13,14 +13,31 @@ registerNpcAction('larp_marshal_monk', 'Talk-to', (n) => {
     { speaker: n.def.name, text: 'Foam swords only. Real steel is for the goblin field east of here.' },
     { speaker: state.player.name, text: 'The banners are magnificent.' },
     { speaker: n.def.name, text: 'We LARP loud and proud. Grab gear from the quartermaster if your cape lacks drama.' },
-  ]);
+  ], () => {
+    showOptions([
+      { label: 'Why foam? Why forever?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'The Foam Accord, F.S. 698. War-weary veterans of every banner met in a meadow south of here and swore it: the old battles will be re-fought forever, so no one forgets — but only ever in foam.' },
+          { speaker: n.def.name, text: 'Real bloodshed feeds the Offnote. Re-enactment starves it. This field is not a game, friend. It is a memorial with better choreography.' },
+          { speaker: n.def.name, text: 'And yes, a marshal can void any duel by declaring foam jurisdiction. It is real law. I have used it on two barons and a bear.' },
+        ]);
+      }},
+      { label: 'How does a chimp get knighted?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Valour in re-enactment, by the hand of Danquavious the Second himself — before his abdication. We do not discuss the abdication.' },
+          { speaker: n.def.name, text: 'My great project is a perfect re-staging of the Battle of Aldgate Gates, F.S. 701. Full attendance, zero injuries. Last year we managed one of the two.' },
+        ]);
+      }},
+    ]);
+  });
   return 'done';
 });
 
 registerNpcAction('larp_quartermaster', 'Talk-to', (n) => {
   startDialogue([
     { speaker: n.def.name, text: 'Need a foam blade or a cape that screams "I rolled a natural 20 on fabulous"?' },
-    { speaker: n.def.name, text: 'Trade at the rack — all proceeds fund more monkey totems.' },
+    { speaker: n.def.name, text: 'Trade at the rack — all proceeds fund more monkey totems. Carpenter Lenny carves them; the chimp court pays promptly, bless their hairy hearts.' },
+    { speaker: n.def.name, text: 'One day I\'ll design a foam pattern that survives more than one heroic death scene. Until then, buy two.' },
   ]);
   return 'done';
 });
@@ -46,7 +63,29 @@ registerNpcAction('danquavious_chimperton', 'Talk-to', (n) => {
     { speaker: n.def.name, text: 'I do not merely rule. I *chimp*. Bow, or at least nod respectfully.' },
     { speaker: state.player.name, text: 'Your majesty.' },
     { speaker: n.def.name, text: 'The herald sells medallions. Wear one and strangers will pretend they know who you are.' },
-  ]);
+  ], () => {
+    showOptions([
+      { label: 'How does a chimp hold a duchy, legally?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'The Will of F.S. 703. Duke Reginald the Odd, childless and beloved, left the entire Southern Lawn to his dearest companion. The courts read it four times looking for a loophole.' },
+          { speaker: n.def.name, text: 'There is no loophole. Reginald was odd, not careless. His human cousins still file an appeal every year. Every year, we serve them banana bread at the hearing. They never finish it.' },
+        ]);
+      }},
+      { label: 'Ask about the golden banana.', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'It was Reginald\'s last gift to my grandsire. It has never been peeled, and while I draw breath, it never shall be.' },
+          { speaker: state.player.name, text: 'What\'s inside it?' },
+          { speaker: n.def.name, text: 'That is precisely the point, adventurer. Some songs are best left one note short of the cadence. Now admire it and move along.' },
+        ]);
+      }},
+      { label: 'Ask about the First and Second.', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: '...' },
+          { speaker: n.def.name, text: 'The herald will see you out.' },
+        ]);
+      }},
+    ]);
+  });
   return 'done';
 });
 
@@ -54,6 +93,9 @@ registerNpcAction('chimperton_herald', 'Talk-to', (n) => {
   startDialogue([
     { speaker: n.def.name, text: 'Make way for Danquavious Chimperton III! Long may he reign from yonder throne.' },
     { speaker: n.def.name, text: 'Curios and commemorative medallions — all officially unofficial.' },
+    { speaker: state.player.name, text: 'You announce him very loudly.' },
+    { speaker: n.def.name, text: 'Volume is the job. Twelve years of gesture-protocol, a court fluent in three kinds of hooting, and not once — not once — has anyone announced ME.' },
+    { speaker: n.def.name, text: '...Sorry. Medallions. Lovely medallions. Smell faintly of banana, guaranteed.' },
   ]);
   return 'done';
 });
@@ -82,7 +124,24 @@ registerNpcAction('dentist_dr_tick', 'Talk-to', (n) => {
     { speaker: n.def.name, text: 'Sit in the chair for a check-up. Glen by the aquarium handles the... tasting menu.' },
     { speaker: state.player.name, text: 'That sounds unhygienic.' },
     { speaker: n.def.name, text: 'It\'s artisanal. Browse supplies if you want tick jerky to go — no questions asked.' },
-  ]);
+  ], () => {
+    showOptions([
+      { label: 'Why eat the ticks at all?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Science, adventurer. Since the Deep Bog stirred in F.S. 740, the ticks coming north carry discord-motes — little slivers of the Offnote. Left alone, they spread the world\'s sour note.' },
+          { speaker: n.def.name, text: 'Properly prepared and consumed, the mote is neutralized by stomach acid and, I theorize, spite. I founded this clinic in 741 on that discovery. It is, technically, public health.' },
+          { speaker: state.player.name, text: 'Have YOU ever eaten one?' },
+          { speaker: n.def.name, text: '...I am the supervising clinician. Glen handles the tasting menu. Next question.' },
+        ]);
+      }},
+      { label: 'Why the dentistry, then?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Respectability. Aldgate\'s academies won\'t cite "the tick-eating man," but nobody argues with a dentist. Also, you would be amazed what bog ticks do to enamel.' },
+          { speaker: n.def.name, text: 'One day the journals will recognize this work. Until then: sit in the chair, say aaah, and tell your friends we\'re artisanal.' },
+        ]);
+      }},
+    ]);
+  });
   return 'done';
 });
 registerNpcAction('dentist_dr_tick', 'Trade', () => { openShop('tick_eat_bar'); return 'done'; });
@@ -91,7 +150,23 @@ registerNpcAction('tick_eater_glen', 'Talk-to', (n) => {
   startDialogue([
     { speaker: n.def.name, text: 'They call me Glen the Tick Eater. I call it farm-to-mouth protein.' },
     { speaker: n.def.name, text: 'The aquarium ticks are fed organic blood. Very ethical, if you don\'t think about it.' },
-  ]);
+  ], () => {
+    showOptions([
+      { label: 'Doesn\'t the Offnote... do anything to you?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Doc says I\'ve eaten more of the Offnote, gram for gram, than any mortal in history. The herbalist folk — Stillwater lot — keep a file on me. Thick one. They send someone every season to check if I\'ve gone sour.' },
+          { speaker: state.player.name, text: 'And have you?' },
+          { speaker: n.def.name, text: 'Feel great. Bit smug, maybe. The world\'s biggest mistake versus Glen\'s stomach, and Glen\'s stomach is undefeated.' },
+        ]);
+      }},
+      { label: 'What do they actually taste like?', fn: () => {
+        startDialogue([
+          { speaker: n.def.name, text: 'Bog ones? Earthy. Mote-y ones have a little fizz on the back end, like the world hiccupping. Pairs well with the fluoride ration.' },
+          { speaker: n.def.name, text: 'My one complaint, and I\'ve raised it with the Doc formally: the crackers are too small. A man doing public health deserves a bigger cracker.' },
+        ]);
+      }},
+    ]);
+  });
   return 'done';
 });
 

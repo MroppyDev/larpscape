@@ -2,7 +2,7 @@
   "man": {
     "id": "man",
     "name": "Man",
-    "examine": "One of the many citizens of the realm.",
+    "examine": "A citizen of the vale. Wants, on average, one quiet decade.",
     "combatLevel": 2,
     "hitpoints": 7,
     "attack": 1,
@@ -49,7 +49,7 @@
   "goblin": {
     "id": "goblin",
     "name": "Goblin",
-    "examine": "An ugly green creature.",
+    "examine": "A war-chant that grew legs and kept marching.",
     "combatLevel": 2,
     "hitpoints": 5,
     "attack": 1,
@@ -91,7 +91,7 @@
   "chicken": {
     "id": "chicken",
     "name": "Chicken",
-    "examine": "Yep, definitely a chicken.",
+    "examine": "Definitely a chicken. The farm predates the castle, and the chickens know it.",
     "combatLevel": 1,
     "hitpoints": 3,
     "attack": 1,
@@ -140,7 +140,7 @@
   "cow": {
     "id": "cow",
     "name": "Cow",
-    "examine": "Converts grass into beef.",
+    "examine": "Converts grass into beef. The most in-tune creature in the vale.",
     "combatLevel": 2,
     "hitpoints": 8,
     "attack": 1,
@@ -181,7 +181,7 @@
   "giant_rat": {
     "id": "giant_rat",
     "name": "Giant rat",
-    "examine": "Overgrown vermin.",
+    "examine": "Grown fat on grain stores and discord-mote runoff. Wants your lunch, structurally.",
     "combatLevel": 3,
     "hitpoints": 5,
     "attack": 2,
@@ -215,7 +215,7 @@
   "shopkeeper": {
     "id": "shopkeeper",
     "name": "Shop keeper",
-    "examine": "He can sell you adventuring supplies.",
+    "examine": "Third generation behind that counter. Remembers every adventurer's first purchase.",
     "combatLevel": 0,
     "hitpoints": 10,
     "attack": 1,
@@ -231,7 +231,7 @@
   "banker": {
     "id": "banker",
     "name": "Banker",
-    "examine": "He looks after your money.",
+    "examine": "A sworn Vaultwright. Your goods sit in a tuned vault, identical everywhere.",
     "combatLevel": 0,
     "hitpoints": 10,
     "attack": 1,
@@ -1744,7 +1744,7 @@
   "casino_dealer": {
     "id": "casino_dealer",
     "name": "Dealer Pip",
-    "examine": "Runs the starter-town casino with a smile sharp enough to cut cards.",
+    "examine": "Runs the House of Mild Regret with a smile sharp enough to cut cards.",
     "combatLevel": 0,
     "hitpoints": 10,
     "attack": 1,

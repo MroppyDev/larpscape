@@ -2,7 +2,7 @@
   "coins": {
     "id": "coins",
     "name": "Coins",
-    "examine": "Lovely money!",
+    "examine": "A thousand tiny cymbals in a pouch. The Offnote always keeps a cut.",
     "stackable": true,
     "value": 1
   },
@@ -71,7 +71,7 @@
   "thread": {
     "id": "thread",
     "name": "Thread",
-    "examine": "A spool of sturdy thread.",
+    "examine": "Civilisation, sold by the yard.",
     "stackable": true,
     "value": 1
   },
@@ -108,7 +108,7 @@
   "vial_of_water": {
     "id": "vial_of_water",
     "name": "Vial of water",
-    "examine": "A glass vial of perfectly ordinary water.",
+    "examine": "Perfectly ordinary water. The Stillwater Circle insists there is no such thing.",
     "value": 2
   },
   "bird_snare": {
@@ -145,7 +145,7 @@
   "bronze_sword": {
     "id": "bronze_sword",
     "name": "Bronze sword",
-    "examine": "A basic but dependable blade.",
+    "examine": "A basic, dependable blade. Goblins can't forge these — that's why they take yours.",
     "value": 26,
     "equipSlot": "weapon",
     "attBonus": 7,
@@ -593,7 +593,7 @@
   "bronze_platebody": {
     "id": "bronze_platebody",
     "name": "Bronze platebody",
-    "examine": "Provides decent protection for the torso.",
+    "examine": "Beaten bronze for the torso. The dents come pre-ordered.",
     "value": 160,
     "equipSlot": "body",
     "defBonus": 15,
@@ -607,7 +607,7 @@
   "iron_platebody": {
     "id": "iron_platebody",
     "name": "Iron platebody",
-    "examine": "A breastplate of solid iron plates.",
+    "examine": "Solid iron plate. Rings a low, true note when struck, as Aulden intended.",
     "value": 560,
     "equipSlot": "body",
     "defBonus": 21,
@@ -635,7 +635,7 @@
   "bronze_platelegs": {
     "id": "bronze_platelegs",
     "name": "Bronze platelegs",
-    "examine": "Bronze plates for the lower half.",
+    "examine": "Bronze plate for the lower half. Clanks in waltz time.",
     "value": 80,
     "equipSlot": "legs",
     "defBonus": 7,
@@ -973,7 +973,7 @@
   "gold_amulet": {
     "id": "gold_amulet",
     "name": "Gold amulet",
-    "examine": "A gold amulet on a sturdy chain.",
+    "examine": "A gold amulet on a sturdy chain. Hums faintly if you listen — but then, everything does.",
     "value": 350,
     "equipSlot": "neck"
   },
@@ -1033,19 +1033,19 @@
   "logs": {
     "id": "logs",
     "name": "Logs",
-    "examine": "A number of wooden logs.",
+    "examine": "Honest vale timber. The trees here are more forgiving than the Tanglewood's.",
     "value": 4
   },
   "oak_logs": {
     "id": "oak_logs",
     "name": "Oak logs",
-    "examine": "Logs cut from an oak tree.",
+    "examine": "Dense oak logs. Carpenter Lenny calls this grade \"the good stuff\".",
     "value": 20
   },
   "willow_logs": {
     "id": "willow_logs",
     "name": "Willow logs",
-    "examine": "Logs cut from a weeping willow.",
+    "examine": "Riverbank willow. The other willows are already gossiping about it downstream.",
     "value": 40
   },
   "maple_logs": {
@@ -1117,7 +1117,7 @@
   "rune_essence": {
     "id": "rune_essence",
     "name": "Rune essence",
-    "examine": "A pale stone humming with unspent magic.",
+    "examine": "A blank, unsung stone, waiting to be taught one syllable of the First Chord.",
     "value": 4
   },
   "bronze_bar": {
@@ -1165,7 +1165,7 @@
   "air_rune": {
     "id": "air_rune",
     "name": "Air rune",
-    "examine": "A rune stone carrying the breath of the sky.",
+    "examine": "A frozen syllable of Quiess. Mostly breath; handle gently.",
     "stackable": true,
     "value": 4
   },
@@ -1179,21 +1179,21 @@
   "water_rune": {
     "id": "water_rune",
     "name": "Water rune",
-    "examine": "A rune stone with a tide trapped inside.",
+    "examine": "A frozen syllable of Brell. A whole tide, pebble-sized.",
     "stackable": true,
     "value": 4
   },
   "earth_rune": {
     "id": "earth_rune",
     "name": "Earth rune",
-    "examine": "A rune stone with the patience of mountains.",
+    "examine": "A frozen syllable of Aulden. The patience of mountains, pocket-sized.",
     "stackable": true,
     "value": 4
   },
   "fire_rune": {
     "id": "fire_rune",
     "name": "Fire rune",
-    "examine": "A rune stone warm to the touch.",
+    "examine": "A frozen syllable of Imber. Warm to the touch, ambitious to the core.",
     "stackable": true,
     "value": 4
   },
@@ -1324,7 +1324,7 @@
   "bones": {
     "id": "bones",
     "name": "Bones",
-    "examine": "Bones are for burying!",
+    "examine": "Bury them and hum. Quiess only listens to music.",
     "value": 1,
     "buryXp": 4.5
   },
@@ -1350,7 +1350,7 @@
   "warlord_banner": {
     "id": "warlord_banner",
     "name": "Warlord's banner",
-    "examine": "A crude goblin war-flag. The spelling is optimistic.",
+    "examine": "A warband's sheet music, in flag form. The spelling is optimistic; the rhythm is load-bearing.",
     "value": 120
   },
   "bog_heart": {
@@ -1496,13 +1496,13 @@
   "raw_shrimps": {
     "id": "raw_shrimps",
     "name": "Raw shrimps",
-    "examine": "I should try cooking this.",
+    "examine": "A netful of shrimps, recently outwitted.",
     "value": 2
   },
   "shrimps": {
     "id": "shrimps",
     "name": "Shrimps",
-    "examine": "Some nicely cooked shrimps.",
+    "examine": "Shrimps, cooked to a polite pink. Every adventurer's first triumph.",
     "value": 5,
     "edible": {
       "heals": 3
@@ -1511,13 +1511,13 @@
   "raw_anchovies": {
     "id": "raw_anchovies",
     "name": "Raw anchovies",
-    "examine": "I should try cooking this.",
+    "examine": "Small fish, big opinions. The fire will settle the argument.",
     "value": 4
   },
   "anchovies": {
     "id": "anchovies",
     "name": "Anchovies",
-    "examine": "Some nicely cooked anchovies.",
+    "examine": "Cooked anchovies. Salty enough to season a grudge.",
     "value": 15,
     "edible": {
       "heals": 1
@@ -1601,19 +1601,19 @@
   "burnt_fish": {
     "id": "burnt_fish",
     "name": "Burnt fish",
-    "examine": "Oops!",
+    "examine": "A note held too long. Edda warned you.",
     "value": 1
   },
   "raw_beef": {
     "id": "raw_beef",
     "name": "Raw beef",
-    "examine": "I need to cook this first.",
+    "examine": "The cow held up its end of the bargain. The range is yours.",
     "value": 1
   },
   "cooked_meat": {
     "id": "cooked_meat",
     "name": "Cooked meat",
-    "examine": "Mmm, this looks tasty.",
+    "examine": "Honest cooked meat. Grass, converted twice.",
     "value": 4,
     "edible": {
       "heals": 3
@@ -1622,13 +1622,13 @@
   "raw_chicken": {
     "id": "raw_chicken",
     "name": "Raw chicken",
-    "examine": "I need to cook this first.",
+    "examine": "It was definitely a chicken. Cooking is the respectful next step.",
     "value": 1
   },
   "cooked_chicken": {
     "id": "cooked_chicken",
     "name": "Cooked chicken",
-    "examine": "Mmm, this looks tasty.",
+    "examine": "Roast chicken, crisp at the edges. The farm predates the castle; dinner predates both.",
     "value": 4,
     "edible": {
       "heals": 3
@@ -1652,13 +1652,13 @@
   "burnt_meat": {
     "id": "burnt_meat",
     "name": "Burnt meat",
-    "examine": "Oh dear.",
+    "examine": "The range forgives nothing.",
     "value": 1
   },
   "bread": {
     "id": "bread",
     "name": "Bread",
-    "examine": "Nice crispy bread.",
+    "examine": "A crusty loaf, still warm. Smells like Pim's ambitions.",
     "value": 12,
     "edible": {
       "heals": 5
@@ -1743,7 +1743,7 @@
   "cake": {
     "id": "cake",
     "name": "Cake",
-    "examine": "A proper celebration in pastry form.",
+    "examine": "Banquet-grade cake. The Duke had three slices; his physician must never know.",
     "value": 50,
     "edible": {
       "heals": 12
@@ -1872,7 +1872,7 @@
   "gunpowder": {
     "id": "gunpowder",
     "name": "Gunpowder",
-    "examine": "Fine black powder. Handle with respect and a long fuse.",
+    "examine": "Milled thunder-shale — the Offnote's own percussion, ground fine. The Guild calls firing it \"recycling\".",
     "stackable": true,
     "value": 5
   },
@@ -1936,7 +1936,7 @@
   "foam_sword": {
     "id": "foam_sword",
     "name": "Foam sword",
-    "examine": "A rubber blade for LARP combat. Thwacks harmlessly.",
+    "examine": "Accord-issue foam. Every harmless thwack starves the Offnote a little.",
     "value": 45,
     "equipSlot": "weapon",
     "strBonus": 1

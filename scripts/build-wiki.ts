@@ -16,6 +16,7 @@ import {
   type WikiData, type WikiArticle, esc, link, p, h2, h3, ul, table, infobox, article,
   chanceLabel, shopBuyPrice, shopSellPrice, addArticle, finalize,
 } from './wiki-helpers';
+import { NPC_LORE, REGION_LORE, addLorePages } from '../wiki/lore';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(__dirname, '../wiki/ui/data/wiki-data.json');
@@ -123,7 +124,7 @@ const SHOP_NPCS: Record<string, { npc: string; x: number; y: number }> = {
 
 const REGIONS = [
   { slug: 'the-castle', name: 'The Castle', desc: 'The starting area around the duke\'s castle. Bank, cooking range, general store, chicken farm, cow field, and the first quests await newcomers here.', x: 21, y: 37 },
-  { slug: 'aldgate', name: 'Aldgate', desc: 'A walled city with the Grand Exchange plaza, bank, armoury, food shop, inn, and city guards. The commercial heart of the realm.', x: 103, y: 30 },
+  { slug: 'aldgate', name: 'Aldgate', desc: 'A walled city with the Aldgate Exchange plaza, bank, armoury, food shop, inn, and city guards. The commercial heart of the realm.', x: 103, y: 30 },
   { slug: 'warlords-fort', name: "Warlord's Fort", desc: 'A goblin palisade east of Aldgate. The Goblin Warlord holds court here — home of The Warlord\'s Banner quest.', x: 146, y: 21 },
   { slug: 'swamp-mine', name: 'Swamp Mine', desc: 'Copper, tin, and iron rocks in the southern swamp. Herbs grow on the ground and the cave mouth leads to the Underdeep.', x: 22, y: 68 },
   { slug: 'deep-bog', name: 'Deep Bog', desc: 'South of the swamp mine. The Bog Horror lurks here — target of Heart of the Bog.', x: 24, y: 95 },
@@ -319,7 +320,7 @@ addArticle(data, {
     ]),
     h2('Popular pages'),
     ul([
-      link('guide/grand-exchange', 'Grand Exchange'),
+      link('guide/aldgate-exchange', 'Aldgate Exchange'),
       link('location/aldgate', 'Aldgate'),
       link('skill/woodcutting', 'Woodcutting'),
       link('skill/mining', 'Mining'),
@@ -337,8 +338,16 @@ addArticle(data, {
       link('category/bosses', 'Bosses'),
       link('item-prices', 'Item prices (GE & shops)'),
     ]),
+    h2('The world of Cantorne'),
+    p('The world was <em>sung</em> into being by the Choir of Five — and something sour slipped into the final cadence. Every monster in Cantorne is a place where the song skipped, and every adventurer is a freelancer of the retuning. It is the year F.S. 743: a goblin warlord holds a fort, a horror has congealed in the bog, something is hammering at the bottom of the Ashen Depths, and a chimpanzee legally rules the Southern Lawn. Start with ' + link('lore/world', 'The World of Cantorne') + '.'),
+    ul([
+      link('lore/world', 'The World of Cantorne') + ' — cosmology and the four eras',
+      link('lore/factions', 'Factions of Cantorne') + ' — from the Duchy to the chimp court',
+      link('lore/bestiary', 'Bestiary of the Offnote') + ' — why monsters exist and what they drop',
+      link('category/locations', 'Locations') + ' — every region, including the rumored lands',
+    ]),
     h2('About the game'),
-    p('Larpscape is a fan-made homage to classic RuneScape running entirely in the browser. All art and music are original. The game uses 600ms ticks, the classic XP curve, 24 trainable skills, multiplayer with Grand Exchange trading, and a growing world from The Castle through Aldgate to Frostpeak, the desert, and Port Brackwater.'),
+    p('Larpscape is a fan-made homage to classic RuneScape running entirely in the browser. All art and music are original. The game uses 600ms ticks, the classic XP curve, 24 trainable skills, multiplayer with Aldgate Exchange trading, and a growing world from The Castle through Aldgate to Frostpeak, the desert, and Port Brackwater.'),
   ].join('')),
 });
 
@@ -368,7 +377,7 @@ addGuide('getting-started', 'Getting Started', 'New player guide for Larpscape.'
     p('The ' + shopLink('general') + ' sells bronze axe, pickaxe, tinderbox, fishing net, and basic tools. Prices are based on each item\'s base value.'),
     h2('Where to go next'),
     ul([
-      link('location/aldgate', 'Aldgate') + ' — walled city with Grand Exchange, better shops, and more quests.',
+      link('location/aldgate', 'Aldgate') + ' — walled city with Aldgate Exchange, better shops, and more quests.',
       link('location/swamp-mine', 'Swamp Mine') + ' — copper, tin, iron, and the cave to the Underdeep.',
       link('quest/seeds_of_trouble', 'Seeds of Trouble') + ' — first combat quest from Old Fen.',
     ]),
@@ -427,9 +436,9 @@ addGuide('combat', 'Combat', 'Melee, ranged, magic, and prayer combat.',
   ].join(''),
 );
 
-addGuide('grand-exchange', 'Grand Exchange', 'Player-driven trading in Aldgate.',
+addGuide('aldgate-exchange', 'Aldgate Exchange', 'Player-driven trading in Aldgate.',
   [
-    p('The Grand Exchange (GE) in ' + link('location/aldgate', 'Aldgate') + ' plaza lets players buy and sell items through an order book. Talk to a GE clerk or use the GE booth.'),
+    p('The Aldgate Exchange (GE) in ' + link('location/aldgate', 'Aldgate') + ' plaza lets players buy and sell items through an order book. Talk to a GE clerk or use the GE booth.'),
     h2('How it works'),
     ul([
       'Place buy offers (coins escrowed) or sell offers (items escrowed)',
@@ -457,13 +466,14 @@ function addCategory(slug: string, title: string, cat: string, intro: string) {
   });
 }
 
-addCategory('items', 'Items', 'Items', 'Every item in the game with examine text, stats, shop stock, and Grand Exchange prices.');
+addCategory('items', 'Items', 'Items', 'Every item in the game with examine text, stats, shop stock, and Aldgate Exchange prices.');
 addCategory('npcs', 'NPCs', 'NPCs', 'All NPCs including monsters, shopkeepers, quest givers, and bosses.');
 addCategory('quests', 'Quests', 'Quests', 'All quests with step-by-step walkthroughs and rewards.');
 addCategory('shops', 'Shops', 'Shops', 'Every shop, its stock, location, and pricing.');
 addCategory('skills', 'Skills', 'Skills', 'All 24 trainable skills with training methods.');
 addCategory('locations', 'Locations', 'Locations', 'Regions and areas across the world map.');
 addCategory('bosses', 'Bosses', 'Bosses', 'Boss monsters with mechanics and quest ties.');
+addCategory('lore', 'Lore', 'Lore', 'The history, cosmology, factions, and peoples of Cantorne — adapted from the Cantorne Codex.');
 
 // ---- Item prices master page ----
 {
@@ -482,7 +492,7 @@ addCategory('bosses', 'Bosses', 'Bosses', 'Boss monsters with mechanics and ques
     slug: 'item-prices',
     title: 'Item prices',
     category: 'Guides',
-    excerpt: 'Shop buy/sell prices and live Grand Exchange last-trade prices for every item.',
+    excerpt: 'Shop buy/sell prices and live Aldgate Exchange last-trade prices for every item.',
     html: article('Item prices', [
       p('Shop <strong>buy</strong> price = item base value (rounded up). Shop <strong>sell</strong> price = 40% of base value (rounded down). GE prices are fetched live from player trades.'),
       table(['Item', 'Base value', 'Shop buy', 'Shop sell', 'Sold in shops', 'GE last price'], rows),
@@ -571,6 +581,12 @@ for (const [id, npc] of Object.entries(NPCS)) {
   if (npc.option) ibRows.push(['Special option', esc(npc.option)]);
 
   const sections: string[] = [p(npc.examine)];
+
+  const lore = NPC_LORE[id];
+  if (lore) {
+    sections.push(h2('Lore'));
+    sections.push(p(lore));
+  }
 
   const locs = npcLocations[id];
   if (locs?.length) {
@@ -837,6 +853,7 @@ for (const r of REGIONS) {
   });
   const uniqueNpcs = [...new Set(npcsHere.map((s) => s.id))];
 
+  const regionLore = REGION_LORE[r.slug];
   addArticle(data, {
     slug: `location/${r.slug}`,
     title: r.name,
@@ -844,6 +861,8 @@ for (const r of REGIONS) {
     excerpt: r.desc,
     html: article(r.name, [
       p(r.desc),
+      regionLore ? h2('Lore') : '',
+      regionLore ?? '',
       h2('Map coordinates'),
       p(`Centre: approximately <strong>(${r.x}, ${r.y})</strong>. Open the world map in-game with the globe button or M key.`),
       uniqueNpcs.length ? h2('Notable NPCs') : '',
@@ -851,6 +870,9 @@ for (const r of REGIONS) {
     ].join(''), infobox(r.name, [['Region', r.name]])),
   });
 }
+
+// ---- Lore pages (world history, factions, bestiary, extra regions, rumored lands) ----
+addLorePages(data);
 
 // ---- Objects (skill nodes) ----
 for (const [id, obj] of Object.entries(OBJS)) {

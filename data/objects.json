@@ -3,7 +3,7 @@
     "tree": {
       "id": "tree",
       "name": "Tree",
-      "examine": "A leafy tree.",
+      "examine": "A leafy tree, humming Syla's part very quietly.",
       "action": "Chop down",
       "blocks": true
     },
@@ -24,27 +24,27 @@
     "stump": {
       "id": "stump",
       "name": "Tree stump",
-      "examine": "Someone has chopped this tree down.",
+      "examine": "Somebody chopped this tree down and left the apology unsaid.",
       "blocks": true
     },
     "rocks_copper": {
       "id": "rocks_copper",
       "name": "Copper rocks",
-      "examine": "A mineable vein of copper ore.",
+      "examine": "A copper vein — the opening bar of Aulden's bass line.",
       "action": "Mine",
       "blocks": true
     },
     "rocks_tin": {
       "id": "rocks_tin",
       "name": "Tin rocks",
-      "examine": "A mineable vein of tin ore.",
+      "examine": "A tin vein. Bronze is a duet, and this is half of it.",
       "action": "Mine",
       "blocks": true
     },
     "rocks_iron": {
       "id": "rocks_iron",
       "name": "Iron rocks",
-      "examine": "A mineable vein of iron ore.",
+      "examine": "An iron vein, stubborn and sensible, like everything made from it.",
       "action": "Mine",
       "blocks": true
     },
@@ -85,7 +85,7 @@
     "fishing_spot": {
       "id": "fishing_spot",
       "name": "Fishing spot",
-      "examine": "I can see fish swimming in the water.",
+      "examine": "The water flickers silver. Brell is feeling generous.",
       "action": "Net",
       "blocks": false
     },
@@ -99,14 +99,14 @@
     "range": {
       "id": "range",
       "name": "Cooking range",
-      "examine": "A hot cooking range.",
+      "examine": "A hot cooking range. It forgives nothing — Edda's first lesson.",
       "action": "Cook",
       "blocks": true
     },
     "bank_booth": {
       "id": "bank_booth",
       "name": "Bank booth",
-      "examine": "It's a bank booth.",
+      "examine": "A Vaultwright booth. The vault behind it is tuned, stasis-kept, and identical everywhere, by oath.",
       "action": "Bank",
       "blocks": true
     },
@@ -141,14 +141,14 @@
     "altar": {
       "id": "altar",
       "name": "Altar",
-      "examine": "A quiet altar. Good for the soul.",
+      "examine": "A quiet altar. It keeps the pitch; you bring the hum.",
       "action": "Pray-at",
       "blocks": true
     },
     "air_altar": {
       "id": "air_altar",
       "name": "Air altar",
-      "examine": "A weathered stone circle where the wind never stops.",
+      "examine": "A weathered stone circle where Quiess never quite stops breathing.",
       "action": "Craft-rune",
       "blocks": true
     },
@@ -224,7 +224,7 @@
     },
     "ge_booth": {
       "id": "ge_booth",
-      "name": "Grand Exchange booth",
+      "name": "Aldgate Exchange booth",
       "examine": "Where fortunes are made, lost, and argued about.",
       "action": "Exchange",
       "blocks": true
@@ -466,7 +466,7 @@
     "fire_altar": {
       "id": "fire_altar",
       "name": "Fire altar",
-      "examine": "A scorched stone ring where the air shimmers with heat.",
+      "examine": "A scorched Sarrash choir-stone. Five centuries on, it still takes the verse.",
       "action": "Craft-rune",
       "blocks": true
     },
@@ -586,19 +586,19 @@
     "chair": {
       "id": "chair",
       "name": "Chair",
-      "examine": "A wooden chair.",
+      "examine": "A wooden chair. It has supported worse.",
       "blocks": false
     },
     "table": {
       "id": "table",
       "name": "Table",
-      "examine": "A sturdy table.",
+      "examine": "A sturdy table. Many elbows, one purpose.",
       "blocks": true
     },
     "bed": {
       "id": "bed",
       "name": "Bed",
-      "examine": "A bed. It looks well-used.",
+      "examine": "A bed. Adventurers wake up elsewhere; it tries not to take that personally.",
       "blocks": true
     },
     "bookshelf": {
@@ -610,25 +610,25 @@
     "banner": {
       "id": "banner",
       "name": "Banner",
-      "examine": "A colourful banner.",
+      "examine": "A colourful banner. Unlike goblin banners, purely decorative.",
       "blocks": false
     },
     "rug_deco": {
       "id": "rug_deco",
       "name": "Rug",
-      "examine": "A woven rug.",
+      "examine": "A woven rug. It really ties the room together.",
       "blocks": false
     },
     "cauldron": {
       "id": "cauldron",
       "name": "Cauldron",
-      "examine": "A black iron cauldron.",
+      "examine": "A black iron cauldron. Not currently brewing anything it will admit to.",
       "blocks": true
     },
     "hay_bale": {
       "id": "hay_bale",
       "name": "Hay bale",
-      "examine": "A bale of hay.",
+      "examine": "A bale of hay. A needle's favourite hiding place.",
       "blocks": true
     },
     "lamp_post": {
