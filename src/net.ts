@@ -3,7 +3,7 @@
 // Login is REQUIRED: there is no offline mode — the world lives on the server.
 
 import {
-  state, msg, setSaveProvider, netLink, combatSnapshot,
+  state, msg, setSaveProvider, netLink, combatSnapshot, saveGame,
   netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
   netYouKilled, netGot, netFx, netShorn, netDeny,
   netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
@@ -218,6 +218,7 @@ function handleWsMessage(raw: string) {
     msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
     net.username = m.name;
+    if (typeof m.buildId === 'string') checkBuild(m.buildId);
     void loadFriends();
   } else if (m.t === 'friend_status' && typeof m.username === 'string' && typeof m.online === 'boolean') {
     setFriendOnline(m.username, m.online);
@@ -267,9 +268,51 @@ function scheduleReconnect() {
   setTimeout(() => { if (wsWanted && !ws) openWs(); }, delay);
 }
 
+// ---------------------------------------------------------------------------
+// Deploy auto-refresh: when the server's build differs from the one baked into
+// this bundle, announce an OSRS-style system update and reload the page so
+// players never get stuck on a stale cached client.
+// ---------------------------------------------------------------------------
+
+let updateScheduled = false;
+
+function checkBuild(serverBuild: string) {
+  if (updateScheduled) return;
+  if (serverBuild === 'dev' || __BUILD_ID__ === 'dev') return;
+  if (serverBuild === __BUILD_ID__) return;
+  updateScheduled = true;
+  let secs = 10;
+  msg(`System update in ${secs} seconds — the game will reload.`, 'server-msg');
+  const timer = setInterval(() => {
+    secs -= 5;
+    if (secs > 0) {
+      msg(`System update in ${secs} seconds...`, 'server-msg');
+      return;
+    }
+    clearInterval(timer);
+    try { saveGame(); } catch { /* best effort */ }
+    location.reload();
+  }, 5000);
+}
+
+let versionTimer: ReturnType<typeof setInterval> | null = null;
+
+function startVersionPolling() {
+  if (versionTimer) return;
+  versionTimer = setInterval(async () => {
+    try {
+      const r = await fetch('/api/version', { cache: 'no-store' });
+      if (!r.ok) return;
+      const j = await r.json();
+      if (typeof j.buildId === 'string') checkBuild(j.buildId);
+    } catch { /* offline blips are fine; ws hello also checks */ }
+  }, 3 * 60 * 1000);
+}
+
 function startPresence() {
   wsWanted = true;
   openWs();
+  startVersionPolling();
   if (!posTimer) {
     posTimer = setInterval(() => {
       if (!state.player || !ws || ws.readyState !== WebSocket.OPEN) return;

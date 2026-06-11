@@ -8,6 +8,7 @@ import http from 'http';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 import bcrypt from 'bcryptjs';
@@ -23,6 +24,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
 // Shared secret for ops endpoints (broadcast). Empty = endpoints disabled.
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '';
+
+// Deployed build id — clients compare against their baked-in __BUILD_ID__ and
+// refresh when they differ, so nobody plays a stale cached client.
+const BUILD_ID = (() => {
+  if (process.env.BUILD_ID) return process.env.BUILD_ID;
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: path.join(__dirname, '..'), encoding: 'utf8' }).trim();
+  } catch {
+    return 'dev';
+  }
+})();
 
 // ---------------------------------------------------------------------------
 // Database
@@ -410,15 +422,37 @@ app.get('/api/ge/prices', (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Version (deploy auto-refresh)
+// ---------------------------------------------------------------------------
+
+app.get('/api/version', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ buildId: BUILD_ID });
+});
+
+// ---------------------------------------------------------------------------
 // Static frontend (production)
 // ---------------------------------------------------------------------------
 
 if (process.env.NODE_ENV === 'production') {
   const dist = path.resolve(__dirname, '../dist');
   if (fs.existsSync(dist)) {
-    app.use(express.static(dist));
+    app.use(express.static(dist, {
+      setHeaders(res, filePath) {
+        // Vite emits hash-named files under assets/ — cache those forever,
+        // along with the big immutable soundfont. Everything else
+        // (index.html) must revalidate so deploys reach browsers instead of
+        // being stuck behind their cache.
+        if (filePath.includes(`${path.sep}assets${path.sep}`) || filePath.endsWith('.sf2')) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        } else {
+          res.setHeader('Cache-Control', 'no-cache');
+        }
+      },
+    }));
     app.use((req, res, next) => {
       if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/ws')) {
+        res.setHeader('Cache-Control', 'no-cache');
         res.sendFile(path.join(dist, 'index.html'));
       } else next();
     });
@@ -734,7 +768,7 @@ wss.on('connection', (ws, req) => {
     view,
   };
   clients.add(client);
-  ws.send(JSON.stringify({ t: 'hello', name: user.username }));
+  ws.send(JSON.stringify({ t: 'hello', name: user.username, buildId: BUILD_ID }));
   social.notifyFriendsOnline(user.id, user.username, true);
   // authoritative world state: full NPC + ground item snapshot on connect
   ws.send(JSON.stringify(fullSnapshot()));
