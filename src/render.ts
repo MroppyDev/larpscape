@@ -1606,7 +1606,7 @@ function makeBogHorror(size: number): THREE.Group {
   body.add(gm(icoG(0.05, '#b8ff58', 0), 0.15, 1.1, 0.38));
   // heavy arms
   const mkArm = (sx: number) => {
-    const a = limbGroup(lm(boxG(0.17, 0.62, 0.19, '#3a5024', 0.09), 0, -0.3, 0), sx * 0.56, 0.95, 0.08);
+    const a = limbGroup(lm(cylG(0.085, 0.11, 0.62, '#3a5024', 6, 0.09), 0, -0.3, 0), sx * 0.56, 0.95, 0.08);
     a.add(lm(icoG(0.14, '#46602c', 0), 0, -0.62, 0.02));
     return a;
   };
@@ -1614,7 +1614,7 @@ function makeBogHorror(size: number): THREE.Group {
   body.add(la, ra);
   // stumpy legs under the mound
   const mkLeg = (sx: number) =>
-    limbGroup(lm(boxG(0.17, 0.32, 0.19, '#2e421c', 0.09), 0, -0.16, 0), sx * 0.22, 0.32, 0);
+    limbGroup(lm(cylG(0.09, 0.11, 0.32, '#2e421c', 6, 0.09), 0, -0.16, 0), sx * 0.22, 0.32, 0);
   const ll = mkLeg(-1), rl = mkLeg(1);
   body.add(ll, rl);
   root.scale.setScalar(size);
@@ -1627,34 +1627,40 @@ function makeShadowDrake(size: number): THREE.Group {
   const body = new THREE.Group();
   root.add(body);
   const dk = '#2c2434', dk2 = '#3a3046', wing = '#221a2a';
-  // torso
-  body.add(lm(boxG(0.52, 0.42, 0.85, dk, 0.08), 0, 0.55, 0));
+  // torso — deep-chested barrel
+  const trunk = lm(sphG(0.32, dk), 0, 0.55, 0);
+  trunk.scale.set(0.85, 0.72, 1.5);
+  body.add(trunk);
   // dorsal ridge spikes
-  for (let i = 0; i < 3; i++) body.add(lm(tetraG(0.07, dk2), 0, 0.82, 0.22 - i * 0.24, 0.6, 0.2 * i));
-  // neck rising forward
-  body.add(lm(boxG(0.24, 0.24, 0.34, dk2, 0.08), 0, 0.82, 0.5, -0.5));
-  body.add(lm(boxG(0.19, 0.19, 0.3, dk2, 0.08), 0, 1.04, 0.68, -0.7));
+  for (let i = 0; i < 4; i++) body.add(lm(coneG(0.05, 0.16, dk2, 4), 0, 0.8 - i * 0.02, 0.3 - i * 0.22, -0.3 + 0.1 * i));
+  // neck rising forward — tapered serpentine segments
+  body.add(lm(cylG(0.1, 0.14, 0.4, dk2, 7), 0, 0.82, 0.5, -1.05));
+  body.add(lm(cylG(0.08, 0.11, 0.34, dk2, 7), 0, 1.06, 0.68, -1.25));
   // head with snout, horns, ember eyes
   const head = new THREE.Group();
   head.position.set(0, 1.2, 0.84);
-  head.add(lm(boxG(0.24, 0.2, 0.3, dk, 0.08)));
-  head.add(lm(boxG(0.15, 0.11, 0.2, dk2, 0.08), 0, -0.04, 0.23));
-  head.add(gm(boxG(0.04, 0.04, 0.02, '#ff7a30'), -0.08, 0.04, 0.155));
-  head.add(gm(boxG(0.04, 0.04, 0.02, '#ff7a30'), 0.08, 0.04, 0.155));
-  head.add(lm(tetraG(0.06, dk2), -0.09, 0.13, -0.08, 0.4, 0.3));
-  head.add(lm(tetraG(0.06, dk2), 0.09, 0.13, -0.08, 0.4, -0.3));
+  const skull = lm(sphG(0.13, dk));
+  skull.scale.set(0.95, 0.85, 1.15);
+  head.add(skull);
+  head.add(lm(coneG(0.075, 0.24, dk2, 6), 0, -0.03, 0.2, Math.PI / 2)); // snout
+  head.add(gm(sphG(0.025, '#ff7a30', 5, 4), -0.075, 0.04, 0.1));
+  head.add(gm(sphG(0.025, '#ff7a30', 5, 4), 0.075, 0.04, 0.1));
+  head.add(lm(coneG(0.035, 0.18, dk2, 5), -0.08, 0.12, -0.06, -0.7, 0, 0.35)); // swept horns
+  head.add(lm(coneG(0.035, 0.18, dk2, 5), 0.08, 0.12, -0.06, -0.7, 0, -0.35));
   body.add(head);
-  // folded wings along the flanks
-  const wl = lm(boxG(0.06, 0.52, 0.72, wing, 0.07), -0.32, 0.86, -0.12, 0.22, 0, 0.34);
-  const wr = lm(boxG(0.06, 0.52, 0.72, wing, 0.07), 0.32, 0.86, -0.12, 0.22, 0, -0.34);
-  body.add(wl, wr);
-  body.add(lm(tetraG(0.06, dk2), -0.42, 1.12, 0.04, 0.3, 0.8));
-  body.add(lm(tetraG(0.06, dk2), 0.42, 1.12, 0.04, 0.3, -0.8));
+  // folded wings along the flanks — membrane fans with a wing-claw
+  for (const sx of [-1, 1]) {
+    const w = lm(sphG(0.3, wing), sx * 0.34, 0.86, -0.12);
+    w.scale.set(0.12, 0.95, 1.3);
+    w.rotation.set(0.22, 0, sx * -0.34);
+    body.add(w);
+    body.add(lm(coneG(0.04, 0.14, dk2, 4), sx * 0.42, 1.16, 0.04, 0.3, 0, sx * -0.8));
+  }
   // tail trailing behind
   body.add(lm(coneG(0.13, 0.95, dk2, 5, 0.08), 0, 0.46, -0.84, -Math.PI / 2 - 0.22));
   // four legs
   const mkLeg = (sx: number, sz: number) =>
-    limbGroup(lm(boxG(0.13, 0.4, 0.15, dk2, 0.08), 0, -0.2, 0), sx * 0.27, 0.4, sz * 0.3);
+    limbGroup(lm(cylG(0.055, 0.075, 0.4, dk2, 6), 0, -0.2, 0), sx * 0.27, 0.4, sz * 0.3);
   const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
   body.add(fl, fr, bl, br);
   root.scale.setScalar(size);
@@ -1667,22 +1673,32 @@ function makeWolf(fur: string, belly: string, size: number): THREE.Group {
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  body.add(lm(boxG(0.3, 0.28, 0.72, fur), 0, 0.4, 0));
-  body.add(lm(boxG(0.26, 0.1, 0.6, belly), 0, 0.28, 0));
+  // lean chest-heavy trunk with a separate haunch
+  const chest = lm(sphG(0.19, fur), 0, 0.42, 0.14);
+  chest.scale.set(0.85, 0.85, 1.25);
+  body.add(chest);
+  const haunch = lm(sphG(0.17, fur), 0, 0.38, -0.22);
+  haunch.scale.set(0.8, 0.8, 1.1);
+  body.add(haunch);
+  const bellyM = lm(sphG(0.14, belly), 0, 0.32, 0.05);
+  bellyM.scale.set(0.8, 0.6, 1.6);
+  body.add(bellyM);
   const head = new THREE.Group();
   head.position.set(0, 0.56, 0.42);
-  head.add(lm(boxG(0.22, 0.2, 0.22, fur)));
-  head.add(lm(boxG(0.12, 0.1, 0.16, belly), 0, -0.05, 0.17)); // snout
-  head.add(lm(boxG(0.04, 0.03, 0.02, '#1a1a1e'), 0, -0.05, 0.26)); // nose
-  head.add(lm(tetraG(0.05, fur), -0.08, 0.13, -0.02, 0.3, 0.4));
-  head.add(lm(tetraG(0.05, fur), 0.08, 0.13, -0.02, 0.3, -0.4));
-  head.add(lm(boxG(0.03, 0.025, 0.01, '#88c8e8'), -0.06, 0.03, 0.115));
-  head.add(lm(boxG(0.03, 0.025, 0.01, '#88c8e8'), 0.06, 0.03, 0.115));
+  const skull = lm(sphG(0.12, fur));
+  skull.scale.set(0.9, 0.85, 1);
+  head.add(skull);
+  head.add(lm(coneG(0.065, 0.2, belly, 6), 0, -0.045, 0.18, Math.PI / 2)); // snout
+  head.add(lm(sphG(0.025, '#1a1a1e'), 0, -0.04, 0.27)); // nose
+  head.add(lm(coneG(0.04, 0.1, fur, 4), -0.08, 0.14, -0.02, -0.25, 0, 0.3)); // ears
+  head.add(lm(coneG(0.04, 0.1, fur, 4), 0.08, 0.14, -0.02, -0.25, 0, -0.3));
+  head.add(lm(boxG(0.03, 0.025, 0.01, '#88c8e8'), -0.055, 0.03, 0.105));
+  head.add(lm(boxG(0.03, 0.025, 0.01, '#88c8e8'), 0.055, 0.03, 0.105));
   body.add(head);
   // bushy tail
   body.add(lm(coneG(0.07, 0.4, fur, 5), 0, 0.5, -0.5, Math.PI / 2.6));
   const mkLeg = (sx: number, sz: number) =>
-    limbGroup(lm(boxG(0.09, 0.28, 0.09, fur), 0, -0.14, 0), sx * 0.12, 0.28, sz * 0.26);
+    limbGroup(lm(cylG(0.038, 0.05, 0.28, fur, 5), 0, -0.14, 0), sx * 0.12, 0.28, sz * 0.26);
   const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
   body.add(fl, fr, bl, br);
   root.scale.setScalar(size);
@@ -1695,18 +1711,25 @@ function makeScorpion(size: number): THREE.Group {
   const body = new THREE.Group();
   root.add(body);
   const shell = '#8a5a28', shell2 = '#9a6830';
-  // low wide segmented body
-  body.add(lm(boxG(0.5, 0.16, 0.42, shell, 0.08), 0, 0.14, 0.08));
-  body.add(lm(boxG(0.42, 0.14, 0.3, shell2, 0.08), 0, 0.13, -0.22));
-  // claws
+  // low wide segmented carapace
+  const cara = lm(sphG(0.26, shell, 7, 4, 0.08), 0, 0.15, 0.08);
+  cara.scale.set(1.05, 0.45, 0.95);
+  body.add(cara);
+  const abdomen = lm(sphG(0.21, shell2, 7, 4, 0.08), 0, 0.14, -0.22);
+  abdomen.scale.set(1.05, 0.45, 0.85);
+  body.add(abdomen);
+  // claws — arm, rounded pincer palm, pincer tips
   for (const sx of [-1, 1]) {
-    body.add(lm(boxG(0.1, 0.08, 0.26, shell), sx * 0.3, 0.12, 0.32, 0, sx * -0.5));
-    body.add(lm(boxG(0.14, 0.1, 0.18, shell2), sx * 0.4, 0.12, 0.46));
-    body.add(lm(tetraG(0.06, shell), sx * 0.44, 0.16, 0.58, 0.4, sx));
+    body.add(lm(cylG(0.04, 0.05, 0.26, shell, 5), sx * 0.3, 0.12, 0.32, Math.PI / 2, sx * -0.5));
+    const palm = lm(sphG(0.09, shell2, 7, 4, 0.08), sx * 0.4, 0.12, 0.46);
+    palm.scale.set(1.1, 0.7, 1.2);
+    body.add(palm);
+    body.add(lm(coneG(0.035, 0.12, shell, 4), sx * 0.42, 0.14, 0.58, 1.2, 0, sx * 0.3));
+    body.add(lm(coneG(0.035, 0.12, shell, 4), sx * 0.47, 0.12, 0.57, 1.2, 0, sx * -0.3));
   }
   // curled tail segments rising to a stinger
-  const tail = [[0, 0.18, -0.42], [0, 0.3, -0.54], [0, 0.44, -0.58], [0, 0.56, -0.5]];
-  for (const [tx, ty, tz] of tail) body.add(lm(boxG(0.1, 0.1, 0.14, shell2, 0.08), tx, ty, tz, -0.5));
+  const tail: Array<[number, number, number, number]> = [[0, 0.18, -0.42, 0.075], [0, 0.3, -0.54, 0.07], [0, 0.44, -0.58, 0.062], [0, 0.56, -0.5, 0.055]];
+  for (const [tx, ty, tz, tr] of tail) body.add(lm(sphG(tr, shell2, 6, 4, 0.08), tx, ty, tz));
   body.add(lm(coneG(0.05, 0.16, '#5a3418', 5), 0, 0.64, -0.4, 2.4));
   // legs (static splay)
   for (let i = 0; i < 3; i++) {
@@ -1754,16 +1777,16 @@ function makeMagmaFiend(size: number): THREE.Group {
   body.add(gm(icoG(0.3, '#ff6a14', 0), 0, 0.78, 0.12)); // exposed core
   body.add(lm(icoG(0.3, rock, 0), -0.34, 0.6, 0.26));
   body.add(lm(icoG(0.28, rock2, 0), 0.36, 0.55, -0.26));
-  // head: squat stone block with furnace eyes
-  body.add(lm(boxG(0.34, 0.28, 0.3, rock2, 0.09), 0, 1.5, 0.1));
-  body.add(gm(boxG(0.06, 0.05, 0.02, '#ffb028'), -0.09, 1.52, 0.26));
-  body.add(gm(boxG(0.06, 0.05, 0.02, '#ffb028'), 0.09, 1.52, 0.26));
+  // head: craggy boulder with furnace eyes
+  body.add(lm(icoG(0.2, rock2, 0), 0, 1.5, 0.1));
+  body.add(gm(boxG(0.06, 0.05, 0.02, '#ffb028'), -0.08, 1.52, 0.26));
+  body.add(gm(boxG(0.06, 0.05, 0.02, '#ffb028'), 0.08, 1.52, 0.26));
   // glowing fissures
   body.add(gm(boxG(0.05, 0.5, 0.04, '#ff8a20'), -0.2, 0.9, 0.34, 0, 0, 0.4));
   body.add(gm(boxG(0.05, 0.4, 0.04, '#ff8a20'), 0.26, 1.0, -0.3, 0.3, 0, -0.5));
   // huge arms with ember knuckles
   const mkArm = (sx: number) => {
-    const a = limbGroup(lm(boxG(0.2, 0.7, 0.22, rock2, 0.09), 0, -0.34, 0), sx * 0.6, 1.2, 0.06);
+    const a = limbGroup(lm(cylG(0.1, 0.13, 0.7, rock2, 6, 0.09), 0, -0.34, 0), sx * 0.6, 1.2, 0.06);
     a.add(lm(icoG(0.17, rock, 0), 0, -0.7, 0.02));
     a.add(gm(tetraG(0.06, '#ff8a20'), 0, -0.78, 0.12, 0.4, sx));
     return a;
@@ -1771,7 +1794,7 @@ function makeMagmaFiend(size: number): THREE.Group {
   const la = mkArm(-1), ra = mkArm(1);
   body.add(la, ra);
   const mkLeg = (sx: number) =>
-    limbGroup(lm(boxG(0.2, 0.4, 0.22, rock, 0.09), 0, -0.2, 0), sx * 0.26, 0.4, 0);
+    limbGroup(lm(cylG(0.11, 0.13, 0.4, rock, 6, 0.09), 0, -0.2, 0), sx * 0.26, 0.4, 0);
   const ll = mkLeg(-1), rl = mkLeg(1);
   body.add(ll, rl);
   root.scale.setScalar(size);
@@ -1986,22 +2009,69 @@ function lerpAngle(a: number, b: number, t: number): number {
   return a + d * t;
 }
 
-function animateFigure(root: THREE.Group, moving: boolean, now: number, attack: boolean) {
+type AnimKind = null | 'attack' | 'chop' | 'mine' | 'fish';
+
+function animateFigure(root: THREE.Group, moving: boolean, now: number, anim: AnimKind) {
   const fig = root.userData.fig as FigureData | undefined;
   if (!fig) return;
   const phase = now * (Math.PI * 2) / TICK_MS * 2 + fig.seed;
   const swing = moving ? Math.sin(phase) * (fig.quad ? 0.45 : 0.6) : 0;
+  const idleSway = (off: number) => (moving ? 0 : Math.sin(now / 900 + fig.seed + off) * 0.05);
+  // reset per-frame poses that the action animations touch
+  fig.bob.rotation.y = 0;
+  fig.bob.rotation.x = 0;
   if (fig.limbs) {
     fig.limbs.ll.rotation.x = swing;
     fig.limbs.rl.rotation.x = -swing;
     if (!fig.quad) {
-      fig.limbs.la.rotation.x = -swing * 0.8 + (moving ? 0 : Math.sin(now / 900 + fig.seed) * 0.05);
-      fig.limbs.ra.rotation.x = attack
-        ? -1.4 + Math.sin(now / 120) * 0.35
-        : swing * 0.8 + (moving ? 0 : Math.sin(now / 900 + fig.seed + 1) * 0.05);
+      let la = -swing * 0.8 + idleSway(0);
+      let ra = swing * 0.8 + idleSway(1);
+      if (!moving && anim === 'attack') {
+        // melee strike: wind the arm back, snap forward, recover — body twists with it
+        const c = (now % 600) / 600;
+        const wind = Math.min(c / 0.4, 1);
+        const strike = c < 0.4 ? 0 : Math.min((c - 0.4) / 0.18, 1);
+        const recover = c < 0.58 ? 0 : Math.min((c - 0.58) / 0.42, 1);
+        ra = -0.5 - wind * 1.7 + strike * 2.0 - recover * 0.3;
+        la = -0.2 + wind * 0.25 - strike * 0.3;
+        fig.bob.rotation.y = -wind * 0.22 + strike * 0.38 - recover * 0.16;
+      } else if (!moving && anim === 'chop') {
+        // woodcutting: slow horizontal hew into the trunk
+        const c = (now % 1200) / 1200;
+        const wind = Math.min(c / 0.45, 1);
+        const hew = c < 0.45 ? 0 : Math.min((c - 0.45) / 0.2, 1);
+        const recover = c < 0.65 ? 0 : Math.min((c - 0.65) / 0.35, 1);
+        ra = -0.9 - wind * 1.2 + hew * 1.5 - recover * 0.3;
+        fig.bob.rotation.y = wind * 0.3 - hew * 0.45 + recover * 0.15;
+        fig.bob.rotation.x = hew * 0.08 - recover * 0.08;
+      } else if (!moving && anim === 'mine') {
+        // mining: heavy overhead pick swing with a lean into the rock
+        const c = (now % 1200) / 1200;
+        const wind = Math.min(c / 0.5, 1);
+        const strike = c < 0.5 ? 0 : Math.min((c - 0.5) / 0.16, 1);
+        const recover = c < 0.66 ? 0 : Math.min((c - 0.66) / 0.34, 1);
+        ra = -0.6 - wind * 2.0 + strike * 2.3 - recover * 0.3;
+        la = -0.6 - wind * 2.0 + strike * 2.3 - recover * 0.3; // two-handed
+        fig.bob.rotation.x = wind * -0.06 + strike * 0.14 - recover * 0.08;
+      } else if (!moving && anim === 'fish') {
+        // fishing: rod held out, slow patient bob with the odd wrist flick
+        const flick = Math.max(0, Math.sin(now / 1400 + fig.seed)) ** 6 * 0.35;
+        ra = -1.15 - flick;
+        la = -0.25 + idleSway(0);
+      }
+      fig.limbs.la.rotation.x = la;
+      fig.limbs.ra.rotation.x = ra;
     } else {
       fig.limbs.la.rotation.x = -swing;
       fig.limbs.ra.rotation.x = swing;
+      if (!moving && anim === 'attack') {
+        // quadruped lunge: rock the body forward on a short cycle
+        const c = (now % 600) / 600;
+        const lunge = Math.sin(Math.min(c / 0.5, 1) * Math.PI);
+        fig.bob.rotation.x = lunge * 0.16;
+        fig.limbs.la.rotation.x = -lunge * 0.7;
+        fig.limbs.rl.rotation.x = -lunge * 0.7;
+      }
     }
   }
   fig.bob.position.y = moving ? Math.abs(Math.sin(phase)) * 0.03 : Math.sin(now / 750 + fig.seed) * 0.018;
@@ -2292,7 +2362,7 @@ function syncGroundItems(now: number) {
   }
 }
 
-function placeEntity(node: THREE.Group, e: { x: number; y: number; prevX: number; prevY: number }, now: number, faceDx: number, faceDy: number, attack: boolean, alphaOverride?: number) {
+function placeEntity(node: THREE.Group, e: { x: number; y: number; prevX: number; prevY: number }, now: number, faceDx: number, faceDy: number, anim: AnimKind, alphaOverride?: number) {
   const t = alphaOverride ?? tickAlpha();
   const fx = lerp(e.prevX, e.x, t) + 0.5;
   const fz = lerp(e.prevY, e.y, t) + 0.5;
@@ -2306,7 +2376,7 @@ function placeEntity(node: THREE.Group, e: { x: number; y: number; prevX: number
     }
     node.rotation.y = fig.yaw;
   }
-  animateFigure(node, moving, now, attack);
+  animateFigure(node, moving, now, anim);
 }
 
 function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }, hitsplat: { dmg: number; until: number } | null, hpRatio: number | null, height: number, alphaOverride?: number) {
@@ -2353,7 +2423,7 @@ function syncNpcs(now: number, px: number, pz: number) {
     let fdx = n.x - n.prevX, fdy = n.y - n.prevY;
     if (fdx === 0 && fdy === 0 && attacking) { fdx = state.player.x - n.x; fdy = state.player.y - n.y; }
     const t = moveAlpha(n, now);
-    placeEntity(inst.node, n, now, fdx, fdy, attacking, t);
+    placeEntity(inst.node, n, now, fdx, fdy, attacking ? 'attack' : null, t);
     // health bar + hitsplat (same rules as the 2D renderer)
     const showHp = performance.now() < (n.hitsplat?.until ?? 0) + 3000 && n.lastDamagedAt > state.tick - 12;
     const size = (n.def as any).size ?? 1;
@@ -2374,6 +2444,22 @@ function syncNpcs(now: number, px: number, pz: number) {
   }
 }
 
+// Derive the player's action animation from the pending action: gathering
+// handlers return 'continue' each tick, so the action stays set while the
+// player chops/mines/fishes and we can animate it without touching game logic.
+function playerAnim(p: typeof state.player): AnimKind {
+  const a = p.action;
+  if (!a) return null;
+  if (a.type === 'attack' || a.type === 'attack-player') return 'attack';
+  if (a.type === 'interact-obj' && a.obj) {
+    const t = a.obj.type;
+    if (t.startsWith('tree')) return 'chop';
+    if (t.startsWith('rocks') && t !== 'rocks_empty') return 'mine';
+    if (t.includes('fishing')) return 'fish';
+  }
+  return null;
+}
+
 function syncPlayer(now: number) {
   const p = state.player;
   const eq = p.equipment as any;
@@ -2387,7 +2473,7 @@ function syncPlayer(now: number) {
   const moving = p.x !== p.prevX || p.y !== p.prevY;
   const fdx = moving ? p.x - p.prevX : (p.lastFacing?.dx ?? 0);
   const fdy = moving ? p.y - p.prevY : (p.lastFacing?.dy ?? 1);
-  placeEntity(playerNode, p, now, fdx, fdy, p.action?.type === 'attack');
+  placeEntity(playerNode, p, now, fdx, fdy, playerAnim(p));
   playerNode.visible = !p.dead;
   const maxHp = level('Hitpoints');
   entityOverlays(p, p.hitsplat, p.curHp < maxHp ? Math.max(0, p.curHp / maxHp) : null, 1.1);
@@ -2421,7 +2507,7 @@ function syncRemotePlayers(now: number, px: number, pz: number) {
     if (!visible) continue;
     // remote players interpolate on their own snapshot clock, not the local tick clock
     const t = moveAlpha(rp, now);
-    placeEntity(inst.node, rp, now, rp.x - rp.prevX, rp.y - rp.prevY, false, t);
+    placeEntity(inst.node, rp, now, rp.x - rp.prevX, rp.y - rp.prevY, null, t);
     const fx = lerp(rp.prevX, rp.x, t) + 0.5, fz = lerp(rp.prevY, rp.y, t) + 0.5;
     const gy = Math.max(groundH(fx, fz), WATER_LEVEL);
     const rpMaxHp = rp.maxHp ?? 10;
