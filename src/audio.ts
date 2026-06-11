@@ -527,14 +527,25 @@ export function trackForRegion(x: number, y: number): string {
   if (x >= 61 && x <= 68 && y >= 38 && y <= 44) return 'Rainbow Avenue';
   if (x >= 54 && x <= 60 && y >= 38 && y <= 44) return 'Market Day';
   // Phase 5 handcrafted expansion (300×300) — checked after all legacy boxes.
-  if (y >= 217) return 'Brackwater Tide'; // southern sea + Gullswreck Cove
+  // The Untuned Mine (instanced dungeon carved under the southern sea) sits
+  // inside the y>=217 band, so it must be checked before the coast tracks.
+  if (x >= 6 && x <= 50 && y >= 238 && y <= 295) {
+    if (y >= 284) return 'The Crystal Heart'; // F3: gate + Resonant Vault + Resonance Gallery
+    return 'Untuned Halls'; // F1/F2 galleries
+  }
+  if (x >= 96 && x <= 112 && y >= 238 && y <= 252) return 'Beacon Rock'; // Gullswreck Light islet + coast
+  if (x >= 76 && x <= 132 && y >= 250 && y <= 292) return 'Gullswreck Shanty'; // the cove village
+  if (y >= 217) return 'Brackwater Tide'; // rest of the southern sea
   if (x >= 224) {
+    if (x >= 262 && x <= 278 && y <= 22) return "Imber's Spire"; // the Imber Spire
     if (y <= 26) return 'Rimewind'; // Frostpeak's eastern skirts
     if (x >= 244 && x <= 272 && y >= 62 && y <= 106) return 'Quiet Meadow'; // Eldermere
-    if (x <= 260 && y >= 64 && y <= 136) return 'Whispering Stones'; // the Tanglewood
-    if (y <= 62) return "Shepherd's Rest"; // farm belt on the Aldgate road
-    if (x >= 256 && y >= 156 && y <= 200) return 'Stonecourt'; // Stonewatch (duchy garrison)
-    if (y >= 106 && y <= 156) return 'Whispering Stones'; // danger corridor
+    if (x >= 280 && x <= 296 && y >= 78 && y <= 94) return "Quiess' Rest"; // the Quiess Tower
+    if (x <= 260 && y >= 64 && y <= 136) return 'Tanglewood Depths'; // the Tanglewood
+    if (y <= 62) return 'Harvest Road'; // farm belt on the Aldgate road
+    if (x >= 226 && x <= 252 && y >= 144 && y <= 168) return 'Ravenmoor'; // Ravenmoor Manor grounds
+    if (x >= 256 && y >= 156 && y <= 200) return 'Stonewatch Garrison'; // Stonewatch (duchy garrison)
+    if (y >= 106 && y <= 156) return 'Wraithrun'; // danger corridor
   }
   return 'Newbie Meadow';
 }
