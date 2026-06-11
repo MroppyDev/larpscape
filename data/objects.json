@@ -642,6 +642,124 @@
       "name": "Weapon rack",
       "examine": "Weapons racked in neat rows.",
       "blocks": true
+    },
+    "waystone": {
+      "id": "waystone",
+      "name": "Waystone",
+      "examine": "A road-shrine of the Five. Travellers hum a bar of the Chord at it and walk on in better tune.",
+      "blocks": true
+    },
+    "brazier": {
+      "id": "brazier",
+      "name": "Brazier",
+      "examine": "A scorched iron brazier. Borrowed Imber, retail size.",
+      "blocks": true
+    },
+    "millstone": {
+      "id": "millstone",
+      "name": "Millstone",
+      "examine": "A great grinding stone. Aulden lends the patience; the wind does the work.",
+      "blocks": true
+    },
+    "beacon_brazier": {
+      "id": "beacon_brazier",
+      "name": "Beacon brazier",
+      "examine": "Whale-oil and Imber's goodwill. Ships in the strait steer by it.",
+      "blocks": true
+    },
+    "cellar_door": {
+      "id": "cellar_door",
+      "name": "Cellar door",
+      "examine": "A heavy iron-banded door to the manor cellar. Locked — and recently oiled. Someone still uses it.",
+      "blocks": true
+    },
+    "quiess_chime": {
+      "id": "quiess_chime",
+      "name": "Bone chimes",
+      "examine": "Pale chimes that ring with no wind. Quiess only listens to music.",
+      "blocks": true
+    },
+    "rocks_ringing": {
+      "id": "rocks_ringing",
+      "name": "Ringing vein",
+      "examine": "The ore hums a half-beat flat under the pick. Mining it feels like arguing with a bell.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "mine_ladder": {
+      "id": "mine_ladder",
+      "name": "Mine ladder",
+      "examine": "Duchy timber, '88 pattern. Knock twice before you trust it.",
+      "action": "Climb",
+      "blocks": true
+    },
+    "mine_rope": {
+      "id": "mine_rope",
+      "name": "Knotted rope",
+      "examine": "The knots are tied in work-song rhythm. The last knot is tied wrong on purpose.",
+      "action": "Climb",
+      "blocks": true
+    },
+    "mine_exit_portal": {
+      "id": "mine_exit_portal",
+      "name": "Breach light",
+      "examine": "Daylight from the Swamp Mine breach, folded down the shaft. Step through to leave the wing.",
+      "action": "Exit",
+      "blocks": true
+    },
+    "mine_plaque": {
+      "id": "mine_plaque",
+      "name": "Surveyor's plaque",
+      "examine": "Brigh's slate of record: the fastest descents into the Untuned Mine, in her best chisel-hand.",
+      "action": "Read",
+      "blocks": true
+    },
+    "crystal_node": {
+      "id": "crystal_node",
+      "name": "Sour crystal",
+      "examine": "It glows the colour of a note played wrong on purpose.",
+      "blocks": true
+    },
+    "guild_vault": {
+      "id": "guild_vault",
+      "name": "Guild vault",
+      "examine": "A banded strongbox tuned to one guild's chord. It only opens for members.",
+      "action": "Open",
+      "blocks": true
+    },
+    "wheat_field": {
+      "id": "wheat_field",
+      "name": "Wheat",
+      "examine": "Tall grain, nodding along to Syla's part. Pick a sheaf; it grows back out of spite.",
+      "action": "Pick",
+      "blocks": false
+    },
+    "untuned_mine_door": {
+      "id": "untuned_mine_door",
+      "name": "Sealed gallery",
+      "examine": "Mine masonry, laid fast and laid well — with the trowel marks on this side facing the wrong way.",
+      "blocks": true
+    },
+    "resonance_stand": {
+      "id": "resonance_stand",
+      "name": "Resonance stand",
+      "examine": "A music stand of black stone, older than the mine around it. It is waiting to be given the pitch.",
+      "action": "Inspect",
+      "blocks": true
+    },
+    "conductors_lectern": {
+      "id": "conductors_lectern",
+      "name": "Conductor's lectern",
+      "examine": "A travelling lectern in Sarrash temple silk. The dust around it is disturbed in the shape of nothing at all.",
+      "action": "Search",
+      "blocks": true
+    },
+    "smuggler_crate": {
+      "id": "smuggler_crate",
+      "name": "Smuggler crate",
+      "examine": "Labelled 'MISC. EEL'. The eel, if any, is miscellaneous indeed.",
+      "action": "Search",
+      "blocks": true
     }
   },
   "skillObjs": {

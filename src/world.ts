@@ -28,6 +28,11 @@ export const POIS: Poi[] = [
   { id: 'tanglewood', label: 'The Tanglewood', x: 232, y: 110 },
   { id: 'stonewatch', label: 'Stonewatch', x: 272, y: 178 },
   { id: 'gullswreck', label: 'Gullswreck Cove', x: 94, y: 262 },
+  // world-fill structures pass (scripts/author-structures.ts)
+  { id: 'ravenmoor', label: 'Ravenmoor Manor', x: 238, y: 155 },
+  { id: 'imber_spire', label: 'The Imber Spire', x: 270, y: 12 },
+  { id: 'quiess_tower', label: 'The Quiess Tower', x: 288, y: 86 },
+  { id: 'gullswreck_light', label: 'Gullswreck Light', x: 103, y: 246 },
 ];
 
 // terrain codes

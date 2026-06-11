@@ -278,102 +278,295 @@
   "gun_guild": {
     "name": "Aldgate Gun Guild",
     "stock": [
-      { "item": "glock_18", "qty": 5 },
-      { "item": "iron_pistol", "qty": 3 },
-      { "item": "steel_pistol", "qty": 2 },
-      { "item": "mithril_pistol", "qty": 1 },
-      { "item": "adamant_pistol", "qty": 1 },
-      { "item": "rune_pistol", "qty": 1 },
-      { "item": "bronze_round", "qty": 500 },
-      { "item": "iron_round", "qty": 400 },
-      { "item": "steel_round", "qty": 300 },
-      { "item": "mithril_round", "qty": 200 },
-      { "item": "adamant_round", "qty": 100 },
-      { "item": "rune_round", "qty": 50 },
-      { "item": "gunpowder", "qty": 300 },
-      { "item": "bronze_bullet_casing", "qty": 200 },
-      { "item": "iron_bullet_casing", "qty": 150 },
-      { "item": "steel_bullet_casing", "qty": 100 },
-      { "item": "mithril_bullet_casing", "qty": 75 },
-      { "item": "adamant_bullet_casing", "qty": 50 },
-      { "item": "rune_bullet_casing", "qty": 25 }
+      {
+        "item": "glock_18",
+        "qty": 5
+      },
+      {
+        "item": "iron_pistol",
+        "qty": 3
+      },
+      {
+        "item": "steel_pistol",
+        "qty": 2
+      },
+      {
+        "item": "mithril_pistol",
+        "qty": 1
+      },
+      {
+        "item": "adamant_pistol",
+        "qty": 1
+      },
+      {
+        "item": "rune_pistol",
+        "qty": 1
+      },
+      {
+        "item": "bronze_round",
+        "qty": 500
+      },
+      {
+        "item": "iron_round",
+        "qty": 400
+      },
+      {
+        "item": "steel_round",
+        "qty": 300
+      },
+      {
+        "item": "mithril_round",
+        "qty": 200
+      },
+      {
+        "item": "adamant_round",
+        "qty": 100
+      },
+      {
+        "item": "rune_round",
+        "qty": 50
+      },
+      {
+        "item": "gunpowder",
+        "qty": 300
+      },
+      {
+        "item": "bronze_bullet_casing",
+        "qty": 200
+      },
+      {
+        "item": "iron_bullet_casing",
+        "qty": 150
+      },
+      {
+        "item": "steel_bullet_casing",
+        "qty": 100
+      },
+      {
+        "item": "mithril_bullet_casing",
+        "qty": 75
+      },
+      {
+        "item": "adamant_bullet_casing",
+        "qty": 50
+      },
+      {
+        "item": "rune_bullet_casing",
+        "qty": 25
+      }
     ]
   },
   "eldermere_general": {
     "name": "Eldermere General Store",
     "stock": [
-      { "item": "bronze_axe", "qty": 10 },
-      { "item": "bronze_pickaxe", "qty": 10 },
-      { "item": "tinderbox", "qty": 10 },
-      { "item": "bread", "qty": 10 },
-      { "item": "knife", "qty": 10 },
-      { "item": "hammer", "qty": 10 },
-      { "item": "bucket", "qty": 10 },
-      { "item": "shears", "qty": 10 },
-      { "item": "fishing_rod", "qty": 10 },
-      { "item": "fishing_bait", "qty": 200 }
+      {
+        "item": "bronze_axe",
+        "qty": 10
+      },
+      {
+        "item": "bronze_pickaxe",
+        "qty": 10
+      },
+      {
+        "item": "tinderbox",
+        "qty": 10
+      },
+      {
+        "item": "bread",
+        "qty": 10
+      },
+      {
+        "item": "knife",
+        "qty": 10
+      },
+      {
+        "item": "hammer",
+        "qty": 10
+      },
+      {
+        "item": "bucket",
+        "qty": 10
+      },
+      {
+        "item": "shears",
+        "qty": 10
+      },
+      {
+        "item": "fishing_rod",
+        "qty": 10
+      },
+      {
+        "item": "fishing_bait",
+        "qty": 200
+      }
     ]
   },
   "stonewatch_trapper": {
     "name": "Hode's Fur & Trap",
     "stock": [
-      { "item": "bird_snare", "qty": 15 },
-      { "item": "harpoon", "qty": 5 },
-      { "item": "knife", "qty": 10 }
+      {
+        "item": "bird_snare",
+        "qty": 15
+      },
+      {
+        "item": "harpoon",
+        "qty": 5
+      },
+      {
+        "item": "knife",
+        "qty": 10
+      }
     ]
   },
   "wayfarer": {
     "name": "Sorrel's Wandering Wares",
     "stock": [
-      { "item": "air_rune", "qty": 200 },
-      { "item": "mind_rune", "qty": 200 },
-      { "item": "water_rune", "qty": 100 },
-      { "item": "earth_rune", "qty": 100 },
-      { "item": "potato_seed", "qty": 30 },
-      { "item": "cabbage_seed", "qty": 30 },
-      { "item": "bread", "qty": 15 },
-      { "item": "tinderbox", "qty": 5 },
-      { "item": "uncut_sapphire", "qty": 1 }
+      {
+        "item": "air_rune",
+        "qty": 200
+      },
+      {
+        "item": "mind_rune",
+        "qty": 200
+      },
+      {
+        "item": "water_rune",
+        "qty": 100
+      },
+      {
+        "item": "earth_rune",
+        "qty": 100
+      },
+      {
+        "item": "potato_seed",
+        "qty": 30
+      },
+      {
+        "item": "cabbage_seed",
+        "qty": 30
+      },
+      {
+        "item": "bread",
+        "qty": 15
+      },
+      {
+        "item": "tinderbox",
+        "qty": 5
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": 1
+      }
     ]
   },
   "hedon_lounge": {
     "name": "Hedon Lounge",
     "stock": [
-      { "item": "sparkling_cocktail", "qty": 50 },
-      { "item": "cake", "qty": 20 },
-      { "item": "bread", "qty": 30 }
+      {
+        "item": "sparkling_cocktail",
+        "qty": 50
+      },
+      {
+        "item": "cake",
+        "qty": 20
+      },
+      {
+        "item": "bread",
+        "qty": 30
+      }
     ]
   },
   "pride_stall": {
     "name": "Pride Stall",
     "stock": [
-      { "item": "rainbow_scarf", "qty": 10 },
-      { "item": "ball_of_wool", "qty": 20 },
-      { "item": "feather", "qty": 50 }
+      {
+        "item": "rainbow_scarf",
+        "qty": 10
+      },
+      {
+        "item": "ball_of_wool",
+        "qty": 20
+      },
+      {
+        "item": "feather",
+        "qty": 50
+      }
     ]
   },
   "larp_pride_stall": {
     "name": "LARP Pride Stall",
     "stock": [
-      { "item": "foam_sword", "qty": 15 },
-      { "item": "larp_pride_cape", "qty": 10 },
-      { "item": "rainbow_scarf", "qty": 5 }
+      {
+        "item": "foam_sword",
+        "qty": 15
+      },
+      {
+        "item": "larp_pride_cape",
+        "qty": 10
+      },
+      {
+        "item": "rainbow_scarf",
+        "qty": 5
+      }
     ]
   },
   "chimperton_curios": {
     "name": "Chimperton Curios",
     "stock": [
-      { "item": "chimperton_medallion", "qty": 5 },
-      { "item": "cake", "qty": 20 },
-      { "item": "bread", "qty": 30 }
+      {
+        "item": "chimperton_medallion",
+        "qty": 5
+      },
+      {
+        "item": "cake",
+        "qty": 20
+      },
+      {
+        "item": "bread",
+        "qty": 30
+      }
     ]
   },
   "tick_eat_bar": {
     "name": "Tick Eat Bar",
     "stock": [
-      { "item": "tick_jerky", "qty": 50 },
-      { "item": "fluoride_ration", "qty": 30 },
-      { "item": "bread", "qty": 20 }
+      {
+        "item": "tick_jerky",
+        "qty": 50
+      },
+      {
+        "item": "fluoride_ration",
+        "qty": 30
+      },
+      {
+        "item": "bread",
+        "qty": 20
+      }
+    ]
+  },
+  "brigh_supplies": {
+    "name": "Brigh's Survey Stores",
+    "stock": [
+      {
+        "item": "bread",
+        "qty": 20
+      },
+      {
+        "item": "bronze_pickaxe",
+        "qty": 5
+      },
+      {
+        "item": "attack_potion",
+        "qty": 4
+      },
+      {
+        "item": "defence_potion",
+        "qty": 4
+      },
+      {
+        "item": "tinderbox",
+        "qty": 5
+      }
     ]
   }
 }

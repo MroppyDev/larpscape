@@ -1305,6 +1305,88 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       g.add(lm(boxG(0.04, 0.55, 0.04, '#787878'), 0.18, 0.62, -0.08, -0.15, 0, -0.2));
       g.add(lm(boxG(0.03, 0.48, 0.03, '#686868'), 0, 0.58, 0, 0, 0, 0.35));
       return g;
+    // ---- the Untuned Mine (dungeon objects) ----
+    case 'rocks_ringing': {
+      // ore pile with sour glowing seams — the dungeon's mineable veins
+      const rock = '#5e5a64';
+      g.add(lm(icoG(0.3, rock), 0, 0.18, 0.05));
+      g.add(lm(icoG(0.21, rock), -0.28, 0.13, -0.16));
+      g.add(lm(icoG(0.17, rock), 0.26, 0.11, -0.22));
+      g.add(lm(tetraG(0.1, '#7a4a8a'), 0.04, 0.4, 0.08, 0.4, 0.7));
+      g.add(gm(tetraG(0.07, '#d98aff'), -0.24, 0.28, -0.08, 0.9, 0.2));
+      g.add(gm(tetraG(0.06, '#b86adf'), 0.26, 0.24, -0.16, 0.2, 1.6));
+      const seam = gm(boxG(0.5, 0.025, 0.03, '#c47ae8'), 0, 0.26, 0.18, 0, 0, 0.3);
+      seam.name = 'fxflame';
+      g.add(seam);
+      return g;
+    }
+    case 'crystal_node': {
+      // sour crystal cluster — glowing dungeon deco
+      g.add(lm(icoG(0.2, '#4a4652'), 0, 0.1, 0));
+      g.add(gm(coneG(0.12, 0.62, '#c47ae8', 5), 0, 0.38, 0, 0.12, 0, 0.08));
+      g.add(gm(coneG(0.08, 0.4, '#9a5ad2', 5), 0.18, 0.26, -0.08, 0.05, 0, -0.4));
+      g.add(gm(coneG(0.07, 0.34, '#e0a8ff', 5), -0.17, 0.24, 0.1, -0.1, 0, 0.45));
+      return g;
+    }
+    case 'mine_ladder': {
+      const wood = '#6a5230';
+      g.add(lm(boxG(0.08, 1.6, 0.08, wood), -0.22, 0.8, 0));
+      g.add(lm(boxG(0.08, 1.6, 0.08, wood), 0.22, 0.8, 0));
+      for (let i = 0; i < 5; i++) g.add(lm(boxG(0.42, 0.06, 0.06, '#7a6038'), 0, 0.22 + i * 0.3, 0));
+      // shaft collar
+      g.add(lm(boxG(0.7, 0.1, 0.7, '#4e4a44'), 0, 0.05, 0));
+      return g;
+    }
+    case 'mine_rope': {
+      // knotted rope dropping into a dark shaft
+      g.add(lm(boxG(0.74, 0.12, 0.74, '#4e4a44'), 0, 0.06, 0));
+      g.add(lm(cylG(0.035, 0.035, 1.5, '#8a7448', 6), 0, 0.85, 0));
+      for (let i = 0; i < 3; i++) g.add(lm(sphG(0.06, '#7a6438'), 0, 0.4 + i * 0.42, 0));
+      g.add(lm(boxG(0.5, 0.08, 0.08, '#6a5230'), 0, 1.6, 0)); // cross-beam
+      return g;
+    }
+    case 'mine_exit_portal': {
+      // folded daylight in a stone arch — the way back out
+      const stone = '#5a564e';
+      g.add(lm(boxG(0.18, 1.3, 0.3, stone), -0.4, 0.65, 0));
+      g.add(lm(boxG(0.18, 1.3, 0.3, stone), 0.4, 0.65, 0));
+      g.add(lm(boxG(1.0, 0.2, 0.3, stone), 0, 1.36, 0));
+      const light = gm(boxG(0.62, 1.1, 0.06, '#ffeebb'), 0, 0.62, 0);
+      light.name = 'fxflame';
+      g.add(light);
+      return g;
+    }
+    case 'mine_plaque': {
+      // Brigh's slate of record on a timber post
+      g.add(lm(boxG(0.1, 0.7, 0.1, '#6a5230'), 0, 0.35, 0));
+      g.add(lm(boxG(0.8, 0.55, 0.07, '#46424c'), 0, 0.85, 0));
+      g.add(lm(boxG(0.66, 0.04, 0.075, '#b8b4ac'), 0, 1.0, 0.0));
+      g.add(lm(boxG(0.5, 0.03, 0.075, '#9a968e'), 0, 0.9, 0));
+      g.add(lm(boxG(0.56, 0.03, 0.075, '#9a968e'), 0, 0.8, 0));
+      g.add(lm(boxG(0.44, 0.03, 0.075, '#9a968e'), 0, 0.7, 0));
+      return g;
+    }
+    case 'resonance_stand': {
+      // a music stand of black stone, far older than the mine (Ch4)
+      const black = '#26222c';
+      g.add(lm(cylG(0.2, 0.26, 0.12, black, 7), 0, 0.06, 0));
+      g.add(lm(cylG(0.05, 0.07, 0.7, black, 6), 0, 0.45, 0));
+      const desk = lm(boxG(0.56, 0.4, 0.05, '#322c3c'), 0, 0.95, 0, -0.5);
+      g.add(desk);
+      g.add(gm(boxG(0.5, 0.02, 0.02, '#c47ae8'), 0, 1.08, -0.08, -0.5));
+      return g;
+    }
+    case 'conductors_lectern': {
+      // travelling lectern draped in pale temple silk (Ch4)
+      g.add(lm(boxG(0.5, 0.1, 0.4, '#3a3430'), 0, 0.05, 0));
+      g.add(lm(boxG(0.14, 0.8, 0.14, '#4a4238'), 0, 0.45, 0));
+      const top = lm(boxG(0.6, 0.05, 0.42, '#564c40'), 0, 0.9, 0, -0.35);
+      g.add(top);
+      // pale silk drape
+      g.add(lm(boxG(0.56, 0.5, 0.04, '#e8e2d2'), 0, 0.62, 0.12, -0.12));
+      g.add(lm(boxG(0.5, 0.03, 0.36, '#f4f0e4'), 0, 0.94, 0.01, -0.35));
+      return g;
+    }
     default:
       // unknown object: a humble marker crate so nothing is invisible
       g.add(lm(boxG(0.5, 0.5, 0.5, '#8a7a5a'), 0, 0.25, 0));
@@ -1943,6 +2025,126 @@ function makeAshFiend(size: number): THREE.Group {
   return root;
 }
 
+// ---- the Untuned Mine creatures (original designs) ----
+function makeDiscordMote(size: number): THREE.Group {
+  // a wisp of the wrong colour — glowing core with off-tint shards
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  body.add(gm(icoG(0.16, '#d98aff', 0), 0, 0.55, 0));
+  body.add(gm(icoG(0.07, '#8a5aff', 0), 0.16, 0.66, 0.05));
+  body.add(gm(icoG(0.05, '#ff6ad2', 0), -0.15, 0.48, -0.08));
+  body.add(gm(tetraG(0.05, '#b86adf'), 0.02, 0.34, 0.1, 0.4, 0.8));
+  const halo = gm(ringG(0.2, 0.24, '#b86adf'), 0, 0.55, 0, -Math.PI / 2);
+  body.add(halo);
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: null, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function makeUntunedGolem(size: number): THREE.Group {
+  // ore that stood up mid-smelt: boulder body with glowing wrong-note seams
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  const rock = '#6a665e', rock2 = '#7a766c';
+  const trunk = lm(icoG(0.34, rock, 0), 0, 0.62, 0);
+  trunk.scale.set(1, 1.15, 0.85);
+  body.add(trunk);
+  body.add(lm(icoG(0.18, rock2, 0), 0, 1.06, 0.04)); // head boulder
+  body.add(gm(boxG(0.05, 0.04, 0.02, '#d98aff'), -0.07, 1.08, 0.17)); // eyes
+  body.add(gm(boxG(0.05, 0.04, 0.02, '#d98aff'), 0.07, 1.08, 0.17));
+  // glowing seams across the chest
+  body.add(gm(boxG(0.4, 0.03, 0.04, '#c47ae8'), 0, 0.72, 0.26, 0, 0, 0.35));
+  body.add(gm(boxG(0.3, 0.025, 0.04, '#9a5ad2'), 0.04, 0.52, 0.27, 0, 0, -0.2));
+  const mkArm = (sx: number) => {
+    const a = limbGroup(lm(cylG(0.08, 0.11, 0.5, rock, 6, 0.09), 0, -0.25, 0), sx * 0.42, 0.85, 0);
+    a.add(lm(icoG(0.13, rock2, 0), 0, -0.52, 0.02));
+    return a;
+  };
+  const la = mkArm(-1), ra = mkArm(1);
+  body.add(la, ra);
+  const mkLeg = (sx: number) =>
+    limbGroup(lm(cylG(0.1, 0.12, 0.3, rock, 6, 0.09), 0, -0.15, 0), sx * 0.18, 0.3, 0);
+  const ll = mkLeg(-1), rl = mkLeg(1);
+  body.add(ll, rl);
+  root.scale.setScalar(size * 0.9);
+  root.userData.fig = { limbs: { la, ra, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function makeSeamCreeper(size: number): THREE.Group {
+  // a fast low lunger that lives in the skipped beat between pick-strikes
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  const hide = '#46523e', hide2 = '#56644a';
+  const trunk = lm(sphG(0.22, hide), 0, 0.26, 0);
+  trunk.scale.set(0.8, 0.6, 1.7);
+  body.add(trunk);
+  // ridge plates down the spine
+  for (let i = 0; i < 4; i++) body.add(lm(tetraG(0.06, hide2), 0, 0.42, 0.26 - i * 0.18, 0.3, i));
+  // head low and forward, single sour eye
+  const head = lm(sphG(0.13, hide2), 0, 0.26, 0.42);
+  head.scale.set(0.9, 0.8, 1.1);
+  body.add(head);
+  body.add(gm(sphG(0.04, '#d98aff', 5, 4), 0, 0.3, 0.55));
+  // mandibles
+  body.add(lm(coneG(0.03, 0.14, '#38422f', 4), -0.07, 0.18, 0.52, 1.2));
+  body.add(lm(coneG(0.03, 0.14, '#38422f', 4), 0.07, 0.18, 0.52, 1.2));
+  const mkLeg = (sx: number, sz: number) =>
+    limbGroup(lm(cylG(0.035, 0.05, 0.26, hide, 5), 0, -0.13, 0), sx * 0.2, 0.26, sz * 0.22);
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  body.add(fl, fr, bl, br);
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  return root;
+}
+
+function makeForemanEcho(size: number): THREE.Group {
+  // the mine foreman's looping last shift — pale, translucent-looking, pick in hand
+  const root = makeHumanoid({
+    skin: '#bfe4dd', hair: '#9adcd2', tunic: '#7ab4ac', pants: '#5e948c', scale: size,
+  });
+  const fig = root.userData.fig as FigureData;
+  // hollow glowing eyes + lamp glow at the brow (Hollis's lamp, still lit)
+  fig.bob.add(gm(boxG(0.035, 0.03, 0.015, '#dffff8'), -0.05, 0.92, 0.115));
+  fig.bob.add(gm(boxG(0.035, 0.03, 0.015, '#dffff8'), 0.05, 0.92, 0.115));
+  fig.bob.add(gm(sphG(0.035, '#fff4c8', 5, 4), 0, 1.02, 0.1));
+  // spectral pick slung across the right shoulder
+  const pick = new THREE.Group();
+  pick.position.set(0.26, 0.78, 0.06);
+  pick.rotation.z = -0.6;
+  pick.add(lm(cylG(0.025, 0.03, 0.6, '#8adcd0', 5), 0, 0.1, 0));
+  pick.add(lm(coneG(0.05, 0.3, '#cffff6', 4), 0.12, 0.4, 0, 0, 0, -Math.PI / 2));
+  pick.add(lm(coneG(0.05, 0.3, '#cffff6', 4), -0.12, 0.4, 0, 0, 0, Math.PI / 2));
+  fig.bob.add(pick);
+  return root;
+}
+
+function makeCrystalHeart(size: number): THREE.Group {
+  // a huge resonating crystal — the dungeon's final boss. Pulsing emissive
+  // spires over a cracked stone socket; it never moves, it only rings.
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // stone socket
+  body.add(lm(icoG(0.42, '#4a4652', 0), 0, 0.2, 0));
+  body.add(lm(icoG(0.26, '#56525e', 0), -0.4, 0.14, 0.2));
+  body.add(lm(icoG(0.22, '#403c48', 0), 0.42, 0.12, -0.18));
+  // the heart: main spire + chorus of lesser spires
+  body.add(gm(coneG(0.3, 1.5, '#c47ae8', 6), 0, 1.0, 0, 0.06, 0, 0.04));
+  body.add(gm(coneG(0.16, 0.9, '#9a5ad2', 5), 0.34, 0.66, 0.14, 0.1, 0, -0.5));
+  body.add(gm(coneG(0.14, 0.8, '#e0a8ff', 5), -0.32, 0.6, -0.12, -0.08, 0, 0.5));
+  body.add(gm(coneG(0.1, 0.55, '#8a5aff', 5), 0.1, 0.5, -0.32, -0.45, 0, 0));
+  body.add(gm(coneG(0.09, 0.5, '#ff6ad2', 5), -0.12, 0.48, 0.32, 0.45, 0, 0));
+  // inner glow core
+  body.add(gm(icoG(0.18, '#f0d2ff', 0), 0, 0.66, 0));
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: null, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
 function buildNpcTemplate(n: Npc): THREE.Group {
   const id = n.def.id;
   const size = (n.def as any).size ?? 1;
@@ -2017,6 +2219,15 @@ function buildNpcTemplate(n: Npc): THREE.Group {
     });
     case 'armourer': return makeHumanoid({ tunic: '#7a8694', apron: '#5a6470', hair: '#3a2a14', scale: size });
     case 'grocer': return makeHumanoid({ tunic: '#a8854f', apron: '#e8e0d0', hair: '#5a4026', scale: size });
+    // the Untuned Mine
+    case 'discord_mote': return makeDiscordMote(size);
+    case 'untuned_golem': return makeUntunedGolem(size);
+    case 'seam_creeper': return makeSeamCreeper(size);
+    case 'foreman_echo': return makeForemanEcho(size);
+    case 'crystal_heart': return makeCrystalHeart(size);
+    case 'cantor_surveyor': return makeHumanoid({
+      tunic: '#b08a4a', pants: '#5e4a2e', apron: '#3a3430', hair: '#3a2a14', scale: size,
+    });
     default: return makeHumanoid({ tunic: (n.def as any).color ?? '#7a5a3a', hair: '#3a2a14', scale: size });
   }
 }
@@ -2780,9 +2991,9 @@ function syncRemotePlayers(now: number, px: number, pz: number) {
       showHp && rp.hp !== undefined ? Math.max(0, rp.hp / rpMaxHp) : null,
       1.1, t,
     );
-    // floating name label
+    // floating name label (guild tag prefixed when present)
     const lbl = takeSprite();
-    lbl.material = nameLabelMat(rp.name);
+    lbl.material = nameLabelMat(rp.tag ? `[${rp.tag}] ${rp.name}` : rp.name);
     lbl.position.set(fx, gy + 1.5, fz);
     lbl.scale.set(1.6, 0.25, 1);
     // overhead chat while fresh
@@ -3220,6 +3431,63 @@ function animateWater(now: number) {
 }
 
 // ================= MAIN RENDER =================
+// ================= TRANSIENT GROUND FX (boss telegraphs) =================
+// Short-lived world-space markers: expanding shockwave rings and lit floor
+// tiles, used by the Untuned Mine telegraphs (and reusable by any boss pack).
+interface ActiveGroundFx {
+  mesh: THREE.Mesh;
+  start: number;
+  dur: number;
+  kind: 'ring' | 'tile';
+  maxR: number;
+}
+const activeGroundFx: ActiveGroundFx[] = [];
+
+export function addGroundFx(
+  kind: 'ring' | 'tile', x: number, y: number,
+  opts: { dur?: number; color?: string; radius?: number } = {},
+) {
+  if (!scene) return;
+  const dur = opts.dur ?? 1200;
+  const color = opts.color ?? '#c47ae8';
+  const mat = new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false,
+  });
+  const geo = kind === 'ring'
+    ? new THREE.RingGeometry(0.42, 0.6, 24)
+    : new THREE.PlaneGeometry(0.92, 0.92);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI / 2;
+  const fx = x + 0.5, fz = y + 0.5;
+  mesh.position.set(fx, Math.max(groundH(fx, fz), WATER_LEVEL) + 0.06, fz);
+  scene.add(mesh);
+  activeGroundFx.push({ mesh, start: performance.now(), dur, kind, maxR: opts.radius ?? 4 });
+}
+
+function syncGroundFx(now: number) {
+  for (let i = activeGroundFx.length - 1; i >= 0; i--) {
+    const f = activeGroundFx[i];
+    const t = (now - f.start) / f.dur;
+    if (t >= 1) {
+      scene?.remove(f.mesh);
+      f.mesh.geometry.dispose();
+      (f.mesh.material as THREE.Material).dispose();
+      activeGroundFx.splice(i, 1);
+      continue;
+    }
+    const mat = f.mesh.material as THREE.MeshBasicMaterial;
+    if (f.kind === 'ring') {
+      // expand outward to the blast radius, fading as it travels
+      const s = 1 + t * f.maxR * 1.8;
+      f.mesh.scale.set(s, s, 1);
+      mat.opacity = 0.8 * (1 - t);
+    } else {
+      // lit tile: urgent pulse that quickens as the downbeat lands
+      mat.opacity = 0.22 + 0.3 * Math.abs(Math.sin(t * t * Math.PI * 6));
+    }
+  }
+}
+
 export function render() {
   const p = state.player;
   if (!p) return;
@@ -3262,6 +3530,7 @@ export function render() {
   syncPlayer(now);
   syncRemotePlayers(now, pfx, pfz);
   syncProjectiles(now);
+  syncGroundFx(now);
   for (let i = spriteUsed; i < spritePool.length; i++) spritePool[i].visible = false;
   for (let i = arrowUsed; i < arrowPool.length; i++) arrowPool[i].visible = false;
   for (let i = bulletUsed; i < bulletPool.length; i++) bulletPool[i].visible = false;

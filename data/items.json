@@ -1757,7 +1757,12 @@
     "equipSlot": "weapon",
     "gunBonus": 8,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 1 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 1
+      }
+    ]
   },
   "iron_pistol": {
     "id": "iron_pistol",
@@ -1767,7 +1772,12 @@
     "equipSlot": "weapon",
     "gunBonus": 14,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 5 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 5
+      }
+    ]
   },
   "steel_pistol": {
     "id": "steel_pistol",
@@ -1777,7 +1787,12 @@
     "equipSlot": "weapon",
     "gunBonus": 22,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 20 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 20
+      }
+    ]
   },
   "mithril_pistol": {
     "id": "mithril_pistol",
@@ -1787,7 +1802,12 @@
     "equipSlot": "weapon",
     "gunBonus": 35,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 40 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 40
+      }
+    ]
   },
   "adamant_pistol": {
     "id": "adamant_pistol",
@@ -1797,7 +1817,12 @@
     "equipSlot": "weapon",
     "gunBonus": 45,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 55 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 55
+      }
+    ]
   },
   "rune_pistol": {
     "id": "rune_pistol",
@@ -1807,7 +1832,12 @@
     "equipSlot": "weapon",
     "gunBonus": 60,
     "attackSpeed": 4,
-    "levelReq": [{ "skill": "Gun", "level": 60 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 60
+      }
+    ]
   },
   "bronze_round": {
     "id": "bronze_round",
@@ -1817,7 +1847,12 @@
     "value": 2,
     "equipSlot": "ammo",
     "gunBonus": 7,
-    "levelReq": [{ "skill": "Gun", "level": 1 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 1
+      }
+    ]
   },
   "iron_round": {
     "id": "iron_round",
@@ -1827,7 +1862,12 @@
     "value": 4,
     "equipSlot": "ammo",
     "gunBonus": 10,
-    "levelReq": [{ "skill": "Gun", "level": 1 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 1
+      }
+    ]
   },
   "steel_round": {
     "id": "steel_round",
@@ -1837,7 +1877,12 @@
     "value": 12,
     "equipSlot": "ammo",
     "gunBonus": 18,
-    "levelReq": [{ "skill": "Gun", "level": 20 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 20
+      }
+    ]
   },
   "mithril_round": {
     "id": "mithril_round",
@@ -1847,7 +1892,12 @@
     "value": 30,
     "equipSlot": "ammo",
     "gunBonus": 22,
-    "levelReq": [{ "skill": "Gun", "level": 40 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 40
+      }
+    ]
   },
   "adamant_round": {
     "id": "adamant_round",
@@ -1857,7 +1907,12 @@
     "value": 60,
     "equipSlot": "ammo",
     "gunBonus": 31,
-    "levelReq": [{ "skill": "Gun", "level": 55 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 55
+      }
+    ]
   },
   "rune_round": {
     "id": "rune_round",
@@ -1867,7 +1922,12 @@
     "value": 150,
     "equipSlot": "ammo",
     "gunBonus": 49,
-    "levelReq": [{ "skill": "Gun", "level": 60 }]
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 60
+      }
+    ]
   },
   "gunpowder": {
     "id": "gunpowder",
@@ -1923,7 +1983,9 @@
     "name": "Sparkling cocktail",
     "examine": "Bubbles, citrus, and the faint taste of poor choices.",
     "value": 35,
-    "edible": { "heals": 4 }
+    "edible": {
+      "heals": 4
+    }
   },
   "rainbow_scarf": {
     "id": "rainbow_scarf",
@@ -1962,13 +2024,258 @@
     "name": "Tick jerky",
     "examine": "Dried ticks from the Dentist Tick Eat clinic. Chewy.",
     "value": 12,
-    "edible": { "heals": 2 }
+    "edible": {
+      "heals": 2
+    }
   },
   "fluoride_ration": {
     "id": "fluoride_ration",
     "name": "Fluoride ration",
     "examine": "Minty paste in a tube. Not technically food, but Glen approves.",
     "value": 25,
-    "edible": { "heals": 5 }
+    "edible": {
+      "heals": 5
+    }
+  },
+  "resonant_shard": {
+    "id": "resonant_shard",
+    "name": "Resonant shard",
+    "examine": "A sliver of ore that rings a note the rock never sang. Brigh pays for these.",
+    "value": 25,
+    "stackable": true
+  },
+  "tuning_hammer": {
+    "id": "tuning_hammer",
+    "name": "Tuning hammer",
+    "examine": "Foreman-pattern maul, re-trued against the First Chord. Whatever it strikes ends up back in key.",
+    "value": 900,
+    "equipSlot": "weapon",
+    "attBonus": 15,
+    "strBonus": 17,
+    "attackSpeed": 5,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 10
+      }
+    ]
+  },
+  "tuned_pickaxe": {
+    "id": "tuned_pickaxe",
+    "name": "Tuned pickaxe",
+    "examine": "The head hums a true fifth above the seam. It finds the ore a tenth sooner.",
+    "value": 1200,
+    "equipSlot": "weapon",
+    "attBonus": 5,
+    "strBonus": 4,
+    "attackSpeed": 5,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 1
+      }
+    ]
+  },
+  "wheat": {
+    "id": "wheat",
+    "name": "Wheat",
+    "examine": "A sheaf of grain. Full of potential, most of it bread.",
+    "value": 2
+  },
+  "flour": {
+    "id": "flour",
+    "name": "Flour",
+    "examine": "Soft white flour, ground the right way round. Hob checked twice.",
+    "value": 5
+  },
+  "shim_receipt": {
+    "id": "shim_receipt",
+    "name": "Shim receipt",
+    "examine": "Receipt for one (1) lucky millstone shim, sold in good faith. The ink is somehow still wet.",
+    "value": 1
+  },
+  "lucky_shim": {
+    "id": "lucky_shim",
+    "name": "Lucky shim",
+    "examine": "A sliver of grey stone, carved into a wedge. It hums a half-beat behind itself.",
+    "value": 1
+  },
+  "court_verdict": {
+    "id": "court_verdict",
+    "name": "Court verdict",
+    "examine": "Sealed by the Court of the Southern Lawn. Legally unimpeachable. Faintly banana-scented.",
+    "value": 1
+  },
+  "millers_token": {
+    "id": "millers_token",
+    "name": "Miller's token",
+    "examine": "A wooden token good for flour at Greaves Mill. 'ONE per visit,' it says, underlined twice.",
+    "value": 1
+  },
+  "tuning_fork": {
+    "id": "tuning_fork",
+    "name": "Tuning fork",
+    "examine": "It hums a half-beat before you strike it. That isn't how forks work.",
+    "value": 0
+  },
+  "clinic_note": {
+    "id": "clinic_note",
+    "name": "Clinic note",
+    "examine": "Dr. Ticksworth's mote figures, signed and dated. There is a small graph.",
+    "value": 0
+  },
+  "mira_letter": {
+    "id": "mira_letter",
+    "name": "Mira's letter",
+    "examine": "Addressed to Master Flint, Aldgate Gun Guild. The handwriting stands slightly to the right.",
+    "value": 0
+  },
+  "wizards_writ": {
+    "id": "wizards_writ",
+    "name": "Wizards' writ",
+    "examine": "One parchment, two furious signatures, three postscripts. The conclusion is unanimous; the postscripts are not.",
+    "value": 1
+  },
+  "guild_powder_horn": {
+    "id": "guild_powder_horn",
+    "name": "Guild powder horn",
+    "examine": "Guild-stamped brass, polished by worry. Flint says it has never once fizzled, which is why he won't let it hear the ledger.",
+    "value": 120
+  },
+  "mine_survey": {
+    "id": "mine_survey",
+    "name": "Old mine survey",
+    "examine": "The north gallery is circled in Foreman Hollis's hand: 'Not a cave-in. Don't let them dig.'",
+    "value": 1
+  },
+  "blasting_charge": {
+    "id": "blasting_charge",
+    "name": "Blasting charge",
+    "examine": "Guild-milled thunder-shale, packed and fused. Vex counted every grain twice.",
+    "value": 1
+  },
+  "foreman_ledger": {
+    "id": "foreman_ledger",
+    "name": "Foreman's ledger",
+    "examine": "Wat Hollis's last ledger. The final entry isn't about ore.",
+    "value": 1
+  },
+  "hollis_lamp": {
+    "id": "hollis_lamp",
+    "name": "Hollis's lamp",
+    "examine": "It gutters near sour notes.",
+    "value": 1
+  },
+  "joint_writ": {
+    "id": "joint_writ",
+    "name": "Joint writ",
+    "examine": "One plan, two signatures, forty-one clauses. The plan is clause thirty-eight.",
+    "value": 1
+  },
+  "torn_score_page": {
+    "id": "torn_score_page",
+    "name": "Torn score page",
+    "examine": "One bar of the Second Chord, in a steady hand. Somewhere, the rest of it is being written.",
+    "value": 1
+  },
+  "dissonant_baton": {
+    "id": "dissonant_baton",
+    "name": "Dissonant baton",
+    "examine": "A conductor's baton of slate and stretched wire. Held aloft, you can feel it counting you in.",
+    "value": 1200,
+    "equipSlot": "shield",
+    "defBonus": 1,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 1
+      }
+    ]
+  },
+  "ravenmoor_diary": {
+    "id": "ravenmoor_diary",
+    "name": "Ravenmoor diary",
+    "examine": "Final entry, F.S. 738: \"a note that never resolves; it helps me sleep.\"",
+    "value": 1
+  },
+  "white_lily": {
+    "id": "white_lily",
+    "name": "White lily",
+    "examine": "It grows where water sits quiet. A flower with manners.",
+    "value": 25
+  },
+  "cellar_key": {
+    "id": "cellar_key",
+    "name": "Cellar key",
+    "examine": "Oiled and kept ready for five years by a man who never once turned it.",
+    "value": 1
+  },
+  "ravenmoor_signet": {
+    "id": "ravenmoor_signet",
+    "name": "Ravenmoor signet",
+    "examine": "The seal of a house that keeps the truth now. The manor knows it on sight.",
+    "value": 1200,
+    "equipSlot": "ring",
+    "defBonus": 1
+  },
+  "calder_brand": {
+    "id": "calder_brand",
+    "name": "Calder's brand",
+    "examine": "Never quite goes out.",
+    "value": 1
+  },
+  "hollow_verse": {
+    "id": "hollow_verse",
+    "name": "Hollow verse",
+    "examine": "The closing line of a Discord Wars hymn, in handwriting that doesn't rustle.",
+    "value": 1
+  },
+  "quiess_feather": {
+    "id": "quiess_feather",
+    "name": "Quiess feather",
+    "examine": "Weighs less than the silence between notes.",
+    "value": 1
+  },
+  "lamp_oil": {
+    "id": "lamp_oil",
+    "name": "Lamp oil",
+    "examine": "Pressed whale-oil in a stoppered flask. Burns steady, smells of arguments at sea.",
+    "value": 25
+  },
+  "keepers_spyglass": {
+    "id": "keepers_spyglass",
+    "name": "Keeper's spyglass",
+    "examine": "Brand Wicklow's spare glass. Everything you sight through it looks slightly disappointed in you.",
+    "value": 1
+  },
+  "powder_grit": {
+    "id": "powder_grit",
+    "name": "Powder grit",
+    "examine": "Black milled grit with a stamp in the grain. Found in a crate of fish that never swam.",
+    "value": 1
+  },
+  "guild_writ": {
+    "id": "guild_writ",
+    "name": "Guild writ",
+    "examine": "Sergeant Vex's deputising writ. The handwriting is very, very calm.",
+    "value": 1
+  },
+  "false_manifest": {
+    "id": "false_manifest",
+    "name": "False manifest",
+    "examine": "Shipping papers in two hands. The fish are fictional; the fence is not.",
+    "value": 1
+  },
+  "powder_keg": {
+    "id": "powder_keg",
+    "name": "Powder keg",
+    "examine": "Milled thunder-shale, labelled 'FRESH SHARK (DO NOT OPEN)'. For once the label is good advice.",
+    "value": 1
+  },
+  "guild_deputy_badge": {
+    "id": "guild_deputy_badge",
+    "name": "Guild deputy badge",
+    "examine": "An Aldgate Gun Guild deputy's badge. It expects you to count your rounds.",
+    "value": 200
   }
 }

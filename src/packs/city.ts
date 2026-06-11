@@ -44,8 +44,10 @@ registerNpcAction('ge_clerk', 'Talk-to', (n) => {
   return 'done';
 });
 
-// City guards: directions flavour.
-registerNpcAction('city_guard', 'Talk-to', (n) => {
+// City guards: directions flavour. NOTE: 'Talk-to' belongs to quest_warlord.ts
+// (The Warlord's Banner start/turn-in); registering it here too shadowed the
+// quest (first registration wins), so directions live on a bespoke option.
+registerNpcAction('city_guard', 'Ask-directions', (n) => {
   startDialogue([
     { speaker: state.player.name, text: 'Excuse me — which way to everything?' },
     { speaker: n.def.name, text: 'Plaza\'s at the centre: exchange booths, bank, the fountain folk keep drinking out of.' },

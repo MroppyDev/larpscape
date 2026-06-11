@@ -28,3 +28,18 @@ import './hub_eldermere';
 import './hub_stonewatch';
 import './hub_gullswreck';
 import './wildlife';
+// Phase 6 quest wave — the Gathering Discord arc (Q1-Q4) in chapter order,
+// then the standalone quests (Q5-Q10), then the Untuned Mine dungeon client
+// (its entrance gate contract is owned by Q3 / gd3_sealed_wing — see
+// docs/QUEST-DESIGN.md §14.2).
+import './gd1_sour_notes';          // Q1
+import './gd2_quarrel_of_wizards';  // Q2
+import './gd3_sealed_wing';         // Q3
+import './gd4_gathering_discord';   // Q4
+import './hush_of_ravenmoor';       // Q5
+import './cold_comfort';            // Q6
+import './hymn_for_the_hollow';     // Q7
+import './keep_the_light';          // Q8
+import './thunder_on_the_tide';     // Q9
+import './against_the_grain';       // Q10
+import './untuned_mine';            // solo dungeon (gated by Q3)

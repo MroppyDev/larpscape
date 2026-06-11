@@ -669,6 +669,131 @@
       "id": "pirate",
       "x": 106,
       "y": 278
+    },
+    {
+      "id": "lady_ravenmoor",
+      "x": 237,
+      "y": 152
+    },
+    {
+      "id": "groundskeeper",
+      "x": 243,
+      "y": 159
+    },
+    {
+      "id": "imber_wizard",
+      "x": 270,
+      "y": 17
+    },
+    {
+      "id": "quiess_wizard",
+      "x": 284,
+      "y": 86
+    },
+    {
+      "id": "man",
+      "x": 240,
+      "y": 42
+    },
+    {
+      "id": "wayfarer",
+      "x": 258,
+      "y": 156
+    },
+    {
+      "id": "man",
+      "x": 249,
+      "y": 201
+    },
+    {
+      "id": "sheep",
+      "x": 236,
+      "y": 178
+    },
+    {
+      "id": "sheep",
+      "x": 239,
+      "y": 181
+    },
+    {
+      "id": "giant_rat",
+      "x": 279,
+      "y": 111
+    },
+    {
+      "id": "ice_wolf",
+      "x": 278,
+      "y": 19
+    },
+    {
+      "id": "ice_wolf",
+      "x": 282,
+      "y": 13
+    },
+    {
+      "id": "cantor_surveyor",
+      "x": 21,
+      "y": 77
+    },
+    {
+      "id": "miller",
+      "x": 232,
+      "y": 61
+    },
+    {
+      "id": "giant_rat",
+      "x": 40,
+      "y": 58
+    },
+    {
+      "id": "giant_rat",
+      "x": 41,
+      "y": 59
+    },
+    {
+      "id": "discord_wisp",
+      "x": 262,
+      "y": 128
+    },
+    {
+      "id": "discord_wisp",
+      "x": 277,
+      "y": 112
+    },
+    {
+      "id": "hollow_miner",
+      "x": 22,
+      "y": 75
+    },
+    {
+      "id": "hollow_miner",
+      "x": 24,
+      "y": 75
+    },
+    {
+      "id": "manor_revenant",
+      "x": 232,
+      "y": 161
+    },
+    {
+      "id": "chapel_echo",
+      "x": 278,
+      "y": 110
+    },
+    {
+      "id": "light_keeper",
+      "x": 104,
+      "y": 246
+    },
+    {
+      "id": "pirate",
+      "x": 101,
+      "y": 249
+    },
+    {
+      "id": "cove_fence",
+      "x": 98,
+      "y": 259
     }
   ],
   "groundSpawns": [
@@ -767,6 +892,36 @@
       "x": 108,
       "y": 263,
       "respawnTicks": 60
+    },
+    {
+      "item": "bones",
+      "x": 277,
+      "y": 111,
+      "respawnTicks": 120
+    },
+    {
+      "item": "bones",
+      "x": 279,
+      "y": 113,
+      "respawnTicks": 120
+    },
+    {
+      "item": "hammer",
+      "x": 230,
+      "y": 58,
+      "respawnTicks": 100
+    },
+    {
+      "item": "white_lily",
+      "x": 287,
+      "y": 90,
+      "respawnTicks": 100
+    },
+    {
+      "item": "lamp_oil",
+      "x": 106,
+      "y": 196,
+      "respawnTicks": 100
     }
   ]
 }
