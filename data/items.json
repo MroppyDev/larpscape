@@ -145,7 +145,7 @@
   "bronze_sword": {
     "id": "bronze_sword",
     "name": "Bronze sword",
-    "examine": "A basic, dependable blade. Goblins can't forge these — that's why they take yours.",
+    "examine": "A basic, dependable blade. Goblins can't forge these \u2014 that's why they take yours.",
     "value": 26,
     "equipSlot": "weapon",
     "attBonus": 7,
@@ -305,7 +305,7 @@
   "drake_sword": {
     "id": "drake_sword",
     "name": "Drake sword",
-    "examine": "Still warm from its previous owner. Smells of cinders.",
+    "examine": "Ground from a wing-spur of the Shadow Drake. Its fire was never in its belly — and a little of the heart came off on the blade.",
     "value": 12000,
     "equipSlot": "weapon",
     "attBonus": 38,
@@ -315,6 +315,15 @@
       {
         "skill": "Attack",
         "level": 40
+      }
+    ],
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.12,
+        "dmg": 1,
+        "hits": 3,
+        "every": 2
       }
     ]
   },
@@ -353,7 +362,7 @@
   "rimeglass_blade": {
     "id": "rimeglass_blade",
     "name": "Rimeglass blade",
-    "examine": "A sword of frozen glass that never melts. Maraza's grudge, given an edge.",
+    "examine": "Maraza's Solo, frozen sharp. Three hundred and forty-one years of fury, given an edge.",
     "value": 32000,
     "equipSlot": "weapon",
     "attBonus": 50,
@@ -364,7 +373,24 @@
         "skill": "Attack",
         "level": 45
       }
-    ]
+    ],
+    "effects": [
+      {
+        "type": "freeze",
+        "chance": 0.15,
+        "holdTicks": 3
+      }
+    ],
+    "spec": {
+      "name": "Held Note",
+      "energy": 55,
+      "desc": "Sing the syllable that stopped a mountain: a 25% harder hit that holds the target in ice for 4 ticks.",
+      "kind": "stun",
+      "params": {
+        "holdTicks": 4,
+        "dmgMult": 1.25
+      }
+    }
   },
   "shortbow": {
     "id": "shortbow",
@@ -912,6 +938,15 @@
         "skill": "Defence",
         "level": 40
       }
+    ],
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.1,
+        "dmg": 1,
+        "hits": 3,
+        "every": 2
+      }
     ]
   },
   "red_sash": {
@@ -973,7 +1008,7 @@
   "gold_amulet": {
     "id": "gold_amulet",
     "name": "Gold amulet",
-    "examine": "A gold amulet on a sturdy chain. Hums faintly if you listen — but then, everything does.",
+    "examine": "A gold amulet on a sturdy chain. Hums faintly if you listen \u2014 but then, everything does.",
     "value": 350,
     "equipSlot": "neck"
   },
@@ -1887,7 +1922,7 @@
   "mithril_round": {
     "id": "mithril_round",
     "name": "Mithril round",
-    "examine": "Blue-tipped mithril rounds — fast and unforgiving.",
+    "examine": "Blue-tipped mithril rounds \u2014 fast and unforgiving.",
     "stackable": true,
     "value": 30,
     "equipSlot": "ammo",
@@ -1932,7 +1967,7 @@
   "gunpowder": {
     "id": "gunpowder",
     "name": "Gunpowder",
-    "examine": "Milled thunder-shale — the Offnote's own percussion, ground fine. The Guild calls firing it \"recycling\".",
+    "examine": "Milled thunder-shale \u2014 the Offnote's own percussion, ground fine. The Guild calls firing it \"recycling\".",
     "stackable": true,
     "value": 5
   },
@@ -2058,7 +2093,25 @@
         "skill": "Attack",
         "level": 10
       }
-    ]
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.2,
+        "dmgMult": 1.2
+      }
+    ],
+    "spec": {
+      "name": "True Strike",
+      "energy": 60,
+      "desc": "A re-truing blow: +50% damage with improved accuracy.",
+      "kind": "heavy_hit",
+      "params": {
+        "accMult": 1.25,
+        "dmgMult": 1.5
+      }
+    }
   },
   "tuned_pickaxe": {
     "id": "tuned_pickaxe",
@@ -2190,7 +2243,25 @@
         "skill": "Defence",
         "level": 1
       }
-    ]
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.15,
+        "dmgMult": 1.1
+      }
+    ],
+    "spec": {
+      "name": "Caesura",
+      "energy": 50,
+      "desc": "Conduct a hard rest: the target can neither move nor attack for 3 ticks.",
+      "kind": "stun",
+      "params": {
+        "holdTicks": 3,
+        "dmgMult": 1
+      }
+    }
   },
   "ravenmoor_diary": {
     "id": "ravenmoor_diary",
@@ -2277,5 +2348,897 @@
     "name": "Guild deputy badge",
     "examine": "An Aldgate Gun Guild deputy's badge. It expects you to count your rounds.",
     "value": 200
+  },
+  "red_smile": {
+    "id": "red_smile",
+    "name": "The Red Smile",
+    "examine": "Saif's own scimitar. Every cut a ballot, and he counted those himself too.",
+    "value": 30000,
+    "equipSlot": "weapon",
+    "attBonus": 46,
+    "strBonus": 47,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 40
+      }
+    ],
+    "effects": [
+      {
+        "type": "bleed",
+        "chance": 0.25,
+        "dmg": 2,
+        "hits": 3,
+        "every": 2,
+        "maxStacks": 1
+      }
+    ],
+    "spec": {
+      "name": "Landslide Victory",
+      "energy": 50,
+      "desc": "Carve the widest smile yet: +25% damage and a guaranteed deep bleed.",
+      "kind": "guaranteed_dot",
+      "params": {
+        "dmgMult": 1.25,
+        "dot": {
+          "type": "bleed",
+          "chance": 1,
+          "dmg": 2,
+          "hits": 5,
+          "every": 2,
+          "maxStacks": 1
+        }
+      }
+    }
+  },
+  "dune_kings_grips": {
+    "id": "dune_kings_grips",
+    "name": "Dune king's grips",
+    "examine": "Saif teaches greed, not discipline. These gloves take a cut of everything they touch.",
+    "value": 11000,
+    "equipSlot": "gloves",
+    "attBonus": 5,
+    "strBonus": 4,
+    "defBonus": 2,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 40
+      }
+    ],
+    "effects": [
+      {
+        "type": "lifesteal",
+        "pct": 0.06
+      }
+    ]
+  },
+  "sarrash_temple_silk": {
+    "id": "sarrash_temple_silk",
+    "name": "Sarrash temple silk",
+    "examine": "Red silk from singing Sarrash. Saif wears the same \u2014 he may be right about the city.",
+    "value": 600
+  },
+  "templesilk_wraps": {
+    "id": "templesilk_wraps",
+    "name": "Templesilk wraps",
+    "examine": "Three skeins of temple red, wound the way the caravans remember. The desert owes somebody a city.",
+    "value": 2800,
+    "equipSlot": "neck",
+    "attBonus": 3,
+    "strBonus": 3,
+    "defBonus": 1,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 30
+      }
+    ]
+  },
+  "mirefang": {
+    "id": "mirefang",
+    "name": "Mirefang",
+    "examine": "A curved fang of black bog-oak and tooth, still weeping. Three villages drowned on the Night of Skipped Beats; this is what their refrain bites with.",
+    "value": 27000,
+    "equipSlot": "weapon",
+    "attBonus": 41,
+    "strBonus": 38,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 40
+      }
+    ],
+    "effects": [
+      {
+        "type": "poison",
+        "chance": 0.25,
+        "dmg": 2,
+        "hits": 4,
+        "every": 3,
+        "maxStacks": 3
+      }
+    ],
+    "spec": {
+      "name": "Third Toll",
+      "energy": 50,
+      "desc": "Drive the fang deep: a guaranteed venom that tolls once for each drowned village.",
+      "kind": "guaranteed_dot",
+      "params": {
+        "dmgMult": 1.1,
+        "dot": {
+          "type": "poison",
+          "chance": 1,
+          "dmg": 3,
+          "hits": 6,
+          "every": 2,
+          "maxStacks": 3
+        }
+      }
+    }
+  },
+  "stillwater_amulet": {
+    "id": "stillwater_amulet",
+    "name": "Stillwater amulet",
+    "examine": "A drowned pearl set in old gold, strung by the Stillwater Circle. Hold it to your ear and the bog holds you back.",
+    "value": 24000,
+    "equipSlot": "neck",
+    "attBonus": 3,
+    "strBonus": 5,
+    "defBonus": 2,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 30
+      }
+    ],
+    "effects": [
+      {
+        "type": "lifesteal",
+        "pct": 0.05
+      }
+    ]
+  },
+  "drowned_pearl": {
+    "id": "drowned_pearl",
+    "name": "Drowned pearl",
+    "examine": "A grey pearl from the Deep Bog peat. It remembers being a bell, and on still nights it sweats.",
+    "value": 5600
+  },
+  "bog_horror_fang": {
+    "id": "bog_horror_fang",
+    "name": "Bog horror fang",
+    "examine": "A tooth of root-wrapped bone. The Offnote grew it out of grudge, not hunger.",
+    "value": 650
+  },
+  "errata_pistol": {
+    "id": "errata_pistol",
+    "name": "Errata",
+    "examine": "A pistol transcribed from the copyist's slate and stretched wire. Every shot is a note the First Chord never wrote.",
+    "value": 42000,
+    "equipSlot": "weapon",
+    "gunBonus": 64,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 60
+      }
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.2,
+        "dmgMult": 1.2
+      }
+    ],
+    "spec": {
+      "name": "Second Chord",
+      "energy": 50,
+      "desc": "Fire two notes at once \u2014 a chord the Choir never sanctioned. Two boosted hits.",
+      "kind": "double_hit",
+      "params": {
+        "accMult": 1.1,
+        "dmgMult": 1.1
+      }
+    }
+  },
+  "dissonant_sliver": {
+    "id": "dissonant_sliver",
+    "name": "Dissonant sliver",
+    "examine": "A shard of the copyist's slate. It remembers one note of what it was \u2014 and it is wrong about it.",
+    "stackable": true,
+    "value": 450
+  },
+  "wrongnote_round": {
+    "id": "wrongnote_round",
+    "name": "Wrongnote round",
+    "examine": "A slate-tipped pistol round milled from the copyist's wreck. It leaves the barrel out of key and arrives out of patience.",
+    "stackable": true,
+    "value": 210,
+    "equipSlot": "ammo",
+    "gunBonus": 52,
+    "levelReq": [
+      {
+        "skill": "Gun",
+        "level": 60
+      }
+    ],
+    "effects": [
+      {
+        "type": "bleed",
+        "chance": 0.1,
+        "dmg": 1,
+        "hits": 3,
+        "every": 2
+      }
+    ]
+  },
+  "drakebreath_staff": {
+    "id": "drakebreath_staff",
+    "name": "Drakebreath staff",
+    "examine": "A drake rib crowned with a live ember crystal. When it exhales, the room goes the colour of a bad night.",
+    "value": 36000,
+    "equipSlot": "weapon",
+    "attBonus": 12,
+    "strBonus": 8,
+    "mageBonus": 20,
+    "attackSpeed": 5,
+    "levelReq": [
+      {
+        "skill": "Magic",
+        "level": 50
+      }
+    ],
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.25,
+        "dmg": 2,
+        "hits": 4,
+        "every": 2,
+        "maxStacks": 2
+      }
+    ]
+  },
+  "nightscale_coif": {
+    "id": "nightscale_coif",
+    "name": "Nightscale coif",
+    "examine": "Moulted drake scales sewn into a hood. They still shed darkness the way hot iron sheds sparks.",
+    "value": 28000,
+    "equipSlot": "head",
+    "defBonus": 12,
+    "rangedBonus": 8,
+    "levelReq": [
+      {
+        "skill": "Ranged",
+        "level": 40
+      },
+      {
+        "skill": "Defence",
+        "level": 40
+      }
+    ]
+  },
+  "nightscale": {
+    "id": "nightscale",
+    "name": "Nightscale",
+    "examine": "A moulted scale blacker than the cave it fell in. Light goes into it and files no report.",
+    "value": 2500
+  },
+  "drakescale_vambraces": {
+    "id": "drakescale_vambraces",
+    "name": "Drakescale vambraces",
+    "examine": "Nightscale plates over supple leather. In dim light your hands simply stop being there.",
+    "value": 6000,
+    "equipSlot": "gloves",
+    "defBonus": 3,
+    "rangedBonus": 4,
+    "levelReq": [
+      {
+        "skill": "Ranged",
+        "level": 30
+      }
+    ]
+  },
+  "marazas_signet": {
+    "id": "marazas_signet",
+    "name": "Maraza's signet",
+    "examine": "The seal of Frostpeak's last queen, still cold enough to bite. Her court has been bowing to it, mid-syllable, since F.S. 402.",
+    "value": 52000,
+    "equipSlot": "ring",
+    "attBonus": 1,
+    "strBonus": 1,
+    "defBonus": 3,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 50
+      }
+    ],
+    "effects": [
+      {
+        "type": "freeze",
+        "chance": 0.06,
+        "holdTicks": 2
+      }
+    ]
+  },
+  "rimeglass_shard": {
+    "id": "rimeglass_shard",
+    "name": "Rimeglass shard",
+    "examine": "A splinter of the unfinished note. It hums one cold syllable, over and over, and never the next.",
+    "stackable": true,
+    "value": 1500
+  },
+  "rimeglass_ring": {
+    "id": "rimeglass_ring",
+    "name": "Rimeglass ring",
+    "examine": "A band of singing ice that never melts. Wearing it feels like remembering snow.",
+    "value": 6400,
+    "equipSlot": "ring",
+    "defBonus": 2,
+    "mageBonus": 1
+  },
+  "cindermaul": {
+    "id": "cindermaul",
+    "name": "Cindermaul",
+    "examine": "Stone that walks, fire that thinks \u2014 and this is what it thinks with.",
+    "value": 64000,
+    "equipSlot": "weapon",
+    "attBonus": 54,
+    "strBonus": 70,
+    "attackSpeed": 6,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 50
+      }
+    ],
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.2,
+        "dmg": 2,
+        "hits": 4,
+        "every": 2
+      }
+    ],
+    "spec": {
+      "name": "Forgefall",
+      "energy": 60,
+      "desc": "Bring the whole forge down at once: +50% damage, and an accurate hit always sets the target burning.",
+      "kind": "guaranteed_dot",
+      "params": {
+        "dmgMult": 1.5,
+        "dot": {
+          "type": "burn",
+          "chance": 1,
+          "dmg": 3,
+          "hits": 4,
+          "every": 2
+        }
+      }
+    }
+  },
+  "unstruck_bell": {
+    "id": "unstruck_bell",
+    "name": "Unstruck bell",
+    "examine": "Brogan's worst theory, hammered flat for a grip. The deep's loudest word, and it has never once been rung.",
+    "value": 48000,
+    "equipSlot": "shield",
+    "defBonus": 40,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 45
+      }
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.1,
+        "dmgMult": 1.1
+      }
+    ],
+    "spec": {
+      "name": "Toll",
+      "energy": 50,
+      "desc": "Ring it, just once. Everything nearby hears the note it was never meant to carry and falters.",
+      "kind": "warcry_aoe_debuff",
+      "params": {
+        "radius": 3,
+        "atkMult": 0.6,
+        "ticks": 16
+      }
+    }
+  },
+  "everburn_slag": {
+    "id": "everburn_slag",
+    "name": "Everburn slag",
+    "examine": "Spillage from Korr's anvil that never learned to cool. Smiths pay well for fuel that refuses to quit.",
+    "value": 600
+  },
+  "slagplate": {
+    "id": "slagplate",
+    "name": "Slagplate",
+    "examine": "Armour smithed from the workshop you inherited. Warm side in, please.",
+    "value": 30000,
+    "equipSlot": "body",
+    "defBonus": 60,
+    "strBonus": 2,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 40
+      }
+    ],
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.05,
+        "dmg": 1,
+        "hits": 3,
+        "every": 2
+      }
+    ]
+  },
+  "shardsong_bow": {
+    "id": "shardsong_bow",
+    "name": "Shardsong bow",
+    "examine": "Strung across a rib of the Heart. Every arrow leaves it singing a note Aulden never released.",
+    "value": 1600,
+    "equipSlot": "weapon",
+    "rangedBonus": 27,
+    "attackSpeed": 5,
+    "levelReq": [
+      {
+        "skill": "Ranged",
+        "level": 20
+      }
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.2,
+        "dmgMult": 1.2
+      }
+    ],
+    "spec": {
+      "name": "Sympathetic Ring",
+      "energy": 50,
+      "desc": "The arrow keeps ringing in the wound: a boosted shot that always leaves a resonance bleed.",
+      "kind": "guaranteed_dot",
+      "params": {
+        "dmgMult": 1.1,
+        "dot": {
+          "type": "bleed",
+          "chance": 1,
+          "dmg": 2,
+          "hits": 4,
+          "every": 2
+        }
+      }
+    }
+  },
+  "echo_pick": {
+    "id": "echo_pick",
+    "name": "Echo pick",
+    "examine": "Wat Hollis's pick, still swinging the shift it never clocked out of. It knocks twice on whatever it hits.",
+    "value": 800,
+    "equipSlot": "weapon",
+    "attBonus": 14,
+    "strBonus": 12,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 10
+      }
+    ],
+    "effects": [
+      {
+        "type": "bleed",
+        "chance": 0.15,
+        "dmg": 1,
+        "hits": 4,
+        "every": 2
+      }
+    ],
+    "spec": {
+      "name": "Knock Twice",
+      "energy": 50,
+      "desc": "Once for Aulden, once for whoever didn't come back: two full strikes in one swing.",
+      "kind": "double_hit",
+      "params": {
+        "accMult": 1.1
+      }
+    }
+  },
+  "shardpoint_arrowtips": {
+    "id": "shardpoint_arrowtips",
+    "name": "Shardpoint arrowtips",
+    "examine": "Slivers of the Heart knapped to a point. They hum until they're loosed.",
+    "stackable": true,
+    "value": 6
+  },
+  "shardpoint_arrow": {
+    "id": "shardpoint_arrow",
+    "name": "Shardpoint arrow",
+    "examine": "Crystal-tipped arrows that arrive a breath ahead of their own note.",
+    "stackable": true,
+    "value": 18,
+    "equipSlot": "ammo",
+    "rangedBonus": 25,
+    "levelReq": [
+      {
+        "skill": "Ranged",
+        "level": 18
+      }
+    ]
+  },
+  "banner_cleaver": {
+    "id": "banner_cleaver",
+    "name": "Banner cleaver",
+    "examine": "A cleaver hafted on the Broken-Tooth banner-pole. The whole march is scored down the blade, and it ends badly.",
+    "value": 9600,
+    "equipSlot": "weapon",
+    "attBonus": 24,
+    "strBonus": 28,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 25
+      }
+    ],
+    "effects": [
+      {
+        "type": "bleed",
+        "chance": 0.2,
+        "dmg": 1,
+        "hits": 4,
+        "every": 2
+      }
+    ],
+    "spec": {
+      "name": "Broken Chorus",
+      "energy": 60,
+      "desc": "Bellow the Broken-Tooth march back at them, off-key: nearby foes attack at 70% for 16 ticks.",
+      "kind": "warcry_aoe_debuff",
+      "params": {
+        "radius": 2,
+        "atkMult": 0.7,
+        "ticks": 16
+      }
+    }
+  },
+  "chantbreaker_ward": {
+    "id": "chantbreaker_ward",
+    "name": "Chantbreaker ward",
+    "examine": "A buckler faced with a stolen bar of the Broken-Tooth march. Goblins hate hearing it played back wrong.",
+    "value": 6800,
+    "equipSlot": "shield",
+    "defBonus": 16,
+    "strBonus": 1,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 20
+      }
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "goblinkind",
+        "accMult": 1.2,
+        "dmgMult": 1.15
+      }
+    ]
+  },
+  "brokentooth_chant_page": {
+    "id": "brokentooth_chant_page",
+    "name": "Broken-Tooth chant page",
+    "examine": "A torn measure of the warband's banner. Somewhere, a goblin has forgotten the words.",
+    "stackable": true,
+    "value": 320
+  },
+  "war_march_score": {
+    "id": "war_march_score",
+    "name": "War-march score",
+    "examine": "Six stolen measures of the Broken-Tooth march, rebound. Hum it and your shoulders square on their own.",
+    "value": 2600,
+    "equipSlot": "neck",
+    "attBonus": 3,
+    "strBonus": 3,
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "goblinkind",
+        "accMult": 1.1,
+        "dmgMult": 1.05
+      }
+    ]
+  },
+  "wolf_fang_amulet": {
+    "id": "wolf_fang_amulet",
+    "name": "Wolf fang amulet",
+    "examine": "A dire fang on a sinew cord. Beasts remember the bite.",
+    "value": 4200,
+    "equipSlot": "neck",
+    "attBonus": 3,
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "beastkind",
+        "accMult": 1.15,
+        "dmgMult": 1.15
+      }
+    ]
+  },
+  "stinger_dirk": {
+    "id": "stinger_dirk",
+    "name": "Stinger dirk",
+    "examine": "A dagger ground from a scorpion's tail barb. Still arguing.",
+    "value": 2800,
+    "equipSlot": "weapon",
+    "attBonus": 16,
+    "strBonus": 14,
+    "attackSpeed": 3,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 15
+      }
+    ],
+    "effects": [
+      {
+        "type": "poison",
+        "chance": 0.2,
+        "dmg": 2,
+        "hits": 4,
+        "every": 3,
+        "maxStacks": 1
+      }
+    ]
+  },
+  "spidersilk_bowstring": {
+    "id": "spidersilk_bowstring",
+    "name": "Spidersilk bowstring",
+    "examine": "A bowstring spun from forest-spider silk. Waiting for a bow worthy of it.",
+    "value": 380
+  },
+  "wraithcloth_robes": {
+    "id": "wraithcloth_robes",
+    "name": "Wraithcloth robes",
+    "examine": "Robes woven from cloth that forgot it was buried. Cold against the skin, warm against a spell.",
+    "value": 5200,
+    "equipSlot": "body",
+    "defBonus": 8,
+    "mageBonus": 12,
+    "levelReq": [
+      {
+        "skill": "Magic",
+        "level": 30
+      }
+    ]
+  },
+  "trollbone_club": {
+    "id": "trollbone_club",
+    "name": "Trollbone club",
+    "examine": "A femur the size of a fencepost. Subtlety sold separately.",
+    "value": 4800,
+    "equipSlot": "weapon",
+    "attBonus": 18,
+    "strBonus": 30,
+    "attackSpeed": 5,
+    "levelReq": [
+      {
+        "skill": "Strength",
+        "level": 25
+      }
+    ]
+  },
+  "corsairs_fang": {
+    "id": "corsairs_fang",
+    "name": "Corsair's fang",
+    "examine": "Saltjaw's own blade. He beat time on the rail with it, double-quick, and the crew rowed or bled.",
+    "value": 7200,
+    "equipSlot": "weapon",
+    "attBonus": 26,
+    "strBonus": 24,
+    "attackSpeed": 3,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 30
+      }
+    ]
+  },
+  "direwolf_pelt_cloak": {
+    "id": "direwolf_pelt_cloak",
+    "name": "Direwolf pelt cloak",
+    "examine": "A heavy grey pelt worn over the shoulders. The forest steps aside.",
+    "value": 3600,
+    "equipSlot": "body",
+    "defBonus": 10,
+    "rangedBonus": 4,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 15
+      }
+    ]
+  },
+  "bearclaw_necklace": {
+    "id": "bearclaw_necklace",
+    "name": "Bearclaw necklace",
+    "examine": "Five claws on a leather thong. The bargain was renegotiated.",
+    "value": 2600,
+    "equipSlot": "neck",
+    "strBonus": 5
+  },
+  "grave_ring": {
+    "id": "grave_ring",
+    "name": "Grave ring",
+    "examine": "A tarnished signet pulled from old earth. It hums a name you don't know.",
+    "value": 5600,
+    "equipSlot": "ring",
+    "defBonus": 3,
+    "mageBonus": 4
+  },
+  "ember_charm": {
+    "id": "ember_charm",
+    "name": "Ember charm",
+    "examine": "A cinder imp's heart-coal in a brass cage. It never quite goes out.",
+    "value": 3400,
+    "equipSlot": "neck",
+    "mageBonus": 2,
+    "effects": [
+      {
+        "type": "burn",
+        "chance": 0.08,
+        "dmg": 1,
+        "hits": 3,
+        "every": 2
+      }
+    ]
+  },
+  "mote_dust": {
+    "id": "mote_dust",
+    "name": "Mote dust",
+    "examine": "Glittering grit left when a discord mote falls silent. Tuners and enchanters pay well for a quiet pinch.",
+    "stackable": true,
+    "value": 120
+  },
+  "bandit_black_wrap": {
+    "id": "bandit_black_wrap",
+    "name": "Bandit's black wrap",
+    "examine": "A dust-stained head wrap. Anonymous, breathable, mildly incriminating.",
+    "value": 1800,
+    "equipSlot": "head",
+    "defBonus": 4,
+    "rangedBonus": 3
+  },
+  "goblin_lucky_tooth": {
+    "id": "goblin_lucky_tooth",
+    "name": "Goblin lucky tooth",
+    "examine": "A goblin's lucky tooth. Not lucky enough, evidently.",
+    "value": 900,
+    "equipSlot": "neck",
+    "attBonus": 2
+  },
+  "gilded_egg": {
+    "id": "gilded_egg",
+    "name": "Gilded egg",
+    "examine": "An egg with a shell of true gold leaf. The hen has questions to answer.",
+    "value": 1200
+  },
+  "ivory_cowbell": {
+    "id": "ivory_cowbell",
+    "name": "Ivory cowbell",
+    "examine": "A carved ivory bell on a collar. Rings a perfect, pointless C.",
+    "value": 750,
+    "equipSlot": "neck",
+    "defBonus": 1
+  },
+  "rat_tail_talisman": {
+    "id": "rat_tail_talisman",
+    "name": "Rat tail talisman",
+    "examine": "A knotted rat tail. Sewer luck is still luck.",
+    "value": 600,
+    "equipSlot": "neck",
+    "strBonus": 1
+  },
+  "guardsman_signet": {
+    "id": "guardsman_signet",
+    "name": "Guardsman's signet",
+    "examine": "A city watch ring, slightly dented. Wearing it is probably a crime.",
+    "value": 1400,
+    "equipSlot": "ring",
+    "defBonus": 2
+  },
+  "dirge_blade": {
+    "id": "dirge_blade",
+    "name": "Dirge blade",
+    "examine": "A slate-dark sword tuned to a falling minor third. The Offnote hear their own ending in it.",
+    "value": 30000,
+    "equipSlot": "weapon",
+    "attBonus": 46,
+    "strBonus": 42,
+    "attackSpeed": 4,
+    "levelReq": [
+      {
+        "skill": "Attack",
+        "level": 40
+      },
+      {
+        "skill": "Slayer",
+        "level": 30
+      }
+    ],
+    "effects": [
+      {
+        "type": "family_bane",
+        "family": "offnote",
+        "accMult": 1.2,
+        "dmgMult": 1.2
+      }
+    ],
+    "spec": {
+      "name": "Final Rest",
+      "energy": 60,
+      "desc": "A single resolving chord: one swing with 30% more accuracy and 60% more damage.",
+      "kind": "heavy_hit",
+      "params": {
+        "accMult": 1.3,
+        "dmgMult": 1.6
+      }
+    }
+  },
+  "cull_band": {
+    "id": "cull_band",
+    "name": "Cull band",
+    "examine": "An iron ring stamped with Brogan's tally-mark. Each notch was earned the hard way.",
+    "value": 8000,
+    "equipSlot": "ring",
+    "attBonus": 3,
+    "strBonus": 3,
+    "levelReq": [
+      {
+        "skill": "Slayer",
+        "level": 20
+      }
+    ]
+  },
+  "wardens_visor": {
+    "id": "wardens_visor",
+    "name": "Warden's visor",
+    "examine": "A slayer's half-helm with a slit visor. Sees trouble coming and charges it anyway.",
+    "value": 6000,
+    "equipSlot": "head",
+    "defBonus": 16,
+    "attBonus": 3,
+    "levelReq": [
+      {
+        "skill": "Defence",
+        "level": 20
+      },
+      {
+        "skill": "Slayer",
+        "level": 15
+      }
+    ]
+  },
+  "tome_of_grudges": {
+    "id": "tome_of_grudges",
+    "name": "Tome of grudges",
+    "examine": "Brogan's field notes on things that needed killing. Read once, learn plenty.",
+    "value": 2000
   }
 }
