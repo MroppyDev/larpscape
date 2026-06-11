@@ -278,6 +278,12 @@ function handleWsMessage(raw: string) {
     import('./friends').then((f) => void f.loadGuild());
   } else if (m.t === 'guild_vault_change') {
     import('./ui').then((u) => u.refreshGuildVault());
+  } else if (m.t === 'save_reload') {
+    // The trade site (or another server-side system) just rewrote our save.
+    // Pull the authoritative bank and drop any stale pending PUT, otherwise
+    // our retry loop would eventually outlast the fence and clobber the
+    // market mutation (the dupe the economy audit flagged).
+    void reloadServerBank();
   } else if (m.t === 'system' && typeof m.text === 'string') {
     msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
@@ -304,6 +310,26 @@ function handleWsMessage(raw: string) {
   } else if (m.t === 'pvpKill') {
     netPvpKill(m);
   }
+}
+
+// Re-sync the bank from the server's authoritative save after a server-side
+// mutation (market list/buy/cancel/collect). The market only ever touches
+// save.bank, so swapping the bank in place is safe mid-game. Stale pending
+// saves are dropped first; a fresh snapshot is queued after so the next PUT
+// carries the merged state instead of re-introducing the pre-mutation bank.
+async function reloadServerBank() {
+  try {
+    const data = await api('/api/character');
+    const serverBank = data?.save?.bank;
+    if (!Array.isArray(serverBank) || !state.player) return;
+    pendingSave = null;
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    state.player.bank = serverBank;
+    saveGame(); // snapshot the merged state so future PUTs are coherent
+    if (state.bankOpen) {
+      import('./game').then((g) => g.events.onBankShopChange?.());
+    }
+  } catch { /* next save_reload or relog will reconcile */ }
 }
 
 function openWs() {

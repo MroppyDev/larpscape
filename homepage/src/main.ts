@@ -9,6 +9,7 @@ import { apiMe, logout, FORUM_URL } from './auth';
 
 const PLAY_URL = 'https://play.larpscape.net';
 const WIKI_URL = 'https://wiki.larpscape.net';
+const TRADE_URL = 'https://trade.larpscape.net';
 const GITHUB_URL = 'https://github.com/MroppyDev/larpscape';
 
 function el<T extends HTMLElement>(id: string): T {
@@ -37,6 +38,7 @@ const RAIL: Record<string, RailLink[]> = {
   'rail-community-list': [
     { label: 'Forum', href: FORUM_URL, icon: 'quill', ext: true },
     { label: 'The Larpscape Wiki', href: WIKI_URL, icon: 'book', ext: true },
+    { label: 'The Aldgate Exchange', href: TRADE_URL, icon: 'economy', ext: true },
     { label: 'Guilds & trading', href: '#about', icon: 'banner' },
     { label: 'GitHub', href: GITHUB_URL, icon: 'code', ext: true },
   ],

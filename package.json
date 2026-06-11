@@ -18,7 +18,10 @@
     "wiki:build": "npm run wiki:build-data && vite build --config wiki/vite.config.ts",
     "wiki:build-path": "bash deploy/build-wiki-path.sh",
     "home:dev": "vite --config homepage/vite.config.ts",
-    "home:build": "vite build --config homepage/vite.config.ts"
+    "home:build": "vite build --config homepage/vite.config.ts",
+    "trade:sprites": "tsx trade/build-sprites.ts",
+    "trade:dev": "npm run trade:sprites && vite --config trade/vite.config.ts",
+    "trade:build": "npm run trade:sprites && tsc -p trade && vite build --config trade/vite.config.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

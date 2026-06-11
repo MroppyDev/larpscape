@@ -44,3 +44,4 @@ import './thunder_on_the_tide';     // Q9
 import './against_the_grain';       // Q10
 import './untuned_mine';            // solo dungeon (gated by Q3)
 import './slayer_tasks';            // slayer assignment loop + points shop (Brogan)
+import './market_clerk';            // Concord of Weights desk (trade.larpscape.net face)

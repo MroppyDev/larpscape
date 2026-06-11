@@ -25,6 +25,7 @@ import {
 } from './dungeon';
 import { getRanking, getPlayerHiscores } from './hiscores';
 import { initForum } from './forum';
+import { initMarket } from './market';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
 
@@ -562,6 +563,31 @@ app.get('/api/ge/price/:item', requireAuth, (req: AuthedRequest, res) => {
   res.json({ last: row ? row.price : null });
 });
 
+// GET /api/ge/history/:item — daily price/volume buckets from the trades
+// table (last 90 days), for the trade site's price charts. Public, cached 5 min.
+const geHistoryCache = new Map<string, { at: number; body: unknown }>();
+const GE_HISTORY_CACHE_MS = 5 * 60_000;
+app.get('/api/ge/history/:item', (req, res) => {
+  const item = String(req.params.item ?? '');
+  if (!ITEM_RE.test(item)) { res.status(400).json({ error: 'invalid item id' }); return; }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  const hit = geHistoryCache.get(item);
+  if (hit && Date.now() - hit.at < GE_HISTORY_CACHE_MS) { res.json(hit.body); return; }
+  const since = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const rows = db.prepare(
+    `SELECT strftime('%Y-%m-%d', created_at / 1000, 'unixepoch') AS date,
+            CAST(ROUND(CAST(SUM(price * qty) AS REAL) / SUM(qty)) AS INTEGER) AS avgPrice,
+            SUM(qty) AS volume
+       FROM trades WHERE item = ? AND created_at >= ?
+      GROUP BY date ORDER BY date`
+  ).all(item, since) as Array<{ date: string; avgPrice: number; volume: number }>;
+  const body = { item, days: rows };
+  if (geHistoryCache.size > 1000) geHistoryCache.clear(); // bound memory
+  geHistoryCache.set(item, { at: Date.now(), body });
+  res.json(body);
+});
+
 // Public bulk GE prices for the wiki (last traded price per item, no auth).
 app.get('/api/ge/prices', (_req, res) => {
   const rows = db.prepare(
@@ -982,6 +1008,45 @@ const social = initSocial({
   onSavesMutated: fenceSaves,
 });
 social.registerRoutes(app, requireAuth);
+
+// Market (trade.larpscape.net backend — server/market.ts). Registered before
+// the /api 404; cookie or Bearer auth via userFromRequest, save fence reused.
+function isOnlineName(username: string): boolean {
+  const lower = username.toLowerCase();
+  for (const c of clients) {
+    if (c.name.toLowerCase() === lower && c.ws.readyState === WebSocket.OPEN) return true;
+  }
+  return false;
+}
+function systemMessageTo(username: string, text: string) {
+  const lower = username.toLowerCase();
+  for (const c of clients) {
+    if (c.name.toLowerCase() === lower && c.ws.readyState === WebSocket.OPEN) {
+      c.ws.send(JSON.stringify({ t: 'system', text }));
+    }
+  }
+}
+// Tell an online game client that its server-side save was rewritten out from
+// under it (e.g. by a market mutation made on trade.larpscape.net) so it
+// re-fetches GET /api/character and rebuilds local state INSTEAD of clobbering
+// the new server save with its now-stale in-memory inventory. The save fence
+// (fenceSaves) only buys ~4s; without this push the client's post-fence
+// re-snapshot re-dupes the escrowed item. The game client must handle
+// {t:'save_reload'} (see src/net.ts) for this to fully close the dupe.
+function requestSaveReload(userIds: number[]) {
+  const ids = new Set(userIds);
+  for (const c of clients) {
+    if (ids.has(c.userId) && c.ws.readyState === WebSocket.OPEN) {
+      c.ws.send(JSON.stringify({ t: 'save_reload' }));
+    }
+  }
+}
+initMarket(app, db, {
+  userFromRequest,
+  isOnline: isOnlineName,
+  systemMessageTo,
+  onSavesMutated: (ids) => { fenceSaves(ids); requestSaveReload(ids); },
+});
 
 // 404 for unknown API routes
 app.use('/api', (_req, res) => { res.status(404).json({ error: 'not found' }); });

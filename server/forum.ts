@@ -350,7 +350,8 @@ This count is taken from souls seen on the toll path within the last fifteen min
 <div class="navbar">
 <a href="/forum/">Board Index</a> &middot; <a href="/forum/search">Search</a> &middot;
 <a href="https://play.larpscape.net">Play the game</a> &middot;
-<a href="https://wiki.larpscape.net">Wiki</a>
+<a href="https://wiki.larpscape.net">Wiki</a> &middot;
+<a href="https://trade.larpscape.net">Trade</a>
 <span style="float:right">${userLine}</span>
 </div>
 <div class="crumbs">${crumbHtml}</div>

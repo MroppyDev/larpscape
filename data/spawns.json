@@ -794,6 +794,11 @@
       "id": "cove_fence",
       "x": 98,
       "y": 259
+    },
+    {
+      "id": "market_clerk",
+      "x": 96,
+      "y": 28
     }
   ],
   "groundSpawns": [

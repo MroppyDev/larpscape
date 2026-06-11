@@ -39,6 +39,11 @@ if [[ -f homepage/index.html ]]; then
 else
   echo "    (homepage/index.html not present yet — skipping home:build)"
 fi
+if [[ -f trade/index.html ]]; then
+  npm run trade:build
+else
+  echo "    (trade/index.html not present yet — skipping trade:build)"
+fi
 
 # Keep systemd units / nginx config in sync with the repo
 if ! cmp -s deploy/larpscape.service /etc/systemd/system/larpscape.service; then
@@ -90,6 +95,18 @@ if [[ -f deploy/nginx-larpscape-forum.conf ]]; then
   # If HTTPS cert already exists, append the SSL vhost
   if [[ -f /etc/letsencrypt/live/forum.larpscape.net/fullchain.pem ]] && [[ -f deploy/nginx-larpscape-forum-ssl.conf ]]; then
     bash deploy/enable-forum-ssl.sh
+  fi
+fi
+# trade.larpscape.net vhost. HTTPS comes from a one-time manual step post-DNS:
+# run bash deploy/bootstrap-trade-ssl.sh on the VPS AFTER the trade A record is
+# added — later deploys then re-enable HTTPS automatically via enable-trade-ssl.sh.
+if [[ -f deploy/nginx-larpscape-trade.conf ]]; then
+  mkdir -p /var/www/certbot
+  cp deploy/nginx-larpscape-trade.conf /etc/nginx/sites-available/larpscape-trade
+  ln -sf /etc/nginx/sites-available/larpscape-trade /etc/nginx/sites-enabled/larpscape-trade
+  # If HTTPS cert already exists, append the SSL vhost
+  if [[ -f /etc/letsencrypt/live/trade.larpscape.net/fullchain.pem ]] && [[ -f deploy/nginx-larpscape-trade-ssl.conf ]]; then
+    bash deploy/enable-trade-ssl.sh
   fi
 fi
 rm -f /etc/nginx/sites-enabled/default

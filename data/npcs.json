@@ -2992,5 +2992,22 @@
     "size": 1,
     "attackable": false,
     "drops": []
+  },
+  "market_clerk": {
+    "id": "market_clerk",
+    "name": "Market clerk",
+    "examine": "Concord of Weights desk staff. Owns a stool, a quill, and the great board's chalk — the chalk is audited.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "option": "Talk-to",
+    "respawnTicks": 50,
+    "color": "#c4aa5a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
   }
 }

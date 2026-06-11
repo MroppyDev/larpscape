@@ -145,7 +145,7 @@
   "bronze_sword": {
     "id": "bronze_sword",
     "name": "Bronze sword",
-    "examine": "A basic, dependable blade. Goblins can't forge these \u2014 that's why they take yours.",
+    "examine": "A basic, dependable blade. Goblins can't forge these — that's why they take yours.",
     "value": 26,
     "equipSlot": "weapon",
     "attBonus": 7,
@@ -1008,7 +1008,7 @@
   "gold_amulet": {
     "id": "gold_amulet",
     "name": "Gold amulet",
-    "examine": "A gold amulet on a sturdy chain. Hums faintly if you listen \u2014 but then, everything does.",
+    "examine": "A gold amulet on a sturdy chain. Hums faintly if you listen — but then, everything does.",
     "value": 350,
     "equipSlot": "neck"
   },
@@ -1922,7 +1922,7 @@
   "mithril_round": {
     "id": "mithril_round",
     "name": "Mithril round",
-    "examine": "Blue-tipped mithril rounds \u2014 fast and unforgiving.",
+    "examine": "Blue-tipped mithril rounds — fast and unforgiving.",
     "stackable": true,
     "value": 30,
     "equipSlot": "ammo",
@@ -1967,7 +1967,7 @@
   "gunpowder": {
     "id": "gunpowder",
     "name": "Gunpowder",
-    "examine": "Milled thunder-shale \u2014 the Offnote's own percussion, ground fine. The Guild calls firing it \"recycling\".",
+    "examine": "Milled thunder-shale — the Offnote's own percussion, ground fine. The Guild calls firing it \"recycling\".",
     "stackable": true,
     "value": 5
   },
@@ -2417,7 +2417,7 @@
   "sarrash_temple_silk": {
     "id": "sarrash_temple_silk",
     "name": "Sarrash temple silk",
-    "examine": "Red silk from singing Sarrash. Saif wears the same \u2014 he may be right about the city.",
+    "examine": "Red silk from singing Sarrash. Saif wears the same — he may be right about the city.",
     "value": 600
   },
   "templesilk_wraps": {
@@ -2538,7 +2538,7 @@
     "spec": {
       "name": "Second Chord",
       "energy": 50,
-      "desc": "Fire two notes at once \u2014 a chord the Choir never sanctioned. Two boosted hits.",
+      "desc": "Fire two notes at once — a chord the Choir never sanctioned. Two boosted hits.",
       "kind": "double_hit",
       "params": {
         "accMult": 1.1,
@@ -2549,7 +2549,7 @@
   "dissonant_sliver": {
     "id": "dissonant_sliver",
     "name": "Dissonant sliver",
-    "examine": "A shard of the copyist's slate. It remembers one note of what it was \u2014 and it is wrong about it.",
+    "examine": "A shard of the copyist's slate. It remembers one note of what it was — and it is wrong about it.",
     "stackable": true,
     "value": 450
   },
@@ -2686,7 +2686,7 @@
   "cindermaul": {
     "id": "cindermaul",
     "name": "Cindermaul",
-    "examine": "Stone that walks, fire that thinks \u2014 and this is what it thinks with.",
+    "examine": "Stone that walks, fire that thinks — and this is what it thinks with.",
     "value": 64000,
     "equipSlot": "weapon",
     "attBonus": 54,
