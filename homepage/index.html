@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Larpscape — a free browser realm in the world of Cantorne</title>
+  <meta name="description" content="Larpscape is a free, original browser MMO homage to the classics. 24 skills, quests, guilds, a player economy, and the Offnote waiting at the bottom of the mine. No download — play in your browser." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta property="og:title" content="Larpscape — a free browser realm in the world of Cantorne" />
+  <meta property="og:description" content="24 skills, quests, guilds, and an instanced dungeon, all in your browser. An original fan homage — year F.S. 743 and counting." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://larpscape.net/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- §1.1 utility strip -->
+  <div class="util-strip">
+    <a class="login-plaque" href="https://play.larpscape.net">
+      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M8 1a3.2 3.2 0 0 0-3.2 3.2V6H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-.8V4.2A3.2 3.2 0 0 0 8 1Zm-1.7 3.2a1.7 1.7 0 1 1 3.4 0V6H6.3ZM8 8.6a1.1 1.1 0 0 1 .55 2.05V12h-1.1v-1.35A1.1 1.1 0 0 1 8 8.6Z" fill="currentColor"/></svg>
+      Existing adventurer? Log in
+    </a>
+  </div>
+
+  <!-- §1.2 banner header / hero -->
+  <header class="banner">
+    <svg class="hero-scene" viewBox="0 0 1200 430" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0c0a12" />
+          <stop offset=".55" stop-color="#241a28" />
+          <stop offset=".85" stop-color="#3d2a25" />
+          <stop offset="1" stop-color="#4d3526" />
+        </linearGradient>
+        <radialGradient id="moonglow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#f3e2b0" stop-opacity=".9" />
+          <stop offset=".35" stop-color="#e8cf90" stop-opacity=".25" />
+          <stop offset="1" stop-color="#e8cf90" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="farhill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a2c33" />
+          <stop offset="1" stop-color="#2b2026" />
+        </linearGradient>
+        <linearGradient id="midhill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#241c1e" />
+          <stop offset="1" stop-color="#1a1416" />
+        </linearGradient>
+        <filter id="glyphglow" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="6" result="b" />
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <rect width="1200" height="430" fill="url(#sky)" />
+
+      <!-- stars -->
+      <g fill="#e9ddb8">
+        <circle cx="84"  cy="52"  r="1.4" class="tw t1"/><circle cx="201" cy="96"  r="1"   class="tw t2"/>
+        <circle cx="318" cy="38"  r="1.2" class="tw t3"/><circle cx="455" cy="120" r="1"   class="tw t1"/>
+        <circle cx="540" cy="60"  r="1.5" class="tw t2"/><circle cx="700" cy="34"  r="1.1" class="tw t3"/>
+        <circle cx="804" cy="104" r="1"   class="tw t2"/><circle cx="930" cy="48"  r="1.4" class="tw t1"/>
+        <circle cx="1042" cy="92" r="1.1" class="tw t3"/><circle cx="1148" cy="40" r="1.3" class="tw t2"/>
+        <circle cx="380" cy="170" r=".9"  class="tw t1"/><circle cx="980" cy="160" r=".9"  class="tw t3"/>
+      </g>
+
+      <!-- moon -->
+      <circle cx="965" cy="98" r="120" fill="url(#moonglow)" />
+      <circle cx="965" cy="98" r="34" fill="#efe0b4" />
+      <circle cx="954" cy="90" r="7" fill="#e2d09e" /><circle cx="976" cy="108" r="5" fill="#e2d09e" />
+
+      <!-- drifting Offnote glyph: a note the First Chord never wrote -->
+      <g class="offnote" filter="url(#glyphglow)" stroke="#e8b54a" stroke-width="3" fill="none" stroke-linecap="round">
+        <ellipse cx="248" cy="148" rx="13" ry="9.5" transform="rotate(-22 248 148)" fill="#e8b54a" fill-opacity=".85"/>
+        <path d="M259 142 V 86 q 16 4 24 18" />
+        <path d="M226 168 L 282 122" stroke-width="2.4" opacity=".9" />
+      </g>
+
+      <!-- far ridge -->
+      <path fill="url(#farhill)" d="M0 300 L90 268 L170 292 L260 252 L340 286 L430 244 L520 280 L610 250 L690 278 L760 256 L850 284 L940 250 L1030 282 L1110 262 L1200 290 L1200 430 L0 430 Z" />
+
+      <!-- Stonecourt castle silhouette on the mid ridge -->
+      <g fill="#181114">
+        <path d="M0 336 L110 308 L220 332 L330 300 L420 330 L505 312 L575 330 L575 430 L0 430 Z" />
+        <path d="M700 330 L800 306 L905 332 L1010 304 L1100 330 L1200 312 L1200 430 L700 430 Z" />
+        <!-- keep -->
+        <g>
+          <rect x="560" y="232" width="120" height="100" />
+          <path d="M560 232 h12 v-12 h14 v12 h14 v-12 h14 v12 h12 v-12 h14 v12 h14 v-12 h14 v12 h12 v14 h-120 Z" />
+          <!-- west tower -->
+          <rect x="528" y="206" width="36" height="128" />
+          <path d="M524 206 h10 v-10 h8 v10 h8 v-10 h8 v10 h10 v10 h-44 Z" />
+          <path d="M522 206 L546 162 L570 206 Z" />
+          <!-- east tower -->
+          <rect x="676" y="196" width="38" height="138" />
+          <path d="M672 196 h10 v-10 h9 v10 h9 v-10 h9 v10 h9 v10 h-46 Z" />
+          <path d="M670 196 L695 148 L720 196 Z" />
+          <!-- banner pole -->
+          <path d="M695 148 v-26 l20 6 l-20 7 Z" stroke="#181114" stroke-width="2.5" fill="#181114" />
+          <!-- gate -->
+          <path d="M604 332 v-34 a16 16 0 0 1 32 0 v34 Z" fill="#4d3526" />
+          <!-- lit windows -->
+          <rect x="588" y="262" width="7" height="11" fill="#e8b54a" class="win w1" />
+          <rect x="642" y="252" width="7" height="11" fill="#e8b54a" class="win w2" />
+          <rect x="540" y="240" width="6" height="10" fill="#e8b54a" class="win w3" />
+          <rect x="690" y="228" width="6" height="10" fill="#e8b54a" class="win w1" />
+        </g>
+      </g>
+
+      <!-- near hills -->
+      <path fill="url(#midhill)" d="M0 392 L140 360 L300 390 L470 356 L620 388 L780 358 L930 388 L1080 360 L1200 386 L1200 430 L0 430 Z" />
+      <!-- pines -->
+      <g fill="#120d0f">
+        <path d="M150 362 l13 -30 l13 30 Z M156 348 l7 -18 l7 18 Z" />
+        <path d="M820 360 l12 -27 l12 27 Z M825 348 l7 -17 l7 17 Z" />
+        <path d="M1110 364 l11 -25 l11 25 Z" />
+        <path d="M480 358 l11 -25 l11 25 Z M485 346 l6 -15 l6 15 Z" />
+      </g>
+    </svg>
+
+    <div class="banner-inner">
+      <h1 class="wordmark">
+        <svg viewBox="0 0 560 96" role="img" aria-label="Larpscape">
+          <defs>
+            <linearGradient id="goldtxt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffefb0" />
+              <stop offset=".45" stop-color="#f1c85a" />
+              <stop offset=".75" stop-color="#c8922a" />
+              <stop offset="1" stop-color="#9a6a1c" />
+            </linearGradient>
+          </defs>
+          <text x="50%" y="72" text-anchor="middle" class="wordmark-text" fill="url(#goldtxt)" stroke="#171008" stroke-width="6" paint-order="stroke">LARPSCAPE</text>
+        </svg>
+      </h1>
+      <p class="tagline">A free browser realm in the world of Cantorne &mdash; year F.S. 743</p>
+
+      <nav class="banner-nav" aria-label="Primary">
+        <a href="https://play.larpscape.net">Play</a>
+        <a href="#news">News</a>
+        <a href="#hiscores">Hiscores</a>
+        <a class="ext" href="https://wiki.larpscape.net">Wiki</a>
+        <a class="ext" href="https://github.com/MroppyDev/larpscape">GitHub</a>
+      </nav>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://play.larpscape.net">Play Now</a>
+        <a class="btn" href="https://play.larpscape.net">Create an Account</a>
+      </div>
+      <p class="hero-disclaimer">An original fan homage to the classic browser MMO. Not affiliated with or endorsed by Jagex Ltd. All content, art, and writing are original.</p>
+    </div>
+  </header>
+
+  <!-- §1.3 live player counter -->
+  <p class="player-count" id="player-count" aria-live="polite">The gates of Cantorne stand open.</p>
+
+  <div class="shell">
+    <!-- §1.4–1.5 left rail -->
+    <aside class="rail" aria-label="Site navigation">
+      <nav class="rail-box" aria-labelledby="rail-game">
+        <h2 class="rail-title" id="rail-game">Game</h2>
+        <ul id="rail-game-list"></ul>
+      </nav>
+      <nav class="rail-box" aria-labelledby="rail-community">
+        <h2 class="rail-title" id="rail-community">Community</h2>
+        <ul id="rail-community-list"></ul>
+      </nav>
+      <nav class="rail-box" aria-labelledby="rail-account">
+        <h2 class="rail-title" id="rail-account">Account</h2>
+        <ul id="rail-account-list"></ul>
+      </nav>
+
+      <div class="cta-stack">
+        <a class="btn btn-primary btn-block" href="https://play.larpscape.net">Play Now</a>
+        <a class="btn btn-block" href="https://play.larpscape.net">Create Account</a>
+        <a class="btn btn-block" href="#hiscores">Hiscores</a>
+        <a class="foot-link" href="https://wiki.larpscape.net/guide/getting-started">New player? Start here</a>
+      </div>
+
+      <!-- §1.5 swappable promo slot (filled from PROMO config in main.ts) -->
+      <div id="promo-slot"></div>
+    </aside>
+
+    <!-- §1.6 main content -->
+    <main id="main">
+      <section class="panel welcome reveal" aria-labelledby="welcome-h">
+        <h2 class="panel-h" id="welcome-h">Welcome to Larpscape</h2>
+        <p>
+          Cantorne was sung into being by the Choir of Five, and one wrong note slipped into
+          the final cadence. Forty-two years into the Quiet Measure, that note is stirring again
+          &mdash; and somebody has to go retune the world. A free, original browser MMO in the
+          old style: one tab, no download, 24 skills, and an examine button on everything.
+        </p>
+      </section>
+
+      <section class="news-section reveal" id="news" aria-labelledby="news-h">
+        <h2 class="section-h" id="news-h"><span>News &amp; Updates</span></h2>
+        <div id="news-list"></div>
+        <div class="news-more-wrap">
+          <button class="btn" id="news-more" type="button" hidden>Older news</button>
+        </div>
+        <p class="pointer-line">
+          Follow development <a class="ext" href="https://github.com/MroppyDev/larpscape">on GitHub</a>
+          or read the world's history <a class="ext" href="https://wiki.larpscape.net/lore/world">in the Cantorne Codex</a>.
+        </p>
+      </section>
+
+      <!-- §3 live hiscores panel -->
+      <section class="panel hiscores-panel reveal" id="hiscores" aria-labelledby="hiscores-h">
+        <div class="hiscores-head">
+          <h2 class="panel-h" id="hiscores-h">Hiscores</h2>
+          <label class="skill-picker">
+            <span class="sr-only">Skill</span>
+            <select id="skill-select"></select>
+          </label>
+        </div>
+        <div class="hiscores-body" id="hiscores-body" aria-live="polite">
+          <p class="hiscores-note">Consulting the surveyor's plaque&hellip;</p>
+        </div>
+        <p class="hiscores-foot">Rankings refresh every couple of minutes. <a href="https://play.larpscape.net">Earn your line on the plaque &rarr;</a></p>
+      </section>
+
+      <section class="features reveal" id="about" aria-labelledby="about-h">
+        <h2 class="section-h" id="about-h"><span>What is Larpscape?</span></h2>
+        <div class="feature-grid" id="feature-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- §1.7 footer -->
+  <footer class="site-footer">
+    <div class="footer-cols">
+      <nav aria-labelledby="f-game"><h3 id="f-game">Game</h3>
+        <ul>
+          <li><a href="https://play.larpscape.net">Play Larpscape</a></li>
+          <li><a href="https://play.larpscape.net">Create an account</a></li>
+          <li><a href="#hiscores">Hiscores</a></li>
+          <li><a href="#news">News &amp; updates</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="f-community"><h3 id="f-community">Community</h3>
+        <ul>
+          <li><a class="ext" href="https://wiki.larpscape.net">The Larpscape Wiki</a></li>
+          <li><a class="ext" href="https://wiki.larpscape.net/lore/world">The Cantorne Codex</a></li>
+          <li><a class="ext" href="https://github.com/MroppyDev/larpscape">GitHub</a></li>
+        </ul>
+      </nav>
+      <nav aria-labelledby="f-info"><h3 id="f-info">Info</h3>
+        <ul>
+          <li><a href="#about">About the project</a></li>
+          <li><a class="ext" href="https://github.com/MroppyDev/larpscape/issues">Support &amp; bug reports</a></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="footer-disclaimer">
+      Larpscape is a free, non-commercial fan project made in homage to the classic browser MMOs.
+      It is not affiliated with, endorsed by, or connected to Jagex Ltd or Old School RuneScape.
+      Every asset, name, and line of text here is original.
+    </p>
+    <p class="footer-lore">&ldquo;The world is a song still being sung &mdash; mind the rests.&rdquo; &mdash; Cantor-Surveyor Brigh</p>
+    <p class="footer-copy">&copy; 2025&ndash;2026 the Larpscape project.</p>
+  </footer>
+
+  <!-- news article modal -->
+  <div class="modal-backdrop" id="news-modal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-band" id="modal-band" aria-hidden="true"></div>
+      <button class="modal-close" id="modal-close" type="button" aria-label="Close article">&times;</button>
+      <div class="modal-scroll">
+        <p class="modal-meta" id="modal-meta"></p>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -23,6 +23,7 @@ import {
   initDungeon, startRun, endRun, getRecords, inDungeon,
   OVERWORLD_EXIT, onDisconnect as dungeonOnDisconnect,
 } from './dungeon';
+import { getRanking, getPlayerHiscores } from './hiscores';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -440,6 +441,61 @@ app.get('/api/ge/prices', (_req, res) => {
   for (const r of rows) prices[r.item] = r.price;
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.json({ prices });
+});
+
+// ---------------------------------------------------------------------------
+// Hiscores (public, no auth — server/hiscores.ts, results cached 120s)
+// ---------------------------------------------------------------------------
+
+// Light per-IP rate limit for the public hiscores endpoints.
+const HISCORES_RL_WINDOW_MS = 60_000;
+const HISCORES_RL_MAX = 60;
+const hiscoresHits = new Map<string, { count: number; reset: number }>();
+function hiscoresRateLimit(req: Request, res: Response, next: NextFunction) {
+  const ip = req.ip || 'unknown';
+  const now = Date.now();
+  let entry = hiscoresHits.get(ip);
+  if (!entry || now >= entry.reset) {
+    if (hiscoresHits.size > 10_000) hiscoresHits.clear(); // bound memory
+    entry = { count: 0, reset: now + HISCORES_RL_WINDOW_MS };
+    hiscoresHits.set(ip, entry);
+  }
+  if (++entry.count > HISCORES_RL_MAX) {
+    res.status(429).json({ error: 'too many requests' }); return;
+  }
+  next();
+}
+
+function hiscoresHeaders(res: Response) {
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+}
+
+// GET /api/hiscores?skill=overall|<SkillName>&limit=N (default 25, max 100)
+app.get('/api/hiscores', hiscoresRateLimit, (req, res) => {
+  const skill = typeof req.query.skill === 'string' && req.query.skill ? req.query.skill : 'overall';
+  const rawLimit = Number(req.query.limit);
+  const limit = Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 25;
+  const ranking = getRanking(db, skill, limit);
+  if (!ranking) { res.status(400).json({ error: 'unknown skill' }); return; }
+  hiscoresHeaders(res);
+  res.json({ skill, ranking });
+});
+
+// GET /api/stats/online — public live player count for the homepage counter.
+app.get('/api/stats/online', hiscoresRateLimit, (_req, res) => {
+  hiscoresHeaders(res);
+  res.json({ online: clients.size });
+});
+
+// GET /api/hiscores/player/:username — all skills for one player.
+app.get('/api/hiscores/player/:username', hiscoresRateLimit, (req, res) => {
+  const username = String(req.params.username ?? '');
+  if (!USERNAME_RE.test(username)) { res.status(404).json({ error: 'player not found' }); return; }
+  const player = getPlayerHiscores(db, username);
+  if (!player) { res.status(404).json({ error: 'player not found' }); return; }
+  hiscoresHeaders(res);
+  res.json(player);
 });
 
 // ---------------------------------------------------------------------------

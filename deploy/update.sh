@@ -28,12 +28,17 @@ if [[ "${LARPSCAPE_UPDATE_REEXECED:-}" != "1" ]]; then
   exec bash "$APP_DIR/deploy/update.sh" "$@"
 fi
 
-echo "==> Installing dependencies + building client + admin console + wiki"
+echo "==> Installing dependencies + building client + admin console + wiki + homepage"
 npm ci
 npm run build
 npm run admin:build
 npm run wiki:build
 bash deploy/build-wiki-path.sh
+if [[ -f homepage/index.html ]]; then
+  npm run home:build
+else
+  echo "    (homepage/index.html not present yet — skipping home:build)"
+fi
 
 # Keep systemd units / nginx config in sync with the repo
 if ! cmp -s deploy/larpscape.service /etc/systemd/system/larpscape.service; then
@@ -53,6 +58,18 @@ fi
 if [[ -f deploy/nginx-larpscape-admin.conf ]]; then
   cp deploy/nginx-larpscape-admin.conf /etc/nginx/sites-available/larpscape-admin
   ln -sf /etc/nginx/sites-available/larpscape-admin /etc/nginx/sites-enabled/larpscape-admin
+fi
+# play.larpscape.net vhost. HTTPS comes from a one-time manual step post-DNS:
+# run bash deploy/bootstrap-play-ssl.sh on the VPS AFTER the play A record is
+# added — later deploys then re-enable HTTPS automatically via enable-play-ssl.sh.
+if [[ -f deploy/nginx-larpscape-play.conf ]]; then
+  mkdir -p /var/www/certbot
+  cp deploy/nginx-larpscape-play.conf /etc/nginx/sites-available/larpscape-play
+  ln -sf /etc/nginx/sites-available/larpscape-play /etc/nginx/sites-enabled/larpscape-play
+  # If HTTPS cert already exists, append the SSL vhost
+  if [[ -f /etc/letsencrypt/live/play.larpscape.net/fullchain.pem ]] && [[ -f deploy/nginx-larpscape-play-ssl.conf ]]; then
+    bash deploy/enable-play-ssl.sh
+  fi
 fi
 if [[ -f deploy/nginx-larpscape-wiki.conf ]]; then
   mkdir -p /var/www/certbot
