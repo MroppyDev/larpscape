@@ -144,18 +144,20 @@ const FIREMAKING: { log: string; level: number; xp: number }[] = [
   { log: 'willow_logs', level: 30, xp: 90 },
 ];
 for (const fm of FIREMAKING) {
-  registerItemAction(fm.log, 'Light', (slot) => {
+  registerItemAction(fm.log, 'Light', async () => {
     const p = state.player;
     if (!hasTool('tinderbox')) { msg('You need a tinderbox to light a fire.'); return; }
     if (level('Firemaking') < fm.level) { msg(`You need a Firemaking level of ${fm.level} to light these logs.`); return; }
     const t = terrain[key(p.x, p.y)];
     if (t === T.FLOOR || objectAt.has(key(p.x, p.y))) { msg("You can't light a fire here."); return; }
-    removeFromSlot(slot);
     msg('You attempt to light the logs...');
+    // Server-authoritative: the server consumes the log + grants Firemaking xp.
+    // The fire object + step-aside are cosmetic and only play on success.
+    const echo = await requestIntent('firemake', { log: fm.log });
+    if (!echo.ok) return;
     const fire = addObject('fire', p.x, p.y);
     fire.expiresAt = state.tick + 100;
     audio.sfx('fire');
-    addXp('Firemaking', fm.xp);
     msg('The fire catches and the logs begin to burn.');
     stepAside();
   });
@@ -168,23 +170,22 @@ function startCookJob(o: WorldObject, raw: string, qty: number) {
   const c = COOKABLES.find((cc) => cc.raw === raw);
   if (!c) return;
   let left = qty;
+  let busy = false;
   startObjJob(o, () => {
     if (left <= 0 || !hasItem(c.raw)) return false;
     if (level('Cooking') < c.level) { msg(`You need a Cooking level of ${c.level} to cook this.`); return false; }
-    removeItem(c.raw, 1);
-    left--;
-    const lvl = level('Cooking');
-    const burnChance = lvl >= c.stopBurn ? 0
-      : 0.5 * (c.stopBurn - lvl) / Math.max(1, c.stopBurn - c.level);
+    if (busy) return true;
+    // Server-authoritative: the server checks the recipe + level, rolls the burn,
+    // consumes the raw and grants cooked|burnt + Cooking xp. We reflect via the echo.
+    busy = true;
     audio.sfx('fire');
-    if (Math.random() < burnChance) {
-      addItem(c.burnt);
-      msg(`You accidentally burn the ${lowName(c.cooked)}.`);
-    } else {
-      addItem(c.cooked);
-      addXp('Cooking', c.xp);
-      msg(`You roast the ${lowName(c.raw).replace(/^raw /, '')}. It looks delicious.`);
-    }
+    left--;
+    void requestIntent('cook', { raw: c.raw }).then((echo) => {
+      busy = false;
+      if (!echo.ok) { left = 0; return; }
+      if (echo.burned) msg(`You accidentally burn the ${lowName(c.cooked)}.`);
+      else msg(`You roast the ${lowName(c.raw).replace(/^raw /, '')}. It looks delicious.`);
+    });
     return left > 0 && hasItem(c.raw);
   });
 }
@@ -228,20 +229,23 @@ registerObjectAction('furnace', 'Smelt', (o) => {
     if (!id || qty <= 0) return;
     const s = SMELTABLES.find((ss) => ss.bar === id)!;
     let left = qty;
+    let busy = false;
     startObjJob(o, () => {
       if (left <= 0) return false;
       if (level('Smithing') < s.level) { msg(`You need a Smithing level of ${s.level} to smelt this.`); return false; }
       if (!s.inputs.every((i) => hasItem(i.item, i.qty))) { msg("You don't have enough ore to smelt this."); return false; }
-      for (const i of s.inputs) removeItem(i.item, i.qty);
+      if (busy) return true;
+      // Server-authoritative: the server validates level + inputs, consumes the
+      // ore, rolls the iron-smelt success, and grants the bar + Smithing xp.
+      busy = true;
       left--;
       audio.sfx('smelt');
-      if (s.successChance !== undefined && Math.random() >= s.successChance) {
-        msg('The iron ore is too impure and you fail to refine it.');
-      } else {
-        addItem(s.bar);
-        addXp('Smithing', s.xp);
-        msg(`You smelt the ore into ${aOrAnWord(lowName(s.bar))} ${lowName(s.bar)}.`);
-      }
+      void requestIntent('produce', { recipe: 'smelt', output: s.bar }).then((echo) => {
+        busy = false;
+        if (!echo.ok) { left = 0; return; }
+        if (echo.burned) msg('The iron ore is too impure and you fail to refine it.');
+        else msg(`You smelt the ore into ${aOrAnWord(lowName(s.bar))} ${lowName(s.bar)}.`);
+      });
       return left > 0;
     });
   });

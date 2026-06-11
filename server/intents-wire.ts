@@ -12,7 +12,11 @@ import type { Request, Response, NextFunction } from 'express';
 import type { Express } from 'express';
 import { StateStore, invAdd, invRemove } from './state';
 import { setInventoryHooks } from './sim';
-import { createIntents, Intents, IntentCtx, IntentResult } from './intents';
+import { ECONOMY_FROZEN } from './econ-freeze';
+import {
+  createIntents, Intents, IntentCtx, IntentResult,
+  DomainCtx, getIntentDomain,
+} from './intents';
 
 // Minimal structural view of a connected player (matches sim.PlayerView).
 interface ViewLike {
@@ -40,11 +44,19 @@ export function makeIntents(stateStore: StateStore): Intents {
 }
 
 const ctxOf = (v: ViewLike): IntentCtx => ({ userId: v.userId, x: v.x, y: v.y, dead: v.dead });
+const domainCtxOf = (store: StateStore, v: ViewLike): DomainCtx => ({
+  userId: v.userId, x: v.x, y: v.y, dead: v.dead,
+  store, frozen: ECONOMY_FROZEN, revOf: (uid) => store.revOf(uid),
+});
 
 // Dispatch a WS `{t:'intent', kind, ...}` message. Returns true if it was an
 // intent (so index.ts's handler can stop), false otherwise. The reply is the
 // authoritative IntentResult tagged back onto the same socket.
-export function dispatchIntentWs(intents: Intents, view: ViewLike, msg: any): boolean {
+//
+// Built-in kinds are dispatched in the switch; any other kind is routed through
+// the DOMAIN REGISTRY (registerIntentDomain in intents.ts) so domain agents add
+// kinds in SEPARATE modules without editing this file.
+export function dispatchIntentWs(store: StateStore, intents: Intents, view: ViewLike, msg: any): boolean {
   if (!msg || msg.t !== 'intent' || typeof msg.kind !== 'string') return false;
   const ctx = ctxOf(view);
   let res: IntentResult;
@@ -62,10 +74,37 @@ export function dispatchIntentWs(intents: Intents, view: ViewLike, msg: any): bo
       res = intents.firemake(ctx, String(msg.log ?? ''));
       break;
     case 'make':
+    case 'produce':
+      // 'produce' is the recipe-driven class (smith/smelt/fletch/craft/herblore/
+      // gemcut/construction). It resolves a data recipe by class+output via the
+      // RECIPE_INDEX in intents.ts — domain agents add recipes in data, not code.
       res = intents.make(ctx, String(msg.recipe ?? ''), String(msg.output ?? ''));
       break;
-    default:
-      res = { ok: false, kind: msg.kind, error: 'unknown intent' };
+    case 'equip':
+      res = intents.equip(
+        ctx,
+        msg.op === 'unequip' ? 'unequip' : 'equip',
+        String(msg.slot ?? ''),
+        String(msg.item ?? ''),
+        msg.source === 'bank' ? 'bank' : 'inventory',
+      );
+      break;
+    case 'quest-stage':
+      res = intents.questAdvance(ctx, String(msg.id ?? ''), num(msg.stage));
+      break;
+    case 'quest-reward':
+      res = intents.questClaim(ctx, String(msg.id ?? ''), num(msg.stage));
+      break;
+    case 'scripted-grant':
+      res = intents.scriptedGrant(ctx, String(msg.id ?? ''), num(msg.stage));
+      break;
+    default: {
+      // registry-dispatched domain intent (slayer/gamble/thieving/farming/…).
+      const handler = getIntentDomain(msg.kind);
+      res = handler
+        ? handler(domainCtxOf(store, view), msg as Record<string, unknown>)
+        : { ok: false, kind: msg.kind, error: 'unknown intent' };
+    }
   }
   // echo the client's correlation id so it can resolve the optimistic action
   const reqId = typeof msg.id === 'number' ? msg.id : undefined;
@@ -82,8 +121,12 @@ function num(v: unknown): number {
 // so HTTP (not WS) is the right transport. They do NOT need a live PlayerView —
 // position is irrelevant for shop/bank/quest — so ctx position is passed as the
 // sentinel (the handlers that care about range are WS-only).
-export function registerIntentRoutes(app: Express, intents: Intents, requireAuth: AuthMw): void {
+export function registerIntentRoutes(app: Express, store: StateStore, intents: Intents, requireAuth: AuthMw): void {
   const httpCtx = (userId: number): IntentCtx => ({ userId, x: -999, y: -999, dead: false });
+  const httpDomainCtx = (userId: number): DomainCtx => ({
+    userId, x: -999, y: -999, dead: false,
+    store, frozen: ECONOMY_FROZEN, revOf: (uid) => store.revOf(uid),
+  });
 
   app.post('/api/intent/shop', requireAuth, (req: AuthedReq, res: Response) => {
     const { op, shop, item } = req.body ?? {};
@@ -100,17 +143,48 @@ export function registerIntentRoutes(app: Express, intents: Intents, requireAuth
     res.json(r);
   });
 
+  app.post('/api/intent/equip', requireAuth, (req: AuthedReq, res: Response) => {
+    const { op, slot, item, source } = req.body ?? {};
+    if (op !== 'equip' && op !== 'unequip') { res.status(400).json({ error: 'bad op' }); return; }
+    const r = intents.equip(
+      httpCtx(req.userId!), op, String(slot ?? ''), String(item ?? ''),
+      source === 'bank' ? 'bank' : 'inventory',
+    );
+    res.json(r);
+  });
+
+  // quest-stage: advance validated by the quest graph (server/quests-graph.ts).
   app.post('/api/intent/quest/advance', requireAuth, (req: AuthedReq, res: Response) => {
     const { id, stage } = req.body ?? {};
     const r = intents.questAdvance(httpCtx(req.userId!), String(id ?? ''), Math.max(0, Math.floor(Number(stage))));
     res.json(r);
   });
 
-  // The reward is read from the SERVER registry (data/quest-rewards.json) — the
-  // client never specifies the amount, so this body needs only the quest+stage.
+  // quest-reward: the reward is read from the SERVER registry
+  // (data/quest-rewards.json) — the client never specifies the amount, so this
+  // body needs only the quest+stage. Idempotent per (quest,stage).
   app.post('/api/intent/quest/claim', requireAuth, (req: AuthedReq, res: Response) => {
     const { id, stage } = req.body ?? {};
     const r = intents.questClaim(httpCtx(req.userId!), String(id ?? ''), Math.max(0, Math.floor(Number(stage))));
+    res.json(r);
+  });
+
+  // scripted-grant: a quest dialogue handout, gated by quest+stage, granted from
+  // the same data registry (see intents.scriptedGrant).
+  app.post('/api/intent/quest/grant', requireAuth, (req: AuthedReq, res: Response) => {
+    const { id, stage } = req.body ?? {};
+    const r = intents.scriptedGrant(httpCtx(req.userId!), String(id ?? ''), Math.max(0, Math.floor(Number(stage))));
+    res.json(r);
+  });
+
+  // Generic registry route for HTTP domain intents (slayer/gamble/…). The body
+  // carries `{ kind, ... }`; the registered handler validates everything. Kept
+  // last so the explicit routes above take precedence.
+  app.post('/api/intent/:kind', requireAuth, (req: AuthedReq, res: Response, next: NextFunction) => {
+    const kind = String(req.params.kind ?? '');
+    const handler = getIntentDomain(kind);
+    if (!handler) { next(); return; }
+    const r = handler(httpDomainCtx(req.userId!), { kind, ...(req.body ?? {}) });
     res.json(r);
   });
 }

@@ -524,8 +524,7 @@ export function trackForRegion(x: number, y: number): string {
   if (x >= 29 && x <= 41 && y >= 40 && y <= 62) return 'Market Day';
   if (x >= 60 && x <= 70 && y >= 58 && y <= 68) return 'Whispering Stones';
   if (x >= 56 && x <= 72 && y >= 70 && y <= 84) return 'Quiet Meadow';
-  if (x >= 61 && x <= 68 && y >= 38 && y <= 44) return 'Rainbow Avenue';
-  if (x >= 54 && x <= 60 && y >= 38 && y <= 44) return 'Market Day';
+  if (x >= 54 && x <= 68 && y >= 38 && y <= 44) return 'Market Day';
   // Phase 5 handcrafted expansion (300×300) — checked after all legacy boxes.
   // The Untuned Mine (instanced dungeon carved under the southern sea) sits
   // inside the y>=217 band, so it must be checked before the coast tracks.

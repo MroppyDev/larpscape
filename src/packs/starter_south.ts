@@ -1,59 +1,9 @@
-// Starter-town south updates: LARP Pride field, Chimperton III court, Dentist Tick Eat clinic.
-// Districts: x12-20 / x22-30 / x34-42 at y54-57, just south of the castle & general store.
+// Starter-town south: Chimperton III court, Dentist Tick Eat clinic.
+// Districts: x22-30 / x34-42 at y54-57, just south of the castle & general store.
 import {
   registerNpcAction, registerObjectAction,
   startDialogue, showOptions, msg, state, events, openShop, level,
 } from '../game';
-
-// ── Black Monkey LARP Pride update ──────────────────────────────────────────
-
-registerNpcAction('larp_marshal_monk', 'Talk-to', (n) => {
-  startDialogue([
-    { speaker: n.def.name, text: 'Hail, adventurer! Welcome to the Black Monkey LARP Pride update — patch notes are carved on the sign.' },
-    { speaker: n.def.name, text: 'Foam swords only. Real steel is for the goblin field east of here.' },
-    { speaker: state.player.name, text: 'The banners are magnificent.' },
-    { speaker: n.def.name, text: 'We LARP loud and proud. Grab gear from the quartermaster if your cape lacks drama.' },
-  ], () => {
-    showOptions([
-      { label: 'Why foam? Why forever?', fn: () => {
-        startDialogue([
-          { speaker: n.def.name, text: 'The Foam Accord, F.S. 698. War-weary veterans of every banner met in a meadow south of here and swore it: the old battles will be re-fought forever, so no one forgets — but only ever in foam.' },
-          { speaker: n.def.name, text: 'Real bloodshed feeds the Offnote. Re-enactment starves it. This field is not a game, friend. It is a memorial with better choreography.' },
-          { speaker: n.def.name, text: 'And yes, a marshal can void any duel by declaring foam jurisdiction. It is real law. I have used it on two barons and a bear.' },
-        ]);
-      }},
-      { label: 'How does a chimp get knighted?', fn: () => {
-        startDialogue([
-          { speaker: n.def.name, text: 'Valour in re-enactment, by the hand of Danquavious the Second himself — before his abdication. We do not discuss the abdication.' },
-          { speaker: n.def.name, text: 'My great project is a perfect re-staging of the Battle of Aldgate Gates, F.S. 701. Full attendance, zero injuries. Last year we managed one of the two.' },
-        ]);
-      }},
-    ]);
-  });
-  return 'done';
-});
-
-registerNpcAction('larp_quartermaster', 'Talk-to', (n) => {
-  startDialogue([
-    { speaker: n.def.name, text: 'Need a foam blade or a cape that screams "I rolled a natural 20 on fabulous"?' },
-    { speaker: n.def.name, text: 'Trade at the rack — all proceeds fund more monkey totems. Carpenter Lenny carves them; the chimp court pays promptly, bless their hairy hearts.' },
-    { speaker: n.def.name, text: 'One day I\'ll design a foam pattern that survives more than one heroic death scene. Until then, buy two.' },
-  ]);
-  return 'done';
-});
-registerNpcAction('larp_quartermaster', 'Trade', () => { openShop('larp_pride_stall'); return 'done'; });
-
-registerObjectAction('foam_weapon_rack', 'Trade', () => { openShop('larp_pride_stall'); return 'done'; });
-
-registerObjectAction('larp_campfire', 'LARP', () => {
-  msg('You strike a heroic pose by the campfire. A passing chimp NPC applauds.');
-  return 'done';
-});
-
-registerObjectAction('larp_pride_sign', 'Read', () => {
-  msg('BLACK MONKEY LARP PRIDE UPDATE — v1.0. Foam combat enabled. Pride flags mandatory. Shoes still optional.');
-  return 'done';
-});
 
 // ── Danquavious Chimperton III update ───────────────────────────────────────
 

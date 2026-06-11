@@ -35,6 +35,9 @@ import { initForum } from './forum';
 import { initMarket } from './market';
 import { createStateStore, serverStarterOwned } from './state';
 import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-wire';
+import './intent-shop'; // side-effect: registers the 'shop'/'bank' WS domain handlers
+import './intent-produce'; // side-effect: registers production/gathering domain intents
+import './intent-misc'; // side-effect: registers gambling/slayer/misc-grant domain intents
 import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
@@ -501,7 +504,7 @@ export const stateStore = createStateStore(db, (ids) => {
 // so item gain/loss is server-owned. HTTP routes (shop/bank/quest) are
 // registered here; the WS skilling intents dispatch from the message handler.
 const intents = makeIntents(stateStore);
-registerIntentRoutes(app, intents, requireAuth);
+registerIntentRoutes(app, stateStore, intents, requireAuth);
 
 // Defined after the profile cache below; hoisted via function declaration so the
 // store callback above can reference it.
@@ -1564,7 +1567,7 @@ wss.on('connection', (ws, req) => {
       // Server-authoritative skilling intents (gather/fish/cook/firemake/make).
       // Validates level/inputs/tool/range vs server state, rolls, applies via
       // withState, and replies with the authoritative {t:'intent',...} echo.
-      dispatchIntentWs(intents, view, msg);
+      dispatchIntentWs(stateStore, intents, view, msg);
     } else if (msg.t === 'chat') {
       if (typeof msg.text !== 'string') return;
       const text = msg.text.slice(0, 80).replace(/[\x00-\x1f]/g, '').trim();

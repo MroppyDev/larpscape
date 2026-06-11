@@ -91,7 +91,6 @@ const NON_BLOCKING = new Set([
   // phase 6: non-blocking ground deco (barrel/crate/cactus/ice_spike/
   // snow_pine/dead_tree_deco/gem_stall stay blocking by default)
   'bush', 'fern', 'boulder_small', 'mushroom_patch', 'reeds', 'lilypad', 'driftwood',
-  'dance_floor', 'rainbow_banner',
   'chair', 'banner', 'rug_deco',
 ]);
 

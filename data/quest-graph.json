@@ -1,0 +1,15 @@
+{
+  "_comment": "Quest graph (docs/CONVERSION-CONTRACT.md §quest-graph). Allowed stage transitions + per-transition prerequisites validated SERVER-side by server/quests-graph.ts. `from` is the requiredStage (player must be exactly there); `to` is the resulting stage (> from, monotonic). `requiredItems[]` are consumed on a valid advance; `requiredQuestStages[]` gate on other quests. An advance NEVER grants value — rewards come from data/quest-rewards.json via the quest-reward intent. Quests NOT listed here fall back to advisory monotonic advance (narrative-only gating) and still mint nothing. Quest-domain agents POPULATE this file as they migrate each quest; this seed declares the linear talk-gated spines so the framework is exercised.",
+  "empty_larder": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "egg", "qty": 1 }, { "id": "bucket_of_milk", "qty": 1 }, { "id": "bread", "qty": 1 }] }
+    ]
+  },
+  "seeds_of_trouble": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "cabbage", "qty": 1 }] }
+    ]
+  }
+}

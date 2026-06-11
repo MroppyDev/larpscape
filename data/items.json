@@ -2013,39 +2013,6 @@
     "stackable": true,
     "value": 120
   },
-  "sparkling_cocktail": {
-    "id": "sparkling_cocktail",
-    "name": "Sparkling cocktail",
-    "examine": "Bubbles, citrus, and the faint taste of poor choices.",
-    "value": 35,
-    "edible": {
-      "heals": 4
-    }
-  },
-  "rainbow_scarf": {
-    "id": "rainbow_scarf",
-    "name": "Rainbow scarf",
-    "examine": "Soft wool in every stripe. Wear it loud.",
-    "value": 200,
-    "equipSlot": "neck",
-    "defBonus": 1
-  },
-  "foam_sword": {
-    "id": "foam_sword",
-    "name": "Foam sword",
-    "examine": "Accord-issue foam. Every harmless thwack starves the Offnote a little.",
-    "value": 45,
-    "equipSlot": "weapon",
-    "strBonus": 1
-  },
-  "larp_pride_cape": {
-    "id": "larp_pride_cape",
-    "name": "LARP pride cape",
-    "examine": "Black velvet lined with rainbow satin. Dramatic entrance guaranteed.",
-    "value": 180,
-    "equipSlot": "body",
-    "defBonus": 1
-  },
   "chimperton_medallion": {
     "id": "chimperton_medallion",
     "name": "Chimperton medallion",

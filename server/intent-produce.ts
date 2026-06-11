@@ -1,0 +1,498 @@
+// server/intent-produce.ts — server-authoritative resolution of the
+// production/gathering paths that DON'T fit the built-in gather/fish/cook/
+// firemake/make intents (docs/CONVERSION-CONTRACT.md §3 registry):
+//
+//   mine-gem    rocks_gem with a SERVER-rolled weighted gem table
+//   thieve      pickpocket (npc-keyed loot from npcs.json) + market stalls
+//   port-fish   lobster/swordfish/shark spots with a SERVER-rolled catch table
+//   farm-plant  / farm-harvest  seed planting + crop harvest (server level/seed)
+//   runecraft   essence -> runes at an altar (server multiplier)
+//   tan         cowhide + coins -> leather (wealth-shaped: ECONOMY_FROZEN gate)
+//   saw-planks  logs + coins -> planks (wealth-shaped)
+//   pick        simple single-item gathers (flax / milk) — server validated
+//   snare-check hunter bird-snare loot
+//   train       skill-only XP grants (agility obstacles + lap bonus)
+//
+// Every handler validates INDEPENDENTLY against authoritative `state` (level vs
+// SERVER xp, tool/inputs vs SERVER inventory, object@tile + range vs the baked
+// map index, ECONOMY_FROZEN where wealth-shaped), rolls any randomness SERVER-
+// side, mutates only via state.ts primitives inside ONE withState transaction,
+// and returns the same { ok, kind, granted, removed, xp, ... } envelope the
+// client applies through applyGrant. The client never authors the values.
+//
+// Self-registers at import time; imported for its side effect from
+// server/index.ts. It does NOT edit intents.ts or intents-wire.ts.
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import {
+  registerIntentDomain, DomainCtx, IntentResult, stampRev,
+} from './intents';
+import { MAP_W } from './world';
+import {
+  AuthState, SkillName, isKnownItem,
+  invAdd, invRemove, invHas, invCount, getCoins, removeCoins,
+  addXp, skillLevel,
+} from './state';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+function loadJson<T>(rel: string): T {
+  return JSON.parse(fs.readFileSync(path.join(__dirname, rel), 'utf8')) as T;
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue (same data the client reads — rates/levels never diverge).
+// ---------------------------------------------------------------------------
+
+interface RawItem { stackable?: boolean; }
+const ITEMS: Record<string, RawItem> = loadJson('../data/items.json');
+function isStackable(id: string): boolean { return !!ITEMS[id]?.stackable; }
+
+interface SkillObjData { level: number; xp: number; item: string; depleteChance: number; respawn: number; lowRate: number; highRate: number; }
+const SKILL_OBJS = loadJson<{ skillObjs: Record<string, SkillObjData> }>('../data/objects.json').skillObjs;
+
+interface Recipes { seeds: { seed: string; produce: string; level: number; plantXp: number; harvestXp: number; growTicks: number }[]; }
+const RECIPES = loadJson<Recipes>('../data/recipes.json');
+
+interface Pickpocket { level: number; xp: number; loot: { item: string; qty: [number, number] }[]; stunDmg: number; }
+const NPCS = loadJson<Record<string, { pickpocket?: Pickpocket }>>('../data/npcs.json');
+
+// Static world-object position index (same as intents.ts) so a stall/altar/spot
+// intent can be validated against the tile the client named — you cannot steal
+// from a stall that does not exist at that tile.
+interface MapJson { objects: { type: string; x: number; y: number }[]; }
+const MAP = loadJson<MapJson>('../data/map.json');
+const objTypeAt = new Map<number, Set<string>>();
+for (const o of MAP.objects) {
+  const k = o.y * MAP_W + o.x;
+  let s = objTypeAt.get(k);
+  if (!s) { s = new Set(); objTypeAt.set(k, s); }
+  s.add(o.type);
+}
+function objectTypeAt(x: number, y: number, type: string): boolean {
+  return objTypeAt.get(y * MAP_W + x)?.has(type) ?? false;
+}
+
+const chebyshev = (ax: number, ay: number, bx: number, by: number) =>
+  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
+const randInt = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
+
+function successRoll(lvl: number, reqLevel: number, low: number, high: number): boolean {
+  const t = Math.min(1, Math.max(0, (lvl - reqLevel) / Math.max(1, 99 - reqLevel)));
+  return Math.random() < low + (high - low) * t;
+}
+
+function freeSlots(state: AuthState): number {
+  const inv = Array.isArray(state.inventory) ? state.inventory : [];
+  let free = 28 - inv.length;
+  for (const s of inv) if (s === null) free++;
+  return Math.max(0, free);
+}
+function hasRoomFor(state: AuthState, id: string): boolean {
+  if (isStackable(id) && invCount(state, id) > 0) return true;
+  return freeSlots(state) > 0;
+}
+function hasTool(state: AuthState, id: string): boolean {
+  if (invHas(state, id, 1)) return true;
+  const eq = state.equipment;
+  if (eq && typeof eq === 'object') {
+    for (const slot of Object.keys(eq)) if ((eq as any)[slot]?.id === id) return true;
+  }
+  return false;
+}
+
+const fail = (kind: string, error: string): IntentResult => ({ ok: false, kind, error });
+
+// Helper: run a withState mutation and stamp rev. Returns the no-character
+// failure when the row is missing.
+function tx(ctx: DomainCtx, kind: string, fn: (state: AuthState) => IntentResult): IntentResult {
+  const res = ctx.store.withState<IntentResult>(ctx.userId, fn);
+  if (!res) return fail(kind, 'no character');
+  return stampRev(ctx.store, ctx, res);
+}
+
+// ===========================================================================
+// MINE-GEM — rocks_gem rolls a weighted gem table (kept server-side so the
+// drop can't be forced). { x, y }. Validates rock@tile + range + tool + level.
+// ===========================================================================
+const GEM_TABLE: { item: string; weight: number }[] = [
+  { item: 'uncut_sapphire', weight: 50 },
+  { item: 'uncut_emerald', weight: 30 },
+  { item: 'uncut_ruby', weight: 20 },
+];
+function rollGem(): string {
+  const total = GEM_TABLE.reduce((s, g) => s + g.weight, 0);
+  let r = Math.random() * total;
+  for (const g of GEM_TABLE) { r -= g.weight; if (r < 0) return g.item; }
+  return GEM_TABLE[0].item;
+}
+registerIntentDomain('mine-gem', (ctx, payload) => {
+  if (ctx.dead) return fail('mine-gem', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
+  const data = SKILL_OBJS.rocks_gem;
+  if (!objectTypeAt(ox, oy, 'rocks_gem')) return fail('mine-gem', 'no such object here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('mine-gem', 'out of range');
+  return tx(ctx, 'mine-gem', (state) => {
+    const lvl = skillLevel(state, 'Mining');
+    if (lvl < data.level) return fail('mine-gem', `requires Mining level ${data.level}`);
+    if (!hasTool(state, 'bronze_pickaxe')) return fail('mine-gem', 'you need a pickaxe');
+    if (freeSlots(state) === 0) return fail('mine-gem', 'inventory full');
+    if (!successRoll(lvl, data.level, data.lowRate, data.highRate)) {
+      return { ok: true, kind: 'mine-gem', granted: [], xp: [] };
+    }
+    const gem = rollGem();
+    if (!invAdd(state, gem, 1)) return fail('mine-gem', 'inventory full');
+    const x = addXp(state, 'Mining', data.xp);
+    return {
+      ok: true, kind: 'mine-gem', granted: [{ id: gem, qty: 1 }],
+      xp: [{ skill: 'Mining' as SkillName, amount: data.xp }],
+      leveledUp: x.leveledUp ? [{ skill: 'Mining' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// THIEVE — pickpocket an NPC (npc-keyed loot from npcs.json) or steal from a
+// market stall (object@tile). One attempt; server rolls success + loot. On a
+// failed roll it returns ok with an EMPTY grant (the client plays the stun
+// cosmetic) — but mints nothing. { target, x?, y? }
+// target = npc id (man/desert_bandit/...) OR a stall type (bake_stall/gem_stall)
+// ===========================================================================
+interface StallDef { type: string; level: number; xp: number; lowRate: number; highRate: number; table: { item: string; weight: number }[]; }
+const STALLS: Record<string, StallDef> = {
+  bake_stall: {
+    type: 'bake_stall', level: 5, xp: 16, lowRate: 0.85, highRate: 0.99,
+    table: [{ item: 'bread', weight: 90 }, { item: 'cake', weight: 10 }],
+  },
+  gem_stall: {
+    type: 'gem_stall', level: 30, xp: 40, lowRate: 0.55, highRate: 0.95,
+    table: [{ item: 'uncut_sapphire', weight: 60 }, { item: 'uncut_emerald', weight: 30 }, { item: 'uncut_ruby', weight: 10 }],
+  },
+};
+function rollTable(table: { item: string; weight: number }[]): string {
+  const total = table.reduce((s, g) => s + g.weight, 0);
+  let r = Math.random() * total;
+  for (const g of table) { r -= g.weight; if (r < 0) return g.item; }
+  return table[0].item;
+}
+registerIntentDomain('thieve', (ctx, payload) => {
+  if (ctx.dead) return fail('thieve', 'dead');
+  const target = String(payload.target ?? '');
+  const stall = STALLS[target];
+  if (stall) {
+    const ox = num(payload.x), oy = num(payload.y);
+    if (!objectTypeAt(ox, oy, stall.type)) return fail('thieve', 'no such stall here');
+    if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('thieve', 'out of range');
+    return tx(ctx, 'thieve', (state) => {
+      const lvl = skillLevel(state, 'Thieving');
+      if (lvl < stall.level) return fail('thieve', `requires Thieving level ${stall.level}`);
+      if (freeSlots(state) === 0) return fail('thieve', 'inventory full');
+      if (!successRoll(lvl, stall.level, stall.lowRate, stall.highRate)) {
+        // miss: ok with an empty grant — the client plays the stun cosmetic.
+        return { ok: true, kind: 'thieve', granted: [], xp: [] };
+      }
+      const item = rollTable(stall.table);
+      if (!invAdd(state, item, 1)) return fail('thieve', 'inventory full');
+      const x = addXp(state, 'Thieving', stall.xp);
+      return {
+        ok: true, kind: 'thieve', granted: [{ id: item, qty: 1 }],
+        xp: [{ skill: 'Thieving' as SkillName, amount: stall.xp }],
+        leveledUp: x.leveledUp ? [{ skill: 'Thieving' as SkillName, level: x.newLevel }] : [],
+      };
+    });
+  }
+  // NPC pickpocket
+  const pp = NPCS[target]?.pickpocket;
+  if (!pp) return fail('thieve', 'cannot pickpocket that');
+  return tx(ctx, 'thieve', (state) => {
+    const lvl = skillLevel(state, 'Thieving');
+    if (lvl < pp.level) return fail('thieve', `requires Thieving level ${pp.level}`);
+    if (freeSlots(state) === 0 && !pp.loot.every((l) => isStackable(l.item) && invCount(state, l.item) > 0)) {
+      return fail('thieve', 'inventory full');
+    }
+    if (!successRoll(lvl, pp.level, 0.7, 0.95)) {
+      // miss: ok with an empty grant — the client plays the stun cosmetic.
+      return { ok: true, kind: 'thieve', granted: [], xp: [] };
+    }
+    const granted: { id: string; qty: number }[] = [];
+    for (const loot of pp.loot) {
+      // each listed loot has a roll: coins always, rares (qty min 1) at 5%.
+      const isRare = loot.item !== 'coins' && !isStackable(loot.item);
+      if (isRare && Math.random() >= 0.05) continue;
+      const qty = randInt(loot.qty[0], loot.qty[1]);
+      if (qty <= 0) continue;
+      if (invAdd(state, loot.item, qty)) granted.push({ id: loot.item, qty });
+    }
+    const x = addXp(state, 'Thieving', pp.xp);
+    return {
+      ok: true, kind: 'thieve', granted,
+      xp: [{ skill: 'Thieving' as SkillName, amount: pp.xp }],
+      leveledUp: x.leveledUp ? [{ skill: 'Thieving' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// PORT-FISH — high-tier fishing spots with a SERVER-rolled catch table.
+// { spot:'lobster'|'harpoon', x, y }. Validates spot@tile + range + tool + level.
+// ===========================================================================
+registerIntentDomain('port-fish', (ctx, payload) => {
+  if (ctx.dead) return fail('port-fish', 'dead');
+  const spot = payload.spot === 'harpoon' ? 'harpoon' : 'lobster';
+  const objType = spot === 'lobster' ? 'lobster_spot' : 'harpoon_spot';
+  const ox = num(payload.x), oy = num(payload.y);
+  if (!objectTypeAt(ox, oy, objType)) return fail('port-fish', 'no fishing spot here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('port-fish', 'out of range');
+  return tx(ctx, 'port-fish', (state) => {
+    const lvl = skillLevel(state, 'Fishing');
+    if (spot === 'lobster') {
+      if (!hasTool(state, 'lobster_pot')) return fail('port-fish', 'you need a lobster pot');
+      if (lvl < 40) return fail('port-fish', 'requires Fishing level 40');
+      if (freeSlots(state) === 0) return fail('port-fish', 'inventory full');
+      if (!successRoll(lvl, 40, 0.2, 0.75)) return { ok: true, kind: 'port-fish', granted: [], xp: [] };
+      invAdd(state, 'raw_lobster', 1);
+      const x = addXp(state, 'Fishing', 90);
+      return { ok: true, kind: 'port-fish', granted: [{ id: 'raw_lobster', qty: 1 }], xp: [{ skill: 'Fishing' as SkillName, amount: 90 }], leveledUp: x.leveledUp ? [{ skill: 'Fishing' as SkillName, level: x.newLevel }] : [] };
+    }
+    // harpoon: swordfish at 50; 30% shark at 76+
+    if (!hasTool(state, 'harpoon')) return fail('port-fish', 'you need a harpoon');
+    if (lvl < 50) return fail('port-fish', 'requires Fishing level 50');
+    if (freeSlots(state) === 0) return fail('port-fish', 'inventory full');
+    if (!successRoll(lvl, 50, 0.15, 0.7)) return { ok: true, kind: 'port-fish', granted: [], xp: [] };
+    if (lvl >= 76 && Math.random() < 0.3) {
+      invAdd(state, 'raw_shark', 1);
+      const x = addXp(state, 'Fishing', 110);
+      return { ok: true, kind: 'port-fish', granted: [{ id: 'raw_shark', qty: 1 }], xp: [{ skill: 'Fishing' as SkillName, amount: 110 }], leveledUp: x.leveledUp ? [{ skill: 'Fishing' as SkillName, level: x.newLevel }] : [] };
+    }
+    invAdd(state, 'raw_swordfish', 1);
+    const x = addXp(state, 'Fishing', 100);
+    return { ok: true, kind: 'port-fish', granted: [{ id: 'raw_swordfish', qty: 1 }], xp: [{ skill: 'Fishing' as SkillName, amount: 100 }], leveledUp: x.leveledUp ? [{ skill: 'Fishing' as SkillName, level: x.newLevel }] : [] };
+  });
+});
+
+// ===========================================================================
+// FARM-PLANT / FARM-HARVEST — seed planting + crop harvest. The grow timer is
+// world-shared cosmetic state the client tracks; the server validates the seed
+// + level on plant (consuming the seed + plant xp) and grants produce + harvest
+// xp on harvest. { seed } / { produce }
+// ===========================================================================
+registerIntentDomain('farm-plant', (ctx, payload) => {
+  if (ctx.dead) return fail('farm-plant', 'dead');
+  const seedId = String(payload.seed ?? '');
+  const s = RECIPES.seeds.find((ss) => ss.seed === seedId);
+  if (!s) return fail('farm-plant', 'not a seed');
+  return tx(ctx, 'farm-plant', (state) => {
+    if (!hasTool(state, 'seed_dibber')) return fail('farm-plant', 'you need a seed dibber');
+    if (skillLevel(state, 'Farming') < s.level) return fail('farm-plant', `requires Farming level ${s.level}`);
+    if (!invRemove(state, s.seed, 1)) return fail('farm-plant', 'no seed');
+    const x = addXp(state, 'Farming', s.plantXp);
+    return {
+      ok: true, kind: 'farm-plant', removed: [{ id: s.seed, qty: 1 }],
+      xp: [{ skill: 'Farming' as SkillName, amount: s.plantXp }],
+      leveledUp: x.leveledUp ? [{ skill: 'Farming' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+registerIntentDomain('farm-harvest', (ctx, payload) => {
+  if (ctx.dead) return fail('farm-harvest', 'dead');
+  const produce = String(payload.produce ?? '');
+  const s = RECIPES.seeds.find((ss) => ss.produce === produce);
+  if (!s) return fail('farm-harvest', 'not a crop');
+  return tx(ctx, 'farm-harvest', (state) => {
+    if (freeSlots(state) === 0 && invCount(state, produce) === 0) return fail('farm-harvest', 'inventory full');
+    const n = randInt(3, 5);
+    let got = 0;
+    for (let i = 0; i < n; i++) {
+      if (freeSlots(state) === 0 && invCount(state, produce) === 0) break;
+      if (invAdd(state, produce, 1)) got++;
+    }
+    if (got <= 0) return fail('farm-harvest', 'inventory full');
+    const total = s.harvestXp * got;
+    const x = addXp(state, 'Farming', total);
+    return {
+      ok: true, kind: 'farm-harvest', granted: [{ id: produce, qty: got }],
+      xp: [{ skill: 'Farming' as SkillName, amount: total }],
+      leveledUp: x.leveledUp ? [{ skill: 'Farming' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// RUNECRAFT — bind ALL held rune essence into runes at an altar. The altar's
+// rune kind + level + xp-per-essence + multiplier formula are server data.
+// { altar:'air'|'fire' }
+// ===========================================================================
+interface AltarDef { rune: string; level: number; xpPer: number; div: number; }
+const ALTARS: Record<string, AltarDef> = {
+  air: { rune: 'air_rune', level: 1, xpPer: 5, div: 11 },
+  fire: { rune: 'fire_rune', level: 14, xpPer: 7, div: 14 },
+};
+registerIntentDomain('runecraft', (ctx, payload) => {
+  if (ctx.dead) return fail('runecraft', 'dead');
+  const a = ALTARS[String(payload.altar ?? '')];
+  if (!a) return fail('runecraft', 'unknown altar');
+  return tx(ctx, 'runecraft', (state) => {
+    const lvl = skillLevel(state, 'Runecraft');
+    if (lvl < a.level) return fail('runecraft', `requires Runecraft level ${a.level}`);
+    const n = invCount(state, 'rune_essence');
+    if (n === 0) return fail('runecraft', 'you need rune essence');
+    const mult = Math.floor(1 + lvl / a.div);
+    if (!invRemove(state, 'rune_essence', n)) return fail('runecraft', 'you need rune essence');
+    invAdd(state, a.rune, n * mult);
+    const xp = n * a.xpPer;
+    const x = addXp(state, 'Runecraft', xp);
+    return {
+      ok: true, kind: 'runecraft',
+      removed: [{ id: 'rune_essence', qty: n }],
+      granted: [{ id: a.rune, qty: n * mult }],
+      xp: [{ skill: 'Runecraft' as SkillName, amount: xp }],
+      leveledUp: x.leveledUp ? [{ skill: 'Runecraft' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// TAN — the tanner turns cowhide into leather at one coin per hide. Wealth-
+// shaped (spends coins), so gated by ECONOMY_FROZEN. Tans as many as the player
+// can pay for (min of hides/coins), one batch.
+// ===========================================================================
+registerIntentDomain('tan', (ctx) => {
+  if (ctx.dead) return fail('tan', 'dead');
+  if (ctx.frozen) return fail('tan', 'frozen');
+  return tx(ctx, 'tan', (state) => {
+    const hides = invCount(state, 'cowhide');
+    if (hides === 0) return fail('tan', 'no cowhides');
+    const n = Math.min(hides, getCoins(state));
+    if (n === 0) return fail('tan', 'not enough coins');
+    if (!invRemove(state, 'cowhide', n)) return fail('tan', 'no cowhides');
+    if (!removeCoins(state, n)) { invAdd(state, 'cowhide', n); return fail('tan', 'not enough coins'); }
+    invAdd(state, 'leather', n);
+    return {
+      ok: true, kind: 'tan',
+      removed: [{ id: 'cowhide', qty: n }, { id: 'coins', qty: n }],
+      granted: [{ id: 'leather', qty: n }],
+      coins: getCoins(state),
+    };
+  });
+});
+
+// ===========================================================================
+// SAW-PLANKS — the carpenter saws logs into planks at 10 coins per log. Wealth-
+// shaped (spends coins), gated by ECONOMY_FROZEN. Up to 5 per request.
+// ===========================================================================
+registerIntentDomain('saw-planks', (ctx) => {
+  if (ctx.dead) return fail('saw-planks', 'dead');
+  if (ctx.frozen) return fail('saw-planks', 'frozen');
+  return tx(ctx, 'saw-planks', (state) => {
+    let made = 0, spent = 0;
+    for (let i = 0; i < 5; i++) {
+      if (!invHas(state, 'logs', 1) || getCoins(state) < 10) break;
+      if (!invRemove(state, 'logs', 1)) break;
+      if (!removeCoins(state, 10)) { invAdd(state, 'logs', 1); break; }
+      invAdd(state, 'plank', 1); made++; spent += 10;
+    }
+    if (made === 0) return fail('saw-planks', 'no logs or coins');
+    return {
+      ok: true, kind: 'saw-planks',
+      removed: [{ id: 'logs', qty: made }, { id: 'coins', qty: spent }],
+      granted: [{ id: 'plank', qty: made }],
+      coins: getCoins(state),
+    };
+  });
+});
+
+// ===========================================================================
+// PICK — simple single-item gathers with no random table: flax picking and cow
+// milking. { what:'flax'|'milk' }. Milk consumes a bucket -> bucket_of_milk.
+// ===========================================================================
+registerIntentDomain('pick', (ctx, payload) => {
+  if (ctx.dead) return fail('pick', 'dead');
+  const what = String(payload.what ?? '');
+  if (what === 'flax') {
+    return tx(ctx, 'pick', (state) => {
+      if (!hasRoomFor(state, 'flax')) return fail('pick', 'inventory full');
+      if (!invAdd(state, 'flax', 1)) return fail('pick', 'inventory full');
+      return { ok: true, kind: 'pick', granted: [{ id: 'flax', qty: 1 }] };
+    });
+  }
+  if (what === 'milk') {
+    return tx(ctx, 'pick', (state) => {
+      if (!invHas(state, 'bucket', 1)) return fail('pick', 'you need an empty bucket');
+      if (!invRemove(state, 'bucket', 1)) return fail('pick', 'you need an empty bucket');
+      invAdd(state, 'bucket_of_milk', 1);
+      return { ok: true, kind: 'pick', removed: [{ id: 'bucket', qty: 1 }], granted: [{ id: 'bucket_of_milk', qty: 1 }] };
+    });
+  }
+  return fail('pick', 'cannot pick that');
+});
+
+// ===========================================================================
+// SNARE-CHECK — hunter bird snare. The snare's caught-state is world cosmetic
+// the client tracks; the server grants the fixed loot when the client reports a
+// caught snare. { caught:boolean }. A caught snare returns snare + meat +
+// feathers + Hunter xp; an empty one returns just the snare.
+// ===========================================================================
+registerIntentDomain('snare-check', (ctx, payload) => {
+  if (ctx.dead) return fail('snare-check', 'dead');
+  const caught = payload.caught === true;
+  return tx(ctx, 'snare-check', (state) => {
+    if (freeSlots(state) < 3) return fail('snare-check', 'inventory full');
+    if (!caught) {
+      invAdd(state, 'bird_snare', 1);
+      return { ok: true, kind: 'snare-check', granted: [{ id: 'bird_snare', qty: 1 }] };
+    }
+    invAdd(state, 'bird_snare', 1);
+    invAdd(state, 'raw_bird_meat', 1);
+    invAdd(state, 'feather', 2);
+    const x = addXp(state, 'Hunter', 34);
+    return {
+      ok: true, kind: 'snare-check',
+      granted: [{ id: 'bird_snare', qty: 1 }, { id: 'raw_bird_meat', qty: 1 }, { id: 'feather', qty: 2 }],
+      xp: [{ skill: 'Hunter' as SkillName, amount: 34 }],
+      leveledUp: x.leveledUp ? [{ skill: 'Hunter' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// TRAIN — skill-only XP grants for actions that grant no item (agility
+// obstacles + lap bonus). The server owns the per-obstacle/lap xp from a data
+// table; the client supplies only the obstacle key, never the amount.
+// { obstacle } where obstacle is a key in AGILITY_XP.
+// ===========================================================================
+const AGILITY_XP: Record<string, { skill: SkillName; level: number; xp: number }> = {
+  // castle course (content.ts)
+  agility_log: { skill: 'Agility', level: 1, xp: 12 },
+  agility_rope: { skill: 'Agility', level: 5, xp: 15 },
+  agility_wall: { skill: 'Agility', level: 10, xp: 18 },
+  agility_ledge: { skill: 'Agility', level: 15, xp: 20 },
+  agility_lap: { skill: 'Agility', level: 1, xp: 60 },
+  // frostpeak course (region_frostpeak.ts)
+  ice_ledge: { skill: 'Agility', level: 30, xp: 25 },
+  rope_bridge: { skill: 'Agility', level: 30, xp: 28 },
+  rock_climb: { skill: 'Agility', level: 30, xp: 32 },
+  snow_slope: { skill: 'Agility', level: 30, xp: 35 },
+  frost_lap: { skill: 'Agility', level: 30, xp: 150 },
+};
+registerIntentDomain('train', (ctx, payload) => {
+  if (ctx.dead) return fail('train', 'dead');
+  const t = AGILITY_XP[String(payload.obstacle ?? '')];
+  if (!t) return fail('train', 'unknown obstacle');
+  return tx(ctx, 'train', (state) => {
+    if (skillLevel(state, t.skill) < t.level) return fail('train', `requires ${t.skill} level ${t.level}`);
+    const x = addXp(state, t.skill, t.xp);
+    return {
+      ok: true, kind: 'train',
+      xp: [{ skill: t.skill, amount: t.xp }],
+      leveledUp: x.leveledUp ? [{ skill: t.skill, level: x.newLevel }] : [],
+    };
+  });
+});
+
+function num(v: unknown): number {
+  return typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : -1;
+}
+
+// guard against unused-import noise if isKnownItem isn't referenced elsewhere
+void isKnownItem;

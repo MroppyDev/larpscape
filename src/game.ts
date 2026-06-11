@@ -267,7 +267,21 @@ export function combatLevel(): number {
 
 function aOrAn(s: string) { return /^[AEIOU]/.test(s) ? 'an' : 'a'; }
 
-export function addXp(name: SkillName, amount: number) {
+// ---------------- APPLY-BOUNDARY (docs/CONVERSION-CONTRACT.md) ----------------
+// Owned state (xp, items, coins, bank, equipment, quest stage, collectionLog,
+// specEnergy, slayerTask/points, curHp/prayer) is SERVER-AUTHORITATIVE. The
+// functions below are the internal `_apply*` mutators: they are the ONLY code
+// that writes owned state, and they run ONLY on the server-apply path
+// (applyGrant ← netIntent/netGranted, plus game.ts's own combat-echo handlers
+// which are themselves server confirmations). Content code (src/content.ts,
+// src/packs/**, src/quests.ts) must NEVER call these — it calls requestIntent()
+// and reflects the authoritative echo. scripts/lint-no-client-grants.ts enforces
+// this; it is the objective proof of zero client-authored owned data.
+//
+// `addXp`/`addItem`/`removeItem` remain exported as thin aliases so game.ts's
+// own server-echo paths read naturally; the lint forbids the content files from
+// referencing ANY of these names (alias or _apply*).
+export function _applyXp(name: SkillName, amount: number) {
   const i = skillIdx(name);
   const before = levelForXp(state.player.xp[i]);
   state.player.xp[i] = Math.min(200_000_000, state.player.xp[i] + amount);
@@ -296,7 +310,7 @@ export function hasTool(id: string): boolean {
   return hasItem(id) || Object.values(state.player.equipment).some((e) => e?.id === id);
 }
 
-export function addItem(id: string, qty = 1): boolean {
+export function _applyItem(id: string, qty = 1): boolean {
   const def = ITEMS[id];
   const inv = state.player.inventory;
   if (def.stackable) {
@@ -368,7 +382,7 @@ function recordCollectible(id: string) {
   events.onCollection();
 }
 
-export function removeItem(id: string, qty = 1): boolean {
+export function _applyRemove(id: string, qty = 1): boolean {
   const inv = state.player.inventory;
   if (invCount(id) < qty) return false;
   let left = qty;
@@ -383,13 +397,21 @@ export function removeItem(id: string, qty = 1): boolean {
   return true;
 }
 
-export function removeFromSlot(slot: number, qty = 1) {
+export function _applyRemoveFromSlot(slot: number, qty = 1) {
   const it = state.player.inventory[slot];
   if (!it) return;
   it.qty -= qty;
   if (it.qty <= 0) state.player.inventory[slot] = null;
   events.onInvChange();
 }
+
+// Public aliases. These delegate to the _apply* mutators and are used ONLY by
+// game.ts's own server-apply/echo paths (combat youHit, pickup, etc.). Content
+// code must not reference them — lint enforces that boundary.
+export const addXp = _applyXp;
+export const addItem = _applyItem;
+export const removeItem = _applyRemove;
+export const removeFromSlot = _applyRemoveFromSlot;
 
 // ---------------- Init / save / load ----------------
 const SAVE_KEY = 'larpscape-save-v2';
@@ -679,61 +701,141 @@ export function netGot(m: { item: string; qty: number }) {
 // {t:'intent'}/{t:'granted'} echo is applied here. The client no longer authors
 // xp/items for these paths — addItem/addXp below run only as the SERVER echo.
 
-// Send a skilling intent over the websocket. Returns false when offline (the
-// caller shows the connection message). `id` correlates the reply if needed.
-let nextIntentId = 1;
-export function sendIntent(kind: string, payload: Record<string, unknown>): boolean {
-  return netSend({ t: 'intent', kind, id: nextIntentId++, ...payload });
-}
-
-interface IntentEcho {
+// The authoritative echo shape (mirrors server/intents.ts IntentResult). The
+// client REPLACES its optimistic owned-state with this; it never authors values.
+export interface IntentEcho {
   ok: boolean;
   kind: string;
   error?: string;
+  id?: number;            // correlation id echoed back for requestIntent()
   granted?: { id: string; qty: number }[];
   removed?: { id: string; qty: number }[];
   xp?: { skill: SkillName; amount: number }[];
+  coins?: number;         // authoritative carried-coin balance after the mutation
+  stage?: number;         // quest advance: resulting monotonic stage
+  quest?: string;         // quest id the stage/reward applies to (quest kinds only)
+  questSet?: Record<string, number>; // server-owned quest-progress keys to mirror
+                          // (sub-stage counters/bitmasks: gd1_rings, gd1_rats, …).
+                          // Reflected monotonically (max) — counters/bitmasks only grow.
+  equip?: Record<string, { id: string; qty: number } | null>; // changed equip slots
   burned?: boolean;
   source?: string;
 }
 
-// Apply an authoritative grant/remove/xp echo to the local mirror. removed items
-// are debited first, then grants added, then xp (so level-up messages fire with
-// the new inventory already reflected). This is the ONLY place skilling owned
-// state changes now (the handlers send intents; the server echoes here).
-export function applyIntentEcho(m: IntentEcho) {
-  if (m.removed) for (const r of m.removed) removeItem(r.id, r.qty);
-  if (m.granted) for (const g of m.granted) {
-    addItem(g.id, g.qty);
-    if (g.id === 'coins') audio.sfx('coins');
+// ---- requestIntent: the ONE entry point content code uses to change owned ----
+// state. It sends `{t:'intent', kind, id, ...payload}` over the websocket and
+// returns a promise that resolves with the authoritative echo when the server
+// replies (correlated by id), or rejects/resolves-not-ok on refusal/timeout.
+// Content code calls requestIntent(...) instead of addItem/addXp/removeItem; the
+// echo is applied by applyGrant (below), so the client only ever REFLECTS
+// server-granted state. Migration helper for domain agents:
+//
+//   // before (client-authored — now forbidden):
+//   removeItem('logs', 1); addXp('Firemaking', 40);
+//   // after (server-validated):
+//   requestIntent('firemake', { log: 'logs' });
+//
+// Fire-and-forget callers that don't need the result can ignore the promise;
+// the echo is still applied centrally via applyGrant.
+let nextIntentId = 1;
+const pendingIntents = new Map<number, { resolve: (e: IntentEcho) => void; timer: ReturnType<typeof setTimeout> }>();
+
+export function requestIntent(kind: string, payload: Record<string, unknown> = {}): Promise<IntentEcho> {
+  const id = nextIntentId++;
+  if (!netSend({ t: 'intent', kind, id, ...payload })) {
+    return Promise.resolve({ ok: false, kind, error: 'offline', id });
   }
-  if (m.xp) for (const x of m.xp) addXp(x.skill, x.amount);
+  return new Promise<IntentEcho>((resolve) => {
+    const timer = setTimeout(() => {
+      pendingIntents.delete(id);
+      resolve({ ok: false, kind, error: 'timeout', id });
+    }, 8000);
+    pendingIntents.set(id, { resolve, timer });
+  });
 }
 
-// WS {t:'intent'} reply (skilling) and {t:'granted'} (pickup/drop) handlers.
+// Backwards-compatible thin wrapper kept for any caller that only needs to fire
+// an intent without awaiting (returns false when offline).
+export function sendIntent(kind: string, payload: Record<string, unknown>): boolean {
+  return netSend({ t: 'intent', kind, id: nextIntentId++, ...payload });
+}
+
+// applyGrant: the SINGLE server-apply sink. Every owned-state echo (skilling,
+// shop, bank, equip, produce, quest, pickup, scripted-grant, domain intents)
+// flows through here. removed first, then grants, then xp (so level-up messages
+// fire with the new inventory already reflected), then equip/coins/quest deltas.
+// This is the only place outside game.ts's combat-echo handlers that mutates
+// owned state, and it does so exclusively from server-authoritative data.
+export function applyGrant(m: IntentEcho) {
+  if (m.removed) for (const r of m.removed) _applyRemove(r.id, r.qty);
+  if (m.granted) for (const g of m.granted) {
+    _applyItem(g.id, g.qty);
+    if (g.id === 'coins') audio.sfx('coins');
+  }
+  if (m.xp) for (const x of m.xp) _applyXp(x.skill, x.amount);
+  if (m.equip) {
+    for (const slot of Object.keys(m.equip)) {
+      if ((EQUIP_SLOTS as string[]).includes(slot)) {
+        state.player.equipment[slot as EquipSlot] = m.equip[slot];
+      }
+    }
+    events.onInvChange(); events.onStatsChange();
+  }
+  if (typeof m.stage === 'number' && typeof m.quest === 'string' && state.player) {
+    // quest stage is server-owned + monotonic; reflect the server-granted stage
+    // into the local quests mirror so journals/dialogue gates read true. This is
+    // the apply-boundary (game.ts) writing owned state from authoritative data —
+    // content code may never write the quests map (lint-enforced); it only ever
+    // requests a 'quest-stage' intent and reflects the echo through here.
+    if (!state.player.quests || typeof state.player.quests !== 'object') state.player.quests = {} as Record<string, number>;
+    const prev = state.player.quests[m.quest] ?? 0;
+    state.player.quests[m.quest] = Math.max(prev, m.stage);
+    events.onStatsChange();
+  }
+  if (m.questSet && state.player) {
+    // server-owned quest-progress sub-keys (kill counters / sounding bitmasks).
+    // Same apply-boundary rule: only game.ts writes the quests mirror, and only
+    // from the authoritative echo. Monotonic max keeps a stale echo from
+    // rewinding a counter/bitmask (they only ever grow within a quest).
+    if (!state.player.quests || typeof state.player.quests !== 'object') state.player.quests = {} as Record<string, number>;
+    for (const k of Object.keys(m.questSet)) {
+      const prev = state.player.quests[k] ?? 0;
+      state.player.quests[k] = Math.max(prev, m.questSet[k]);
+    }
+    events.onStatsChange();
+  }
+}
+
+// Back-compat name retained for existing callers/tests.
+export const applyIntentEcho = applyGrant;
+
+// WS {t:'intent'} reply handler. Resolves any pending requestIntent promise,
+// surfaces refusals, and applies the authoritative grant.
 export function netIntent(m: IntentEcho) {
+  if (typeof m.id === 'number') {
+    const p = pendingIntents.get(m.id);
+    if (p) { clearTimeout(p.timer); pendingIntents.delete(m.id); p.resolve(m); }
+  }
   if (!m.ok) {
     // Surface the server's refusal once (rate-limited by the action loop).
     if (m.error && m.error !== 'inventory full') {
       // 'inventory full'/empty rolls are common; only show meaningful refusals
-      if (!/full|no character|out of range|no such|frozen/.test(m.error)) msg(serverError(m.error));
+      if (!/full|no character|out of range|no such|frozen|offline|timeout/.test(m.error)) msg(serverError(m.error));
     } else if (m.error === 'inventory full') {
       msg("You don't have enough inventory space.");
     }
     return;
   }
-  applyIntentEcho(m);
+  applyGrant(m);
 }
 
 // pickup/drop authoritative echo ({t:'granted'} from sim.ts).
 export function netGranted(m: { source?: string; items?: { id: string; qty: number }[]; removed?: { id: string; qty: number }[] }) {
-  if (m.items) for (const g of m.items) {
-    addItem(g.id, g.qty);
-    if (g.id === 'coins') audio.sfx('coins');
-  }
-  // 'drop' removals are already reflected locally (dropItem clears the slot
-  // optimistically); the echo is confirmation. Re-applying a remove here would
-  // double-debit, so we trust the optimistic local removal for drop.
+  // Route the pickup grant through the single apply sink. `items` is the
+  // pickup/drop wire field; map it onto `granted`. 'drop' removals are already
+  // reflected locally (dropItem clears the slot optimistically); the echo is
+  // confirmation, so we do NOT re-apply m.removed here (would double-debit).
+  if (m.items) applyGrant({ ok: true, kind: 'granted', granted: m.items });
 }
 
 function serverError(e: string): string {
@@ -1083,6 +1185,12 @@ export function buryBones(slot: number) {
   addXp('Prayer', xp);
 }
 
+// Equip is server-authoritative (docs/CONVERSION-CONTRACT §2.1): the client
+// REQUESTS an equip; the server validates levelReq vs SERVER xp, moves the item
+// out of the inventory, swaps in, and returns the previously-worn item. The
+// `equip`/`granted`/`removed` echo is applied centrally by applyGrant — the
+// client never writes the equipment/inventory itself. The local level pre-check
+// only surfaces the message instantly; the server independently re-checks.
 export function equipItem(slot: number) {
   const p = state.player;
   const it = p.inventory[slot];
@@ -1095,32 +1203,26 @@ export function equipItem(slot: number) {
       return;
     }
   }
-  const cur = p.equipment[def.equipSlot];
-  if (def.stackable && cur && cur.id === it.id) {
-    cur.qty += it.qty;
-    p.inventory[slot] = null;
-  } else {
-    p.inventory[slot] = cur;
-    p.equipment[def.equipSlot] = it;
-  }
-  msg(`You ${def.equipSlot === 'weapon' ? 'wield' : 'wear'} the ${def.name}.`);
-  events.onInvChange(); events.onStatsChange();
+  const verb = def.equipSlot === 'weapon' ? 'wield' : 'wear';
+  void requestIntent('equip', { op: 'equip', slot: def.equipSlot, item: it.id, source: 'inventory' })
+    .then((echo) => {
+      if (echo.ok) msg(`You ${verb} the ${def.name}.`);
+      else if (echo.error && echo.error !== 'inventory full') msg(echo.error);
+    });
 }
 
 export function unequip(slotName: EquipSlot) {
   const p = state.player;
   const it = p.equipment[slotName];
   if (!it) return;
-  const def = ITEMS[it.id];
-  if (def.stackable) {
-    if (!addItem(it.id, it.qty) ) { msg("You don't have enough inventory space."); return; }
-  } else {
-    const i = p.inventory.indexOf(null);
-    if (i < 0) { msg("You don't have enough inventory space."); return; }
-    p.inventory[i] = it;
-  }
-  p.equipment[slotName] = null;
-  events.onInvChange(); events.onStatsChange();
+  // Server-authoritative: request the unequip; the granted item + cleared slot
+  // come back in the echo and are applied by applyGrant.
+  void requestIntent('equip', { op: 'unequip', slot: slotName, item: it.id, source: 'inventory' })
+    .then((echo) => {
+      if (!echo.ok && echo.error) {
+        msg(echo.error === 'inventory full' ? "You don't have enough inventory space." : echo.error);
+      }
+    });
 }
 
 export function dropItem(slot: number) {
@@ -1456,39 +1558,26 @@ export function combatSnapshot() {
 }
 
 // ---------------- Bank / shop ----------------
+// Bank + shop are server-authoritative (docs/CONVERSION-CONTRACT §2). The client
+// resolves the item id from the clicked slot, REQUESTS the intent, and the
+// server validates possession/coins/stock and returns the inv<->bank /
+// coins<->item delta which applyGrant reflects. The client never moves owned
+// items itself; only the presentation-only shop stock counter is updated locally
+// on a successful echo. The deposit/withdraw qty is recomputed + clamped server
+// side — the client-supplied number is just a hint.
 export function bankDeposit(slot: number, qty: number | 'all') {
-  const p = state.player;
-  const it = p.inventory[slot];
+  const it = state.player.inventory[slot];
   if (!it) return;
-  const id = it.id;
-  const have = invCount(id);
-  const n = qty === 'all' ? have : Math.min(qty, have);
-  if (n <= 0) return;
-  removeItem(id, n);
-  const b = p.bank.find((s) => s.id === id);
-  if (b) b.qty += n; else p.bank.push({ id, qty: n });
-  events.onInvChange(); events.onBankShopChange();
+  void requestIntent('bank', { op: 'deposit', item: it.id, qty });
 }
 
 export function bankWithdraw(bankIdx: number, qty: number | 'all') {
-  const p = state.player;
-  const b = p.bank[bankIdx];
+  const b = state.player.bank[bankIdx];
   if (!b) return;
-  const def = ITEMS[b.id];
-  const want = qty === 'all' ? b.qty : Math.min(qty, b.qty);
-  let took = 0;
-  if (def.stackable) {
-    if (addItem(b.id, want)) took = want;
-    else msg("You don't have enough inventory space.");
-  } else {
-    for (let i = 0; i < want; i++) {
-      if (freeSlots() === 0) { if (took === 0) msg("You don't have enough inventory space."); break; }
-      addItem(b.id, 1); took++;
-    }
-  }
-  b.qty -= took;
-  if (b.qty <= 0) p.bank.splice(bankIdx, 1);
-  events.onInvChange(); events.onBankShopChange();
+  void requestIntent('bank', { op: 'withdraw', item: b.id, qty })
+    .then((echo) => {
+      if (!echo.ok && echo.error === 'inventory full') msg("You don't have enough inventory space.");
+    });
 }
 
 // per-shop live stock, keyed by shop id
@@ -1503,28 +1592,37 @@ export function shopBuy(shopId: string, itemId: string) {
   const stock = getShopStock(shopId);
   const entry = stock.find((s) => s.item === itemId);
   if (!entry || entry.qty <= 0) { msg('The shop has run out of stock.'); return; }
-  const price = Math.max(1, Math.ceil(ITEMS[itemId].value));
-  if (invCount('coins') < price) { msg("You don't have enough coins."); return; }
-  if (freeSlots() === 0 && !(ITEMS[itemId].stackable && hasItem(itemId))) { msg("You don't have enough inventory space."); return; }
-  removeItem('coins', price);
-  addItem(itemId, 1);
-  entry.qty--;
-  audio.sfx('coins');
-  events.onBankShopChange();
+  // Server validates stock membership, price, coins, and room; the coins<->item
+  // delta is applied by applyGrant. Only the local presentation stock counter is
+  // decremented here, on success.
+  void requestIntent('shop', { op: 'buy', shop: shopId, item: itemId })
+    .then((echo) => {
+      if (echo.ok) { entry.qty--; audio.sfx('coins'); events.onBankShopChange(); }
+      else if (echo.error === 'not enough coins') msg("You don't have enough coins.");
+      else if (echo.error === 'inventory full') msg("You don't have enough inventory space.");
+      else if (echo.error === 'frozen') msg('The shops are closed for business.');
+    });
 }
 
 export function shopSell(shopId: string, slot: number) {
-  const p = state.player;
-  const it = p.inventory[slot];
+  const it = state.player.inventory[slot];
   if (!it || it.id === 'coins') return;
   const stock = getShopStock(shopId);
-  const price = Math.max(1, Math.floor(ITEMS[it.id].value * 0.4));
-  removeFromSlot(slot, ITEMS[it.id].stackable ? it.qty : 1);
-  addItem('coins', price * (ITEMS[it.id].stackable ? 1 : 1));
-  const entry = stock.find((s) => s.item === it.id);
-  if (entry) entry.qty++; else stock.push({ item: it.id, qty: 1 });
-  audio.sfx('coins');
-  events.onBankShopChange();
+  const itemId = it.id;
+  // Server validates possession and computes the proceeds; applyGrant credits the
+  // coins and removes the item. Only the presentation stock counter is bumped
+  // locally, on success.
+  void requestIntent('shop', { op: 'sell', shop: shopId, item: itemId })
+    .then((echo) => {
+      if (echo.ok) {
+        const entry = stock.find((s) => s.item === itemId);
+        if (entry) entry.qty++; else stock.push({ item: itemId, qty: 1 });
+        audio.sfx('coins');
+        events.onBankShopChange();
+      } else if (echo.error === 'frozen') {
+        msg('The shops are closed for business.');
+      }
+    });
 }
 
 export function openBank() { state.bankOpen = true; events.onBankShopChange(); }

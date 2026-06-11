@@ -24,7 +24,7 @@ export const NPC_LORE: Record<string, string> = {
   magic_tutor: 'Mira is an Aldgate-trained songcaster who took the quiet vale posting on purpose; her sleeves smell faintly of ozone. Her first lesson: the world is a sentence, and you are allowed to edit. She wants one student a decade worth teaching, suspects you might be it, and will never say so.',
   gardener: 'Old Fen knows every weed in the realm by first name. He is Bellmeadow\'s gardener and the Stillwater Circle\'s vale-side friend — "Fen" is a Circle name, not a birth name; he took it the day he left the Eastern Marshes. He holds that a well-turned patch is a tuned instrument.',
   cook: 'Cook Edda runs the castle kitchen with an iron ladle. She fed three armies during the Discord Wars from one larder, and the banquet panic of The Empty Larder is her worst nightmare recurring. She wants the duke to eat fewer than three slices. She fails wanting it.',
-  carpenter: 'Carpenter Lenny measures twice, saws once, sweeps never. He built half the market stalls and the LARP field\'s totems — the Chimperton court pays promptly. Wants someone else to invent the broom rota.',
+  carpenter: 'Carpenter Lenny measures twice, saws once, sweeps never. He built half the market stalls and the Chimperton court\'s dais — the court pays promptly. Wants someone else to invent the broom rota.',
   goblin_warlord: 'The Broken-Tooth conductor: a marching-chant grown a conductor of its own, and the first goblin since F.S. 701 to hold a fort — which means some banner survived the Discord Wars that shouldn\'t have. His banner is load-bearing in the literal sense: it is the warband\'s sheet music, which is why every warband collapses when its warlord falls. He wants to be a verse of history. He will settle for a footnote with casualties.',
   bog_horror: 'The drowned refrain of three villages lost on the Night of Skipped Beats (F.S. 612), circulating in the peat for centuries until it congealed a body in F.S. 742 — a heap of swamp that decided to hold grudges. It drops back what the bog swallowed, slightly fermented. What it wants — and this is the unsettling part — is to be <em>heard</em>.',
   shadow_drake: 'A drake the colour of a bad night, hatched in the Underdeep dark from an egg laid during the wars. Its scales shed darkness the way hot iron sheds sparks — a blade quenched in its blood holds an edge of night. It wants the dark to stay unbothered. You are bother.',
@@ -61,12 +61,6 @@ export const NPC_LORE: Record<string, string> = {
   gun_trainer: 'Sergeant Vex, former city watch, teaches Gun to anyone who can keep both eyes open. She lost her watch commission for proving, publicly, that the watch armoury was selling powder to Saif\'s bandits — the Gun Guild hired her the same afternoon. She wants recruits who count their rounds, and she issues every adventurer their first Glock 18.',
   gun_guild_master: 'Master Flint heads the Aldgate Gun Guild; his coat has more pockets than sense. He personally swept up Hannelore Glock\'s pistol patterns 1 through 17 (the exploding ones, now on the memorial plaque). He wants the thunder-shale road safe and the Stillwater Circle to stop sending pamphlets. He reads every pamphlet. Twice.',
   casino_dealer: 'Dealer Pip runs Pip\'s House of Mild Regret (est. F.S. 731) with a smile sharp enough to cut cards. He once won the Aldgate city seal at cards from the last lord-mayor and returned it framed — which is how Aldgate ended up governed by a merchant council. The casino\'s charter was granted under Rest Day law, which is why it never closes. The house wins slightly more often; that\'s the definition of fair.',
-  party_host: 'Host Hedon is professional enthusiasm in a waistcoat that has seen things. He runs the Hedonism Patch lounge — dance floor, hot tub, delayed regrets — and wants the conga line unbroken since F.S. 739 to stay unbroken. It has technically been one conga line. Shifts change.',
-  bartender_fizz: 'Fizz shakes cocktails like personal grudges and pours courage in a glass. She wants the recipe for one drink her mentor took to sea. Saltjaw\'s Wreckers may have the recipe book. She doesn\'t know that yet.',
-  pride_marshal: 'Marshal Riley keeps the parade route safe and the vibes immaculate. They raised Rainbow Avenue in F.S. 735; their words at the ribbon are quoted era canon: "We built it so the whole world could see we\'re still here, still fabulous." They want the Avenue to outlive everyone who needed it and welcome everyone who finds it.',
-  drag_icon: 'Sashabella, legend of the stage, has eyeliner that could cut steel. The spotlight is negotiable, the drama complimentary. She sang in a Stillwater choir once, and the Circle quietly believes her encores are why the Offnote can\'t touch the Avenue. She believes it\'s the eyeliner. Both may be right.',
-  larp_marshal_monk: 'Sir Chimpwick, marshal of the Black Monkey LARP Pride field, was knighted by Danquavious II for valour in re-enactment and takes the Foam Accord as holy writ — "foam swords only; real steel is for the goblin field" is Accord law, not a joke. He wants a perfect re-staging of the Battle of Aldgate Gates with zero injuries and full attendance.',
-  larp_quartermaster: 'Quartermaster Peel sells foam weapons and capes loud enough to spot from the castle. Human; proceeds fund the monkey totems. Wants a foam pattern that survives more than one heroic death scene.',
   danquavious_chimperton: 'Danquavious Chimperton III, Sovereign of Bananas, Duke of the Southern Lawn, is the third chimp of his line since Duke Reginald the Odd\'s airtight will of F.S. 703 (do not ask about the First, who died beloved, or the Second, who abdicated to pursue percussion). He does not merely rule; he <em>chimps</em>. The only monarch in Cantorne to win both a joust and a banana-eating contest, he wants the golden banana on its pedestal to remain forever unpeeled — it was Reginald\'s last gift, and peeling it would end something he has no word for.',
   chimperton_herald: 'Herald Bananrick announces Danquavious with unnecessary volume and sells officially unofficial medallions. Human, and fluent in the court\'s gesture-protocol, he wants — one day — to be announced <em>himself</em>, by anyone, at any volume.',
   dentist_dr_tick: 'Dr. Ticksworth — dentist, tick wrangler, reluctant taste-tester supervisor — founded the Dentist Tick Eat clinic in F.S. 741 when he proved that bog ticks carrying discord-motes are neutralized by proper preparation and consumption. Dentistry in front, discord-mote remediation in back. He insists it\'s artisanal; it is, technically, public health. He wants academic recognition from Aldgate and receives clientele instead. He has never eaten one.',
@@ -79,7 +73,7 @@ export const NPC_LORE: Record<string, string> = {
 export const REGION_LORE: Record<string, string> = {
   'the-castle': [
     p('<strong>Bellmeadow</strong> is the oldest continuously settled vale in Cantorne, on the west bank of the ' + loc('river-murmur', 'River Murmur') + ' — the first mortals woke here mid-meadow in F.S. 1 with the Choir\'s melody stuck in their heads. <strong>Stonecourt Castle</strong> has warded it since Duke Coram the Mason raised the walls (F.S. 88–94).'),
-    p('The current ruler is <strong>Duke Aldous Stonecourt</strong>, a decent administrator with a sweet tooth — ' + n('cook', 'Cook Edda') + ' confirms he had three slices at the banquet, and his physician is not to be told. Since F.S. 742 the duchy licenses adventurers and funds ' + n('slayer_master', 'Brogan') + '\'s slayer ledger, while politely pretending ' + loc('rainbow-avenue', 'Rainbow Avenue') + ', the casino, and the chimp court of ' + loc('bellmeadow-south', 'the south district') + ' are someone else\'s jurisdiction. (They are.) The duchy archive holds the only surviving Discord Wars maps of the ' + loc('underdeep', 'Underdeep') + ', and the larder is chronically under-provisioned.'),
+    p('The current ruler is <strong>Duke Aldous Stonecourt</strong>, a decent administrator with a sweet tooth — ' + n('cook', 'Cook Edda') + ' confirms he had three slices at the banquet, and his physician is not to be told. Since F.S. 742 the duchy licenses adventurers and funds ' + n('slayer_master', 'Brogan') + '\'s slayer ledger, while politely pretending the casino and the chimp court of ' + loc('bellmeadow-south', 'the south district') + ' are someone else\'s jurisdiction. (They are.) The duchy archive holds the only surviving Discord Wars maps of the ' + loc('underdeep', 'Underdeep') + ', and the larder is chronically under-provisioned.'),
   ].join(''),
   aldgate: [
     p('Chartered in F.S. 305 as a market town at the old toll-arch — "the Ald Gate" — on the east road, Aldgate held against the last goblin host of the Discord Wars in F.S. 701. Today it is run by the <strong>Concord of Weights</strong>, a merchant council that took over when the last lord-mayor lost the city seal at cards to ' + n('casino_dealer', 'Dealer Pip') + ', who returned it framed.'),
@@ -118,7 +112,7 @@ export const REGION_LORE: Record<string, string> = {
     p('At the very bottom waits ' + n('magma_fiend', 'Korr the Molten') + ', the fragment itself wearing a body of slag — "stone that walks, fire that thinks." The hammering heard at night in the upper caves is Korr forging. Nobody knows what. The ' + n('ash_fiend', 'ash fiends') + ' are the silhouettes of the Depths\' dead, peeled off the rock by that hammering; the ' + n('magma_crawler', 'magma crawlers') + ' are forge-spillage given legs.'),
   ].join(''),
   'hunter-meadow': [
-    p('A flower meadow south-east of the vale, tuned so gently that snared birds are said to be merely embarrassed rather than afraid. It is trappers\' common land under duchy law — and the <strong>Foam Accord</strong> of F.S. 698, the oath that ended real bloodshed in favour of eternal foam re-enactment, was drafted within sight of it.'),
+    p('A flower meadow south-east of the vale, tuned so gently that snared birds are said to be merely embarrassed rather than afraid. It is trappers\' common land under duchy law, walked by snare-setters and meadow hunters who hold its quiet as carefully as any tuned instrument.'),
   ].join(''),
 };
 
@@ -193,7 +187,6 @@ export function addLorePages(data: WikiData): void {
       p('The collapse. On the <strong>Night of Skipped Beats</strong> (F.S. 612), the Offnote fragment under the southern peat surges; the bog drowns three villages and exhales decades of war. Goblin warbands — feral marching-chants given legs — pour out of every untuned corner.'),
       ul([
         '<strong>F.S. 612–690</strong> — The <strong>Discord Wars</strong>: the Duchy, Aldgate, the Frostpeak holds, and the ports fight goblin hosts, bandit kings, and each other. The Underdeep is breached and abandoned twice. Brackwater burns once and learns to build in stone.',
-        '<strong>F.S. 698</strong> — <em>The Foam Accord.</em> War-weary veterans of every banner, meeting in a meadow south of Stonecourt, swear an oath: the old battles will be re-fought forever so no one forgets — but only ever with <strong>foam</strong>. Real bloodshed feeds the Offnote; re-enactment starves it. This is the founding of the LARP marshals, and it is treated with complete seriousness by everyone except visitors.',
         '<strong>F.S. 701</strong> — The last goblin host of the wars breaks at the gates of Aldgate. The era closes.',
       ]),
       h2('Era IV — The Quiet Measure (F.S. 701–present)'),
@@ -204,7 +197,6 @@ export function addLorePages(data: WikiData): void {
         '<strong>F.S. 718</strong> — The Aldgate Gun Guild chartered after Armsmith Hannelore Glock\'s eighteenth pistol pattern finally fails to explode (patterns one through seventeen are commemorated on a scorched plaque). The Glock 18 becomes the realm\'s standard sidearm.',
         '<strong>F.S. 726</strong> — The Aldgate Exchange opens its gilded booths; coin learns to move faster than carts.',
         '<strong>F.S. 731</strong> — Dealer Pip opens Pip\'s House of Mild Regret in Bellmeadow\'s south quarter.',
-        '<strong>F.S. 735</strong> — Rainbow Avenue raised east of the River Murmur; first Pride parade. Marshal Riley, at the ribbon: "We built it so the whole world could see we\'re still here, still fabulous."',
         '<strong>F.S. 740</strong> — The Deep Bog stirs again. Bog ticks carrying discord-motes spread north.',
         '<strong>F.S. 741</strong> — Dr. Ticksworth opens the Dentist Tick Eat clinic; properly prepared tick consumption is found to neutralize discord-motes. Glen volunteers. Glen keeps volunteering.',
         '<strong>F.S. 742</strong> — The crisis year: a goblin warlord seizes the old palisade fort east of Aldgate; a horror congeals in the Deep Bog; the Shadow Drake nests in the Underdeep; hammering is heard from the deepest Ashen Depths as Korr the Molten wakes; Saif the Red Smile strangles the desert caravan roads; and Stonecourt begins licensing <strong>adventurers</strong>.',
@@ -212,7 +204,7 @@ export function addLorePages(data: WikiData): void {
       ]),
       h2('Adventurers'),
       p('An <strong>adventurer</strong> is a person in whom the world\'s song runs unusually loud — loud enough that the Choir notices when it stops. This is why adventurers respawn: when one falls, the Five hum the verse back a few bars, and the adventurer wakes at their last anchored place, lighter a few possessions (the Offnote keeps a cut; it always keeps a cut). Ordinary folk do not get this. They know it, you know it, and the polite thing is not to mention it.'),
-      p('Since F.S. 742 the Duchy of Stonecourt issues adventurer licenses — a war-measure without a war. Adventurers are freelancers of the retuning: they kill what skipped, carry what\'s needed, and get paid by whoever\'s problem it was. Veterans of the Foam Accord regard them with professional respect and mild concern: someone has to use real steel so the rest never have to again.'),
+      p('Since F.S. 742 the Duchy of Stonecourt issues adventurer licenses — a war-measure without a war. Adventurers are freelancers of the retuning: they kill what skipped, carry what\'s needed, and get paid by whoever\'s problem it was. The old soldiers of the duchy regard them with professional respect and mild concern: someone has to walk toward the trouble so the rest never have to again.'),
       h2('See also'),
       ul([
         link('lore/factions', 'Factions of Cantorne'),
@@ -233,11 +225,11 @@ export function addLorePages(data: WikiData): void {
     slug: 'lore/factions',
     title: 'Factions of Cantorne',
     category: 'Lore',
-    excerpt: 'The powers of Cantorne — the Duchy of Stonecourt, the Concord of Weights, the Gun Guild, the Stillwater Circle, the Foam Accord Marshals, the chimp court, and the criminal coasts.',
+    excerpt: 'The powers of Cantorne — the Duchy of Stonecourt, the Concord of Weights, the Gun Guild, the Stillwater Circle, the chimp court, and the criminal coasts.',
     html: article('Factions of Cantorne', [
       p('Cantorne\'s Quiet Measure is kept — and occasionally disturbed — by the following powers. Every one of them has work for a licensed adventurer.'),
       h2('The Duchy of Stonecourt'),
-      p('Duke Aldous\'s government: castle, watch, mine charters, adventurer licenses. Its goal is to keep the vale fed and the Quiet Measure quiet. Its problem: it is paying adventurers to solve what its own army — downsized after the Foam Accord — cannot, and it owes the Concord money. Seat: ' + loc('the-castle', 'Stonecourt Castle') + '. Key figures: Duke Aldous, ' + n('slayer_master', 'Brogan') + ', ' + n('cook', 'Cook Edda') + '.'),
+      p('Duke Aldous\'s government: castle, watch, mine charters, adventurer licenses. Its goal is to keep the vale fed and the Quiet Measure quiet. Its problem: it is paying adventurers to solve what its own army — downsized in the long peace — cannot, and it owes the Concord money. Seat: ' + loc('the-castle', 'Stonecourt Castle') + '. Key figures: Duke Aldous, ' + n('slayer_master', 'Brogan') + ', ' + n('cook', 'Cook Edda') + '.'),
       h2('The Concord of Weights'),
       p('The merchant council of ' + loc('aldgate', 'Aldgate') + ': the Exchange, the city watch payroll, shop charters, and the Gun Guild\'s parent body. It wants open roads and moving coin; it wants the ' + loc('warlords-fort', 'Warlord\'s Fort') + ' cleared because the fort sits on its trade road; and it quietly resents that Bellmeadow\'s casino out-earns its Exchange on feast days. ' + n('ge_clerk', 'Exchange clerks') + ' are sworn never to own what they list.'),
       h2('The Aldgate Gun Guild'),
@@ -246,17 +238,13 @@ export function addLorePages(data: WikiData): void {
       p('Not a culture but a chant: ' + n('goblin', 'goblin') + ' bands coalesce around banners, and the banner is the warband\'s memory — its literal sheet music. Their goal: march, take, chant louder. The current ' + n('goblin_warlord', 'Warlord') + ' is the first since F.S. 701 to hold a fort, which means some banner survived the wars that shouldn\'t have.'),
       h2('The Stillwater Circle'),
       p('Herbalists, bog-tenders, and quiet listeners. ' + n('gardener', 'Old Fen') + ' is their vale-side friend; the mother-lodge stands on stilts in the ' + loc('eastern-marshes', 'Eastern Marshes') + '. Doctrine: the Offnote\'s fragments cannot be destroyed, only kept <em>asleep</em> — out-sung or starved. They opposed thunder-shale mining loudly and were ignored. They are not saying "we told you so." They are brewing it.'),
-      h2('The Foam Accord Marshals'),
-      p('The veterans\' order founded F.S. 698, whose oath ended the Discord Wars\' bloodshed: every battle re-enacted forever, bloodlessly, so the Offnote starves and the dead are remembered with better choreography. The Accord is recognized law — a marshal can void any duel by declaring it "foam jurisdiction." ' + n('larp_marshal_monk', 'Sir Chimpwick') + '\'s Black Monkey chapter holds the field in ' + loc('bellmeadow-south', 'Bellmeadow\'s south district') + '; ' + n('larp_quartermaster', 'Quartermaster Peel') + ' arms it.'),
       h2('The Court of the Southern Lawn'),
-      p(n('danquavious_chimperton', 'Danquavious Chimperton III') + '\'s micro-monarchy, legally unimpeachable since the Will of F.S. 703. Goals: dignity, bananas, and the long defense of the Will against jealous human cousins of Duke Reginald who still file annual appeals. The court funds the LARP field\'s totems and is the casino\'s largest single depositor. ' + n('chimperton_herald', 'Herald Bananrick') + ' handles volume.'),
-      h2('The Avenue'),
-      p('Less a faction than a covenant: everyone is welcome, the music does not stop, and the Offnote has never once been recorded on the dance floor of ' + loc('rainbow-avenue', 'Rainbow Avenue') + '. ' + n('pride_marshal', 'Marshal Riley') + ' keeps the route safe; ' + n('drag_icon', 'Sashabella') + ' keeps it legendary. The Circle sends discreet observers to figure out <em>why</em> it works. The Avenue sends them home with glitter.'),
+      p(n('danquavious_chimperton', 'Danquavious Chimperton III') + '\'s micro-monarchy, legally unimpeachable since the Will of F.S. 703. Goals: dignity, bananas, and the long defense of the Will against jealous human cousins of Duke Reginald who still file annual appeals. The court keeps the lawn in ' + loc('bellmeadow-south', 'Bellmeadow\'s south district') + ' and is the casino\'s largest single depositor. ' + n('chimperton_herald', 'Herald Bananrick') + ' handles volume.'),
       h2('The criminal coasts'),
       p(n('bandit_king', 'Saif the Red Smile') + '\'s desert bandits and ' + n('pirate_captain', 'Captain Saltjaw') + '\'s cove Wreckers trade through fences in both ports and despise each other ("sand thieves" versus "wet thieves"). Both kings are charismatic, neither is elected, and both drop their regalia when finally brought to account.'),
     ].join(''), infobox('Factions', [
       ['Lawful powers', 'Duchy, Concord, Gun Guild'],
-      ['Orders', 'Foam Accord, Stillwater Circle, Vaultwrights'],
+      ['Orders', 'Stillwater Circle, Vaultwrights'],
       ['Courts', 'The Southern Lawn'],
       ['Outlaws', 'Broken-Tooth, Red Smiles, Wreckers'],
     ])),
@@ -313,36 +301,33 @@ export function addLorePages(data: WikiData): void {
     'The vale\'s river, which audibly hums Brell\'s line of the First Chord on still mornings.',
     [
       p('The vale\'s river, named because it audibly hums Brell\'s line of the First Chord on still mornings. Willows line the banks, the fishing spots are generous, and the old bridge carries the east road. By custom, oaths sworn on the bridge are considered witnessed.'),
-      p('The first mortal villages of F.S. 1 were settled on its west bank, and ' + loc('rainbow-avenue', 'Rainbow Avenue') + ' was raised east of it in F.S. 735. The willows, it is said, gossip downstream.'),
+      p('The first mortal villages of F.S. 1 were settled on its west bank, and the vale has spread along both banks in the centuries since. The willows, it is said, gossip downstream.'),
     ].join(''),
     false,
     [n('man', 'Citizens of the vale'), loc('the-castle', 'Bellmeadow and Stonecourt Castle')],
   );
 
   addRegionPage(data, 'bellmeadow-south', 'Bellmeadow South District',
-    'The lawn south of the castle: the Black Monkey LARP Pride field, the Court of the Southern Lawn, and the Dentist Tick Eat clinic.',
+    'The lawn south of the castle: the Court of the Southern Lawn and the Dentist Tick Eat clinic.',
     [
-      p('Three institutions share the lawn south of the castle, and all three are deadly serious.'),
-      h3('The Black Monkey LARP Pride field'),
-      p('The living memorial of the <strong>Foam Accord</strong> (F.S. 698): marshals re-enact the Discord Wars with foam weapons so the Offnote cannot feed on fresh bloodshed. "Foam swords only. Real steel is for the goblin field east of here" is Accord law, not a joke. ' + n('larp_marshal_monk', 'Sir Chimpwick') + ' marshals it; ' + n('larp_quartermaster', 'Quartermaster Peel') + ' arms it.'),
+      p('Two institutions share the lawn south of the castle, and both are deadly serious.'),
       h3('The Court of the Southern Lawn'),
       p('Seat of ' + n('danquavious_chimperton', 'Danquavious Chimperton III') + ', Sovereign of Bananas, Duke of the Southern Lawn, third chimp of his line since the Will of F.S. 703. The court is legally unimpeachable, fiscally solvent, and the only monarchy in Cantorne to win both a joust and a banana-eating contest. The golden banana on its pedestal has never been peeled and, legend insists, never will be. Do not ask about the First or the Second. ' + n('chimperton_herald', 'Herald Bananrick') + ' announces.'),
       h3('The Dentist Tick Eat clinic'),
       p(n('dentist_dr_tick', 'Dr. Ticksworth') + '\'s practice (est. F.S. 741): dentistry in front, discord-mote remediation in back. Bog ticks carry slivers of the Offnote; eaten after proper preparation, the mote is neutralized by stomach acid and spite. ' + n('tick_eater_glen', 'Glen') + ' handles the tasting menu. It is artisanal. It is, technically, public health.'),
     ].join(''),
     false,
-    [n('larp_marshal_monk', 'Sir Chimpwick'), n('larp_quartermaster', 'Quartermaster Peel'), n('danquavious_chimperton', 'Danquavious Chimperton III'), n('chimperton_herald', 'Herald Bananrick'), n('dentist_dr_tick', 'Dr. Ticksworth'), n('tick_eater_glen', 'Glen the Tick Eater')],
+    [n('danquavious_chimperton', 'Danquavious Chimperton III'), n('chimperton_herald', 'Herald Bananrick'), n('dentist_dr_tick', 'Dr. Ticksworth'), n('tick_eater_glen', 'Glen the Tick Eater')],
   );
 
-  addRegionPage(data, 'rainbow-avenue', 'Rainbow Avenue & the Casino',
-    'Pip\'s House of Mild Regret and the Pride district east of the River Murmur — the one place the Offnote has never been recorded.',
+  addRegionPage(data, 'the-casino', 'Pip\'s House of Mild Regret',
+    'The casino in Bellmeadow\'s south quarter — slots, blackjack, roulette, and coinflip, all fair, all loud.',
     [
       p('<strong>Pip\'s House of Mild Regret</strong> (est. F.S. 731) offers slots, blackjack, roulette, and coinflip — "all fair, all loud." The house wins slightly more often, which is the definition of fair. ' + n('casino_dealer', 'Pip') + '\'s charter was granted under Rest Day law, which is why it never closes.'),
-      p('<strong>Rainbow Avenue</strong> runs east of it: Pride banners, ' + n('drag_icon', 'Sashabella') + '\'s stage, ' + n('pride_marshal', 'Riley') + '\'s stall, ' + n('bartender_fizz', 'Fizz') + '\'s bar, and the Hedonism Patch hot tub and dance floor kept by ' + n('party_host', 'Host Hedon') + '. The Avenue was raised in F.S. 735 by veterans, refugees, and anyone the Discord Wars had told to be quieter, as a permanent answer. At the ribbon, Marshal Riley said: "We built it so the whole world could see we\'re still here, still fabulous."'),
-      p('The Offnote demonstrably hates the place; no discord-mote has ever been recorded on the dance floor. Scholars argue whether that\'s the joy, the glitter, or Sashabella\'s encores.'),
+      p('Pip once won the Aldgate city seal at cards from the last lord-mayor and returned it framed — which is how Aldgate ended up governed by a merchant council. The house out-earns the Aldgate Exchange on feast days, a fact the Concord of Weights quietly resents.'),
     ].join(''),
     false,
-    [n('casino_dealer', 'Dealer Pip'), n('party_host', 'Host Hedon'), n('bartender_fizz', 'Fizz the Bartender'), n('pride_marshal', 'Marshal Riley'), n('drag_icon', 'Sashabella')],
+    [n('casino_dealer', 'Dealer Pip')],
   );
 
   // ---- Rumored lands ----

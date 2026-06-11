@@ -64,7 +64,7 @@ The vale is quiet, the chalk is clean, and the Exchange is open for honest busin
 
 Destroy his copyist, **the Dissonant**, and carry the news back to Slayer-Master Brogan, who closes the old ledger he has kept since the wars, takes out a new one, and writes a single name on the first page.
 
-We won't spoil more, except to say: this arc is the spine of everything we ship next. The Foam Accord marshals re-fight the old battles with foam so the real ones stay dead. As of today, F.S. 743, that arrangement is on notice.
+We won't spoil more, except to say: this arc is the spine of everything we ship next. For forty-two years the Quiet Measure has held and the old battles have stayed buried. As of today, F.S. 743, that peace is on notice.
 
 Start at Mira in Bellmeadow. Chapter one is tuned for brand-new accounts; chapter four expects you to survive a level 62 copyist with strong opinions about plagiarism. Bring the tuning fork. You'll be keeping it.`,
   },
@@ -120,7 +120,7 @@ All five are tradeable. The Exchange booths opened in F.S. 726 precisely so coin
     category: 'Game Updates',
     date: '2026-05-21',
     excerpt:
-      'Direct player-to-player trading is live, and so are guilds — tags, ranks, guild chat, and a shared vault. PvP remains off, and the marshals would like a word about why.',
+      'Direct player-to-player trading is live, and so are guilds — tags, ranks, guild chat, and a shared vault. PvP remains off, and we want to explain why.',
     accent: '#d97706',
     body: `Cantorne's economy grows a second leg this week: you can now trade **directly with other players**, and band together into **guilds** with their own shared vault.
 
@@ -132,7 +132,7 @@ All five are tradeable. The Exchange booths opened in F.S. 726 precisely so coin
 - **Guild chat** — prefix any message with \`/g\` and it's delivered only to your online guildmates. Plotting in public is for goblins.
 - **The guild vault** — a shared bank tab for the whole guild. Officers can toggle **member-deposit-only** mode, for guilds whose trust has a rank requirement. Withdrawals are clamped to what the vault actually holds, which sounds obvious until you've written banking code.
 
-**And no, still no PvP.** The attack option, the swing intents, the whole pipeline exists in the code — and it is switched off everywhere, on purpose. The lore reason is the real reason: in F.S. 698 the war-weary veterans of every banner swore the **Foam Accord** — the old battles are re-fought forever so no one forgets, but only ever with foam, because real bloodshed *feeds the Offnote*. The LARP marshals on the Bellmeadow south lawn take this with complete seriousness, and frankly, so do we. The design reason is the same sentence with different nouns: a small world where every player is a potential teammate feels better than one where the bank path is a gauntlet. If ranked foam duels ever arrive, they will be exactly that — foam, consensual, and refereed by Marshal Riley.
+**And no, still no PvP.** The attack option, the swing intents, the whole pipeline exists in the code — and it is switched off everywhere, on purpose. This is a design call, not an oversight. Cantorne is a small, hand-placed world where you cross paths with the same people every day, and we want every player you meet to be a potential teammate rather than a threat — someone to split a boss with, not someone who might be waiting on your bank path. A world where the run to the bank is a gauntlet is a more stressful, lonelier game than the one we want to make. If consensual, ranked duels ever arrive, they will be exactly that — opt-in and refereed, never something that can happen to you while you're minding your own business.
 
 Go found something. The first guild to fill a vault page with resonant shards gets nothing but our respect, which is non-withdrawable.`,
   },

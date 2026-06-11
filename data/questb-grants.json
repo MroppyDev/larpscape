@@ -1,0 +1,11 @@
+{
+  "_comment": "Quests batch-2 REPEATABLE / scripted quest-object grants (server/intent-questb.ts). Unlike data/quest-rewards.json (idempotent ONCE-per-stage completion rewards), these are stage-gated quest-flow hand-outs that may legitimately repeat (pick a renewable wheat sheaf, re-issue a lost receipt, run the cursed mill demo). Each key is a server-defined grant id; the client sends only { grant:'<id>' } and the server INDEPENDENTLY validates the quest+stage gate, consumes any cost, checks room, and grants EXACTLY `out`. The client never supplies item/qty/cost. `stageMin`/`stageMax` gate on the player's SERVER quest stage (questb-grant never advances a stage); `cost` items/coins are consumed server-side; `consume` removes a held item as part of the transform (e.g. one wheat -> two wheat). `once:true` collapses to single-grant-per-(quest,stage) via the same idempotency marker as a reward claim.",
+
+  "atg_pick_wheat": { "quest": "against_the_grain", "out": [{ "id": "wheat", "qty": 1 }] },
+  "atg_buy_wheat": { "quest": "against_the_grain", "cost": { "coins": 10 }, "out": [{ "id": "wheat", "qty": 1 }] },
+  "atg_mill_demo": { "quest": "against_the_grain", "stageMin": 1, "stageMax": 1, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "wheat", "qty": 2 }] },
+  "atg_mill_flour": { "quest": "against_the_grain", "stageMin": 5, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "flour", "qty": 1 }] },
+  "atg_collect_flour": { "quest": "against_the_grain", "stageMin": 6, "out": [{ "id": "flour", "qty": 1 }] },
+  "atg_shim_receipt": { "quest": "against_the_grain", "stageMin": 2, "stageMax": 4, "out": [{ "id": "shim_receipt", "qty": 1 }] },
+  "atg_lucky_shim": { "quest": "against_the_grain", "stageMin": 3, "stageMax": 4, "out": [{ "id": "lucky_shim", "qty": 1 }] }
+}

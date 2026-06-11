@@ -459,57 +459,6 @@
       }
     ]
   },
-  "hedon_lounge": {
-    "name": "Hedon Lounge",
-    "stock": [
-      {
-        "item": "sparkling_cocktail",
-        "qty": 50
-      },
-      {
-        "item": "cake",
-        "qty": 20
-      },
-      {
-        "item": "bread",
-        "qty": 30
-      }
-    ]
-  },
-  "pride_stall": {
-    "name": "Pride Stall",
-    "stock": [
-      {
-        "item": "rainbow_scarf",
-        "qty": 10
-      },
-      {
-        "item": "ball_of_wool",
-        "qty": 20
-      },
-      {
-        "item": "feather",
-        "qty": 50
-      }
-    ]
-  },
-  "larp_pride_stall": {
-    "name": "LARP Pride Stall",
-    "stock": [
-      {
-        "item": "foam_sword",
-        "qty": 15
-      },
-      {
-        "item": "larp_pride_cape",
-        "qty": 10
-      },
-      {
-        "item": "rainbow_scarf",
-        "qty": 5
-      }
-    ]
-  },
   "chimperton_curios": {
     "name": "Chimperton Curios",
     "stock": [

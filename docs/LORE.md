@@ -92,11 +92,6 @@ warbands — feral marching-chants given legs — pour out of every untuned corn
 - **F.S. 612–690** — The **Discord Wars**: the Duchy, Aldgate, the Frostpeak holds, and
   the ports fight goblin hosts, bandit kings, and each other. The Underdeep is breached and
   abandoned twice. Brackwater burns once and learns to build in stone.
-- **F.S. 698** — *The Foam Accord.* War-weary veterans of every banner, meeting in a
-  meadow south of Stonecourt, swear an oath: the old battles will be re-fought forever so
-  no one forgets — but only ever with **foam**. Real bloodshed feeds the Offnote;
-  re-enactment starves it. This is the founding of the LARP marshals, and it is treated
-  with complete seriousness by everyone except visitors.
 - **F.S. 701** — The last goblin host of the wars breaks at the gates of Aldgate. The era
   closes.
 
@@ -117,9 +112,6 @@ The current age: recovery, commerce, eccentricity, and a low hum of returning tr
   than carts.
 - **F.S. 731** — Dealer Pip opens **Pip's House of Mild Regret** in Bellmeadow's south
   quarter.
-- **F.S. 735** — **Rainbow Avenue** raised east of the River Murmur; first Pride parade.
-  Marshal Riley's words at the ribbon: "We built it so the whole world could see we're
-  still here, still fabulous." (Canon; quoted in dialogue.)
 - **F.S. 740** — The Deep Bog stirs again. Bog ticks carrying discord-motes spread north.
 - **F.S. 741** — Dr. Ticksworth opens the **Dentist Tick Eat** clinic; properly prepared
   tick consumption is found to neutralize discord-motes. Glen volunteers. Glen keeps
@@ -142,16 +134,12 @@ the west bank of the River Murmur. **Stonecourt Castle** (the duchy seat, music:
 a decent administrator with a sweet tooth (Cook Edda confirms he had three slices at the
 banquet; his physician is not to be told). The castle houses the chapel altar, Edda's
 kitchen, and the duchy's records. Politics: the Duke licenses adventurers, funds Brogan's
-slayer ledger, and pretends Rainbow Avenue, the casino, and the chimp court are someone
+slayer ledger, and pretends the casino and the chimp court are someone
 else's jurisdiction (they are: see Factions). Hooks: the duchy archive holds the only
 surviving Discord Wars maps of the Underdeep; the larder is chronically under-provisioned.
 
-### Bellmeadow South District (LARP Pride field, Chimperton court, Tick Eat clinic)
-Three institutions share the lawn south of the castle, and all three are deadly serious:
-- **The Black Monkey LARP Pride field** — the living memorial of the Foam Accord (F.S.
-  698). Marshals re-enact the Discord Wars with foam weapons so the Offnote cannot feed on
-  fresh bloodshed. "Foam swords only. Real steel is for the goblin field east of here" is
-  Accord law, not a joke. Sir Chimpwick marshals it; Quartermaster Peel arms it.
+### Bellmeadow South District (Chimperton court, Tick Eat clinic)
+Two institutions share the lawn south of the castle, and both are deadly serious:
 - **The Court of the Southern Lawn** — seat of **Danquavious Chimperton III, Sovereign of
   Bananas, Duke of the Southern Lawn**, third chimp of his line since the Will of F.S. 703.
   The court is legally unimpeachable, fiscally solvent, and the only monarchy in Cantorne
@@ -163,15 +151,13 @@ Three institutions share the lawn south of the castle, and all three are deadly 
   eaten after proper preparation, the mote is neutralized by stomach acid and spite. Glen
   handles the tasting menu. It is artisanal. It is, technically, public health.
 
-### The Casino and Rainbow Avenue (Hedonism Patch district, east of the river)
-**Pip's House of Mild Regret** (music: *Rainbow Avenue*) — slots, blackjack, roulette,
-coinflip; "all fair, all loud"; the house wins slightly more often, which is the definition
-of fair. Pip's charter was granted under Rest Day law, which is why it never closes.
-**Rainbow Avenue** runs east of it: Pride banners, Sashabella's stage, Riley's stall,
-Fizz's bar, the Hedonism Patch hot tub and dance floor. Canon: the Avenue was raised in
-F.S. 735 by veterans, refugees, and anyone the Discord Wars had told to be quieter, as a
-permanent answer. The Offnote demonstrably hates the place; discord-motes have never been
-recorded on the dance floor. Scholars argue whether that's the joy or the glitter.
+### The Casino (Pip's House of Mild Regret, Bellmeadow's south quarter)
+**Pip's House of Mild Regret** — slots, blackjack, roulette, coinflip; "all fair, all
+loud"; the house wins slightly more often, which is the definition of fair. Pip's charter
+was granted under Rest Day law, which is why it never closes. Pip once won the Aldgate city
+seal at cards from the last lord-mayor and returned it framed — which is how Aldgate ended
+up governed by a merchant council. The house out-earns the Aldgate Exchange on feast days,
+a fact the Concord of Weights quietly resents.
 
 ### Aldgate (`aldgate` POI)
 The eastern walled city (music: *Aldgate Streets*): the Exchange plaza with its gilded
@@ -197,7 +183,7 @@ on the bridge are considered witnessed.
 ### Hunter Meadow (`hunter_meadow` POI)
 Flower meadow south-east of the vale (music: *Quiet Meadow*), tuned so gently that snared
 birds are said to be merely embarrassed rather than afraid. Trappers' common land under
-duchy law; the Foam Accord was drafted within sight of it.
+duchy law, walked by snare-setters who hold its quiet as carefully as any tuned instrument.
 
 ### Swamp Mine (`swamp_mine` POI)
 The duchy's old ore mine, half-swallowed by the bog's slow northward creep (music:
@@ -281,7 +267,7 @@ These exist in the world and in disabled packs (`hub_eldermere`, `hub_stonewatch
 
 **The Duchy of Stonecourt.** Duke Aldous's government: castle, watch, mine charters,
 adventurer licenses. Goal: keep the vale fed and the Quiet Measure quiet. Tension: it is
-paying adventurers to solve problems its own army (downsized after the Foam Accord) cannot,
+paying adventurers to solve problems its own army (downsized in the long peace) cannot,
 and it owes the Concord money.
 
 **The Concord of Weights (Aldgate).** The merchant council: Exchange, city watch payroll,
@@ -306,21 +292,10 @@ fragments *asleep* — they hold that the fragments cannot be destroyed, only ou
 Tension: they opposed thunder-shale mining loudly and were ignored; they are not saying
 "we told you so," they are brewing it.
 
-**The Foam Accord Marshals (LARP Pride).** Veterans' order, est. F.S. 698. Goal: re-enact
-every battle forever, bloodlessly, so the Offnote starves and the dead are remembered with
-better choreography. Sir Chimpwick's Black Monkey chapter holds Bellmeadow's field. The
-Accord is recognized law: a marshal can void any duel by declaring it "foam jurisdiction."
-
 **The Court of the Southern Lawn.** Chimperton III's micro-monarchy. Goal: dignity,
 bananas, the long defense of the Will of F.S. 703 against jealous human cousins of Duke
-Reginald who still file annual appeals. The court funds the LARP field's totems and is the
-casino's largest single depositor. Herald Bananrick handles volume.
-
-**The Avenue (Rainbow Avenue / Hedonism Patch).** Less a faction than a covenant: everyone
-is welcome, the music does not stop, and the Offnote has never once been recorded on the
-dance floor. Marshal Riley keeps the route safe; Sashabella keeps it legendary. The Circle
-sends discreet observers to figure out *why* it works. The Avenue sends them home with
-glitter.
+Reginald who still file annual appeals. The court keeps the lawn south of the castle and is
+the casino's largest single depositor. Herald Bananrick handles volume.
 
 **Saif's Red Smiles / Saltjaw's Wreckers (the criminal coasts).** The desert bandits and
 the cove pirates trade through fences in both ports and despise each other ("sand thieves"
@@ -406,7 +381,7 @@ real even if the cause wasn't; the Offnote builds with borrowed material.
 | `magic_tutor` | **Mira the Magic Tutor** — sleeves smell faintly of ozone (canon). Aldgate-trained songcaster who took the quiet vale posting on purpose. Wants one student a decade worth teaching; suspects you might be it; will never say so. |
 | `gardener` | **Old Fen** — knows every weed in the realm by first name (canon). Bellmeadow's gardener and the Stillwater Circle's vale-side friend. Gave the 'Seeds of Trouble' and 'Heart of the Bog' quests. Secret: "Fen" is a Circle name, not a birth name; he took it the day he left the marshes. |
 | `cook` | **Cook Edda** — runs the castle kitchen with an iron ladle (canon). Fed three armies during the wars from one larder; the banquet panic of 'The Empty Larder' is her worst nightmare recurring. Wants the duke to eat fewer than three slices. Fails wanting it. |
-| `carpenter` | **Carpenter Lenny** — measures twice, saws once, sweeps never (canon). Built half the market stalls and the LARP field's totems (the Chimperton court pays promptly). Wants someone else to invent the broom rota. |
+| `carpenter` | **Carpenter Lenny** — measures twice, saws once, sweeps never (canon). Built half the market stalls and the Chimperton court's dais (the court pays promptly). Wants someone else to invent the broom rota. |
 | `goblin_warlord` | The Broken-Tooth conductor; the first goblin since F.S. 701 to hold a fort. His banner is load-bearing (canon). Wants to be a verse of history. Will settle for a footnote with casualties. |
 | `bog_horror` | The drowned refrain of three villages (see Bestiary). Wants — and this is the unsettling part — to be *heard*. |
 | `shadow_drake` | A drake the colour of a bad night (canon), hatched in the Underdeep dark. Wants the dark to stay unbothered; you are bother. |
@@ -443,12 +418,6 @@ real even if the cause wasn't; the Offnote builds with borrowed material.
 | `gun_trainer` | **Sergeant Vex** — former city watch; teaches Gun to anyone who can keep both eyes open (canon). Lost her watch commission for proving, publicly, that the watch armoury was selling powder to Saif. The Guild hired her the same afternoon. Wants recruits who count their rounds. |
 | `gun_guild_master` | **Master Flint** — head of the Aldgate Gun Guild; coat has more pockets than sense (canon). Personally swept up patterns 1 through 17. Wants the thunder-shale road safe and the Stillwater Circle to stop sending pamphlets. Secret: he reads every pamphlet. Twice. |
 | `casino_dealer` | **Dealer Pip** — runs Pip's House of Mild Regret; smile sharp enough to cut cards (canon). Won the Aldgate city seal at cards once and returned it framed. Wants the house edge respected as the honest physics it is. The house wins slightly more often; that's the definition of fair (canon). |
-| `party_host` | **Host Hedon** — professional enthusiasm in a waistcoat that has seen things (canon). Runs the Hedonism Patch lounge: dance floor, hot tub, delayed regrets. Wants the conga line unbroken since F.S. 739 to stay unbroken. (It has technically been one conga line. Shifts change.) |
-| `bartender_fizz` | **Fizz the Bartender** — shakes cocktails like personal grudges (canon). Pours courage in a glass and calls it a cocktail (canon). Wants the recipe for one drink her mentor took to sea. Saltjaw's wreckers may have the recipe book. She doesn't know that yet. |
-| `pride_marshal` | **Marshal Riley** — keeps the parade route safe and the vibes immaculate (canon). Raised Rainbow Avenue in F.S. 735; their ribbon-cutting words are quoted era canon. Wants the Avenue to outlive everyone who needed it and welcome everyone who finds it. |
-| `drag_icon` | **Sashabella** — legend of the stage; eyeliner could cut steel (canon). The Avenue's headliner; the spotlight is negotiable, the drama complimentary (canon). Secret: she sang in a Stillwater choir once, and the Circle quietly believes her encores are why the Offnote can't touch the Avenue. She believes it's the eyeliner. Both may be right. |
-| `larp_marshal_monk` | **Sir Chimpwick** — marshal of the Black Monkey LARP Pride field, foam sword at the ready (canon). A chimp knighted by Danquavious II for valour in re-enactment; takes the Foam Accord as holy writ. Wants a perfect re-staging of the Battle of Aldgate Gates with zero injuries and full attendance. |
-| `larp_quartermaster` | **Quartermaster Peel** — sells foam weapons and capes loud enough to spot from the castle (canon). Human; proceeds fund the monkey totems (canon). Wants a foam pattern that survives more than one heroic death scene. |
 | `danquavious_chimperton` | **Danquavious Chimperton III** — Sovereign of Bananas, Duke of the Southern Lawn, third of the line since the Will of F.S. 703 (canon: do not ask about the First or Second). Does not merely rule; *chimps* (canon). Won both a joust and a banana-eating contest (canon, the plaque). Wants the golden banana to remain forever unpeeled — it was Reginald's last gift, and peeling it would end something he has no word for. |
 | `chimperton_herald` | **Herald Bananrick** — announces Danquavious with unnecessary volume (canon). Sells officially unofficial medallions (canon). Human, fluent in the court's gesture-protocol. Wants, one day, to be announced *himself*, by anyone, at any volume. |
 | `dentist_dr_tick` | **Dr. Ticksworth** — dentist, tick wrangler, reluctant taste-tester supervisor (canon). Founded the clinic in F.S. 741 when he proved discord-mote ticks are neutralized by proper preparation and consumption. Insists it's artisanal (canon). Wants academic recognition from Aldgate; receives clientele instead. Secret: he has never eaten one. |
@@ -499,9 +468,9 @@ without a war, because the Quiet Measure has stopped being quiet: the fort, the 
 drake, the hammering. Adventurers are freelancers of the retuning: they kill what skipped,
 carry what's needed, and get paid by whoever's problem it was. Bankers serve them
 identically everywhere (Vaultwright oath), shopkeepers tolerate them, Brogan assigns them,
-the Exchange profits from them, and every faction in Section 4 has work for them. Veterans
-of the Foam Accord regard adventurers with professional respect and mild concern: someone
-has to use real steel so the rest never have to again.
+the Exchange profits from them, and every faction in Section 4 has work for them. The old
+soldiers of the duchy regard adventurers with professional respect and mild concern:
+someone has to walk toward the trouble so the rest never have to again.
 
 ---
 
@@ -519,9 +488,7 @@ Single-line facts. Downstream writers may quote freely; contradicting them is a 
 8. The starter town is **Bellmeadow**, in the vale of the **River Murmur**.
 9. The Castle is **Stonecourt Castle**, seat of **Duke Aldous Stonecourt**; the duke had three slices of banquet cake and his physician must not be told.
 10. The Discord Wars began on the **Night of Skipped Beats**, F.S. 612, when the Deep Bog's Offnote fragment surged.
-11. The **Foam Accord** (F.S. 698): wars are re-enacted forever in foam so the Offnote starves; it is real law, and the LARP marshals enforce it.
-12. "Foam swords only — real steel is for the goblin field" is Accord law, not a joke.
-13. **Danquavious Chimperton III** rules the Southern Lawn legally, via Duke Reginald the Odd's airtight will of F.S. 703.
+11. **Danquavious Chimperton III** rules the Southern Lawn legally, via Duke Reginald the Odd's airtight will of F.S. 703.
 14. Do not ask about Chimperton the First (died beloved) or the Second (abdicated for percussion).
 15. The court's **golden banana** has never been peeled and never will be.
 16. **Gunpowder** is milled **thunder-shale** from the Ashen Depths — powdered Offnote percussion — discovered F.S. 712.
@@ -543,9 +510,7 @@ Single-line facts. Downstream writers may quote freely; contradicting them is a 
 32. Gullswreck Cove has no land route — ferry only, via Boatman Wick.
 33. Wick's ferry lists worse than his last three marriages.
 34. **Pip's House of Mild Regret**: the house wins slightly more often — that's the definition of fair.
-35. **Rainbow Avenue** was raised F.S. 735; "we built it so the whole world could see we're still here, still fabulous" (Marshal Riley, canon).
-36. No discord-mote has ever been recorded on the Avenue's dance floor; scholars dispute whether it's the joy, the glitter, or Sashabella's encores.
-37. The **Dentist Tick Eat** clinic (F.S. 741) neutralizes discord-mote ticks via proper preparation and consumption; it is artisanal and, technically, public health.
+35. The **Dentist Tick Eat** clinic (F.S. 741) neutralizes discord-mote ticks via proper preparation and consumption; it is artisanal and, technically, public health.
 38. Dr. Ticksworth has never eaten a tick; Glen has eaten more of the Offnote than any mortal in history, to no effect except mild smugness.
 39. Banks are identical everywhere because the **Vaultwrights** keep tuned stasis-vaults under one realm-wide oath.
 40. Adventurers respawn because the Choir hums their verse back a few bars; the Offnote always keeps a cut (dropped items).
@@ -558,7 +523,7 @@ Single-line facts. Downstream writers may quote freely; contradicting them is a 
 47. Miners knock twice on the Swamp Mine timbers: once for Aulden, once for whoever didn't come back in '88.
 48. Prayer is hummed, not spoken — Quiess only listens to music.
 49. The Sunscorch **fire altar** is a surviving Sarrash choir-stone; Runecraft freezes syllables of the First Chord into rune essence.
-50. Music-track names (Stonecourt, Boghollow, Rimewind, Sunscorch, Brackwater Tide, Ashfall, Rainbow Avenue, etc.) are in-world names used by the people of those places.
+50. Music-track names (Stonecourt, Boghollow, Rimewind, Sunscorch, Brackwater Tide, Ashfall, etc.) are in-world names used by the people of those places.
 
 ---
 

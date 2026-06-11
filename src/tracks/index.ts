@@ -16,7 +16,6 @@ import { track as rimewind } from './rimewind';
 import { track as sunscorch } from './sunscorch';
 import { track as brackwaterTide } from './brackwater_tide';
 import { track as ashfall } from './ashfall';
-import { track as rainbowAvenue } from './rainbow_avenue';
 // Phase 6 wave — eastern expansion, coast, towers and the Untuned Mine.
 import { track as harvestRoad } from './harvest_road';
 import { track as tanglewoodDepths } from './tanglewood_depths';
@@ -34,7 +33,7 @@ export const BASE_TRACKS: Track[] = [
   newbieMeadow, riverside, goblinStrut, boghollow, stonecourt,
   shepherdsRest, marketDay, whisperingStones, quietMeadow,
   aldgateStreets, warbanner, underdeep,
-  rimewind, sunscorch, brackwaterTide, ashfall, rainbowAvenue,
+  rimewind, sunscorch, brackwaterTide, ashfall,
   // eastern expansion (farm belt -> woods -> garrison -> moor -> towers)
   harvestRoad, tanglewoodDepths, stonewatchGarrison, wraithrun, ravenmoor,
   imbersSpire, quiessRest,

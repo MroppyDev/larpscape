@@ -29,9 +29,10 @@ import { MAP_W } from './world';
 import {
   StateStore, AuthState, SkillName, SKILLS, isKnownItem,
   invAdd, invRemove, invCount, invHas, getCoins, addCoins, removeCoins,
-  bankAdd, bankRemove, bankCount, addXp, skillLevel,
+  bankAdd, bankRemove, bankCount, addXp, skillLevel, setEquip,
   questStage, setQuestStage,
 } from './state';
+import { advanceQuest } from './quests-graph';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -127,6 +128,53 @@ export interface IntentResult {
   burned?: boolean;
   leveledUp?: { skill: SkillName; level: number }[];
   stage?: number;         // quest advance: the resulting (monotonic) stage
+  quest?: string;         // quest id a stage/reward applies to (quest kinds only)
+  questSet?: Record<string, number>; // server-owned quest-progress sub-keys to mirror
+                          // (kill counters / sounding bitmasks; reflected monotonically)
+  equip?: Record<string, { id: string; qty: number } | null>; // equip/unequip: changed slots
+}
+
+// ---------------------------------------------------------------------------
+// Domain registry (docs/CONVERSION-CONTRACT.md §registry). Domain agents add
+// new intent kinds in SEPARATE files (server/intent-<domain>.ts) by calling
+// registerIntentDomain(kind, handler) at import time — they DO NOT edit this
+// file or intents-wire.ts. The wire dispatches an unknown WS/HTTP kind through
+// the registry. Each handler receives the shared DomainCtx (validated server
+// state surface + the live position/dead from the connection layer) and the raw
+// client payload, and MUST validate independently + mutate only via withState.
+// ---------------------------------------------------------------------------
+
+// Everything a domain handler needs to do a server-authoritative mutation.
+// `payload` is the raw, UNTRUSTED client message (already JSON-parsed). The
+// handler validates every field itself. `withState`/`revOf` are the audited
+// mutation surface; the state.ts primitives are imported directly by the domain
+// module. `frozen` mirrors ECONOMY_FROZEN so wealth-shaped domains gate on it.
+export interface DomainCtx extends IntentCtx {
+  store: StateStore;
+  frozen: boolean;
+  revOf: (userId: number) => number;
+}
+
+export type DomainHandler = (ctx: DomainCtx, payload: Record<string, unknown>) => IntentResult;
+
+const DOMAIN_HANDLERS = new Map<string, DomainHandler>();
+
+// Self-registration entry point for server/intent-<domain>.ts modules. Throws
+// on a duplicate kind so two domains can't silently shadow each other.
+export function registerIntentDomain(kind: string, handler: DomainHandler): void {
+  if (DOMAIN_HANDLERS.has(kind)) throw new Error(`intent domain '${kind}' already registered`);
+  DOMAIN_HANDLERS.set(kind, handler);
+}
+
+export function hasIntentDomain(kind: string): boolean { return DOMAIN_HANDLERS.has(kind); }
+export function getIntentDomain(kind: string): DomainHandler | undefined { return DOMAIN_HANDLERS.get(kind); }
+export function registeredDomainKinds(): string[] { return [...DOMAIN_HANDLERS.keys()]; }
+
+// Stamp the post-mutation rev onto a successful result. Domain handlers call
+// this (or set res.rev themselves) so the client knows its mirror is fresh.
+export function stampRev(store: StateStore, ctx: IntentCtx, res: IntentResult): IntentResult {
+  if (res.ok) res.rev = store.revOf(ctx.userId);
+  return res;
 }
 
 // success-rate roll interpolated from the requirement level to 99 (mirrors
@@ -406,15 +454,86 @@ export function createIntents(stateStore: StateStore) {
   // setQuestStage is monotonic in state.ts (never lowers — kills M6). Rewards
   // are idempotent per stage via a marker key `claimed:<id>:<stage>` stored in
   // the quests map namespace so a double-claim grants once.
+  // 'quest-stage' intent. Validated against the quest GRAPH (server/quests-graph.ts):
+  // only declared transitions whose prerequisites (from-stage, required items
+  // consumed, prerequisite quest stages) hold against SERVER state succeed. An
+  // advance NEVER grants value — rewards are the separate idempotent claim.
   function questAdvance(ctx: IntentCtx, id: string, stage: number): IntentResult {
     if (typeof id !== 'string' || !/^[a-z0-9_]{1,48}$/.test(id)) return fail('quest', 'bad quest id');
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
-      const next = setQuestStage(state, id, stage);
-      return { ok: true, kind: 'quest', stage: next };
+      const r = advanceQuest(state, id, stage);
+      if (!r.ok) return fail('quest', r.error ?? 'illegal quest transition');
+      return {
+        ok: true, kind: 'quest', stage: r.stage, quest: id,
+        removed: (r.consumed && r.consumed.length) ? r.consumed : undefined,
+      };
     });
     if (!res) return fail('quest', 'no character');
     if (res.ok) res.rev = revOf(ctx.userId);
     return res;
+  }
+
+  // ---- EQUIP (equip / unequip; source = inventory or bank) -----------------
+  // setEquip validates levelReq vs SERVER xp (state.ts). Equipping moves the
+  // item out of the chosen source and the previously-worn item back to the
+  // inventory, all in ONE withState tx. Not wealth cross-account movement, so
+  // it is SAFE while frozen, but owned-state so it MUST be server-authoritative.
+  function equip(ctx: IntentCtx, op: 'equip' | 'unequip', slot: string, itemId: string, source: 'inventory' | 'bank'): IntentResult {
+    const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
+      if (!state.equipment || typeof state.equipment !== 'object') state.equipment = {};
+      if (op === 'unequip') {
+        const cur = state.equipment[slot];
+        if (!cur) return fail('equip', 'nothing equipped there');
+        // need room in the inventory for the unequipped item
+        if (!hasRoomFor(state, cur.id) && !(isStackable(cur.id) && invCount(state, cur.id) > 0)) {
+          return fail('equip', 'inventory full');
+        }
+        if (!invAdd(state, cur.id, cur.qty)) return fail('equip', 'inventory full');
+        setEquip(state, slot, null);
+        return { ok: true, kind: 'equip', granted: [{ id: cur.id, qty: cur.qty }], equip: { [slot]: null } };
+      }
+      // equip: pull from source, validate, swap.
+      if (!isKnownItem(itemId)) return fail('equip', 'unknown item');
+      const have = source === 'bank' ? bankCount(state, itemId) : invCount(state, itemId);
+      if (have <= 0) return fail('equip', 'you do not have that item');
+      const def = ITEMS[itemId];
+      const targetSlot = def?.equipSlot;
+      if (!targetSlot) return fail('equip', 'that item cannot be equipped');
+      // qty: stackables (ammo) equip the whole owned amount; else 1.
+      const qty = isStackable(itemId) ? have : 1;
+      // remove from source first
+      const removed = source === 'bank' ? bankRemove(state, itemId, qty) : invRemove(state, itemId, qty);
+      if (!removed) return fail('equip', 'you do not have that item');
+      const prev = state.equipment[targetSlot] ?? null;
+      const err = setEquip(state, targetSlot, itemId);
+      if (err) {
+        // validation failed (level req): put the item back where it came from.
+        if (source === 'bank') bankAdd(state, itemId, qty); else invAdd(state, itemId, qty);
+        return fail('equip', err);
+      }
+      // merge stack qty onto the equipment slot (ammo) — setEquip sets qty 1.
+      if (isStackable(itemId)) state.equipment[targetSlot] = { id: itemId, qty };
+      // return the previously-worn item to the inventory (or bank if no room).
+      const changed: Record<string, { id: string; qty: number } | null> = { [targetSlot]: state.equipment[targetSlot] };
+      if (prev) {
+        if (!invAdd(state, prev.id, prev.qty)) bankAdd(state, prev.id, prev.qty);
+      }
+      return { ok: true, kind: 'equip', removed: [{ id: itemId, qty }], equip: changed };
+    });
+    if (!res) return fail('equip', 'no character');
+    if (res.ok) res.rev = revOf(ctx.userId);
+    return res;
+  }
+
+  // ---- SCRIPTED-GRANT (one-off quest dialogue item) ------------------------
+  // A quest NPC hands the player a fixed item at a gated stage (e.g. a tuning
+  // fork). The grant is DATA-defined in data/quest-rewards.json under the same
+  // '<questId>:<stage>' key + idempotency marker, so it is identical to a reward
+  // claim restricted to items. Validated by the quest+stage gate; never accepts
+  // a client-supplied item/qty. Kept distinct so the lint/contract can reason
+  // about "dialogue handout" separately from "completion reward".
+  function scriptedGrant(ctx: IntentCtx, id: string, stage: number): IntentResult {
+    return questClaim(ctx, id, stage);
   }
 
   // Grant a quest COMPLETION reward ONCE per (questId, stage). The reward is read
@@ -447,7 +566,7 @@ export function createIntents(stateStore: StateStore) {
       }
       if (reward.coins && reward.coins > 0) addCoins(state, Math.floor(reward.coins));
       state.quests[claimKey] = 1; // mark claimed
-      return { ok: true, kind: 'quest', granted, xp, coins: reward.coins ? getCoins(state) : undefined };
+      return { ok: true, kind: 'quest', granted, xp, coins: reward.coins ? getCoins(state) : undefined, quest: id, stage: questStage(state, id) };
     });
     if (!res) return fail('quest', 'no character');
     if (res.ok) res.rev = revOf(ctx.userId);
@@ -455,8 +574,8 @@ export function createIntents(stateStore: StateStore) {
   }
 
   return {
-    gather, fish, cook, firemake, make, shop, bank,
-    questAdvance, questClaim,
+    gather, fish, cook, firemake, make, shop, bank, equip,
+    questAdvance, questClaim, scriptedGrant,
   };
 }
 

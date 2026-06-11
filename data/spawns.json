@@ -126,36 +126,6 @@
       "y": 48
     },
     {
-      "id": "party_host",
-      "x": 57,
-      "y": 40
-    },
-    {
-      "id": "bartender_fizz",
-      "x": 55,
-      "y": 41
-    },
-    {
-      "id": "pride_marshal",
-      "x": 64,
-      "y": 41
-    },
-    {
-      "id": "drag_icon",
-      "x": 62,
-      "y": 40
-    },
-    {
-      "id": "larp_marshal_monk",
-      "x": 16,
-      "y": 57
-    },
-    {
-      "id": "larp_quartermaster",
-      "x": 18,
-      "y": 57
-    },
-    {
       "id": "danquavious_chimperton",
       "x": 26,
       "y": 57

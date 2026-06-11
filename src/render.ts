@@ -930,96 +930,6 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       g.add(lm(cylG(0.14, 0.14, 0.03, '#f5d800', 12), 0, 0.58, 0));
       return g;
     }
-    case 'hedon_bar': {
-      g.add(lm(boxG(1.2, 0.9, 0.6, '#6b4a2c'), 0, 0.45, 0));
-      g.add(lm(boxG(1.3, 0.1, 0.7, '#8a2020'), 0, 0.95, 0));
-      for (let i = 0; i < 4; i++) g.add(lm(cylG(0.04, 0.04, 0.35, '#e8c040', 6), -0.4 + i * 0.26, 1.12, 0));
-      return g;
-    }
-    case 'dance_floor': {
-      g.add(lm(boxG(1.4, 0.06, 1.4, '#2a1a4a', 0.02), 0, 0.03, 0));
-      const cols = ['#e04040', '#e8a020', '#f5d800', '#40c040', '#4080e8', '#c040e0'];
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2;
-        g.add(lm(boxG(0.18, 0.08, 0.18, cols[i]), Math.cos(a) * 0.35, 0.08, Math.sin(a) * 0.35));
-      }
-      return g;
-    }
-    case 'hot_tub': {
-      g.add(lm(cylG(0.55, 0.6, 0.45, '#8a7a5c', 10), 0, 0.22, 0));
-      g.add(lm(cylG(0.45, 0.5, 0.08, '#60a8d8', 10), 0, 0.48, 0));
-      for (let i = 0; i < 5; i++) {
-        const px = -0.2 + hash2(i, 91) * 0.4, pz = -0.2 + hash2(i, 92) * 0.4;
-        g.add(lm(icoG(0.03, '#bfe0ff', 0), px, 0.54, pz));
-      }
-      return g;
-    }
-    case 'disco_ball': {
-      g.add(lm(cylG(0.02, 0.02, 0.5, '#4a4a4a', 4), 0, 1.0, 0));
-      const ball = gm(icoG(0.22, '#c0c8d8', 1), 0, 0.75, 0);
-      ball.name = 'fxflame';
-      g.add(ball);
-      return g;
-    }
-    case 'rainbow_banner': {
-      const stripes = ['#e04040', '#e8a020', '#f5d800', '#40c040', '#4080e8', '#c040e0'];
-      for (let i = 0; i < stripes.length; i++) {
-        g.add(lm(boxG(0.08, 0.7, 0.5, stripes[i]), 0, 0.5 + i * 0.11, 0));
-      }
-      g.add(lm(boxG(0.12, 0.12, 0.12, '#6b4a2c'), 0, 1.1, 0));
-      return g;
-    }
-    case 'pride_fountain': {
-      g.add(lm(cylG(0.5, 0.55, 0.2, '#9c9890', 9), 0, 0.1, 0));
-      g.add(lm(cylG(0.4, 0.44, 0.05, '#4080e8', 9), 0, 0.22, 0));
-      g.add(lm(cylG(0.1, 0.14, 0.45, '#9c9890', 7), 0, 0.42, 0));
-      const jet = gm(coneG(0.06, 0.35, '#e8c8ff', 6, 0.1), 0, 0.72, 0);
-      jet.name = 'fxflame';
-      g.add(jet);
-      buildRipplesInto(g, 0.2);
-      return g;
-    }
-    case 'pride_stage': {
-      g.add(lm(boxG(1.3, 0.35, 0.9, '#5a4a3a'), 0, 0.17, 0));
-      g.add(lm(boxG(1.2, 0.08, 0.8, '#c040e0'), 0, 0.38, 0));
-      g.add(lm(boxG(0.1, 1.2, 0.1, '#4a3a2a'), -0.55, 0.85, 0));
-      g.add(lm(boxG(0.1, 1.2, 0.1, '#4a3a2a'), 0.55, 0.85, 0));
-      g.add(lm(boxG(1.3, 0.1, 0.15, '#2a2418'), 0, 1.45, 0));
-      return g;
-    }
-    case 'larp_pride_sign': {
-      g.add(lm(boxG(0.12, 1.0, 0.12, '#6b4a2c'), 0, 0.5, 0));
-      g.add(lm(boxG(0.9, 0.55, 0.06, '#1a1410'), 0, 1.05, 0));
-      g.add(lm(boxG(0.7, 0.08, 0.02, '#c040e0'), 0, 1.32, 0));
-      return g;
-    }
-    case 'larp_campfire': {
-      g.add(lm(cylG(0.35, 0.4, 0.08, '#4a3a2a', 8), 0, 0.04, 0));
-      const fire = gm(coneG(0.2, 0.35, '#e86020', 6, 0.1), 0, 0.28, 0);
-      fire.name = 'fxflame';
-      g.add(fire);
-      for (let i = 0; i < 3; i++) g.add(lm(cylG(0.04, 0.04, 0.25, '#5a4a3a', 5), -0.2 + i * 0.2, 0.12, 0.15));
-      return g;
-    }
-    case 'foam_weapon_rack': {
-      g.add(lm(boxG(0.12, 0.9, 0.5, '#6b4a2c'), -0.35, 0.45, 0));
-      g.add(lm(boxG(0.12, 0.9, 0.5, '#6b4a2c'), 0.35, 0.45, 0));
-      g.add(lm(boxG(0.75, 0.08, 0.35, '#8a7a5c'), 0, 0.92, 0));
-      for (let i = 0; i < 4; i++) g.add(lm(boxG(0.06, 0.55, 0.06, '#e040a0'), -0.28 + i * 0.18, 0.65, 0.08));
-      return g;
-    }
-    case 'monkey_totem': {
-      g.add(lm(cylG(0.28, 0.32, 0.5, '#1a1410', 8), 0, 0.25, 0));
-      g.add(lm(icoG(0.18, '#3a3028', 8), 0, 0.62, 0));
-      g.add(lm(boxG(0.35, 0.06, 0.02, '#c040e0'), 0.2, 0.85, 0));
-      return g;
-    }
-    case 'black_pride_banner': {
-      g.add(lm(boxG(0.1, 1.1, 0.08, '#6b4a2c'), 0, 0.55, 0));
-      g.add(lm(boxG(0.55, 0.7, 0.04, '#1a1410'), 0, 0.75, 0));
-      g.add(lm(boxG(0.5, 0.06, 0.02, '#c040e0'), 0, 1.08, 0));
-      return g;
-    }
     case 'chimperton_throne': {
       g.add(lm(boxG(0.7, 0.45, 0.55, '#8a6020'), 0, 0.22, 0));
       g.add(lm(boxG(0.75, 0.55, 0.1, '#d8a020'), 0, 0.52, 0));
@@ -1494,11 +1404,11 @@ interface HumanOpts {
   weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'pistol' | 'staff'
     | 'cleaver' | 'fang' | 'drakestaff' | 'crystalbow' | 'rimeblade' | 'redscim'
     | 'maul2h' | 'wrongpistol' | 'dirgeblade'
-    | 'club' | 'cutlass' | 'foamsword' | 'hammer' | 'pick' | null; weaponCol?: string;
+    | 'club' | 'cutlass' | 'hammer' | 'pick' | null; weaponCol?: string;
   shieldCol?: string | null;
   shieldKind?: 'kite' | 'ward' | 'bell' | 'baton';
   helmKind?: 'dome' | 'visor' | 'coif' | 'wrap';
-  bodyKind?: 'plate' | 'robes' | 'pelt' | 'slag' | 'cape';
+  bodyKind?: 'plate' | 'robes' | 'pelt' | 'slag';
   goblin?: boolean; scale?: number;
 }
 
@@ -1577,17 +1487,6 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     body.add(gm(boxG(torsoW * 0.7, 0.016, 0.012, '#ff7a20'), 0, torsoY + 0.05, torsoD * 0.3 + 0.04)); // ember seam
     body.add(gm(boxG(0.016, torsoH * 0.45, 0.012, '#ff9434'), torsoW * 0.18, torsoY, torsoD * 0.3 + 0.04)); // run-off seam
     body.add(gm(icoG(0.022, '#ffb028', 0), -torsoW * 0.2, torsoY - 0.06, torsoD * 0.3 + 0.045)); // stray cinder
-  } else if (o.bodyKind === 'cape') {
-    // LARP pride cape: black velvet, rainbow satin lining. Dramatic entrance guaranteed.
-    const capeG = new THREE.Group();
-    capeG.position.set(0, torsoY - 0.08, -torsoD * 0.42 - 0.03);
-    capeG.rotation.x = -0.06;
-    capeG.add(lm(boxG(torsoW * 1.05, torsoH + legH * 0.5, 0.02, '#1c1a20')));
-    const stripes = ['#e84040', '#f0a030', '#f0e040', '#48c860', '#4878e8', '#9a48d8'];
-    for (let i = 0; i < stripes.length; i++) {
-      capeG.add(gm(boxG(torsoW * 0.95, 0.022, 0.012, stripes[i]), 0, 0.2 - i * 0.075, -0.016));
-    }
-    body.add(capeG);
   }
 
   // arms — slim capsules with sphere hands
@@ -1786,14 +1685,6 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     const basket = lm(boxG(0.026, 0.12, 0.06, '#7c6234'), -0.055, handY + 0.02, 0.03, 0, 0, 0.5); // basket sweep
     ra.add(basket);
     ra.add(lm(boxG(0.02, 0.05, 0.02, '#4c5a48'), 0.04, handY - 0.26, 0.044, 0, 0, 0.16)); // salt-pit verdigris
-  } else if (o.weapon === 'foamsword') {
-    // Accord-issue foam sword: fat, soft, faintly ridiculous. Every thwack counts.
-    const blade = lm(capG(0.045, 0.3, wc), 0, handY - 0.22, 0.03); // pool-noodle blade
-    ra.add(blade);
-    ra.add(lm(sphG(0.05, wc), 0, handY - 0.4, 0.03)); // safety-rounded tip
-    ra.add(lm(boxG(0.13, 0.035, 0.05, '#e8e0d0'), 0, handY - 0.04, 0.03)); // taped foam guard
-    ra.add(lm(cylG(0.024, 0.024, 0.09, '#3a3a42', 6), 0, handY + 0.01, 0.03)); // duct-taped grip
-    ra.add(lm(boxG(0.018, 0.1, 0.014, '#f0ead8'), -0.03, handY - 0.2, 0.052, 0, 0, 0.1)); // peeling tape stripe
   } else if (o.weapon === 'hammer') {
     // Tuning hammer: foreman-pattern maul re-trued against the First Chord.
     ra.add(lm(cylG(0.024, 0.03, 0.5, '#5e4a30', 5), 0, handY - 0.14, 0.03)); // haft
@@ -2493,7 +2384,6 @@ const UNIQUE_WEAPON_MODELS: Record<string, { kind: HumanOpts['weapon']; col: str
   corsairs_fang: { kind: 'fang', col: '#c8c0a8' },         // salt-bleached corsair dagger
   trollbone_club: { kind: 'club', col: '#d8d0b4' },        // femur the size of a fencepost
   boarding_cutlass: { kind: 'cutlass', col: '#aeb6be' },   // salt-pitted deck blade
-  foam_sword: { kind: 'foamsword', col: '#e85a4a' },       // Accord-issue, gloriously soft
   tuning_hammer: { kind: 'hammer', col: '#c8a45a' },       // foreman-pattern, back in key
   tuned_pickaxe: { kind: 'pick', col: '#86d8e4' },         // hums a true fifth above the seam
 };
@@ -2515,7 +2405,6 @@ const UNIQUE_BODY_MODELS: Record<string, { col: string; kind: NonNullable<HumanO
   wraithcloth_robes: { col: '#b6c0ca', kind: 'robes' },    // cloth that forgot it was buried
   direwolf_pelt_cloak: { col: '#6a5a48', kind: 'pelt' },   // the forest steps aside
   slagplate: { col: '#3c342a', kind: 'slag' },             // warm side in, please
-  larp_pride_cape: { col: '#2a2630', kind: 'cape' },       // dramatic entrance guaranteed
 };
 
 // shared player-style figure builder — used by the local player and remote players.
@@ -3073,8 +2962,6 @@ function syncObjects(now: number, px: number, pz: number) {
       node.position.set(o.x + 0.5, groundH(o.x + 0.5, o.y + 0.5), o.y + 0.5);
       const noSpin = rkey.startsWith('agility') || rkey === 'bank_booth' || rkey === 'ge_booth'
         || rkey === 'slot_machine' || rkey === 'blackjack_table' || rkey === 'roulette_table' || rkey === 'coinflip_pedestal'
-        || rkey === 'hedon_bar' || rkey === 'hot_tub' || rkey === 'disco_ball' || rkey === 'pride_fountain' || rkey === 'pride_stage'
-        || rkey === 'larp_pride_sign' || rkey === 'larp_campfire' || rkey === 'foam_weapon_rack' || rkey === 'monkey_totem'
         || rkey === 'chimperton_throne' || rkey === 'chimperton_statue' || rkey === 'chimperton_plaque' || rkey === 'golden_banana_pedestal'
         || rkey === 'dentist_chair' || rkey === 'tick_aquarium' || rkey === 'dental_lamp' || rkey === 'tick_nest'
         || rkey === 'ice_ledge' || rkey === 'rope_bridge' || rkey === 'rock_climb' || rkey === 'snow_slope';
@@ -4066,9 +3953,6 @@ export function buildMinimapBase() {
     else if (o.type === 'gem_stall') col = '#b050e0';
     else if (o.type === 'ge_booth') col = '#e8a020';
     else if (o.type === 'slot_machine' || o.type === 'blackjack_table' || o.type === 'roulette_table' || o.type === 'coinflip_pedestal') col = '#c02060';
-    else if (o.type === 'hedon_bar' || o.type === 'disco_ball' || o.type === 'hot_tub') col = '#e040a0';
-    else if (o.type === 'rainbow_banner' || o.type === 'pride_fountain' || o.type === 'pride_stage' || o.type === 'dance_floor') col = '#c040e0';
-    else if (o.type === 'larp_pride_sign' || o.type === 'larp_campfire' || o.type === 'foam_weapon_rack' || o.type === 'monkey_totem' || o.type === 'black_pride_banner') col = '#1a1410';
     else if (o.type === 'chimperton_throne' || o.type === 'chimperton_statue' || o.type === 'chimperton_plaque' || o.type === 'golden_banana_pedestal') col = '#d8a020';
     else if (o.type === 'dentist_chair' || o.type === 'tick_aquarium' || o.type === 'dental_lamp' || o.type === 'tick_nest') col = '#90c8e8';
     else if (o.type === 'fountain') col = '#70c0f0';

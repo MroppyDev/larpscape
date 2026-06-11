@@ -10,6 +10,7 @@
     "server": "tsx server/index.ts",
     "start": "NODE_ENV=production tsx server/index.ts",
     "validate": "tsx scripts/validate-content.ts",
+    "lint:grants": "tsx scripts/lint-no-client-grants.ts",
     "pentest": "tsx scripts/pentest-economy.ts",
     "admin:dev": "vite --config admin/vite.config.ts",
     "admin:build": "vite build --config admin/vite.config.ts",

@@ -2670,7 +2670,6 @@ export function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'corsairs_fang': return [SCIM_G, pal(WOOD, GOLD, { O: '#101216', D: '#2e3540', M: '#454f5e', L: '#67737f', H: '#9aa6b2' })];
     // --- Phase 7: weapons & armour ----------------------------------------
     case 'dirge_blade': return [SWORD_G, pal(WOOD, { O: '#0e1014', D: '#2c3240', M: '#414a5c', L: '#5e6a80', H: '#8a96ac', y: '#5a6474', Y: '#8a96a8' })];
-    case 'foam_sword': return [SWORD_G, { O: '#3a3208', D: '#c8a818', M: '#e8cc3c', L: '#f6e26a', H: '#fdf4b0', y: '#55555c', Y: '#71717a', d: '#3a3a40', m: '#55555c' }];
     case 'boarding_cutlass': return [SCIM_G, pal(WOOD, GOLD, METAL.iron)];
     case 'stinger_dirk': return [FANGBLADE_G, { O: '#1c1404', H: '#e8d070', L: '#c0a040', M: '#8a6e24', y: '#6a7a2c', d: '#2e2410', m: '#4a3a1c' }];
     case 'trollbone_club': return [CLUB_G, BONE];
@@ -2689,8 +2688,6 @@ export function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'drakescale_vambraces': return [LGLOVES_G, { O: '#0a0c14', n: '#4a5572', l: '#353e58', m: '#252c42', d: '#181d30' }];
     case 'dune_kings_grips': return [LGLOVES_G, { O: '#2a1606', n: '#f2c46a', l: '#d89c3c', m: '#a86a22', d: '#7c4a16' }];
     case 'direwolf_pelt_cloak': return [CLOAK_G, { O: '#14161a', y: '#8a8e98', L: '#7a8290', M: '#5a626e', D: '#3e444e', i: '#2c3038' }];
-    case 'larp_pride_cape': return [CLOAK_G, { O: '#0c0a10', y: '#e3c050', L: '#26222e', M: '#1a1722', D: '#120f1a', i: '#c84a9c' }];
-    case 'rainbow_scarf': return [SCARF_G, { O: '#1c1410', r: '#d03434', o: '#e8a02c', g: '#3e9a3c', u: '#3464c8', v: '#8a3cb4', d: '#a02828' }];
     // --- Phase 7: drops, materials & curios --------------------------------
     case 'bear_fur': return [COWHIDE_G, { O: '#1c1208', n: '#8a6034', l: '#6e4a26', m: '#54381c', d: '#3c2812', k: '#2a1c0e' }];
     case 'spider_silk': return [BALLWOOL_G, { O: '#2c3036', w: '#d8dde6', W: '#f4f7fc', d: '#a8aebc' }];
@@ -2708,7 +2705,6 @@ export function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'chimperton_medallion': return [AMULET_G, pal(JEWEL_BASE, { q: '#e8d44e', Q: '#f8f0a0' })];
     case 'tick_jerky': return [MEAT_G, { O: '#1c1208', D: '#4a2e16', M: '#64401e', L: '#7e562a', H: '#a07840' }];
     case 'fluoride_ration': return [VIAL_G, pal(GLASS, { q: '#3ec0a0', Q: '#9af0d8' })];
-    case 'sparkling_cocktail': return [VIAL_G, pal(GLASS, { q: '#e0588a', Q: '#f8a8c4' })];
     case 'lamp_oil': return [VIAL_G, pal(GLASS, { q: '#c08a28', Q: '#ecc468' })];
     case 'wheat': return [FLAX_G, { O: '#241c06', g: '#b08a2c', p: '#d8b045', P: '#f0d478' }];
     case 'flour': return [POUCH_G, pal(BURLAP, { q: '#f2efe4' })];
