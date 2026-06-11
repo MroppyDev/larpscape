@@ -245,13 +245,33 @@ let cam3: THREE.PerspectiveCamera | null = null;
 let sunLight: THREE.DirectionalLight | null = null;
 let viewScale = 1;
 
+// Render resolution policy:
+// - scaled fixed mode: CSS-upscaled canvas, so multiply pixelRatio by the
+//   scale factor to stay crisp (cap 3).
+// - mobile-full: the canvas is native-sized (100dvw x 100dvh), so plain
+//   devicePixelRatio capped at 2 (phone GPUs + huge canvases don't mix).
+function targetPixelRatio(): number {
+  if (document.body.classList.contains('mobile-full')) {
+    return Math.min(window.devicePixelRatio || 1, 2);
+  }
+  return Math.min((window.devicePixelRatio || 1) * viewScale, 3);
+}
+
 // Called when scaled fixed mode rescales the client: bump the internal render
 // resolution so the upscaled canvas stays crisp.
 export function setViewportScale(s: number) {
   viewScale = s;
-  if (renderer) {
-    renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * viewScale, 3));
-  }
+  if (renderer) renderer.setPixelRatio(targetPixelRatio());
+}
+
+// Mobile-full mode: the canvas drawing buffer tracks the real viewport size.
+// Safe to call before the scene exists (ensureScene reads the live CSS size).
+export function setViewportSize(w: number, h: number) {
+  if (!renderer || !cam3 || w < 1 || h < 1) return;
+  renderer.setPixelRatio(targetPixelRatio());
+  renderer.setSize(w, h, false);
+  cam3.aspect = w / h;
+  cam3.updateProjectionMatrix();
 }
 let pickMeshes: THREE.Mesh[] = [];
 let waterMesh: THREE.Mesh | null = null;
@@ -272,6 +292,15 @@ const rippleMat = new THREE.MeshBasicMaterial({
 let camYaw = 0, camPitch = 0.72, camDist = 11;
 let yawT = 0, pitchT = 0.72, distT = 11;
 const PITCH_MIN = 0.25, PITCH_MAX = 1.45, DIST_MIN = 4, DIST_MAX = 28;
+
+// Mobile-full on-screen camera buttons drive the same smoothed targets as the
+// wheel/arrow keys.
+export function nudgeZoom(factor: number) {
+  distT = Math.max(DIST_MIN, Math.min(DIST_MAX, distT * factor));
+}
+export function nudgeYaw(delta: number) {
+  yawT += delta;
+}
 const keysDown = new Set<string>();
 let lastFrameAt = performance.now();
 let inputBound = false;
@@ -3740,8 +3769,9 @@ function ensureScene(): boolean {
   buildHeights();
 
   renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+  // current CSS size: 515x336 in fixed mode, the full viewport in mobile-full
   const w = cv.clientWidth || 515, h = cv.clientHeight || 336;
-  renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * viewScale, 3));
+  renderer.setPixelRatio(targetPixelRatio());
   renderer.setSize(w, h, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;

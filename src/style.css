@@ -34,7 +34,7 @@
 body {
   background: #1a1410 radial-gradient(ellipse at center, #2a2018 0%, #14100c 100%);
   display: flex; align-items: center; justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   font-family: Verdana, Arial, sans-serif;
   overflow: hidden;
 }
@@ -63,7 +63,11 @@ body.mobile .cm-opt { padding: 8px 12px; font-size: 14px; }
 body.mobile #context-menu { min-width: 180px; }
 body.mobile .chat-tab { padding: 5px 14px; font-size: 12px; }
 body.mobile .tab-row > * { min-height: 38px; }
-body.mobile #chat-input { font-size: 16px; } /* 16px stops iOS auto-zoom on focus */
+/* 16px stops iOS auto-zoom on focus (and the page staying zoomed after blur) */
+body.mobile #chat-input,
+body.mobile #name-input,
+body.mobile #bs-login input,
+body.mobile .guild-input { font-size: 16px; }
 body.mobile .inv-slot { min-width: 38px; min-height: 36px; }
 body.mobile .mini-btn, body.mobile .style-btn { min-height: 34px; }
 
@@ -765,3 +769,197 @@ body.mobile .mini-btn, body.mobile .style-btn { min-height: 34px; }
 #item-tooltip .tt-same { color: #b0a080; }
 #item-tooltip .tt-fx { margin-top: 3px; color: #8fd4ff; font-style: italic; }
 #item-tooltip .tt-hint { margin-top: 3px; color: #b0a080; font-size: 10px; }
+
+/* ================================================================
+   TRUE MOBILE CLIENT MODE (body.mobile-full — phones, OSRS-Mobile
+   style). Every rule below is scoped under body.mobile-full so the
+   desktop / scaled-fixed layout is byte-identical without it.
+   ================================================================ */
+
+/* --- the 3D viewport becomes the whole screen --- */
+body.mobile-full { min-height: 100dvh; }
+body.mobile-full #frame {
+  padding: 0; border: none; border-radius: 0;
+  transform: none !important;
+  position: fixed; inset: 0;
+}
+body.mobile-full #client { display: block; width: 100dvw; height: 100dvh; }
+body.mobile-full #left { display: block; width: auto; }
+body.mobile-full #viewport-wrap {
+  position: fixed; inset: 0; width: 100dvw; height: 100dvh;
+  border: none;
+}
+body.mobile-full #viewport { width: 100%; height: 100%; }
+body.mobile-full #sidebar { display: contents; }
+
+/* HUD overlays stay hidden until the player taps PLAY (welcome screen is
+   inside #viewport-wrap, so fixed overlays would otherwise float above it) */
+body.mobile-full:not(.mf-playing) #mf-tabstrip,
+body.mobile-full:not(.mf-playing) #mf-drawer,
+body.mobile-full:not(.mf-playing) #mf-cam,
+body.mobile-full:not(.mf-playing) #chatbox,
+body.mobile-full:not(.mf-playing) #minimap-area { display: none !important; }
+
+/* --- minimap cluster: compacted overlay, top-right --- */
+body.mobile-full #minimap-area {
+  position: fixed; top: 0; right: 0; z-index: 30;
+  width: 246px; height: 168px;
+  background: none; border: none; box-shadow: none;
+  transform: scale(0.78); transform-origin: top right;
+  pointer-events: none;            /* the stone backdrop is gone — only... */
+}
+body.mobile-full #minimap-area > * { pointer-events: auto; } /* ...widgets catch taps */
+
+/* viewport-anchored text: keep clear of the minimap cluster */
+body.mobile-full #xp-drops { top: 142px; right: 12px; }
+body.mobile-full #xp-tracker { top: 24px; right: auto; left: 6px; }
+
+/* --- camera buttons: vertical cluster, mid-right edge --- */
+body.mobile-full #mf-cam {
+  position: fixed; right: 6px; top: 50%; transform: translateY(-50%);
+  z-index: 30; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;  /* gaps between buttons must not eat viewport taps */
+}
+body.mobile-full .mf-cam-btn { pointer-events: auto; }
+body.mobile-full .mf-cam-btn {
+  width: 44px; height: 44px; padding: 0;
+  font-size: 20px; font-weight: bold; line-height: 1;
+  color: var(--orange); text-shadow: var(--outline);
+  background: var(--stone-face);
+  border: 2px solid;
+  border-color: var(--bevel-hi) var(--bevel-lo) var(--bevel-lo) var(--bevel-hi);
+  border-radius: 6px; cursor: pointer; opacity: 0.92;
+  box-shadow: inset 0 1px 0 rgba(255,235,200,0.18), 0 2px 6px rgba(0,0,0,0.5);
+  touch-action: none;
+}
+body.mobile-full .mf-cam-btn:active {
+  background: var(--stone-face-lit);
+  border-color: var(--bevel-lo) var(--bevel-hi) var(--bevel-hi) var(--bevel-lo);
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.45);
+}
+
+/* --- combined tab strip --- */
+body.mobile-full #mf-tabstrip {
+  position: fixed; z-index: 35; bottom: 0; left: 0; right: 0;
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  background: linear-gradient(#6a5c46, #4a3f30);
+  border-top: 2px solid var(--bevel-lo);
+  box-shadow: inset 0 1px 0 rgba(255,235,200,0.12), 0 -2px 8px rgba(0,0,0,0.5);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+body.mobile-full #mf-tabstrip .tab-row {
+  display: flex; flex: 1; height: 48px;
+  background: none; box-shadow: none;
+}
+body.mobile-full #mf-tabstrip .tab { min-width: 42px; min-height: 42px; font-size: 19px; }
+
+/* --- panel drawer (#panel keeps its desktop innerHTML rendering) --- */
+body.mobile-full #mf-drawer {
+  position: fixed; z-index: 34;
+  display: flex; flex-direction: column;
+  background: var(--stone-dark);
+  border: 3px solid;
+  border-color: var(--stone-light) var(--bevel-lo) var(--bevel-lo) var(--stone-light);
+  box-shadow: 0 -4px 18px rgba(0,0,0,0.6);
+  transition: transform 0.22s ease;
+}
+body.mobile-full #mf-drawer #panel { flex: 1; min-height: 0; border-left-width: 2px; border-right-width: 2px; }
+body.mobile-full #mf-drawer-x {
+  position: absolute; top: 6px; right: 8px; z-index: 2;
+  width: 28px; height: 28px;
+  background: radial-gradient(circle at 40% 35%, #a83030, #6e1414);
+  color: #fff; border: 1px solid #000; border-radius: 3px;
+  cursor: pointer; font-weight: bold; text-align: center; line-height: 26px; font-size: 14px;
+  text-shadow: var(--outline);
+}
+
+/* portrait: bottom sheet above the tab strip */
+@media (orientation: portrait) {
+  body.mobile-full #mf-drawer {
+    left: 0; right: 0; bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+    height: 55dvh; max-height: 55dvh;
+    border-radius: 12px 12px 0 0;
+    transform: translateY(115%);
+  }
+}
+/* landscape: right-side drawer (stops short of the minimap cluster + strip
+   so both stay reachable while a panel is open) */
+@media (orientation: landscape) {
+  body.mobile-full #mf-tabstrip { left: auto; right: 0; border-left: 2px solid var(--bevel-lo); border-radius: 8px 0 0 0; }
+  body.mobile-full #mf-tabstrip .tab-row { flex: 0 0 auto; }
+  body.mobile-full #mf-tabstrip .tab { width: 46px; }
+  body.mobile-full #mf-drawer {
+    right: 0; width: 290px;
+    top: 138px; bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    border-radius: 10px 0 0 10px;
+    transform: translateX(115%);
+  }
+}
+body.mobile-full.drawer-open #mf-drawer { transform: none; }
+
+/* --- chat: collapsed pill (last 2 lines) <-> expanded overlay --- */
+body.mobile-full #chatbox {
+  position: fixed; left: 8px; bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  width: 52dvw; max-width: 300px; height: 38px;
+  border-width: 2px; border-radius: 8px;
+  opacity: 0.93; overflow: hidden; cursor: pointer;
+  transition: box-shadow 0.25s;
+}
+body.mobile-full #chatbox #chat-tabs,
+body.mobile-full #chatbox #chat-input-row,
+body.mobile-full #mf-chat-close { display: none; }
+body.mobile-full #chat-messages { font-size: 11px; line-height: 15px; padding: 2px 6px; }
+body.mobile-full:not(.chat-open) #chat-messages { overflow: hidden; pointer-events: none; }
+/* new-line flash while collapsed */
+body.mobile-full:not(.chat-open) #chatbox.chat-flash {
+  animation: mf-chat-flash 0.7s ease-out 1;
+}
+@keyframes mf-chat-flash {
+  0% { box-shadow: 0 0 0 2px var(--yellow), 0 0 14px rgba(255,255,0,0.7); }
+  100% { box-shadow: none; }
+}
+/* expanded chat overlay */
+body.mobile-full.chat-open #chatbox {
+  width: min(92dvw, 460px); max-width: none;
+  height: min(46dvh, 330px);
+  cursor: default;
+}
+body.mobile-full.chat-open #chatbox #chat-tabs { display: flex; padding-right: 30px; }
+body.mobile-full.chat-open #chatbox #chat-input-row { display: flex; }
+body.mobile-full.chat-open #mf-chat-close {
+  display: block; position: absolute; top: 3px; right: 4px; z-index: 3;
+  width: 22px; height: 22px;
+  background: radial-gradient(circle at 40% 35%, #a83030, #6e1414);
+  color: #fff; border: 1px solid #000; border-radius: 2px;
+  cursor: pointer; font-weight: bold; text-align: center; line-height: 20px; font-size: 12px;
+  text-shadow: var(--outline);
+}
+
+/* dialogue + make-X live inside #chatbox: in mobile-full they pop out as
+   their own fixed boxes so a collapsed chat pill can't swallow them */
+body.mobile-full #dialogue-overlay,
+body.mobile-full #make-strip {
+  position: fixed; inset: auto; z-index: 40;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  width: min(94dvw, 500px); min-height: 130px;
+  border-radius: 8px;
+}
+
+/* --- responsive welcome/login + modals --- */
+body.mobile-full .welcome-box { max-width: 92dvw; padding: 20px 16px; }
+body.mobile-full .welcome-box h1 { font-size: 30px; }
+body.mobile-full #name-input { width: min(240px, 80dvw); }
+/* modals: ui.ts positions them with inline left/top computed off #frame
+   (fullscreen here), which shoves a 94dvw-wide modal off the right edge of a
+   small phone — recentre with !important and cap height so bank/shop/trade
+   scroll instead of running under the tab strip */
+body.mobile-full .game-modal {
+  max-width: 94dvw;
+  left: 50% !important;
+  top: max(8px, env(safe-area-inset-top, 0px)) !important;
+  transform: translateX(-50%);
+  max-height: calc(100dvh - 62px - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}

@@ -1076,6 +1076,16 @@ function chatVisible(cls: string): boolean {
 function addChatLine(text: string, cls: string) {
   chatLog.push({ text, cls });
   while (chatLog.length > 150) chatLog.shift();
+  // mobile-full: flash the collapsed chat pill so new lines get noticed
+  if (document.body.classList.contains('mobile-full') && !document.body.classList.contains('chat-open')) {
+    const cb = document.getElementById('chatbox');
+    if (cb) {
+      cb.classList.remove('chat-flash');
+      void cb.offsetWidth; // restart the animation
+      cb.classList.add('chat-flash');
+      window.setTimeout(() => cb.classList.remove('chat-flash'), 750);
+    }
+  }
   if (!chatVisible(cls)) return;
   const box = $('chat-messages');
   appendChatEl(box, text, cls);
