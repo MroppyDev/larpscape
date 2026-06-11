@@ -33,7 +33,7 @@ import { getRanking, getPlayerHiscores } from './hiscores';
 import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
 import { initForum } from './forum';
 import { initMarket } from './market';
-import { createStateStore } from './state';
+import { createStateStore, serverStarterOwned } from './state';
 import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-wire';
 import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
@@ -671,20 +671,19 @@ app.put('/api/character', saveRateLimit, requireAuth, (req: AuthedRequest, res) 
   const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
     .get(req.userId) as { save: string } | undefined;
 
-  let merged: Record<string, unknown>;
-  if (!row) {
-    // First save for a brand-new character: there is no authoritative owned
-    // document yet, so this PUT seeds it. (New accounts are created with starter
-    // gear client-side on first play; once Phase 2 owns creation this seed path
-    // narrows. For now a row with no prior server state accepts the full save so
-    // a fresh player is not wiped.) Existing rows below take the merge path.
-    merged = save as Record<string, unknown>;
-  } else {
-    let authoritative: Record<string, unknown>;
+  // The authoritative owned baseline: an existing row's stored owned fields, or
+  // for a brand-new character the SERVER-DEFINED starter state. We NEVER take
+  // owned fields from the client — not even on first save — so registering a
+  // fresh account and forging its first PUT seeds nothing (closes the first-save
+  // bypass that let any new account inject coins/levels/items/quests).
+  let authoritative: Record<string, unknown>;
+  if (row) {
     try { authoritative = JSON.parse(row.save) as Record<string, unknown>; }
-    catch { authoritative = {}; }
-    merged = mergeSave(authoritative, save as Record<string, unknown>);
+    catch { authoritative = serverStarterOwned() as Record<string, unknown>; }
+  } else {
+    authoritative = serverStarterOwned() as Record<string, unknown>;
   }
+  const merged = mergeSave(authoritative, save as Record<string, unknown>);
 
   const text = JSON.stringify(merged);
   if (text.length > 512 * 1024) { res.status(413).json({ error: 'save too large' }); return; }

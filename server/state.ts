@@ -122,6 +122,30 @@ const EQUIP_SLOTS = ['head', 'body', 'legs', 'weapon', 'shield', 'gloves', 'boot
 export type EquipSlot = (typeof EQUIP_SLOTS)[number];
 function isEquipSlot(s: string): s is EquipSlot { return (EQUIP_SLOTS as readonly string[]).includes(s); }
 
+// Canonical server-defined starting owned-state for a brand-new character.
+// The server — NOT the client — defines what a fresh player owns, so a new
+// account's first PUT can never seed forged wealth/levels (closes the
+// first-save bypass). Mirrors src/game.ts freshPlayer() owned fields.
+export function serverStarterOwned(): AuthState {
+  const xp = new Array(SKILLS.length).fill(0);
+  xp[SKILLS.indexOf('Hitpoints')] = XP_TABLE[10]; // Hitpoints starts at level 10
+  const equipment: Record<string, ItemStack | null> = {};
+  for (const s of EQUIP_SLOTS) equipment[s] = null;
+  return {
+    xp,
+    bank: [{ id: 'coins', qty: 25 }],
+    inventory: new Array(28).fill(null),
+    equipment,
+    quests: {},
+    collectionLog: {},
+    curHp: 10,
+    prayerPoints: 1,
+    specEnergy: 100,
+    slayerTask: null,
+    slayerPoints: 0,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Pure helpers over an AuthState (no DB). Callers inside `withState` mutate the
 // passed-in state object; the transaction persists it.
