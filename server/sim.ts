@@ -58,17 +58,23 @@ const SPAWNS: {
 // ---------------------------------------------------------------------------
 
 // What the connection layer (index.ts) knows about each connected player.
+//
+// Combat authority (docs/ECONOMY-AUTHORITY.md §3): cb/effDef/defBonus/maxHp are
+// now SERVER-DERIVED from the player's CombatProfile (built in index.ts from
+// server-owned xp + equipment) — the client no longer reports them. `hp` is the
+// AUTHORITATIVE live HP held in RAM here and flushed to the save lazily; the
+// client renders it from `npcHitYou`/`hpSync` pushes, it does not own it.
 export interface PlayerView {
   userId: number;
   name: string;
   x: number; y: number;
   dead: boolean;
-  // client-reported combat snapshot (clamped on receipt)
+  // server-derived combat values (set from the cached CombatProfile, NOT the wire)
   cb: number;       // combat level (aggro checks)
-  effDef: number;   // effective defence level incl. prayer/style
+  effDef: number;   // effective defence level incl. style
   defBonus: number; // equipment defence bonus
-  hp: number;
-  maxHp: number;
+  hp: number;       // AUTHORITATIVE live HP (RAM; flushed to save lazily)
+  maxHp: number;    // from Hitpoints level
   send: (msg: unknown) => void;
 }
 
@@ -144,6 +150,60 @@ export const npcDeathHooks: ((n: SNpc, by: PlayerView) => void)[] = [];
 export let groundOwnerFor: (p: PlayerView) => number | null = () => null;
 export function setGroundOwnerFor(fn: (p: PlayerView) => number | null) { groundOwnerFor = fn; }
 
+// Combat authority hooks, injected by index.ts (§3.2/§3.3). The sim owns live
+// HP in PlayerView.hp; these let it persist HP and resolve death against the
+// authoritative state store without importing the DB layer.
+//   onHpChanged   — called after server HP changes so index can sync the client
+//                   and flush to the save lazily.
+//   resolvePlayerDeath — called once when hp reaches 0; index applies the
+//                   softcore xp loss, repositions to respawn, restores hp=maxHp
+//                   on the authoritative state, and returns the respawn point.
+let onHpChanged: (p: PlayerView, reason: 'damage' | 'heal' | 'respawn') => void = () => {};
+export function setOnHpChanged(fn: (p: PlayerView, reason: 'damage' | 'heal' | 'respawn') => void) { onHpChanged = fn; }
+let resolvePlayerDeath: (p: PlayerView, killerNpc: SNpc | null) => { x: number; y: number } | null = () => null;
+export function setResolvePlayerDeath(fn: (p: PlayerView, killerNpc: SNpc | null) => { x: number; y: number } | null) {
+  resolvePlayerDeath = fn;
+}
+
+// Server-derived combat profile lookup (built + cached per connection in
+// index.ts from server-owned xp + equipment). handleSwing reads the player's
+// offensive numbers from HERE — it NEVER trusts msg.eff/bonus/maxHit/speed/
+// gear/spec (closes G1/M4). Returns null if no profile (then the swing is
+// dropped — a connected player always has one).
+let combatProfileFor: (userId: number) => SwingProfile | null = () => null;
+export function setCombatProfileFor(fn: (userId: number) => SwingProfile | null) { combatProfileFor = fn; }
+
+// Authoritative owned-inventory hooks, injected by index.ts (Phase 2,
+// docs/ECONOMY-AUTHORITY.md §2.1/§4.4). Pickup and the drop debit go through
+// these (state.ts withState) so item gain/loss is server-owned instead of
+// client-hinted. Each returns true when the owned-state mutation actually
+// landed. Default no-ops keep sim self-contained / testable.
+//   grantItem(userId,id,qty) -> true if it fit in the player's inventory
+//   debitItem(userId,id,qty) -> true if the debit succeeded (drop authority)
+let grantItem: (userId: number, id: string, qty: number) => boolean = () => false;
+let debitItem: (userId: number, id: string, qty: number) => boolean = () => false;
+export function setInventoryHooks(
+  grant: (userId: number, id: string, qty: number) => boolean,
+  debit: (userId: number, id: string, qty: number) => boolean,
+) { grantItem = grant; debitItem = debit; }
+
+// The subset of CombatProfile handleSwing consumes (kept structural to avoid a
+// circular import with server/combat.ts).
+export interface SwingProfile {
+  attackSpeed: number;
+  weaponMode: 'melee' | 'ranged' | 'gun' | 'magic';
+  melee: { eff: number; bonus: number; maxHit: number };
+  ranged: { eff: number; bonus: number; maxHit: number };
+  gun: { eff: number; bonus: number; maxHit: number };
+  magicLvl: number;     // magic accuracy eff level (bonus is 0 for magic)
+  magicMaxHit: number;
+  effectGear: string[];
+  specItemId: string | null;
+  // server-owned spec energy: a spec may only fire if the player can pay for it.
+  // index.ts flushes this from the live profile; handleSwing calls trySpendSpec.
+  trySpendSpec: (itemId: string) => boolean;
+}
+
 // fixed ground spawn regeneration state
 const groundSpawnState: { item: string; x: number; y: number; respawnTicks: number; nextAt: number }[] =
   SPAWNS.groundSpawns.map((s) => ({ ...s, nextAt: 0 }));
@@ -211,10 +271,36 @@ export function sendFx(to: PlayerView | null, npc: SNpc, kind: string, extra?: R
   else broadcast(msg);
 }
 
-// Boss/NPC damage to a player. Modifiers the server cannot see (prayer
-// halving, movement dodges) are applied client-side based on `fx`.
+// Boss/NPC damage to a player. AUTHORITATIVE (§3.2): the server decrements the
+// player's live HP and resolves death — the client no longer owns HP, it renders
+// the authoritative `hp`/`maxHp` carried on this push. The `fx` rider still lets
+// the client animate the splat (and dodge/halving visuals); but the HP that
+// matters is the server's. Prayer halving is NOT applied server-side (prayers are
+// not yet server-owned — see server/combat.ts header); the raw NPC roll lands.
 export function damagePlayer(p: PlayerView, npc: SNpc, dmg: number, fx?: string) {
-  p.send({ t: 'npcHitYou', npc: npc.id, def: npc.def.id, dmg, fx });
+  if (p.dead) return;
+  const d = Math.max(0, Math.floor(dmg));
+  p.hp = Math.max(0, p.hp - d);
+  p.send({ t: 'npcHitYou', npc: npc.id, def: npc.def.id, dmg: d, fx, hp: p.hp, maxHp: p.maxHp });
+  if (d > 0) onHpChanged(p, 'damage');
+  if (p.hp <= 0) killPlayer(p, npc);
+}
+
+// Resolve a server-side player death exactly once. Delegates the authoritative
+// side-effects (softcore xp loss, item handling, hp restore) to the injected
+// index handler, which runs them inside withState; then repositions + tells the
+// client. Falls back to a safe respawn even if the handler is absent.
+function killPlayer(p: PlayerView, killerNpc: SNpc | null) {
+  if (p.dead) return;
+  p.dead = true;
+  p.hp = 0;
+  // clear any NPC aggro on the corpse
+  for (const n of sim.npcs) if (n.target === p.userId) { n.target = null; n.dirty = true; }
+  const respawn = resolvePlayerDeath(p, killerNpc);
+  if (respawn) { p.x = respawn.x; p.y = respawn.y; }
+  p.hp = p.maxHp;
+  p.dead = false;
+  p.send({ t: 'death', hp: p.hp, maxHp: p.maxHp, x: p.x, y: p.y });
 }
 
 // NPC melee roll vs a player, honouring the warcry attack debuff.
@@ -573,40 +659,50 @@ export function handleSwing(p: PlayerView, msg: any) {
   if (!n || n.dead || !n.def.attackable || p.dead) return;
   if (n.ownerUserId !== null && n.ownerUserId !== p.userId) return; // not your instance
 
-  const mode = msg.mode === 'ranged' || msg.mode === 'gun' || msg.mode === 'magic' ? msg.mode : 'melee';
+  // SERVER-DERIVED combat profile (§3.1): every offensive number comes from the
+  // player's server-owned xp + equipment, NOT from the wire. msg.eff/bonus/
+  // maxHit/speed/gear/spec are ignored entirely (closes G1/M4 godmode).
+  const prof = combatProfileFor(p.userId);
+  if (!prof) return; // no authoritative profile → drop the swing
+
+  // The mode is the player's request but is VALIDATED against the equipped
+  // weapon class: a sword cannot fire mode:'gun'. An invalid request falls back
+  // to the weapon's real mode rather than honouring the forged one.
+  const requested = msg.mode === 'ranged' || msg.mode === 'gun' || msg.mode === 'magic' ? msg.mode : 'melee';
+  const mode = requested === prof.weaponMode ? requested : prof.weaponMode;
   const reach = mode === 'melee' ? 1 : 6;
   // generous slack: positions are reported on a 600ms cadence
   if (chebyshev(p.x, p.y, n.x, n.y) > reach + 2) return;
 
-  // server-side cooldown (speed in ticks, clamped; 150ms slack for jitter)
+  // server-side cooldown — speed is the WEAPON's attackSpeed (profile), not msg.
   const now = Date.now();
   if (now < (nextSwingAt.get(p.userId) ?? 0)) return;
-  const speed = clamp(msg.speed, 2, 8, 4);
+  const speed = prof.attackSpeed;
   nextSwingAt.set(p.userId, now + speed * 600 - 150);
 
-  const eff = clamp(msg.eff, 1, 200, 1);
-  const bonus = clamp(msg.bonus, 0, 200, 0);
-  const maxHit = clamp(msg.maxHit, 0, 60, 0);
+  // eff / bonus / maxHit by mode, all server-derived.
+  let eff: number, bonus: number, maxHit: number;
+  if (mode === 'ranged') { ({ eff, bonus, maxHit } = prof.ranged); }
+  else if (mode === 'gun') { ({ eff, bonus, maxHit } = prof.gun); }
+  else if (mode === 'magic') { eff = prof.magicLvl; bonus = 0; maxHit = prof.magicMaxHit; }
+  else { ({ eff, bonus, maxHit } = prof.melee); }
 
-  // Equipped effect-bearing gear, reported by the client as item ids and
-  // validated against the server's own item catalog (effects/specs are never
-  // taken from the wire — only the ids are). See docs/EFFECTS.md.
+  // Equipped effect-bearing gear: ONLY items actually worn server-side
+  // (profile.effectGear), resolved to their real defs. The wire `gear[]` is
+  // ignored — a client can no longer assert it wears items it does not own.
   const gear: SItemDef[] = [];
-  if (Array.isArray(msg.gear)) {
-    for (const g of msg.gear.slice(0, 12)) {
-      if (typeof g === 'string' && ITEM_RE.test(g) && ITEMS[g] && !gear.includes(ITEMS[g])) {
-        gear.push(ITEMS[g]);
-      }
-    }
+  for (const g of prof.effectGear) {
+    if (ITEMS[g] && !gear.includes(ITEMS[g])) gear.push(ITEMS[g]);
   }
   const effects: EffectDef[] = gear.flatMap((g) => g.effects ?? []);
 
-  // Special attack: client names the gear piece whose spec it is consuming.
-  // The server only honours specs that exist on that item's own def.
+  // Special attack: honoured ONLY if the client requests the player's actually-
+  // equipped spec item (profile.specItemId) AND the server-owned spec energy
+  // covers its cost (trySpendSpec debits it). No unowned best-in-slot specs (M4).
   let spec: SpecDef | null = null;
-  if (typeof msg.spec === 'string' && ITEM_RE.test(msg.spec)) {
-    const sd = ITEMS[msg.spec]?.spec;
-    if (sd && isSpecKind(sd.kind) && gear.includes(ITEMS[msg.spec])) spec = sd;
+  if (typeof msg.spec === 'string' && msg.spec === prof.specItemId && prof.specItemId) {
+    const sd = ITEMS[prof.specItemId]?.spec;
+    if (sd && isSpecKind(sd.kind) && prof.trySpendSpec(prof.specItemId)) spec = sd;
   }
   const sp = spec?.params ?? {};
   const specAcc = clampNum(sp.accMult, 0.25, 3, 1);
@@ -728,22 +824,41 @@ export function handlePickup(p: PlayerView, msg: any) {
   if (!gi || p.dead) return;
   if (gi.ownerUserId !== null && gi.ownerUserId !== p.userId) return; // not your instance
   if (chebyshev(p.x, p.y, gi.x, gi.y) > 2) return; // pos staleness slack
+  // AUTHORITATIVE pickup (docs/ECONOMY-AUTHORITY.md §2.1/§4.4, closes the G2
+  // "client adds its own loot" gap + the pickup-dupe vector): grant to the
+  // SERVER inventory first. Only if it fit do we debit the world item. A second
+  // pickup of the same gid finds no ground item (already removed) and no-ops, so
+  // the grant happens exactly once.
+  if (!grantItem(p.userId, gi.item, gi.qty)) {
+    // inventory full (or no authoritative row) — leave the item on the ground.
+    p.send({ t: 'pickupFail', reason: 'full' });
+    return;
+  }
   removeGroundItem(gi);
-  p.send({ t: 'got', gid: gi.gid, item: gi.item, qty: gi.qty });
+  // {granted} is the authoritative echo; the client reflects it (no client-trust
+  // 'got' that the client adds blindly). Legacy 'got' kept for older clients is
+  // intentionally dropped — net.ts handles 'granted'.
+  p.send({ t: 'granted', source: 'pickup', items: [{ id: gi.item, qty: gi.qty }] });
   flushGroundNow();
 }
 
 export function handleDrop(p: PlayerView, msg: any) {
   if (p.dead) return;
-  // EMERGENCY: handleDrop spawns a ground item with no server-side ownership
-  // check — a cross-account item-injection/transfer primitive. Disabled until
-  // inventory is server-owned. (See server/econ-freeze.ts.)
-  if (ECONOMY_FROZEN) { p.send({ t: 'deny', what: 'drop' }); return; }
   const item = String(msg.item ?? '');
   if (!ITEM_RE.test(item)) return;
   const qty = clamp(msg.qty, 1, 2_000_000_000, 1);
+  // AUTHORITATIVE drop (docs/ECONOMY-AUTHORITY.md §4.4, closes G3 item injection):
+  // debit the player's SERVER inventory FIRST; only spawn the ground item if the
+  // debit succeeds. A dropped id the player does not own spawns nothing. This is
+  // safe whether ECONOMY_FROZEN is on or off because the value really left the
+  // player's authoritative inventory, so it is not a mint/transfer primitive.
+  if (!debitItem(p.userId, item, qty)) {
+    p.send({ t: 'deny', what: 'drop' });
+    return;
+  }
   // drops made inside an instance stay private to that instance's owner
   addGroundItem(item, qty, p.x, p.y, sim.tick + 200, groundOwnerFor(p));
+  p.send({ t: 'granted', source: 'drop', removed: [{ id: item, qty }] });
   flushGroundNow();
 }
 

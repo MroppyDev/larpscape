@@ -6,7 +6,7 @@ import {
   registerObjectAction, registerNpcAction, registerItemAction,
   registerItemOnObject, registerItemOnItem, registerTickHook,
   addItem, removeItem, removeFromSlot, invCount, hasItem, hasTool, freeSlots,
-  addXp, level, openShop, openBank, rechargePrayer, sendInteract,
+  addXp, level, openShop, openBank, rechargePrayer, sendInteract, sendIntent,
   Npc, MakeOption,
 } from './game';
 import {
@@ -21,8 +21,13 @@ import { audio } from './audio';
 
 // Chance per tick interpolated from `low` (at the requirement level) to `high` (at 99).
 function successRoll(lvl: number, reqLevel: number, low: number, high: number): boolean {
+  return Math.random() < successRollChance(lvl, reqLevel, low, high);
+}
+// The per-tick success probability (used for the cosmetic depletion estimate now
+// that the actual grant roll happens server-side).
+function successRollChance(lvl: number, reqLevel: number, low: number, high: number): number {
   const t = Math.min(1, Math.max(0, (lvl - reqLevel) / Math.max(1, 99 - reqLevel)));
-  return Math.random() < low + (high - low) * t;
+  return low + (high - low) * t;
 }
 
 // Message once per started action (handlers run every tick while adjacent).
@@ -66,15 +71,15 @@ for (const type of ['tree', 'oak', 'willow']) {
     if (freeSlots() === 0) { msg("Your inventory is too full to hold any more logs."); return 'done'; }
     onceMsg('You swing your axe at the tree...');
     audio.sfx('chop');
-    if (successRoll(lvl, data.level, data.lowRate, data.highRate)) {
-      addItem(data.item);
-      addXp('Woodcutting', data.xp);
-      msg('You get some logs.');
-      if (Math.random() < data.depleteChance) {
-        o.depletedUntil = state.tick + data.respawn;
-        o.depletedAs = 'stump';
-        return 'done';
-      }
+    // Server-authoritative: request the gather; the server rolls success and
+    // grants the log + Woodcutting xp, echoed in game.ts (the item appears + an
+    // xp drop shows). The local roll below is now COSMETIC: it only drives the
+    // tree-depletion animation (the server validates the object, not depletion).
+    if (!sendIntent('gather', { obj: type, x: o.x, y: o.y })) { msg('You are not connected to the server.'); return 'done'; }
+    if (Math.random() < data.depleteChance * successRollChance(lvl, data.level, data.lowRate, data.highRate)) {
+      o.depletedUntil = state.tick + data.respawn;
+      o.depletedAs = 'stump';
+      return 'done';
     }
     return 'continue';
   });
@@ -93,15 +98,12 @@ for (const type of ['rocks_copper', 'rocks_tin', 'rocks_iron', 'rocks_coal', 'ro
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more ore.'); return 'done'; }
     onceMsg('You swing your pick at the rock...');
     audio.sfx('mine');
-    if (successRoll(lvl, data.level, data.lowRate, data.highRate)) {
-      addItem(data.item);
-      addXp('Mining', data.xp);
-      msg(`You manage to mine some ${lowName(data.item)}.`);
-      if (data.depleteChance > 0 && Math.random() < data.depleteChance) {
-        o.depletedUntil = state.tick + data.respawn;
-        o.depletedAs = 'rocks_empty';
-        return 'done';
-      }
+    // Server-authoritative gather: the server rolls + grants the ore + Mining xp.
+    if (!sendIntent('gather', { obj: type, x: o.x, y: o.y })) { msg('You are not connected to the server.'); return 'done'; }
+    if (data.depleteChance > 0 && Math.random() < data.depleteChance * successRollChance(lvl, data.level, data.lowRate, data.highRate)) {
+      o.depletedUntil = state.tick + data.respawn;
+      o.depletedAs = 'rocks_empty';
+      return 'done';
     }
     return 'continue';
   });
@@ -110,28 +112,17 @@ for (const type of ['rocks_copper', 'rocks_tin', 'rocks_iron', 'rocks_coal', 'ro
 // ============================================================================
 // FISHING
 // ============================================================================
-registerObjectAction('fishing_spot', 'Net', () => {
+registerObjectAction('fishing_spot', 'Net', (o) => {
   if (!hasTool('small_net')) { msg('You need a small fishing net to fish here.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space to hold the fish."); return 'done'; }
-  const lvl = level('Fishing');
   onceMsg('You cast out your net...');
   audio.sfx('splash');
-  if (successRoll(lvl, 1, 0.3, 0.9)) {
-    // anchovies become possible at 15
-    if (lvl >= 15 && Math.random() < 0.4) {
-      addItem('raw_anchovies');
-      addXp('Fishing', 40);
-      msg('You catch some anchovies.');
-    } else {
-      addItem('raw_shrimps');
-      addXp('Fishing', 10);
-      msg('You catch some shrimps.');
-    }
-  }
+  // Server-authoritative: the server rolls the catch table + grants fish + xp.
+  if (!sendIntent('fish', { spot: 'net', x: o.x, y: o.y })) { msg('You are not connected to the server.'); return 'done'; }
   return 'continue';
 });
 
-registerObjectAction('rod_fishing_spot', 'Bait', () => {
+registerObjectAction('rod_fishing_spot', 'Bait', (o) => {
   if (!hasTool('fishing_rod')) { msg('You need a fishing rod to fish here.'); return 'done'; }
   if (!hasItem('fishing_bait')) { msg("You don't have any fishing bait left."); return 'done'; }
   const lvl = level('Fishing');
@@ -139,18 +130,8 @@ registerObjectAction('rod_fishing_spot', 'Bait', () => {
   if (freeSlots() === 0) { msg("You don't have enough inventory space to hold the fish."); return 'done'; }
   onceMsg('You cast out your line...');
   audio.sfx('splash');
-  if (successRoll(lvl, 5, 0.25, 0.85)) {
-    removeItem('fishing_bait', 1);
-    if (lvl >= 10 && Math.random() < 0.5) {
-      addItem('raw_herring');
-      addXp('Fishing', 30);
-      msg('You catch a herring.');
-    } else {
-      addItem('raw_sardine');
-      addXp('Fishing', 20);
-      msg('You catch a sardine.');
-    }
-  }
+  // Server-authoritative: the server consumes the bait + grants fish + xp.
+  if (!sendIntent('fish', { spot: 'bait', x: o.x, y: o.y })) { msg('You are not connected to the server.'); return 'done'; }
   return 'continue';
 });
 

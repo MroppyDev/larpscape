@@ -16,8 +16,14 @@ import { WebSocketServer, WebSocket } from 'ws';
 import {
   initSim, tickSim, fullSnapshot, dropPlayer,
   handleSwing, handlePickup, handleDrop, handleInteract,
-  type PlayerView,
+  setCombatProfileFor, setOnHpChanged, setResolvePlayerDeath,
+  type PlayerView, type SwingProfile, type SNpc,
 } from './sim';
+import { deriveCombatProfile, isValidStyle, type CombatProfile, type CombatStyle } from './combat';
+import {
+  SKILLS, levelForXp,
+  getCoins, removeCoins, addCoins, invAdd, invRemove, invCount,
+} from './state';
 import { initSocial } from './social';
 import {
   initDungeon, startRun, endRun, getRecords, inDungeon,
@@ -27,6 +33,9 @@ import { getRanking, getPlayerHiscores } from './hiscores';
 import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
 import { initForum } from './forum';
 import { initMarket } from './market';
+import { createStateStore } from './state';
+import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-wire';
+import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
 
@@ -50,7 +59,10 @@ const BUILD_ID = (() => {
 // Database
 // ---------------------------------------------------------------------------
 
-const db = new Database(path.join(__dirname, 'data.db'));
+// DB location is overridable via DB_PATH so the adversarial pen-test
+// (scripts/pentest-economy.ts) can boot the REAL server against a throwaway
+// temp database instead of the live data.db. Defaults to the production file.
+const db = new Database(process.env.DB_PATH || path.join(__dirname, 'data.db'));
 db.pragma('journal_mode = WAL');
 
 db.exec(`
@@ -121,6 +133,18 @@ CREATE TABLE IF NOT EXISTS save_backups (
 );
 CREATE INDEX IF NOT EXISTS idx_save_backups_user ON save_backups (user_id, id);
 `);
+
+// Migration (docs/ECONOMY-AUTHORITY.md §1.2): the characters.save column is now
+// the AUTHORITATIVE server-owned document. Add a `rev` integer bumped on every
+// server-side mutation (optimistic concurrency + client cache key). Idempotent:
+// PRAGMA table_info is checked so a second boot does not error on the existing
+// column. Existing rows backfill to rev 0 via the column DEFAULT.
+{
+  const cols = db.prepare("PRAGMA table_info('characters')").all() as Array<{ name: string }>;
+  if (!cols.some((c) => c.name === 'rev')) {
+    db.exec('ALTER TABLE characters ADD COLUMN rev INTEGER NOT NULL DEFAULT 0');
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Validation helpers
@@ -455,6 +479,167 @@ function fenceSaves(userIds: number[]) {
   for (const id of userIds) saveFence.set(id, until);
 }
 
+// Authoritative state store (docs/ECONOMY-AUTHORITY.md §1.3). Every server-side
+// mutation of owned fields (xp/coins/bank/inventory/equipment/quests/hp/…) goes
+// through this. Its onSavesMutated runs the SAME plumbing the market uses: the
+// save fence + the {t:'save_reload'} push to any online client, so an in-flight
+// client PUT carrying stale state is 409'd and the client re-snapshots.
+// requestSaveReload is a hoisted function declaration defined further below.
+export const stateStore = createStateStore(db, (ids) => {
+  fenceSaves(ids);
+  requestSaveReload(ids);
+  // Any authoritative mutation (xp/equipment change via a skilling/equip/kill
+  // intent) can change the derived combat profile — rebuild the cache for online
+  // players so the next swing uses fresh numbers (§3.1). No-op for offline ids.
+  onAuthStateMutated(ids);
+});
+
+// Progression-authority intents (docs/ECONOMY-AUTHORITY.md §2): server-side
+// resolution of every non-combat value/progress path (skilling/process/make/
+// shop/bank/quest/pickup/drop). `makeIntents` also installs the sim's
+// authoritative inventory hooks (pickup grant / drop debit through withState),
+// so item gain/loss is server-owned. HTTP routes (shop/bank/quest) are
+// registered here; the WS skilling intents dispatch from the message handler.
+const intents = makeIntents(stateStore);
+registerIntentRoutes(app, intents, requireAuth);
+
+// Defined after the profile cache below; hoisted via function declaration so the
+// store callback above can reference it.
+function onAuthStateMutated(userIds: number[]) {
+  for (const id of userIds) {
+    if (!combatProfiles.has(id)) continue;
+    rebuildProfile(id);
+    const c = onlineClient(id);
+    if (c) applyProfileToView(c.view, combatProfiles.get(id)!);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Combat profile cache (docs/ECONOMY-AUTHORITY.md §3.1/§3.3)
+// ---------------------------------------------------------------------------
+// One entry per connected player: the SERVER-DERIVED combat numbers + the live
+// (RAM) spec energy. Built from the authoritative save on connect and rebuilt
+// whenever the player's xp / equipment / style / autocast change. Combat is the
+// hot path — the swing handler reads this cache, never the DB, and never the
+// wire (closes G1/M4). Spec energy lives here and is flushed to the save lazily.
+interface ProfileEntry {
+  profile: CombatProfile;
+  style: CombatStyle;
+  autocastSpell: string | null;
+  specEnergy: number; // live, 0..100 (authoritative; the wire no longer reports it)
+  hpDirty: boolean;   // live HP diverged from the persisted curHp → flush due
+}
+const combatProfiles = new Map<number, ProfileEntry>();
+
+// Rebuild (or build) a player's cached profile from the authoritative save.
+// Returns the entry, or null if the character row is missing. Preserves the
+// live spec energy across rebuilds (xp/equip changes don't refund spec).
+function rebuildProfile(userId: number): ProfileEntry | null {
+  const state = stateStore.loadState(userId);
+  if (!state) return null;
+  const prev = combatProfiles.get(userId);
+  const style: CombatStyle = prev?.style ?? (isValidStyle((state as any).combatStyle) ? (state as any).combatStyle : 'accurate');
+  const autocast: string | null = prev?.autocastSpell
+    ?? (typeof (state as any).autocastSpell === 'string' ? (state as any).autocastSpell : null);
+  const profile = deriveCombatProfile(state, style, autocast);
+  const specEnergy = prev ? prev.specEnergy
+    : (typeof state.specEnergy === 'number' ? Math.max(0, Math.min(100, state.specEnergy)) : 100);
+  const entry: ProfileEntry = {
+    profile, style, autocastSpell: autocast, specEnergy,
+    hpDirty: prev?.hpDirty ?? false,
+  };
+  combatProfiles.set(userId, entry);
+  return entry;
+}
+
+// Apply the player's combat style / autocast SELECTION (validated) and rebuild
+// the profile so accuracy/maxHit/mode reflect it. The selection itself is
+// presentation (client-chosen) but the EFFECT is server-applied (§1.1).
+function setStyleSelection(userId: number, style: unknown, autocast: unknown) {
+  const entry = combatProfiles.get(userId);
+  if (!entry) return;
+  if (isValidStyle(style)) entry.style = style;
+  if (typeof autocast === 'string') entry.autocastSpell = autocast || null;
+  else if (autocast === null) entry.autocastSpell = null;
+  const state = stateStore.loadState(userId);
+  if (state) entry.profile = deriveCombatProfile(state, entry.style, entry.autocastSpell);
+}
+
+// The structural SwingProfile sim.ts consumes, wired to the live cache. The
+// spec-energy debit (trySpendSpec) is honoured against the RAM energy and the
+// regen below; it is flushed to the save lazily.
+function swingProfileFor(userId: number): SwingProfile | null {
+  const entry = combatProfiles.get(userId);
+  if (!entry) return null;
+  const p = entry.profile;
+  return {
+    attackSpeed: p.attackSpeed,
+    weaponMode: p.weaponMode,
+    melee: p.melee, ranged: p.ranged, gun: p.gun,
+    magicLvl: p.magicLvl, magicMaxHit: p.magicMaxHit,
+    effectGear: p.effectGear,
+    specItemId: p.specItemId,
+    trySpendSpec: (itemId: string) => {
+      // cost lives on the item's spec def; sim already validated the id is the
+      // equipped spec item. Look the cost up server-side (never from the wire).
+      const cost = SPEC_ENERGY_COST.get(itemId) ?? 100;
+      if (entry.specEnergy < cost) return false;
+      entry.specEnergy -= cost;
+      entry.hpDirty = true; // spec energy is flushed alongside hp
+      return true;
+    },
+  };
+}
+
+// spec energy cost per item id, read once from the item catalog (spec.energy).
+const SPEC_ENERGY_COST: Map<string, number> = (() => {
+  const m = new Map<string, number>();
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/items.json'), 'utf8'));
+    for (const id of Object.keys(raw)) {
+      const e = raw[id]?.spec?.energy;
+      if (typeof e === 'number') m.set(id, Math.max(0, Math.min(100, e)));
+    }
+  } catch { /* empty → default 100 */ }
+  return m;
+})();
+
+// Sync a player's view combat fields from the cached profile (server-derived).
+function applyProfileToView(view: PlayerView, entry: ProfileEntry, opts: { resetHp?: boolean } = {}) {
+  const p = entry.profile;
+  view.cb = p.combatLevel;
+  view.effDef = p.effDef;
+  view.defBonus = p.defBonus;
+  view.maxHp = p.maxHp;
+  if (opts.resetHp || view.hp > p.maxHp) view.hp = Math.min(view.hp || p.maxHp, p.maxHp);
+}
+
+setCombatProfileFor(swingProfileFor);
+
+// HP changed (server-authoritative). Persist lazily — mark dirty; the tick
+// flush below writes curHp + specEnergy to the save. We push the authoritative
+// hp to the client immediately so its HUD is correct (it already rode out on the
+// npcHitYou/death message; this is the lazy persistence side).
+setOnHpChanged((view, _reason) => {
+  const entry = combatProfiles.get(view.userId);
+  if (entry) entry.hpDirty = true;
+});
+
+// Server-side death resolution (§3.2). Runs inside withState: restores curHp to
+// max on the authoritative save and clears the live spec/hp dirty flags. Returns
+// the respawn point. No item/xp penalty is applied (preserves current PvE feel;
+// a softcore xp loss would slot in here via addXp with a negative-after clamp).
+const RESPAWN = { x: 22, y: 38 };
+setResolvePlayerDeath((view, _killerNpc) => {
+  const entry = combatProfiles.get(view.userId);
+  stateStore.withState(view.userId, (state) => {
+    state.curHp = entry ? entry.profile.maxHp : (typeof state.curHp === 'number' ? state.curHp : 10);
+    // (softcore xp penalty would be applied here, e.g. addXp(state, skill, -loss))
+  });
+  if (entry) entry.hpDirty = false;
+  return RESPAWN;
+});
+
 app.put('/api/character', saveRateLimit, requireAuth, (req: AuthedRequest, res) => {
   const fencedUntil = saveFence.get(req.userId!) ?? 0;
   if (fencedUntil > Date.now()) {
@@ -465,7 +650,43 @@ app.put('/api/character', saveRateLimit, requireAuth, (req: AuthedRequest, res) 
   if (save === undefined || save === null || typeof save !== 'object') {
     res.status(400).json({ error: 'save must be an object' }); return;
   }
-  const text = JSON.stringify(save);
+  // Size cap is applied to the CLIENT payload before we do anything with it
+  // (cheap DoS guard, unchanged from before).
+  if (JSON.stringify(save).length > 512 * 1024) {
+    res.status(413).json({ error: 'save too large' }); return;
+  }
+
+  // AUTHORITATIVE MERGE (docs/ECONOMY-AUTHORITY.md §1.2 / §1.3, closes G5/H1/M6):
+  // the client may NO LONGER write owned fields (xp/coins/bank/inventory/
+  // equipment/quests/collectionLog/specEnergy/hp/slayer). We take the server's
+  // authoritative owned fields and overlay ONLY the presentation fields from the
+  // client payload (position/run/energy/style-selection/autocast/music). A forged
+  // PUT with inflated xp/coins/inventory therefore has zero effect on value or
+  // progress — the save-edit master key is neutralised.
+  //
+  // NOTE (Phase boundary): until the skilling/loot intents land in Phase 2, the
+  // client has no server-validated path to GAIN items, so legitimate gains are
+  // not yet reflected. That is EXPECTED per the plan; Phase 2 routes the gains.
+  // We deliberately do NOT half-route gains here.
+  const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
+    .get(req.userId) as { save: string } | undefined;
+
+  let merged: Record<string, unknown>;
+  if (!row) {
+    // First save for a brand-new character: there is no authoritative owned
+    // document yet, so this PUT seeds it. (New accounts are created with starter
+    // gear client-side on first play; once Phase 2 owns creation this seed path
+    // narrows. For now a row with no prior server state accepts the full save so
+    // a fresh player is not wiped.) Existing rows below take the merge path.
+    merged = save as Record<string, unknown>;
+  } else {
+    let authoritative: Record<string, unknown>;
+    try { authoritative = JSON.parse(row.save) as Record<string, unknown>; }
+    catch { authoritative = {}; }
+    merged = mergeSave(authoritative, save as Record<string, unknown>);
+  }
+
+  const text = JSON.stringify(merged);
   if (text.length > 512 * 1024) { res.status(413).json({ error: 'save too large' }); return; }
   db.prepare(`INSERT INTO characters (user_id, save, updated_at) VALUES (?,?,?)
               ON CONFLICT(user_id) DO UPDATE SET save = excluded.save, updated_at = excluded.updated_at`)
@@ -492,10 +713,15 @@ function offerJson(o: OfferRow) {
 }
 
 // Matching engine. Trades execute at the RESTING offer's price; partial fills allowed.
-// Escrow model (client-authoritative):
-//   buy offer  — buyer already removed qty*price coins client-side; itemsOwed accrues
-//                bought items, coinsOwed accrues the spread refund when filling cheaper.
-//   sell offer — seller already removed the items client-side; coinsOwed accrues proceeds.
+// Escrow model (SERVER-AUTHORITATIVE — docs/ECONOMY-AUTHORITY.md §4.1, closes G4/M1):
+//   The offer's backing value really left the player's authoritative inventory at
+//   creation time (see /api/ge/offer below, inside the SAME transaction as the
+//   insert+match). matchOffer therefore only SHUFFLES already-escrowed value
+//   between the two offers' owed columns; it never mints.
+//   buy offer  — qty*price coins were escrowed at creation; itemsOwed accrues the
+//                bought items, coinsOwed accrues the spread refund when filled
+//                cheaper than the buyer's limit (refunding escrow the buyer prepaid).
+//   sell offer — qty items were escrowed at creation; coinsOwed accrues proceeds.
 const matchOffer = db.transaction((incoming: OfferRow): OfferRow => {
   let remaining = incoming.qty - incoming.filled;
   const opposite = incoming.kind === 'buy' ? 'sell' : 'buy';
@@ -536,26 +762,66 @@ const matchOffer = db.transaction((incoming: OfferRow): OfferRow => {
   return db.prepare('SELECT * FROM offers WHERE id = ?').get(incoming.id) as OfferRow;
 });
 
+// Offer creation + escrow + match, all in ONE transaction so the escrow debit,
+// the offer insert and the initial match are atomic: if the player cannot cover
+// the offer the whole thing rolls back and no offer exists (docs/ECONOMY-AUTHORITY
+// §4.1, closes G4 — "GE escrow with no backing"). Escrow is taken from the SAME
+// carried-inventory pool the in-game GE UI spends (src/ge.ts uses invCount/
+// addItem/removeItem 'coins' and inventory items), so the value really leaves the
+// player here on the server, not just client-side.
+const placeOffer = db.transaction((userId: number, kind: 'buy' | 'sell', item: string, qty: number, price: number):
+    { error?: string; status?: number; offer?: OfferRow } => {
+  const activeCount = (db.prepare('SELECT COUNT(*) AS n FROM offers WHERE user_id = ? AND active = 1')
+    .get(userId) as { n: number }).n;
+  if (activeCount >= 8) return { error: 'too many active offers', status: 400 };
+
+  // Escrow the backing value out of the authoritative carried inventory. We do it
+  // through stateStore.withState so the debit bumps rev + fences + pushes
+  // save_reload exactly like every other owned mutation. A `false` return (or a
+  // missing character row → undefined) means the player cannot cover the offer.
+  const escrowOk = stateStore.withState(userId, (state) => {
+    if (kind === 'buy') {
+      // buyer prepays qty*price coins; the spread (price - tradePrice) is later
+      // returned as coins_owed when filled cheaper than their limit.
+      if (getCoins(state) < qty * price) return false;
+      return removeCoins(state, qty * price);
+    }
+    // seller escrows the items themselves.
+    if (invCount(state, item) < qty) return false;
+    return invRemove(state, item, qty);
+  });
+  if (escrowOk !== true) {
+    return {
+      error: kind === 'buy' ? 'you do not have enough coins for that offer'
+                            : 'you do not have that many to sell',
+      status: 400,
+    };
+  }
+
+  const info = db.prepare(
+    'INSERT INTO offers (user_id, kind, item, qty, price, created_at) VALUES (?,?,?,?,?,?)'
+  ).run(userId, kind, item, qty, price, Date.now());
+  const inserted = db.prepare('SELECT * FROM offers WHERE id = ?')
+    .get(Number(info.lastInsertRowid)) as OfferRow;
+  const after = matchOffer(inserted);
+  return { offer: after };
+});
+
 app.post('/api/ge/offer', offerRateLimit, requireAuth, (req: AuthedRequest, res) => {
   if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
   const { kind, item, qty, price } = req.body ?? {};
   if (kind !== 'buy' && kind !== 'sell') { res.status(400).json({ error: 'kind must be buy or sell' }); return; }
   if (typeof item !== 'string' || !ITEM_RE.test(item)) { res.status(400).json({ error: 'invalid item id' }); return; }
+  if (item === 'coins') { res.status(400).json({ error: 'coins cannot be traded' }); return; }
   if (!isPosInt(qty, MAX_QTY)) { res.status(400).json({ error: 'qty must be a positive integer' }); return; }
   if (!isPosInt(price, MAX_PRICE)) { res.status(400).json({ error: 'price must be a positive integer' }); return; }
   if (qty * price > Number.MAX_SAFE_INTEGER) { res.status(400).json({ error: 'offer too large' }); return; }
 
-  const activeCount = db.prepare('SELECT COUNT(*) AS n FROM offers WHERE user_id = ? AND active = 1')
-    .get(req.userId) as { n: number };
-  if (activeCount.n >= 8) { res.status(400).json({ error: 'too many active offers' }); return; }
-
-  const info = db.prepare(
-    'INSERT INTO offers (user_id, kind, item, qty, price, created_at) VALUES (?,?,?,?,?,?)'
-  ).run(req.userId, kind, item, qty, price, Date.now());
-  const inserted = db.prepare('SELECT * FROM offers WHERE id = ?')
-    .get(Number(info.lastInsertRowid)) as OfferRow;
-  const after = matchOffer(inserted);
-  res.json({ offer: offerJson(after) });
+  let out;
+  try { out = placeOffer(req.userId!, kind, item, qty, price); }
+  catch { res.status(500).json({ error: 'offer failed' }); return; }
+  if (out.error) { res.status(out.status ?? 400).json({ error: out.error }); return; }
+  res.json({ offer: offerJson(out.offer!) });
 });
 
 app.get('/api/ge/offers', requireAuth, (req: AuthedRequest, res) => {
@@ -567,6 +833,13 @@ app.get('/api/ge/offers', requireAuth, (req: AuthedRequest, res) => {
   res.json({ offers: rows.map(offerJson) });
 });
 
+// ABORT — cancel the unfilled remainder. The escrow taken at creation for the
+// UNFILLED portion is released back into the owed columns (which collect then
+// pays into the authoritative ledger). Because the escrow was real (taken at
+// creation), this is a return of the player's own value, not an unbacked credit
+// (docs/ECONOMY-AUTHORITY.md §4.1, closes M1 "abort/collect is no longer an
+// unbacked credit"). No ledger mutation happens here — only at collect — so the
+// player makes exactly one inventory-space decision.
 app.post('/api/ge/abort', requireAuth, (req: AuthedRequest, res) => {
   const { id } = req.body ?? {};
   if (!isPosInt(id, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad id' }); return; }
@@ -575,8 +848,8 @@ app.post('/api/ge/abort', requireAuth, (req: AuthedRequest, res) => {
   if (!o) { res.status(404).json({ error: 'offer not found' }); return; }
   if (o.active) {
     const remaining = o.qty - o.filled;
-    if (o.kind === 'buy') o.coins_owed += remaining * o.price; // release coin escrow
-    else o.items_owed += remaining;                            // return unsold items
+    if (o.kind === 'buy') o.coins_owed += remaining * o.price; // release prepaid coin escrow
+    else o.items_owed += remaining;                            // return escrowed unsold items
     o.active = 0;
     db.prepare('UPDATE offers SET active=0, coins_owed=?, items_owed=? WHERE id=?')
       .run(o.coins_owed, o.items_owed, o.id);
@@ -584,18 +857,51 @@ app.post('/api/ge/abort', requireAuth, (req: AuthedRequest, res) => {
   res.json({ offer: offerJson(o) });
 });
 
+// COLLECT — pay the owed coins/items into the authoritative carried inventory.
+// Done inside ONE transaction: the owed columns are zeroed only if the ledger
+// credit actually lands (inventory has room). If the inventory is full the
+// columns are left intact so the player can free space and collect again — no
+// value is destroyed and none is minted (the owed columns were backed by escrow
+// taken at offer/match time).
+const collectOffer = db.transaction((userId: number, offerId: number):
+    { error?: string; status?: number; items?: { id: string; qty: number }[]; coins?: number } => {
+  const o = db.prepare('SELECT * FROM offers WHERE id = ? AND user_id = ?')
+    .get(offerId, userId) as OfferRow | undefined;
+  if (!o) return { error: 'offer not found', status: 404 };
+  if (o.coins_owed <= 0 && o.items_owed <= 0) return { items: [], coins: 0 };
+
+  let gotItems = 0;
+  let gotCoins = 0;
+  const ok = stateStore.withState(userId, (state) => {
+    if (o.items_owed > 0) {
+      if (invAdd(state, o.item, o.items_owed)) gotItems = o.items_owed;
+    }
+    if (o.coins_owed > 0) {
+      if (addCoins(state, o.coins_owed)) gotCoins = o.coins_owed;
+    }
+    return true;
+  });
+  if (ok !== true) return { error: 'no character save found', status: 400 };
+  if (gotItems === 0 && gotCoins === 0) {
+    return { error: 'your inventory is too full to collect', status: 400 };
+  }
+  // Zero only what we actually credited; a partial (e.g. items fit, coins did not)
+  // leaves the rest owed for a follow-up collect.
+  db.prepare('UPDATE offers SET coins_owed = coins_owed - ?, items_owed = items_owed - ?, collected_qty = collected_qty + ? WHERE id = ?')
+    .run(gotCoins, gotItems, gotItems, o.id);
+  const items = gotItems > 0 ? [{ id: o.item, qty: gotItems }] : [];
+  return { items, coins: gotCoins };
+});
+
 app.post('/api/ge/collect', requireAuth, (req: AuthedRequest, res) => {
   if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
   const { id } = req.body ?? {};
   if (!isPosInt(id, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad id' }); return; }
-  const o = db.prepare('SELECT * FROM offers WHERE id = ? AND user_id = ?')
-    .get(id, req.userId) as OfferRow | undefined;
-  if (!o) { res.status(404).json({ error: 'offer not found' }); return; }
-  const items = o.items_owed > 0 ? [{ id: o.item, qty: o.items_owed }] : [];
-  const coins = o.coins_owed;
-  db.prepare('UPDATE offers SET coins_owed=0, items_owed=0, collected_qty = collected_qty + ? WHERE id=?')
-    .run(o.items_owed, o.id);
-  res.json({ items, coins });
+  let out;
+  try { out = collectOffer(req.userId!, id); }
+  catch { res.status(500).json({ error: 'collect failed' }); return; }
+  if (out.error) { res.status(out.status ?? 400).json({ error: out.error }); return; }
+  res.json({ items: out.items, coins: out.coins });
 });
 
 app.get('/api/ge/price/:item', requireAuth, (req: AuthedRequest, res) => {
@@ -1036,6 +1342,7 @@ const clients = new Set<Client>();
 
 const social = initSocial({
   db,
+  stateStore,
   getClients: () => {
     const out: { userId: number; name: string; send: (m: unknown) => void }[] = [];
     for (const c of clients) {
@@ -1051,7 +1358,9 @@ const social = initSocial({
   },
   usernameRe: USERNAME_RE,
   isPosInt,
-  onSavesMutated: fenceSaves,
+  // Fence + push save_reload (same plumbing the market/state store use) so an
+  // in-flight client PUT carrying pre-trade inventory is 409'd and re-snapshots.
+  onSavesMutated: (ids) => { fenceSaves(ids); requestSaveReload(ids); },
 });
 social.registerRoutes(app, requireAuth);
 
@@ -1063,6 +1372,14 @@ function isOnlineName(username: string): boolean {
     if (c.name.toLowerCase() === lower && c.ws.readyState === WebSocket.OPEN) return true;
   }
   return false;
+}
+// The live Client for a userId (or null) — used to refresh the view's
+// server-derived combat fields when the authoritative state mutates.
+function onlineClient(userId: number): Client | null {
+  for (const c of clients) {
+    if (c.userId === userId && c.ws.readyState === WebSocket.OPEN) return c;
+  }
+  return null;
 }
 function systemMessageTo(username: string, text: string) {
   const lower = username.toLowerCase();
@@ -1174,6 +1491,21 @@ wss.on('connection', (ws, req) => {
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
     },
   };
+  // Build the server-derived combat profile from the authoritative save and seed
+  // the view's combat fields + authoritative HP. The client no longer reports
+  // any of these — they are derived here (closes G1/M4). Live HP starts from the
+  // persisted curHp (clamped to the derived max).
+  {
+    const entry = rebuildProfile(user.id);
+    if (entry) {
+      const persisted = stateStore.loadState(user.id);
+      const startHp = (persisted && typeof persisted.curHp === 'number')
+        ? Math.max(0, Math.min(entry.profile.maxHp, Math.round(persisted.curHp)))
+        : entry.profile.maxHp;
+      view.hp = startHp > 0 ? startHp : entry.profile.maxHp;
+      applyProfileToView(view, entry);
+    }
+  }
   const client: Client = {
     ws, userId: user.id, name: user.username,
     x: 0, y: 0, app: null, lastPos: 0, alive: true,
@@ -1186,9 +1518,6 @@ wss.on('connection', (ws, req) => {
   // authoritative world state: full NPC + ground item snapshot on connect
   // (filtered to this user — instanced dungeon NPCs stay private)
   ws.send(JSON.stringify(fullSnapshot(user.id)));
-
-  const clampStat = (n: unknown, lo: number, hi: number, dflt: number) =>
-    typeof n === 'number' && Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
 
   ws.on('message', (raw) => {
     // Per-connection inbound message-rate cap (audit M3): a token bucket that
@@ -1215,12 +1544,14 @@ wss.on('connection', (ws, req) => {
       view.y = client.y;
       if (typeof msg.d === 'boolean') view.dead = msg.d;
     } else if (msg.t === 'stats') {
-      // client-reported combat snapshot (trusted, clamped)
-      view.cb = clampStat(msg.cb, 1, 126, view.cb);
-      view.effDef = clampStat(msg.effDef, 1, 200, view.effDef);
-      view.defBonus = clampStat(msg.defBonus, 0, 500, view.defBonus);
-      view.hp = clampStat(msg.hp, 0, 999, view.hp);
-      view.maxHp = clampStat(msg.maxHp, 1, 999, view.maxHp);
+      // The client no longer reports combat NUMBERS (cb/effDef/defBonus/hp/maxHp
+      // are server-derived from the cached profile — closes G1/M4). It may still
+      // send its combat-style / autocast SELECTION and its alive flag; the
+      // selection is validated and applied server-side, then the view's combat
+      // fields are refreshed from the re-derived profile.
+      setStyleSelection(view.userId, msg.combatStyle, msg.autocastSpell);
+      const entry = combatProfiles.get(view.userId);
+      if (entry) applyProfileToView(view, entry);
       if (typeof msg.d === 'boolean') view.dead = msg.d;
     } else if (msg.t === 'swing') {
       handleSwing(view, msg);
@@ -1230,6 +1561,11 @@ wss.on('connection', (ws, req) => {
       handleDrop(view, msg);
     } else if (msg.t === 'interact') {
       handleInteract(view, msg);
+    } else if (msg.t === 'intent') {
+      // Server-authoritative skilling intents (gather/fish/cook/firemake/make).
+      // Validates level/inputs/tool/range vs server state, rolls, applies via
+      // withState, and replies with the authoritative {t:'intent',...} echo.
+      dispatchIntentWs(intents, view, msg);
     } else if (msg.t === 'chat') {
       if (typeof msg.text !== 'string') return;
       const text = msg.text.slice(0, 80).replace(/[\x00-\x1f]/g, '').trim();
@@ -1259,30 +1595,64 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('pong', () => { client.alive = true; });
-  ws.on('close', () => {
+  const onGone = () => {
     clients.delete(client);
+    flushCombatState(client.userId, client.view); // persist live HP + spec, then drop the cache
+    combatProfiles.delete(client.userId);
     dropPlayer(client.userId);
     dungeonOnDisconnect(client.userId); // despawns any active dungeon run
     social.onDisconnect(client.userId); // cancels any in-flight trade
     social.notifyFriendsOnline(client.userId, client.name, false);
-  });
-  ws.on('error', () => {
-    clients.delete(client);
-    dropPlayer(client.userId);
-    dungeonOnDisconnect(client.userId);
-    social.onDisconnect(client.userId);
-    social.notifyFriendsOnline(client.userId, client.name, false);
-  });
+  };
+  ws.on('close', onGone);
+  ws.on('error', onGone);
 });
+
+// Flush a player's live (RAM) combat state — authoritative HP + spec energy —
+// to the persisted save when it has diverged. Called on a cadence in the tick
+// and on disconnect, so combat never opens a DB transaction per hit (§3.3).
+function flushCombatState(userId: number, view: PlayerView) {
+  const entry = combatProfiles.get(userId);
+  if (!entry || !entry.hpDirty) return;
+  stateStore.withState(userId, (state) => {
+    state.curHp = Math.max(0, Math.min(entry.profile.maxHp, Math.round(view.hp)));
+    state.specEnergy = Math.max(0, Math.min(100, Math.round(entry.specEnergy)));
+  });
+  entry.hpDirty = false;
+}
 
 // World tick (600ms, matches the client TICK_MS): NPC sim + delta broadcast,
 // then the presence snapshot for remote-player rendering.
+let serverTick = 0;
 setInterval(() => {
   const players = new Map<number, PlayerView>();
   for (const c of clients) {
     if (c.ws.readyState === WebSocket.OPEN) players.set(c.userId, c.view);
   }
   tickSim(players);
+
+  serverTick++;
+  // Server-authoritative regen + lazy persistence of live combat state (§3.3).
+  // HP regen +1 / 100 ticks, spec regen +10 / 50 ticks — same cadence the client
+  // used, now owned by the server. Live state is flushed to the save every ~50
+  // ticks (~30s) so a crash loses at most that window; per-hit DB writes are
+  // avoided. Pushes the authoritative hp to the client when it changes.
+  for (const c of clients) {
+    if (c.ws.readyState !== WebSocket.OPEN) continue;
+    const entry = combatProfiles.get(c.userId);
+    if (!entry) continue;
+    if (serverTick % 100 === 0 && !c.view.dead && c.view.hp > 0 && c.view.hp < entry.profile.maxHp) {
+      c.view.hp++;
+      entry.hpDirty = true;
+      c.view.send({ t: 'hpSync', hp: c.view.hp, maxHp: entry.profile.maxHp });
+    }
+    if (serverTick % 50 === 0 && entry.specEnergy < 100) {
+      entry.specEnergy = Math.min(100, entry.specEnergy + 10);
+      entry.hpDirty = true;
+      c.view.send({ t: 'specSync', spec: entry.specEnergy });
+    }
+    if (serverTick % 50 === 0) flushCombatState(c.userId, c.view);
+  }
 
   if (clients.size === 0) return;
   for (const c of clients) {

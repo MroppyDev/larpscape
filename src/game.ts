@@ -673,6 +673,74 @@ export function netGot(m: { item: string; qty: number }) {
   } else msg("You don't have enough inventory space.");
 }
 
+// ---------------- Server-authoritative progression intents ----------------
+// (docs/ECONOMY-AUTHORITY.md §2). For every owned-state gain/loss the client
+// now REQUESTS an intent; the server validates + rolls + applies, and the
+// {t:'intent'}/{t:'granted'} echo is applied here. The client no longer authors
+// xp/items for these paths — addItem/addXp below run only as the SERVER echo.
+
+// Send a skilling intent over the websocket. Returns false when offline (the
+// caller shows the connection message). `id` correlates the reply if needed.
+let nextIntentId = 1;
+export function sendIntent(kind: string, payload: Record<string, unknown>): boolean {
+  return netSend({ t: 'intent', kind, id: nextIntentId++, ...payload });
+}
+
+interface IntentEcho {
+  ok: boolean;
+  kind: string;
+  error?: string;
+  granted?: { id: string; qty: number }[];
+  removed?: { id: string; qty: number }[];
+  xp?: { skill: SkillName; amount: number }[];
+  burned?: boolean;
+  source?: string;
+}
+
+// Apply an authoritative grant/remove/xp echo to the local mirror. removed items
+// are debited first, then grants added, then xp (so level-up messages fire with
+// the new inventory already reflected). This is the ONLY place skilling owned
+// state changes now (the handlers send intents; the server echoes here).
+export function applyIntentEcho(m: IntentEcho) {
+  if (m.removed) for (const r of m.removed) removeItem(r.id, r.qty);
+  if (m.granted) for (const g of m.granted) {
+    addItem(g.id, g.qty);
+    if (g.id === 'coins') audio.sfx('coins');
+  }
+  if (m.xp) for (const x of m.xp) addXp(x.skill, x.amount);
+}
+
+// WS {t:'intent'} reply (skilling) and {t:'granted'} (pickup/drop) handlers.
+export function netIntent(m: IntentEcho) {
+  if (!m.ok) {
+    // Surface the server's refusal once (rate-limited by the action loop).
+    if (m.error && m.error !== 'inventory full') {
+      // 'inventory full'/empty rolls are common; only show meaningful refusals
+      if (!/full|no character|out of range|no such|frozen/.test(m.error)) msg(serverError(m.error));
+    } else if (m.error === 'inventory full') {
+      msg("You don't have enough inventory space.");
+    }
+    return;
+  }
+  applyIntentEcho(m);
+}
+
+// pickup/drop authoritative echo ({t:'granted'} from sim.ts).
+export function netGranted(m: { source?: string; items?: { id: string; qty: number }[]; removed?: { id: string; qty: number }[] }) {
+  if (m.items) for (const g of m.items) {
+    addItem(g.id, g.qty);
+    if (g.id === 'coins') audio.sfx('coins');
+  }
+  // 'drop' removals are already reflected locally (dropItem clears the slot
+  // optimistically); the echo is confirmation. Re-applying a remove here would
+  // double-debit, so we trust the optimistic local removal for drop.
+}
+
+function serverError(e: string): string {
+  // Make the server's terse error human-friendly for the chat log.
+  return e.charAt(0).toUpperCase() + e.slice(1) + '.';
+}
+
 // boss telegraphs and other server fx
 export function netFx(m: { npc: number; kind: string; [k: string]: any }) {
   const n = npcBySid.get(m.npc) ?? null;

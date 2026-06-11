@@ -219,10 +219,22 @@ CREATE TABLE IF NOT EXISTS market_proceeds (
     if (!row) return null;
     try { return JSON.parse(row.save); } catch { return null; }
   }
+  // Writes the authoritative save and BUMPS rev — the same optimistic-concurrency
+  // counter server/state.ts maintains — so there is ONE ledger semantics across
+  // market + state store: every owned-field mutation advances rev (client cache
+  // key) and the in-game combat-profile cache invalidates on the save_reload push.
+  // A market mutation only ever touches an EXISTING character row (the seller/buyer
+  // already has a save), so an UPDATE is sufficient (no INSERT/seed path here).
   function writeSave(userId: number, save: any) {
-    db.prepare(`INSERT INTO characters (user_id, save, updated_at) VALUES (?,?,?)
-                ON CONFLICT(user_id) DO UPDATE SET save = excluded.save, updated_at = excluded.updated_at`)
-      .run(userId, JSON.stringify(save), Date.now());
+    // NOTE: argument order MUST match the placeholders (save, updated_at, user_id).
+    // A prior bug passed (userId, save, Date.now()), which wrote the user id into
+    // the `save` column and ran `WHERE user_id = Date.now()` — matching ZERO rows,
+    // so every market escrow (list/buy/cancel/collect) silently failed to persist
+    // the bank mutation while the listing/proceeds rows committed. That is a real
+    // item-mint/dupe vector (the "escrowed" item never left the seller's bank);
+    // caught by scripts/pentest-economy.ts (conservation + double-buyout).
+    db.prepare('UPDATE characters SET save = ?, rev = rev + 1, updated_at = ? WHERE user_id = ?')
+      .run(JSON.stringify(save), Date.now(), userId);
   }
   function usernameOf(userId: number): string {
     const row = db.prepare('SELECT username FROM users WHERE id = ?')

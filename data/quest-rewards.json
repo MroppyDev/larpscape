@@ -1,0 +1,9 @@
+{
+  "_comment": "Server-owned quest COMPLETION rewards, keyed by '<questId>:<stage>'. The client may request a claim but NEVER specifies the reward amount — the server grants only what is listed here, exactly once per (quest,stage) (docs/ECONOMY-AUTHORITY.md §2.1, closes M6 reward inflation). Seeded from the readable quest packs; intermediate quest item hand-outs (tuning_fork, mine_survey, etc.) are a documented follow-up and remain client-optimistic until enumerated here.",
+  "gd1_sour_notes:5": { "xp": [{ "skill": "Magic", "amount": 400 }], "coins": 100, "items": [{ "id": "mira_letter", "qty": 1 }] },
+  "gd2_quarrel_of_wizards:6": { "xp": [{ "skill": "Magic", "amount": 800 }], "coins": 400, "items": [{ "id": "guild_powder_horn", "qty": 1 }] },
+  "gd3_sealed_wing:6": { "xp": [{ "skill": "Mining", "amount": 1200 }], "coins": 600, "items": [{ "id": "hollis_lamp", "qty": 1 }] },
+  "cold_comfort:5": { "xp": [{ "skill": "Firemaking", "amount": 600 }], "coins": 300, "items": [{ "id": "calder_brand", "qty": 1 }] },
+  "warlords_banner:2": { "xp": [{ "skill": "Attack", "amount": 800 }], "coins": 500 },
+  "thunder_on_the_tide:6": { "xp": [{ "skill": "Gun", "amount": 800 }], "coins": 500, "items": [{ "id": "guild_deputy_badge", "qty": 1 }] }
+}

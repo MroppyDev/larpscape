@@ -9,6 +9,7 @@ import {
   state, msg, setSaveProvider, netLink, combatSnapshot, saveGame,
   netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
   netYouKilled, netGot, netFx, netShorn, netDeny,
+  netIntent, netGranted,
   netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
 } from './game';
 import type { RemotePlayer } from './game';
@@ -242,6 +243,12 @@ function handleWsMessage(raw: string) {
     netYouKilled(m);
   } else if (m.t === 'got') {
     netGot(m);
+  } else if (m.t === 'intent') {
+    netIntent(m); // server-authoritative skilling echo (gather/cook/make/...)
+  } else if (m.t === 'granted') {
+    netGranted(m); // authoritative pickup/drop echo
+  } else if (m.t === 'pickupFail') {
+    msg("You don't have enough inventory space.");
   } else if (m.t === 'fx') {
     netFx(m);
   } else if (m.t === 'shorn') {

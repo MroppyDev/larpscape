@@ -8,6 +8,10 @@ import { fileURLToPath } from 'url';
 import type { Response } from 'express';
 import type Database from 'better-sqlite3';
 import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
+import {
+  StateStore, AuthState,
+  invAdd, invRemove, invCount, getCoins, addCoins, removeCoins,
+} from './state';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,52 +31,10 @@ const GUILD_COST = 5000;
 // ---------------------------------------------------------------------------
 
 interface ItemStack { id: string; qty: number }
-type Inv = (ItemStack | null)[];
 
-function invOf(save: any): Inv {
-  if (!Array.isArray(save?.inventory)) throw new Error('bad save');
-  return save.inventory as Inv;
-}
-
-function countInSave(save: any, id: string): number {
-  let n = 0;
-  for (const s of invOf(save)) if (s && s.id === id) n += s.qty;
-  return n;
-}
-
-function removeFromSave(save: any, id: string, qty: number): boolean {
-  const inv = invOf(save);
-  if (countInSave(save, id) < qty) return false;
-  let left = qty;
-  for (let i = 0; i < inv.length && left > 0; i++) {
-    const s = inv[i];
-    if (!s || s.id !== id) continue;
-    const take = Math.min(s.qty, left);
-    s.qty -= take; left -= take;
-    if (s.qty <= 0) inv[i] = null;
-  }
-  return left === 0;
-}
-
-function addToSave(save: any, id: string, qty: number): boolean {
-  const inv = invOf(save);
-  const def = ITEMS[id];
-  if (!def) return false;
-  if (def.stackable) {
-    const slot = inv.find((s) => s && s.id === id);
-    if (slot) { slot.qty += qty; return true; }
-    const i = inv.indexOf(null);
-    if (i < 0) return false;
-    inv[i] = { id, qty };
-    return true;
-  }
-  for (let n = 0; n < qty; n++) {
-    const i = inv.indexOf(null);
-    if (i < 0) return false;
-    inv[i] = { id, qty: 1 };
-  }
-  return true;
-}
+// All character-save mutation now flows through the authoritative ledger
+// (server/state.ts) — the former local invOf/removeFromSave/addToSave/loadSaveRow
+// helpers were removed so there is exactly one ledger and one rev-bumping writer.
 
 export interface SocialClient {
   userId: number;
@@ -82,6 +44,10 @@ export interface SocialClient {
 
 export interface SocialDeps {
   db: Database.Database;
+  // Authoritative state ledger (docs/ECONOMY-AUTHORITY.md §1.3). Trade, coinflip,
+  // guild-create and guild-vault move value through this so there is ONE ledger
+  // and every mutation bumps rev + fences + pushes save_reload.
+  stateStore: StateStore;
   getClients: () => SocialClient[];
   usernameRe: RegExp;
   isPosInt: (n: unknown, max: number) => n is number;
@@ -92,7 +58,7 @@ export interface SocialDeps {
 }
 
 export function initSocial(deps: SocialDeps) {
-  const { db, getClients, usernameRe, isPosInt, onSavesMutated } = deps;
+  const { db, stateStore, getClients, usernameRe, isPosInt, onSavesMutated } = deps;
 
   db.exec(`
 CREATE TABLE IF NOT EXISTS friends (
@@ -123,19 +89,6 @@ CREATE TABLE IF NOT EXISTS guild_vault (
   PRIMARY KEY (guild_id, item)
 );
 `);
-
-  // ---- character save access (same storage the GE trusts) ----
-  function loadSaveRow(userId: number): any | null {
-    const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
-      .get(userId) as { save: string } | undefined;
-    if (!row) return null;
-    try { return JSON.parse(row.save); } catch { return null; }
-  }
-  function writeSaveRow(userId: number, save: any) {
-    db.prepare(`INSERT INTO characters (user_id, save, updated_at) VALUES (?,?,?)
-                ON CONFLICT(user_id) DO UPDATE SET save = excluded.save, updated_at = excluded.updated_at`)
-      .run(userId, JSON.stringify(save), Date.now());
-  }
 
   interface CfOffer {
     id: string;
@@ -245,30 +198,55 @@ CREATE TABLE IF NOT EXISTS guild_vault (
     return { items: [...merged].map(([id, qty]) => ({ id, qty })), coins };
   }
 
-  // Atomic swap: validate both sides hold their offers, then exchange.
+  // Atomic swap against the AUTHORITATIVE ledger (docs/ECONOMY-AUTHORITY.md §4.3,
+  // closes the "validate possession against a forgeable save" gap). Both sides'
+  // offered items/coins are removed from their server inventory and credited to
+  // the OTHER side inside ONE better-sqlite3 transaction, re-validating possession
+  // at commit time. Either side lacking what it offered (or lacking space) rolls
+  // the whole swap back — no partial transfer, no mint. rev is bumped on both rows
+  // via stateStore's UPDATE (the bump rides through writeAuthState below).
+  const writeAuthState = db.prepare(
+    'UPDATE characters SET save = ?, rev = rev + 1, updated_at = ? WHERE user_id = ?',
+  );
   const execTrade = db.transaction((s: TradeSession): string | null => {
-    const saveA = loadSaveRow(s.a.userId);
-    const saveB = loadSaveRow(s.b.userId);
+    const saveA = stateStore.loadState(s.a.userId) as AuthState | null;
+    const saveB = stateStore.loadState(s.b.userId) as AuthState | null;
     if (!saveA || !saveB) return 'missing character save';
-    const sides: [TradeSide, any, any][] = [[s.a, saveA, saveB], [s.b, saveB, saveA]];
+    const sides: [TradeSide, AuthState, AuthState][] = [[s.a, saveA, saveB], [s.b, saveB, saveA]];
     // 1) remove every offered item/coin from its owner (validates possession)
     for (const [side, own] of sides) {
       for (const it of side.items) {
-        if (!removeFromSave(own, it.id, it.qty)) return `${side.name} no longer has the offered items`;
+        if (!invRemove(own, it.id, it.qty)) return `${side.name} no longer has the offered items`;
       }
-      if (side.coins > 0 && !removeFromSave(own, 'coins', side.coins)) {
+      if (side.coins > 0 && !removeCoins(own, side.coins)) {
         return `${side.name} no longer has the offered coins`;
       }
     }
     // 2) deliver to the opposite side (validates space)
     for (const [side, , other] of sides) {
       for (const it of side.items) {
-        if (!addToSave(other, it.id, it.qty)) return 'not enough inventory space';
+        if (!invAdd(other, it.id, it.qty)) return 'not enough inventory space';
       }
-      if (side.coins > 0 && !addToSave(other, 'coins', side.coins)) return 'not enough inventory space';
+      if (side.coins > 0 && !addCoins(other, side.coins)) return 'not enough inventory space';
     }
-    writeSaveRow(s.a.userId, saveA);
-    writeSaveRow(s.b.userId, saveB);
+    const now = Date.now();
+    writeAuthState.run(JSON.stringify(saveA), now, s.a.userId);
+    writeAuthState.run(JSON.stringify(saveB), now, s.b.userId);
+    return null;
+  });
+
+  // Coinflip settlement: move `amount` coins from loser → winner against the
+  // authoritative ledger, atomically. Returns null on success or an error string.
+  const settleCoinflip = db.transaction((winnerId: number, loserId: number, amount: number): string | null => {
+    const wSave = stateStore.loadState(winnerId) as AuthState | null;
+    const lSave = stateStore.loadState(loserId) as AuthState | null;
+    if (!wSave || !lSave) return 'a player has no character save';
+    if (getCoins(lSave) < amount) return 'the loser cannot cover the stake';
+    if (!removeCoins(lSave, amount)) return 'the loser cannot cover the stake';
+    if (!addCoins(wSave, amount)) return 'the winner cannot bank the winnings';
+    const now = Date.now();
+    writeAuthState.run(JSON.stringify(wSave), now, winnerId);
+    writeAuthState.run(JSON.stringify(lSave), now, loserId);
     return null;
   });
 
@@ -525,6 +503,20 @@ CREATE TABLE IF NOT EXISTS guild_vault (
       const loserId = winnerId === offer.fromId ? offer.toId : offer.fromId;
       const winnerName = winnerId === offer.fromId ? offer.fromName : offer.toName;
       const loserName = loserId === offer.fromId ? offer.fromName : offer.toName;
+      // SERVER-BACKED SETTLEMENT (docs/ECONOMY-AUTHORITY.md §2.1 H2, closes "stake
+      // never moved"): debit the stake from the loser's authoritative coins and
+      // credit it to the winner, atomically. Either side unable to cover the
+      // stake (or the winner unable to bank it) aborts the whole flip — no value
+      // is created or destroyed. Both stakes are notional; net effect = the loser
+      // pays `amount` to the winner.
+      const err = settleCoinflip(winnerId, loserId, offer.amount);
+      if (err) {
+        const payload = { t: 'cf_aborted', reason: err };
+        challenger.send(payload);
+        clientForUser(offer.toId)?.send(payload);
+        res.status(400).json({ error: err }); return;
+      }
+      onSavesMutated?.([winnerId, loserId]);
       const result = { t: 'cf_result', winner: winnerName, loser: loserName, amount: offer.amount, flip };
       challenger.send(result);
       const acceptor = clientForUser(offer.toId);
@@ -557,13 +549,25 @@ CREATE TABLE IF NOT EXISTS guild_vault (
       if (membershipOf(req.userId)) { res.status(400).json({ error: 'you are already in a guild' }); return; }
       if (db.prepare('SELECT 1 FROM guilds WHERE name = ?').get(name)) { res.status(409).json({ error: 'guild name taken' }); return; }
       if (db.prepare('SELECT 1 FROM guilds WHERE tag = ?').get(tag)) { res.status(409).json({ error: 'tag taken' }); return; }
+      // SERVER-CHARGED COST (docs/ECONOMY-AUTHORITY.md §2.1 H4, closes "cost never
+      // charged"): debit GUILD_COST coins from the founder's authoritative coins
+      // and create the guild + leader membership in ONE transaction. If the founder
+      // cannot cover the cost (or has no save) nothing is created.
+      let chargeErr: string | null = null;
       const create = db.transaction(() => {
+        const save = stateStore.loadState(req.userId) as AuthState | null;
+        if (!save) { chargeErr = 'no character save found'; return; }
+        if (getCoins(save) < GUILD_COST) { chargeErr = `founding a guild costs ${GUILD_COST} coins`; return; }
+        if (!removeCoins(save, GUILD_COST)) { chargeErr = `founding a guild costs ${GUILD_COST} coins`; return; }
+        writeAuthState.run(JSON.stringify(save), Date.now(), req.userId);
         const info = db.prepare('INSERT INTO guilds (name, tag, leader, created_at) VALUES (?,?,?,?)')
           .run(name, tag, req.userId, Date.now());
         db.prepare('INSERT INTO guild_members (guild_id, user_id, rank, joined_at) VALUES (?,?,?,?)')
           .run(Number(info.lastInsertRowid), req.userId, 'leader', Date.now());
       });
       create();
+      if (chargeErr) { res.status(400).json({ error: chargeErr }); return; }
+      onSavesMutated?.([req.userId]);
       invalidateTag(req.userId);
       res.json({ ok: true, guild: guildJson(req.userId) });
     });
@@ -707,18 +711,29 @@ CREATE TABLE IF NOT EXISTS guild_vault (
       const item = typeof req.body?.item === 'string' ? req.body.item : '';
       const qty = req.body?.qty;
       if (!ITEM_RE.test(item) || !ITEMS[item]) { res.status(400).json({ error: 'invalid item' }); return; }
+      if (item === 'coins') { res.status(400).json({ error: 'coins cannot be vaulted' }); return; }
       if (!isPosInt(qty, MAX_QTY)) { res.status(400).json({ error: 'invalid qty' }); return; }
-      let overflow = false;
+      // SERVER-BACKED DEPOSIT (docs/ECONOMY-AUTHORITY.md §2.1 H3, closes "deposit
+      // unbacked"): debit the item from the depositor's authoritative inventory in
+      // the SAME transaction that increments the vault. The item really leaves the
+      // player here; a deposit of an item the player does not hold is rejected.
+      let err: string | null = null;
       const deposit = db.transaction(() => {
         const cur = (db.prepare('SELECT qty FROM guild_vault WHERE guild_id = ? AND item = ?')
           .get(m.guild_id, item) as { qty: number } | undefined)?.qty ?? 0;
-        if (cur + qty > MAX_QTY) { overflow = true; return; } // stack cap: keep qty a safe integer
+        if (cur + qty > MAX_QTY) { err = 'the vault cannot hold that many'; return; } // stack cap
+        const save = stateStore.loadState(req.userId) as AuthState | null;
+        if (!save) { err = 'no character save found'; return; }
+        if (invCount(save, item) < qty) { err = 'you do not have that many to deposit'; return; }
+        if (!invRemove(save, item, qty)) { err = 'you do not have that many to deposit'; return; }
+        writeAuthState.run(JSON.stringify(save), Date.now(), req.userId);
         db.prepare(`INSERT INTO guild_vault (guild_id, item, qty) VALUES (?,?,?)
                     ON CONFLICT(guild_id, item) DO UPDATE SET qty = qty + excluded.qty`)
           .run(m.guild_id, item, qty);
       });
       deposit();
-      if (overflow) { res.status(400).json({ error: 'the vault cannot hold that many' }); return; }
+      if (err) { res.status(400).json({ error: err }); return; }
+      onSavesMutated?.([req.userId]);
       notifyGuild(m.guild_id, { t: 'guild_vault_change' });
       res.json({ ok: true });
     });
@@ -736,12 +751,28 @@ CREATE TABLE IF NOT EXISTS guild_vault (
       const qty = req.body?.qty;
       if (!ITEM_RE.test(item)) { res.status(400).json({ error: 'invalid item' }); return; }
       if (!isPosInt(qty, MAX_QTY)) { res.status(400).json({ error: 'invalid qty' }); return; }
+      // SERVER-BACKED WITHDRAW (docs/ECONOMY-AUTHORITY.md §2.1 H3): grant the item
+      // into the withdrawer's authoritative inventory in the SAME transaction that
+      // decrements the vault. The amount is clamped to vault stock AND to the
+      // inventory room actually available — only what lands in the inventory is
+      // debited from the vault, so a full inventory leaves the rest in the vault
+      // (no item is conjured, none destroyed).
       let granted = 0;
+      let noRoom = false;
       const withdraw = db.transaction(() => {
         const row = db.prepare('SELECT qty FROM guild_vault WHERE guild_id = ? AND item = ?')
           .get(m.guild_id, item) as { qty: number } | undefined;
         if (!row || row.qty <= 0) return;
-        granted = Math.min(qty, row.qty); // never trust the client: clamp to stock
+        const want = Math.min(qty, row.qty); // never trust the client: clamp to stock
+        const save = stateStore.loadState(req.userId) as AuthState | null;
+        if (!save) { noRoom = true; return; }
+        // grant the clamped amount; if the inventory cannot hold all of it, the
+        // invAdd is all-or-nothing per call, so step down to what fits.
+        let take = want;
+        while (take > 0 && !invAdd(save, item, take)) take--;
+        if (take <= 0) { noRoom = true; return; }
+        granted = take;
+        writeAuthState.run(JSON.stringify(save), Date.now(), req.userId);
         if (granted === row.qty) {
           db.prepare('DELETE FROM guild_vault WHERE guild_id = ? AND item = ?').run(m.guild_id, item);
         } else {
@@ -750,7 +781,8 @@ CREATE TABLE IF NOT EXISTS guild_vault (
         }
       });
       withdraw();
-      if (granted > 0) notifyGuild(m.guild_id, { t: 'guild_vault_change' });
+      if (noRoom) { res.status(400).json({ error: 'your inventory is too full to withdraw' }); return; }
+      if (granted > 0) { onSavesMutated?.([req.userId]); notifyGuild(m.guild_id, { t: 'guild_vault_change' }); }
       res.json({ ok: true, granted, item });
     });
   }
