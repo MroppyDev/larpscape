@@ -214,6 +214,7 @@ function colMul(c: THREE.Color, f: number): [number, number, number] {
 let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let cam3: THREE.PerspectiveCamera | null = null;
+let sunLight: THREE.DirectionalLight | null = null;
 let pickMeshes: THREE.Mesh[] = [];
 let waterMesh: THREE.Mesh | null = null;
 let waterBase: Float32Array | null = null;
@@ -405,6 +406,8 @@ function buildChunk(cx0: number, cy0: number, lavaGb: GeoBuilder): THREE.Mesh | 
   if (gb.pos.length === 0) return null;
   const mesh = new THREE.Mesh(gb.build(), litMat);
   mesh.matrixAutoUpdate = false;
+  mesh.castShadow = true;    // walls/fences throw shadows
+  mesh.receiveShadow = true; // ground catches entity/object shadows
   return mesh;
 }
 
@@ -462,6 +465,8 @@ const domeG = (r: number, col: string, facet = 0.06) =>
 function lm(geo: THREE.BufferGeometry, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0): THREE.Mesh {
   const m = new THREE.Mesh(geo, litMat);
   m.position.set(x, y, z); m.rotation.set(rx, ry, rz);
+  m.castShadow = true;
+  m.receiveShadow = true;
   return m;
 }
 function gm(geo: THREE.BufferGeometry, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0): THREE.Mesh {
@@ -590,6 +595,19 @@ function buildFlameInto(g: THREE.Group, x: number, y: number, z: number, scale =
   g.add(outer, inner);
 }
 
+// drifting smoke puffs rising from fires/furnaces/chimneys; animated in the
+// per-object fx loop (rise, swell, fade, loop)
+function buildSmokeInto(g: THREE.Group, x: number, y: number, z: number, scale = 1) {
+  for (let i = 0; i < 3; i++) {
+    const mat = new THREE.MeshLambertMaterial({ color: '#55504a', transparent: true, opacity: 0.45, depthWrite: false });
+    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1 * scale, 0), mat);
+    m.name = `fxsmoke${i}`;
+    m.userData.smokeBase = { x, y, z, scale };
+    m.position.set(x, y, z);
+    g.add(m);
+  }
+}
+
 function buildRipplesInto(g: THREE.Group, y: number) {
   for (let i = 0; i < 3; i++) {
     const m = new THREE.Mesh(ringG(0.16 + i * 0.02, 0.2 + i * 0.02, '#ffffff'), rippleMat);
@@ -671,6 +689,7 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       rGlow.name = 'fxflame';
       g.add(rGlow);
       buildFlameInto(g, 0, 0.7, 0, 0.55);
+      buildSmokeInto(g, 0, 1.0, 0, 0.8);
       return g;
     }
     case 'bank_booth':
@@ -684,6 +703,7 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       g.add(lm(cylG(0.05, 0.06, 0.5, '#5e4023', 5), 0, 0.07, 0, 0, 0, Math.PI / 2));
       g.add(lm(cylG(0.05, 0.06, 0.5, '#54381e', 5), 0, 0.07, 0, Math.PI / 2, 0.6, 0));
       buildFlameInto(g, 0, 0.08, 0, 1);
+      buildSmokeInto(g, 0, 0.55, 0, 1);
       return g;
     case 'furnace':
     {
@@ -693,6 +713,7 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       const fGlow = gm(boxG(0.34, 0.3, 0.06, '#ff6a18', 0.12), 0, 0.2, 0.47);
       fGlow.name = 'fxflame';
       g.add(fGlow);
+      buildSmokeInto(g, 0, 1.55, 0, 0.9);
       return g;
     }
     case 'anvil':
@@ -1139,6 +1160,7 @@ function buildObjectTemplate(rkey: string): THREE.Group {
       rune.name = 'fxflame';
       g.add(rune);
       buildFlameInto(g, 0, 0.16, 0, 0.45);
+      buildSmokeInto(g, 0, 0.55, 0, 0.7);
       return g;
     }
     case 'gem_stall': {
@@ -2333,6 +2355,18 @@ function syncObjects(now: number, px: number, pz: number) {
           const t = ((now * 0.0007 + i * 0.33) % 1);
           const s = 0.4 + t * 2.4;
           f.scale.set(s, s, 1);
+        } else if (f.name.startsWith('fxsmoke')) {
+          const i = +f.name.slice(7);
+          const b = f.userData.smokeBase as { x: number; y: number; z: number; scale: number };
+          const t = ((now * 0.00038 + i / 3) % 1);
+          f.position.set(
+            b.x + Math.sin(now * 0.0011 + i * 2.1) * 0.14 * t,
+            b.y + t * 1.35 * b.scale,
+            b.z + Math.cos(now * 0.0009 + i * 1.7) * 0.1 * t,
+          );
+          const s = 0.45 + t * 1.7;
+          f.scale.set(s, s * 0.85, s);
+          (f.material as THREE.MeshLambertMaterial).opacity = 0.45 * (1 - t) * Math.min(1, t * 7);
         }
       }
     }
@@ -2718,6 +2752,8 @@ function ensureScene(): boolean {
   const w = cv.clientWidth || 515, h = cv.clientHeight || 336;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(w, h, false);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x191209);
@@ -2729,7 +2765,16 @@ function ensureScene(): boolean {
   // warm key light + subtle cool hemisphere fill
   const sun = new THREE.DirectionalLight(0xffdfae, 1.4);
   sun.position.set(45, 80, 25);
-  scene.add(sun);
+  // soft shadow map: a tight ortho frustum re-centred on the player each frame
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -24; sun.shadow.camera.right = 24;
+  sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24;
+  sun.shadow.camera.near = 10; sun.shadow.camera.far = 160;
+  sun.shadow.bias = -0.0008;
+  sun.shadow.normalBias = 0.05;
+  sunLight = sun;
+  scene.add(sun, sun.target);
   scene.add(new THREE.HemisphereLight(0xb8d0ee, 0x6a5a42, 0.55));
   scene.add(new THREE.AmbientLight(0x9a8a72, 0.5));
 
@@ -2812,6 +2857,13 @@ export function render() {
   camera.x = pp.px; camera.y = pp.py;
 
   updateCamera(dt);
+  // keep the shadow frustum centred on the player so shadows stay sharp
+  if (sunLight) {
+    const sfx = lerp(p.prevX, p.x, tickAlpha()) + 0.5;
+    const sfz = lerp(p.prevY, p.y, tickAlpha()) + 0.5;
+    sunLight.position.set(sfx + 45, 80, sfz + 25);
+    sunLight.target.position.set(sfx, 0, sfz);
+  }
   animateWater(now);
   // pulse the molten lava glow + shimmer the shore foam
   lavaMat.color.setScalar(0.78 + Math.sin(now * 0.0035) * 0.18 + Math.sin(now * 0.011) * 0.05);
