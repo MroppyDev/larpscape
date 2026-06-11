@@ -14,9 +14,11 @@ import {
   itemActions, objectActions, npcActions,
   advanceDialogue, chooseOption, togglePrayer, currentAttackMode,
   saveGame, resetSave, invCount, equipBonus, addItem, removeItem, freeSlots,
-  sendWs, ENABLE_PVP,
+  sendWs, ENABLE_PVP, toggleSpecAttack, specItem,
   Npc, CombatStyle, MakeOption, EQUIP_SLOTS,
+  COLLECTIBLES, COLLECTION_CATEGORIES,
 } from './game';
+import type { ItemDef } from './defs';
 import { itemIcon, skillIcon, tabIcon, copyCanvas } from './sprites';
 import { screenToTile, minimapClickToTile } from './render';
 import { objects, objectAt, key, WorldObject, GroundItem } from './world';
@@ -36,6 +38,7 @@ const $ = (id: string) => document.getElementById(id)!;
 type TabName = 'combat' | 'skills' | 'quests' | 'inventory' | 'equipment' | 'prayer' | 'magic' | 'music' | 'friends' | 'settings';
 let activeTab: TabName = 'inventory';
 let selectedQuest: string | null = null;
+let collectionView = false; // quests tab: showing the collection log sub-view
 let chatFilter: 'all' | 'game' | 'public' = 'all';
 let musicVol = 0.5;
 let sfxVol = 0.5;
@@ -69,6 +72,7 @@ export function initUI() {
   events.onLevelUp = () => { if (activeTab === 'skills' || activeTab === 'quests') renderPanel(); };
   events.onDialogueChange = () => renderDialogue();
   events.onRequestMake = (opts, cb) => showMakePicker(opts, cb);
+  events.onCollection = () => { if (activeTab === 'quests' && collectionView) renderPanel(); };
   audio.onTrackChange = () => {
     audio.setMusicVolume(musicVol);
     audio.setSfxVolume(sfxVol);
@@ -135,6 +139,7 @@ function buildTabs() {
 
 function renderPanel() {
   const panel = $('panel');
+  hideItemTooltip(); // re-rendering removes hovered slots; never strand the tooltip
   panel.innerHTML = '';
   switch (activeTab) {
     case 'combat': return renderCombat(panel);
@@ -174,6 +179,26 @@ function renderCombat(panel: HTMLElement) {
     btn.onclick = () => { p.combatStyle = s.id; renderPanel(); };
     panel.appendChild(btn);
   }
+
+  // Special attack bar (docs/EFFECTS.md): click to arm; the next swing spends
+  // the energy. Items without a spec still show the (disabled) energy bar.
+  const si = specItem();
+  const spec = document.createElement('div');
+  spec.className = 'spec-box' + (si ? '' : ' none');
+  const label = si
+    ? `${si.spec.name} (${si.spec.energy}%)`
+    : 'No special attack';
+  spec.innerHTML = `
+    <div class="spec-label">Special attack: ${esc(label)}</div>
+    <div class="spec-bar${p.specArmed ? ' armed' : ''}" title="${esc(si ? si.spec.desc : 'This equipment has no special attack.')}">
+      <div class="spec-fill" style="width:${p.specEnergy}%"></div>
+      <span class="spec-pct">${p.specEnergy}%</span>
+    </div>`;
+  if (si) {
+    const bar = spec.querySelector('.spec-bar') as HTMLElement;
+    bar.onclick = () => { toggleSpecAttack(); renderPanel(); };
+  }
+  panel.appendChild(spec);
 
   const slayer = document.createElement('div');
   slayer.className = 'slayer-line';
@@ -237,6 +262,7 @@ function questJournalText(q: QuestLike): string {
 
 function renderQuests(panel: HTMLElement) {
   const quests = (QUESTS ?? []) as unknown as QuestLike[];
+  if (collectionView) return renderCollectionLog(panel);
   if (selectedQuest) {
     const q = quests.find((x) => x.id === selectedQuest);
     if (q) {
@@ -257,10 +283,21 @@ function renderQuests(panel: HTMLElement) {
     }
     selectedQuest = null;
   }
+  const head = document.createElement('div');
+  head.className = 'quest-head';
   const title = document.createElement('div');
   title.className = 'panel-title';
   title.textContent = 'Quest Journal';
-  panel.appendChild(title);
+  head.appendChild(title);
+  const clogBtn = document.createElement('button');
+  clogBtn.className = 'mini-btn clog-btn';
+  clogBtn.textContent = 'Collection Log';
+  const clog = state.player.collectionLog ?? {};
+  const obtained = [...COLLECTIBLES.keys()].filter((id) => clog[id] !== undefined).length;
+  clogBtn.title = `Collection Log — ${obtained}/${COLLECTIBLES.size} items obtained`;
+  clogBtn.onclick = () => { collectionView = true; renderPanel(); };
+  head.appendChild(clogBtn);
+  panel.appendChild(head);
   const list = document.createElement('div');
   list.className = 'quest-list';
   if (quests.length === 0) {
@@ -288,6 +325,160 @@ function renderQuests(panel: HTMLElement) {
   panel.appendChild(note);
 }
 
+// ---------------- Collection log ----------------
+function renderCollectionLog(panel: HTMLElement) {
+  const title = document.createElement('div');
+  title.className = 'panel-title';
+  title.textContent = 'Collection Log';
+  panel.appendChild(title);
+  const back = document.createElement('button');
+  back.className = 'mini-btn';
+  back.textContent = '< Back to quest list';
+  back.onclick = () => { collectionView = false; renderPanel(); };
+  panel.appendChild(back);
+
+  const log = state.player.collectionLog ?? {};
+  let totalGot = 0;
+  for (const cat of COLLECTION_CATEGORIES) {
+    const ids = [...COLLECTIBLES.entries()]
+      .filter(([, c]) => c === cat)
+      .map(([id]) => id)
+      .sort((a, b) => ITEMS[a].name.localeCompare(ITEMS[b].name));
+    if (ids.length === 0) continue;
+    const got = ids.filter((id) => log[id] !== undefined).length;
+    totalGot += got;
+    const head = document.createElement('div');
+    head.className = 'clog-cat' + (got === ids.length ? ' clog-complete' : '');
+    head.textContent = `${cat} — ${got}/${ids.length}`;
+    panel.appendChild(head);
+    const list = document.createElement('div');
+    list.className = 'clog-list';
+    for (const id of ids) {
+      const have = log[id] !== undefined;
+      const row = document.createElement('div');
+      row.className = 'clog-row ' + (have ? 'clog-got' : 'clog-missing');
+      try { row.appendChild(copyCanvas(itemIcon(id))); } catch { /* no icon */ }
+      const name = document.createElement('span');
+      name.textContent = have ? ITEMS[id].name : '???';
+      row.appendChild(name);
+      row.title = have ? itemExamine(id) : 'You have not obtained this item yet.';
+      if (have) row.onclick = () => msg(itemExamine(id), 'examine');
+      list.appendChild(row);
+    }
+    panel.appendChild(list);
+  }
+  const note = document.createElement('div');
+  note.className = 'panel-note';
+  note.textContent = `${totalGot}/${COLLECTIBLES.size} items collected. Rare drops and dungeon spoils are recorded here.`;
+  panel.appendChild(note);
+}
+
+// ---------------- Item examine + effect discovery ----------------
+// Auto-generated one-liners so effect/spec mechanics are discoverable in-game.
+function effectLines(def: ItemDef): string {
+  const parts: string[] = [];
+  for (const e of def.effects ?? []) {
+    if (e.type === 'poison') parts.push('Poisons on hit.');
+    else if (e.type === 'burn') parts.push('Burns on hit.');
+    else if (e.type === 'bleed') parts.push('Inflicts bleeding on hit.');
+    else if (e.type === 'freeze') parts.push('Can freeze a target in place.');
+    else if (e.type === 'lifesteal') parts.push(`Heals you for ${Math.round(e.pct * 100)}% of damage dealt.`);
+    else if (e.type === 'family_bane') {
+      const fam = e.family.charAt(0).toUpperCase() + e.family.slice(1);
+      parts.push(`Strikes truer against the ${fam}.`);
+    }
+  }
+  if (def.spec) parts.push(`Special: ${def.spec.name} (${def.spec.energy}%) — ${def.spec.desc}`);
+  return parts.join(' ');
+}
+
+function itemExamine(id: string): string {
+  const def = ITEMS[id];
+  if (!def) return 'Nothing interesting.';
+  const fx = effectLines(def);
+  return fx ? `${def.examine} ${fx}` : def.examine;
+}
+
+// ---------------- Item stat tooltips (inventory + equipment hover) ----------------
+const STAT_KEYS = [
+  ['attBonus', 'Attack'], ['strBonus', 'Strength'], ['defBonus', 'Defence'],
+  ['rangedBonus', 'Ranged'], ['gunBonus', 'Gun'],
+] as const;
+
+function ensureTooltipEl(): HTMLElement {
+  let el = document.getElementById('item-tooltip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'item-tooltip';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function tooltipHtml(itemId: string, compare: boolean): string {
+  const def = ITEMS[itemId];
+  if (!def) return '';
+  let html = `<div class="tt-name">${esc(def.name)}</div>`;
+  // compare against what's currently in the same equipment slot
+  const eqStack = compare && def.equipSlot ? state.player.equipment[def.equipSlot] : null;
+  const eqDef = eqStack && eqStack.id !== itemId ? ITEMS[eqStack.id] : null;
+  if (eqDef) html += `<div class="tt-vs">vs ${esc(eqDef.name)} (equipped)</div>`;
+  for (const [key, label] of STAT_KEYS) {
+    const v = (def[key] as number | undefined) ?? 0;
+    const ev = (eqDef?.[key] as number | undefined) ?? 0;
+    if (v === 0 && (!eqDef || ev === 0)) continue;
+    let diff = '';
+    if (eqDef) {
+      const d = v - ev;
+      diff = d > 0 ? `<span class="tt-up">▲+${d}</span>`
+        : d < 0 ? `<span class="tt-down">▼${d}</span>`
+        : '<span class="tt-same">=</span>';
+    }
+    html += `<div class="tt-row"><span>${label}: ${v >= 0 ? '+' : ''}${v}</span>${diff}</div>`;
+  }
+  if (def.attackSpeed !== undefined) {
+    let diff = '';
+    if (eqDef?.attackSpeed !== undefined) {
+      const d = def.attackSpeed - eqDef.attackSpeed; // lower = faster = better
+      diff = d < 0 ? `<span class="tt-up">▲faster</span>`
+        : d > 0 ? `<span class="tt-down">▼slower</span>`
+        : '<span class="tt-same">=</span>';
+    }
+    html += `<div class="tt-row"><span>Speed: ${def.attackSpeed} ticks</span>${diff}</div>`;
+  }
+  if (def.edible) html += `<div class="tt-row"><span>Heals ${def.edible.heals} HP</span></div>`;
+  const fx = effectLines(def);
+  if (fx) html += `<div class="tt-fx">${esc(fx)}</div>`;
+  if (def.equipSlot && compare) html += `<div class="tt-hint">Shift-click to drop</div>`;
+  return html;
+}
+
+function positionTooltip(el: HTMLElement, e: MouseEvent) {
+  const pad = 14;
+  el.style.left = Math.min(e.clientX + pad, window.innerWidth - el.offsetWidth - 6) + 'px';
+  el.style.top = Math.min(e.clientY + pad, window.innerHeight - el.offsetHeight - 6) + 'px';
+}
+
+function attachItemTooltip(slot: HTMLElement, itemId: string, compare: boolean) {
+  slot.addEventListener('mouseenter', (e) => {
+    const el = ensureTooltipEl();
+    el.innerHTML = tooltipHtml(itemId, compare);
+    el.style.display = 'block';
+    positionTooltip(el, e);
+  });
+  slot.addEventListener('mousemove', (e) => {
+    const el = document.getElementById('item-tooltip');
+    if (el && el.style.display === 'block') positionTooltip(el, e);
+  });
+  slot.addEventListener('mouseleave', hideItemTooltip);
+  slot.addEventListener('mousedown', hideItemTooltip);
+}
+
+function hideItemTooltip() {
+  const el = document.getElementById('item-tooltip');
+  if (el) el.style.display = 'none';
+}
+
 // ---------------- Inventory ----------------
 function renderInventory(panel: HTMLElement) {
   const grid = document.createElement('div');
@@ -304,8 +495,13 @@ function renderInventory(panel: HTMLElement) {
         q.textContent = fmtQty(it.qty);
         slot.appendChild(q);
       }
-      slot.title = ITEMS[it.id].name;
-      slot.onclick = (e) => { e.stopPropagation(); itemPrimaryAction(i); };
+      attachItemTooltip(slot, it.id, true);
+      slot.onclick = (e) => {
+        e.stopPropagation();
+        // shift-click drop QoL (the right-click Drop option remains)
+        if (e.shiftKey && state.usingSlot === null) { dropItem(i); return; }
+        itemPrimaryAction(i);
+      };
       slot.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showItemMenu(e, i); };
     } else if (state.usingSlot !== null) {
       slot.onclick = () => { /* clicking empty slot while using: cancel */ clearUsing(); };
@@ -372,7 +568,7 @@ function showItemMenu(e: MouseEvent, slot: number) {
   if (def.edible) opts.push({ label: 'Eat', target: def.name, fn: () => eatFood(slot) });
   if (def.buryXp) opts.push({ label: 'Bury', target: def.name, fn: () => buryBones(slot) });
   opts.push({ label: 'Drop', target: def.name, fn: () => dropItem(slot) });
-  opts.push({ label: 'Examine', target: def.name, fn: () => msg(def.examine, 'examine') });
+  opts.push({ label: 'Examine', target: def.name, fn: () => msg(itemExamine(it.id), 'examine') });
   showContextMenu(e.clientX, e.clientY, opts);
 }
 
@@ -413,13 +609,13 @@ function renderEquipment(panel: HTMLElement) {
           q.textContent = fmtQty(it.qty);
           slot.appendChild(q);
         }
-        slot.title = `${ITEMS[it.id].name} (click to remove)`;
+        attachItemTooltip(slot, it.id, false);
         slot.onclick = () => unequip(slotName);
         slot.oncontextmenu = (e) => {
           e.preventDefault();
           showContextMenu(e.clientX, e.clientY, [
             { label: 'Remove', target: ITEMS[it.id].name, fn: () => unequip(slotName) },
-            { label: 'Examine', target: ITEMS[it.id].name, fn: () => msg(ITEMS[it.id].examine, 'examine') },
+            { label: 'Examine', target: ITEMS[it.id].name, fn: () => msg(itemExamine(it.id), 'examine') },
           ]);
         };
       } else {
@@ -1039,6 +1235,10 @@ function showMakePicker(opts: MakeOption[], cb: (id: string | null, qty: number)
 let trackedSkill: SkillName | null = null;
 
 function showXpDrop(skill: SkillName, amount: number) {
+  // Owner rule: Hitpoints XP is awarded silently — never a floating popup and
+  // never retargets the tracker. If the tracker IS on Hitpoints, keep its
+  // numbers fresh (onStatsChange also refreshes it; this is belt-and-braces).
+  if (skill === 'Hitpoints') { updateXpTracker(); return; }
   const wrap = $('xp-drops');
   const el = document.createElement('div');
   el.className = 'xp-drop';
@@ -1196,13 +1396,13 @@ function optionsAt(tx: number, ty: number): MenuOption[] {
     opts.push({ label: 'Examine', target: def.name, fn: () => msg(def.examine, 'examine') });
   }
 
-  // ground items
-  for (const gi of state.groundItems) {
-    if (gi.x !== tx || gi.y !== ty) continue;
+  // ground items — most valuable stack first so left-click takes the best loot
+  const giHere = state.groundItems.filter((gi) => gi.x === tx && gi.y === ty && ITEMS[gi.item]);
+  giHere.sort((a, b) => (ITEMS[b.item].value * b.qty) - (ITEMS[a.item].value * a.qty));
+  for (const gi of giHere) {
     const def = ITEMS[gi.item];
-    if (!def) continue;
     opts.push({ label: 'Take', target: def.name, fn: () => pickupItem(gi) });
-    opts.push({ label: 'Examine', target: def.name, fn: () => msg(def.examine, 'examine') });
+    opts.push({ label: 'Examine', target: def.name, fn: () => msg(itemExamine(gi.item), 'examine') });
   }
 
   // object actions
@@ -1365,7 +1565,7 @@ function renderBank(layer: HTMLElement) {
         { label: 'Withdraw-5', target: name, fn: () => bankWithdraw(i, 5) },
         { label: 'Withdraw-All', target: name, fn: () => bankWithdraw(i, 'all') },
         { label: 'Withdraw-X', target: name, fn: () => { const n = promptQty('Withdraw how many?'); if (n) bankWithdraw(i, n); } },
-        { label: 'Examine', target: name, fn: () => msg(ITEMS[b.id].examine, 'examine') },
+        { label: 'Examine', target: name, fn: () => msg(itemExamine(b.id), 'examine') },
       ]);
     };
     grid.appendChild(slot);
@@ -1418,7 +1618,7 @@ function renderShop(layer: HTMLElement, shopId: string) {
       showContextMenu(e.clientX, e.clientY, [
         { label: 'Buy-1', target: def.name, fn: () => shopBuy(shopId, s.item) },
         { label: 'Buy-5', target: def.name, fn: () => { for (let n = 0; n < 5; n++) shopBuy(shopId, s.item); } },
-        { label: 'Examine', target: def.name, fn: () => msg(def.examine, 'examine') },
+        { label: 'Examine', target: def.name, fn: () => msg(itemExamine(s.item), 'examine') },
       ]);
     };
     grid.appendChild(slot);
@@ -1452,7 +1652,7 @@ function renderShop(layer: HTMLElement, shopId: string) {
         { label: 'Sell-1', target: def.name, lvl: `(${price} gp)`, fn: () => shopSell(shopId, slot) },
         { label: 'Sell-5', target: def.name, fn: () => sellMany(slot, 5) },
         { label: 'Sell-All', target: def.name, fn: () => sellMany(slot, 'all') },
-        { label: 'Examine', target: def.name, fn: () => msg(def.examine, 'examine') },
+        { label: 'Examine', target: def.name, fn: () => msg(itemExamine(it.id), 'examine') },
       ]);
     },
     (it) => `${ITEMS[it].name}\nSells for: ${Math.max(1, Math.floor(ITEMS[it].value * 0.4))} coins`,

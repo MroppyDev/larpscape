@@ -11,6 +11,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { blocked } from './world';
 import { tickBosses } from './bosses';
+import {
+  EffectDef, SpecDef, ActiveDot, HitsplatKind,
+  familyMods, applyDotStack, isSpecKind, clampNum,
+} from '../shared/effects';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,6 +25,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export interface NpcDef {
   id: string;
   name: string;
+  family?: string; // family tag for family_bane effects (see docs/EFFECTS.md)
   combatLevel: number;
   hitpoints: number;
   attack: number; strength: number; defence: number;
@@ -35,6 +40,12 @@ export interface NpcDef {
 
 const NPCS: Record<string, NpcDef> = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../data/npcs.json'), 'utf8'),
+);
+// Item defs: the server only cares about combat effects + specs (it never
+// trusts the client for those — gear ids in the swing intent are looked up here).
+interface SItemDef { id: string; name?: string; equipSlot?: string; effects?: EffectDef[]; spec?: SpecDef; }
+const ITEMS: Record<string, SItemDef> = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../data/items.json'), 'utf8'),
 );
 const SPAWNS: {
   npcSpawns: { id: string; x: number; y: number }[];
@@ -72,6 +83,13 @@ export interface SNpc {
   attackCooldown: number;
   wanderCooldown: number;
   shearedUntil: number;
+  // combat-effect state (see docs/EFFECTS.md)
+  dots: ActiveDot[];     // active damage-over-time stacks
+  heldUntil: number;     // tick until which the NPC cannot move (freeze)
+  stunnedUntil: number;  // tick until which the NPC cannot move OR attack (stun spec)
+  defDrain: number;      // flat defence levels removed (drain_def spec; resets on respawn)
+  atkDebuffMult: number; // attack-level multiplier while atkDebuffUntil > tick (warcry)
+  atkDebuffUntil: number;
   meta: Record<string, any>; // boss mechanic state
   dirty: boolean;
   // Instanced (dungeon) NPC: visible to, and aggressive toward, this user only.
@@ -107,6 +125,11 @@ let nextGid = 1;
 // per-player server-side swing cooldown (ms timestamps)
 const nextSwingAt = new Map<number, number>();
 
+// rare-drop news rate limit: at most one world broadcast per user per window
+// (farming a ~1/50 drop with AoE otherwise floods every client's chat)
+const lastRareNewsAt = new Map<number, number>();
+const RARE_NEWS_INTERVAL_MS = 10_000;
+
 // pending ground deltas, flushed with the per-tick world delta
 let groundAdds: SGroundItem[] = [];
 let groundRemovals: { gid: number; owner: number | null }[] = [];
@@ -141,8 +164,9 @@ const clamp = (n: unknown, lo: number, hi: number, dflt: number) =>
   typeof n === 'number' && Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
 
 // Classic accuracy roll (same formula as the old client sim).
-export function rollHit(attLvl: number, attBonus: number, defLvl: number, defBonus: number): boolean {
-  const attRoll = (attLvl + 8) * (attBonus + 64);
+// attMult: accuracy multiplier from family_bane / spec params (default 1).
+export function rollHit(attLvl: number, attBonus: number, defLvl: number, defBonus: number, attMult = 1): boolean {
+  const attRoll = (attLvl + 8) * (attBonus + 64) * attMult;
   const defRoll = (defLvl + 8) * (defBonus + 64);
   const chance = attRoll > defRoll ? 1 - (defRoll + 2) / (2 * (attRoll + 1)) : attRoll / (2 * (defRoll + 1));
   return Math.random() < chance;
@@ -192,6 +216,31 @@ export function damagePlayer(p: PlayerView, npc: SNpc, dmg: number, fx?: string)
   p.send({ t: 'npcHitYou', npc: npc.id, def: npc.def.id, dmg, fx });
 }
 
+// NPC melee roll vs a player, honouring the warcry attack debuff.
+function npcAttackRoll(n: SNpc, target: PlayerView): number {
+  const atkMult = n.atkDebuffUntil > sim.tick ? n.atkDebuffMult : 1;
+  const atk = Math.max(1, Math.floor(n.def.attack * atkMult));
+  const hit = rollHit(atk, 0, target.effDef, target.defBonus);
+  const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
+  return hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
+}
+
+// Tick active DoT stacks on one NPC. Damage rides the normal authoritative
+// path (hitsplat broadcast with a colored kind, death, drops, kill credit).
+function tickNpcDots(n: SNpc) {
+  for (let i = n.dots.length - 1; i >= 0; i--) {
+    const d = n.dots[i];
+    if (sim.tick < d.nextAt) continue;
+    const by = players.get(d.byUserId);
+    if (!by) { n.dots.splice(i, 1); continue; } // applier logged off: stack fades
+    d.hitsLeft--;
+    d.nextAt = sim.tick + d.every;
+    if (d.hitsLeft <= 0) n.dots.splice(i, 1);
+    applyDamageToNpc(n, d.dmg, by, d.type);
+    if (n.dead) { n.dots = []; return; }
+  }
+}
+
 export function getTargetPlayer(n: SNpc): PlayerView | null {
   if (n.target === null) return null;
   const p = players.get(n.target);
@@ -213,7 +262,9 @@ export function spawnNpc(defId: string, x: number, y: number, ownerUserId: numbe
   const n: SNpc = {
     id: nextNpcId++, def, x, y, spawnX: x, spawnY: y,
     hp: def.hitpoints, dead: false, respawnAt: 0, target: null,
-    attackCooldown: 0, wanderCooldown: 0, shearedUntil: 0, meta: {}, dirty: false,
+    attackCooldown: 0, wanderCooldown: 0, shearedUntil: 0,
+    dots: [], heldUntil: 0, stunnedUntil: 0, defDrain: 0, atkDebuffMult: 1, atkDebuffUntil: 0,
+    meta: {}, dirty: false,
     ownerUserId,
   };
   sim.npcs.push(n);
@@ -285,11 +336,17 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
         n.dead = false; n.hp = n.def.hitpoints;
         n.x = n.spawnX; n.y = n.spawnY;
         n.target = null; n.meta = {}; n.shearedUntil = 0;
+        n.dots = []; n.heldUntil = 0; n.stunnedUntil = 0;
+        n.defDrain = 0; n.atkDebuffMult = 1; n.atkDebuffUntil = 0;
         n.dirty = true;
       }
       continue;
     }
     if (n.attackCooldown > 0) n.attackCooldown--;
+
+    // damage-over-time stacks (poison/burn/bleed) — see docs/EFFECTS.md
+    if (n.dots.length) tickNpcDots(n);
+    if (n.dead) continue; // a DoT tick may have killed it
 
     // sheared flag expiry needs a delta so clients regrow the wool
     if (n.shearedUntil > 0 && n.shearedUntil === sim.tick) n.dirty = true;
@@ -319,32 +376,35 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
       const dist = chebyshev(target.x, target.y, n.x, n.y);
       const distFromSpawn = chebyshev(n.spawnX, n.spawnY, n.x, n.y);
       if (dist > 12 || distFromSpawn > 16) { n.target = null; n.dirty = true; continue; }
+      // freeze holds movement only; stun holds movement AND attacks
+      const held = n.heldUntil > sim.tick || n.stunnedUntil > sim.tick;
+      const stunned = n.stunnedUntil > sim.tick;
       if (n.def.stationary) {
-        if (dist <= 1 && n.attackCooldown === 0) {
+        if (dist <= 1 && n.attackCooldown === 0 && !stunned) {
           n.attackCooldown = n.def.attackSpeed;
-          const hit = rollHit(n.def.attack, 0, target.effDef, target.defBonus);
-          const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
-          damagePlayer(target, n, hit ? Math.floor(Math.random() * (maxHit + 1)) : 0);
+          const dmg = npcAttackRoll(n, target);
+          damagePlayer(target, n, dmg);
         }
       } else if (dist > 1) {
-        const dx = Math.sign(target.x - n.x), dy = Math.sign(target.y - n.y);
-        const tryMoves = [[dx, dy], [dx, 0], [0, dy]];
-        for (const [mx, my] of tryMoves) {
-          const nx = n.x + mx, ny = n.y + my;
-          if ((mx || my) && !blocked(nx, ny, true) && !playerAt(nx, ny)) {
-            n.x = nx; n.y = ny; n.dirty = true; break;
+        if (!held) {
+          const dx = Math.sign(target.x - n.x), dy = Math.sign(target.y - n.y);
+          const tryMoves = [[dx, dy], [dx, 0], [0, dy]];
+          for (const [mx, my] of tryMoves) {
+            const nx = n.x + mx, ny = n.y + my;
+            if ((mx || my) && !blocked(nx, ny, true) && !playerAt(nx, ny)) {
+              n.x = nx; n.y = ny; n.dirty = true; break;
+            }
           }
         }
-      } else if (n.attackCooldown === 0) {
+      } else if (n.attackCooldown === 0 && !stunned) {
         n.attackCooldown = n.def.attackSpeed;
-        const hit = rollHit(n.def.attack, 0, target.effDef, target.defBonus);
-        const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
-        const dmg = hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
+        const dmg = npcAttackRoll(n, target);
         damagePlayer(target, n, dmg);
       }
     } else {
       if (n.target !== null) { n.target = null; n.dirty = true; }
       if (n.wanderCooldown > 0) { n.wanderCooldown--; continue; }
+      if (n.heldUntil > sim.tick || n.stunnedUntil > sim.tick) continue;
       if (Math.random() < 0.2 && !n.def.stationary) {
         const dx = Math.floor(Math.random() * 3) - 1;
         const dy = Math.floor(Math.random() * 3) - 1;
@@ -418,10 +478,12 @@ function flushWorldDelta() {
 // ---------------------------------------------------------------------------
 
 // Player damage to an NPC: hp, hitsplat broadcast, death + drops.
-function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView) {
+// `kind` colors the hitsplat client-side ('hit' default, 'poison', 'burn',
+// 'bleed', 'spec' — see docs/EFFECTS.md).
+function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView, kind: HitsplatKind = 'hit') {
   n.hp -= dmg;
   n.dirty = true;
-  const hitMsg = { t: 'hit', npc: n.id, dmg, hp: Math.max(0, n.hp), by: by.name };
+  const hitMsg = { t: 'hit', npc: n.id, dmg, hp: Math.max(0, n.hp), by: by.name, kind };
   if (n.ownerUserId !== null) players.get(n.ownerUserId)?.send(hitMsg);
   else broadcast(hitMsg);
   if (dmg > 0 && n.target === null) n.target = by.userId; // retaliate
@@ -435,6 +497,16 @@ function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView) {
         const qty = d.qty[0] + Math.floor(Math.random() * (d.qty[1] - d.qty[0] + 1));
         // instanced kills drop owner-scoped loot via the same authoritative path
         addGroundItem(d.item, qty, n.x, n.y, sim.tick + 200, n.ownerUserId);
+        // rare drop news: world-wide broadcast, including owner-scoped
+        // (dungeon) loot — only the item itself stays private to the run
+        if (d.chance <= 0.02) {
+          const now = Date.now();
+          if (now - (lastRareNewsAt.get(by.userId) ?? 0) >= RARE_NEWS_INTERVAL_MS) {
+            lastRareNewsAt.set(by.userId, now);
+            const itemName = ITEMS[d.item]?.name ?? d.item;
+            broadcast({ t: 'system', text: `News: ${by.name} received a rare drop: ${itemName}!` });
+          }
+        }
       }
     }
     by.send({ t: 'youKilled', npc: n.id, def: n.def.id });
@@ -515,8 +587,54 @@ export function handleSwing(p: PlayerView, msg: any) {
   const bonus = clamp(msg.bonus, 0, 200, 0);
   const maxHit = clamp(msg.maxHit, 0, 60, 0);
 
-  const hit = rollHit(eff, bonus, n.def.defence, 0);
-  const dmg = hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
+  // Equipped effect-bearing gear, reported by the client as item ids and
+  // validated against the server's own item catalog (effects/specs are never
+  // taken from the wire — only the ids are). See docs/EFFECTS.md.
+  const gear: SItemDef[] = [];
+  if (Array.isArray(msg.gear)) {
+    for (const g of msg.gear.slice(0, 12)) {
+      if (typeof g === 'string' && ITEM_RE.test(g) && ITEMS[g] && !gear.includes(ITEMS[g])) {
+        gear.push(ITEMS[g]);
+      }
+    }
+  }
+  const effects: EffectDef[] = gear.flatMap((g) => g.effects ?? []);
+
+  // Special attack: client names the gear piece whose spec it is consuming.
+  // The server only honours specs that exist on that item's own def.
+  let spec: SpecDef | null = null;
+  if (typeof msg.spec === 'string' && ITEM_RE.test(msg.spec)) {
+    const sd = ITEMS[msg.spec]?.spec;
+    if (sd && isSpecKind(sd.kind) && gear.includes(ITEMS[msg.spec])) spec = sd;
+  }
+  const sp = spec?.params ?? {};
+  const specAcc = clampNum(sp.accMult, 0.25, 3, 1);
+  const specDmg = clampNum(sp.dmgMult, 0, 3, 1);
+
+  // family_bane: accuracy/damage multipliers vs this npc's family tag
+  const fam = familyMods(effects, n.def.family);
+  const defLvl = Math.max(0, n.def.defence - n.defDrain);
+
+  const rollDmg = (accMult: number, dmgMult: number) => {
+    const landed = rollHit(eff, bonus, defLvl, 0, fam.accMult * accMult);
+    const cap = Math.floor(maxHit * fam.dmgMult * dmgMult);
+    return { landed, dmg: landed ? Math.floor(Math.random() * (cap + 1)) : 0 };
+  };
+
+  // ----- resolve the swing (one or more hits depending on spec kind) -----
+  const splatKind: HitsplatKind = spec ? 'spec' : 'hit';
+  const hits: number[] = [];
+  let mainLanded = false;
+  if (spec?.kind === 'double_hit') {
+    const a = rollDmg(specAcc, specDmg), b = rollDmg(specAcc, specDmg);
+    mainLanded = a.landed || b.landed;
+    hits.push(a.dmg, b.dmg);
+  } else {
+    const r = rollDmg(spec ? specAcc : 1, spec ? specDmg : 1);
+    mainLanded = r.landed;
+    hits.push(r.dmg);
+  }
+  let totalDmg = hits.reduce((s, d) => s + d, 0);
 
   // ranged: ~20% arrow recovery on the ground
   if (mode === 'ranged' && typeof msg.ammo === 'string' && /^[a-z][a-z0-9_]{0,47}$/.test(msg.ammo)
@@ -529,9 +647,83 @@ export function handleSwing(p: PlayerView, msg: any) {
     addGroundItem(msg.ammo, 1, n.x, n.y, sim.tick + 100);
   }
 
-  p.send({ t: 'youHit', npc: n.id, def: n.def.id, dmg, mode });
+  // ----- on-hit gear effects (proc on a damaging main hit) -----
+  if (totalDmg > 0) {
+    for (const e of effects) {
+      if ((e.type === 'poison' || e.type === 'burn' || e.type === 'bleed')
+        && Math.random() < clampNum(e.chance, 0, 1, 0)) {
+        applyDotStack(n.dots, {
+          type: e.type,
+          chance: 1,
+          dmg: clampNum(e.dmg, 1, 10, 1),
+          hits: Math.floor(clampNum(e.hits, 1, 20, 1)),
+          every: Math.floor(clampNum(e.every, 1, 20, 2)),
+          maxStacks: e.maxStacks,
+        }, p.userId, sim.tick);
+      } else if (e.type === 'freeze' && Math.random() < clampNum(e.chance, 0, 1, 0)) {
+        n.heldUntil = Math.max(n.heldUntil, sim.tick + Math.floor(clampNum(e.holdTicks, 1, 16, 1)));
+      }
+    }
+  }
+
+  // ----- spec side-effects -----
+  if (spec && mainLanded) {
+    if (spec.kind === 'stun') {
+      n.stunnedUntil = Math.max(n.stunnedUntil, sim.tick + Math.floor(clampNum(sp.holdTicks, 1, 8, 3)));
+      sendFx(null, n, 'stun');
+    } else if (spec.kind === 'drain_def') {
+      n.defDrain = Math.min(n.def.defence, n.defDrain + Math.floor(clampNum(sp.amount, 1, 30, 5)));
+    } else if (spec.kind === 'guaranteed_dot' && sp.dot) {
+      const d = sp.dot;
+      if (d.type === 'poison' || d.type === 'burn' || d.type === 'bleed') {
+        applyDotStack(n.dots, {
+          type: d.type, chance: 1,
+          dmg: clampNum(d.dmg, 1, 10, 1),
+          hits: Math.floor(clampNum(d.hits, 1, 20, 1)),
+          every: Math.floor(clampNum(d.every, 1, 20, 2)),
+          maxStacks: d.maxStacks,
+        }, p.userId, sim.tick);
+      }
+    }
+  }
+  if (spec?.kind === 'aoe_adjacent') {
+    const radius = Math.floor(clampNum(sp.radius, 1, 3, 1));
+    let extras = 0;
+    for (const other of sim.npcs) {
+      if (extras >= 3) break;
+      if (other === n || other.dead || !other.def.attackable) continue;
+      if (other.ownerUserId !== null && other.ownerUserId !== p.userId) continue;
+      if (chebyshev(other.x, other.y, n.x, n.y) > radius) continue;
+      const r = rollDmg(specAcc, specDmg);
+      totalDmg += r.dmg;
+      if (other.target === null) other.target = p.userId;
+      applyDamageToNpc(other, r.dmg, p, 'spec');
+      extras++;
+    }
+  }
+  if (spec?.kind === 'warcry_aoe_debuff') {
+    const radius = Math.floor(clampNum(sp.radius, 1, 5, 2));
+    const atkMult = clampNum(sp.atkMult, 0.25, 1, 0.7);
+    const ticks = Math.floor(clampNum(sp.ticks, 1, 50, 16));
+    sendFx(null, n, 'warcry');
+    for (const other of sim.npcs) {
+      if (other.dead || !other.def.attackable) continue;
+      if (other.ownerUserId !== null && other.ownerUserId !== p.userId) continue;
+      if (chebyshev(other.x, other.y, p.x, p.y) > radius) continue;
+      other.atkDebuffMult = atkMult;
+      other.atkDebuffUntil = sim.tick + ticks;
+    }
+  }
+
+  // ----- lifesteal (on total damage this swing) -----
+  let heal = 0;
+  for (const e of effects) {
+    if (e.type === 'lifesteal') heal += Math.floor(totalDmg * clampNum(e.pct, 0, 1, 0));
+  }
+
+  p.send({ t: 'youHit', npc: n.id, def: n.def.id, dmg: totalDmg, mode, ...(heal > 0 ? { heal } : {}), ...(spec ? { spec: true } : {}) });
   n.target = p.userId;
-  applyDamageToNpc(n, dmg, p);
+  for (const d of hits) if (!n.dead) applyDamageToNpc(n, d, p, splatKind);
 }
 
 export function handlePickup(p: PlayerView, msg: any) {
@@ -572,6 +764,7 @@ export function handleInteract(p: PlayerView, msg: any) {
 
 export function dropPlayer(userId: number) {
   nextSwingAt.delete(userId);
+  lastRareNewsAt.delete(userId);
   for (const n of sim.npcs) {
     if (n.target === userId) { n.target = null; n.dirty = true; }
   }

@@ -1462,7 +1462,9 @@ interface HumanOpts {
   helm?: string; bodyArmor?: string; legArmor?: string;
   hat?: 'wizard' | 'straw' | 'cook'; hatCol?: string;
   apron?: string; eyepatch?: boolean; beard?: string;
-  weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'pistol' | 'staff' | null; weaponCol?: string;
+  weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'pistol' | 'staff'
+    | 'cleaver' | 'fang' | 'drakestaff' | 'crystalbow' | 'rimeblade' | 'redscim'
+    | 'maul2h' | 'wrongpistol' | 'dirgeblade' | null; weaponCol?: string;
   shieldCol?: string | null;
   goblin?: boolean; scale?: number;
 }
@@ -1610,6 +1612,70 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     ra.add(lm(boxG(0.01, 0.04, 0.02, '#2a2a30'), -0.01, handY - 0.03, 0.1));
     // muzzle
     ra.add(lm(cylG(0.018, 0.02, 0.04, barrel, 6), 0, handY - 0.08, 0.28, Math.PI / 2, 0, 0));
+  } else if (o.weapon === 'cleaver') {
+    // Banner cleaver: a banner-pole hafted into a broad chopping blade, the
+    // warlord's tattered red standard still knotted below the head.
+    ra.add(lm(cylG(0.022, 0.027, 0.74, '#4a3826', 5), 0, handY - 0.16, 0.03));
+    ra.add(lm(boxG(0.028, 0.32, 0.16, wc), 0, handY - 0.42, 0.1, 0, 0, 0.06));
+    ra.add(lm(boxG(0.028, 0.1, 0.08, wc), 0, handY - 0.55, 0.05, 0, 0, -0.3)); // heel spike
+    ra.add(gm(boxG(0.012, 0.3, 0.018, '#ffc24a'), 0, handY - 0.42, 0.185, 0, 0, 0.06)); // notation-bright edge
+    const banner = lm(boxG(0.014, 0.2, 0.13, '#a32c22'), 0, handY - 0.08, -0.06, 0.12);
+    ra.add(banner);
+    ra.add(gm(tetraG(0.032, '#ffd24a'), 0, handY + 0.22, 0.03, 0.4, 0.8)); // finial
+  } else if (o.weapon === 'fang') {
+    // Mirefang: a curved bog-horror fang dagger, venom still beading at the point.
+    ra.add(lm(boxG(0.038, 0.26, 0.026, wc), 0.015, handY - 0.16, 0.03, 0, 0, 0.22));
+    ra.add(lm(boxG(0.028, 0.15, 0.02, wc), 0.065, handY - 0.32, 0.03, 0, 0, 0.55));
+    ra.add(lm(boxG(0.1, 0.026, 0.04, '#3c4a36'), 0, handY - 0.03, 0.03)); // mossy guard
+    ra.add(gm(boxG(0.011, 0.2, 0.012, '#6ae050'), 0.035, handY - 0.18, 0.045, 0, 0, 0.26)); // venom groove
+    ra.add(gm(icoG(0.026, '#58e048', 0), 0.105, handY - 0.4, 0.03)); // venom bead at the tip
+  } else if (o.weapon === 'drakestaff') {
+    // Drakebreath staff: dark scaled shaft crowned by a caged ember that never cools.
+    ra.add(lm(cylG(0.022, 0.029, 1.05, '#241c30', 5), 0, handY - 0.06, 0.04));
+    ra.add(lm(tetraG(0.045, '#3a3046'), -0.05, handY + 0.45, 0.04, 0, 0, 0.7)); // claw prongs
+    ra.add(lm(tetraG(0.045, '#3a3046'), 0.05, handY + 0.45, 0.04, 0, 0, -0.7));
+    ra.add(gm(icoG(0.07, '#ff8a20', 0), 0, handY + 0.5, 0.04)); // glowing ember tip
+    ra.add(gm(coneG(0.04, 0.15, '#ffc24a', 6, 0.1), 0, handY + 0.62, 0.04)); // licking flame
+  } else if (o.weapon === 'crystalbow') {
+    // Shardsong bow: limbs of pale Heart-crystal with a string of light that never stops ringing.
+    ra.add(lm(boxG(0.032, 0.34, 0.045, wc), 0, handY + 0.15, 0.06, 0.5));
+    ra.add(lm(boxG(0.032, 0.34, 0.045, wc), 0, handY - 0.15, 0.06, -0.5));
+    ra.add(gm(boxG(0.013, 0.62, 0.013, '#9ae8ff'), 0, handY, 0.145)); // resonant string
+    ra.add(gm(tetraG(0.03, '#cff4ff'), 0, handY + 0.31, 0.135, 0.3)); // singing tips
+    ra.add(gm(tetraG(0.03, '#cff4ff'), 0, handY - 0.31, 0.135, 0.8));
+  } else if (o.weapon === 'rimeblade') {
+    // Rimeglass blade: the Ice Queen's note frozen sharp — long pale blade, frost-lit core.
+    ra.add(lm(boxG(0.048, 0.46, 0.026, wc), 0, handY - 0.26, 0.03));
+    ra.add(lm(boxG(0.14, 0.03, 0.045, '#c9d8e4'), 0, handY - 0.04, 0.03)); // silvered guard
+    ra.add(gm(boxG(0.014, 0.42, 0.012, '#bfe8ff'), 0, handY - 0.25, 0.045)); // frozen fuller
+    ra.add(gm(tetraG(0.028, '#e4f6ff'), 0, handY - 0.5, 0.03, 0.5)); // frost mote at the point
+  } else if (o.weapon === 'redscim') {
+    // The Red Smile: a crimson scimitar that grins wider than any honest blade.
+    ra.add(lm(boxG(0.048, 0.44, 0.026, wc), 0.035, handY - 0.24, 0.03, 0, 0, 0.22));
+    ra.add(lm(boxG(0.034, 0.12, 0.024, wc), 0.12, handY - 0.43, 0.03, 0, 0, 0.6)); // flared curve
+    ra.add(lm(boxG(0.13, 0.03, 0.04, '#c8a030'), 0, handY - 0.04, 0.03)); // gilded guard
+    ra.add(gm(boxG(0.013, 0.4, 0.012, '#ff5a48'), 0.05, handY - 0.25, 0.045, 0, 0, 0.22)); // the smile itself
+  } else if (o.weapon === 'maul2h') {
+    // Cindermaul: a two-handed slab of forge-stone, ember seams still thinking.
+    ra.add(lm(cylG(0.03, 0.036, 0.78, '#3a3028', 6), 0, handY - 0.18, 0.03));
+    ra.add(lm(boxG(0.17, 0.17, 0.22, wc), 0, handY - 0.54, 0.03));
+    ra.add(gm(boxG(0.185, 0.022, 0.05, '#ff7a20'), 0, handY - 0.54, 0.03)); // ember seam
+    ra.add(gm(boxG(0.05, 0.022, 0.235, '#ff9434'), 0, handY - 0.49, 0.03)); // cross seam
+    ra.add(gm(icoG(0.035, '#ffb028', 0), 0, handY - 0.54, 0.15)); // glowing face core
+  } else if (o.weapon === 'wrongpistol') {
+    // Errata: a pistol transcribed wrong on purpose — slate body, off-key violet glow.
+    ra.add(lm(boxG(0.055, 0.045, 0.2, wc), 0, handY - 0.07, 0.12));
+    ra.add(lm(boxG(0.03, 0.03, 0.1, '#2a2630'), 0, handY - 0.08, 0.22));
+    ra.add(lm(boxG(0.048, 0.15, 0.07, '#322c3a'), 0.02, handY + 0.02, 0.07, 0.12, 0, 0.22));
+    ra.add(lm(boxG(0.012, 0.07, 0.07, wc), -0.01, handY - 0.01, 0.09));
+    ra.add(gm(boxG(0.06, 0.012, 0.19, '#b848e8'), 0, handY - 0.046, 0.12)); // wrong-colour sight rail
+    ra.add(gm(icoG(0.024, '#d848ff', 0), 0, handY - 0.08, 0.285)); // muzzle glow, never sanctioned
+  } else if (o.weapon === 'dirgeblade') {
+    // Dirge blade: the slayer's slate-dark sword, fuller lit a mournful violet.
+    ra.add(lm(boxG(0.05, 0.5, 0.028, wc), 0, handY - 0.28, 0.03));
+    ra.add(lm(boxG(0.16, 0.03, 0.045, '#2a2832'), 0, handY - 0.04, 0.03)); // wide sombre guard
+    ra.add(gm(boxG(0.014, 0.44, 0.012, '#9a6aff'), 0, handY - 0.27, 0.046)); // falling-minor fuller
+    ra.add(gm(icoG(0.026, '#8a5aef', 0), 0, handY + 0.05, 0.03)); // tolling pommel
   }
   if (o.shieldCol) {
     la.add(lm(boxG(0.05, 0.34, 0.26, o.shieldCol), -0.06, handY - 0.06, 0.02));
@@ -2255,12 +2321,31 @@ function metalTint(id: string | undefined | null): string | null {
   return '#8c8c94';
 }
 
+// Unique weapons get hand-built silhouettes so they read as SPECIAL at a glance.
+// id -> in-hand model kind + base palette (glow accents live in makeHumanoid).
+const UNIQUE_WEAPON_MODELS: Record<string, { kind: HumanOpts['weapon']; col: string }> = {
+  banner_cleaver: { kind: 'cleaver', col: '#8a5a3a' },     // warlord's standard, hafted
+  mirefang: { kind: 'fang', col: '#d4ccaa' },              // bone-pale bog fang
+  stinger_dirk: { kind: 'fang', col: '#b8a87a' },          // scorpion barb dagger
+  drakebreath_staff: { kind: 'drakestaff', col: '#241c30' },
+  shardsong_bow: { kind: 'crystalbow', col: '#bfe4f4' },   // resonant Heart-crystal bow
+  rimeglass_blade: { kind: 'rimeblade', col: '#bfe0f4' },
+  red_smile: { kind: 'redscim', col: '#c02828' },
+  cindermaul: { kind: 'maul2h', col: '#4a443c' },
+  errata_pistol: { kind: 'wrongpistol', col: '#3a3644' },
+  dirge_blade: { kind: 'dirgeblade', col: '#3c3a48' },
+  echo_pick: { kind: 'axe', col: '#9ad8e0' },              // Wat's pick, still on shift
+  corsairs_fang: { kind: 'scimitar', col: '#c8c0a8' },
+};
+
 // shared player-style figure builder — used by the local player and remote players.
 // `ids` maps equip slot -> item id (or null/undefined when empty).
 function figureFromAppearance(ids: Record<string, string | null | undefined>, tunic = '#3a5a8a', pants = '#3e3a30'): THREE.Group {
   const wepId = ids.weapon ?? undefined;
+  const uniq = wepId ? UNIQUE_WEAPON_MODELS[wepId] : undefined;
   let weapon: HumanOpts['weapon'] = null;
-  if (wepId) {
+  if (uniq) weapon = uniq.kind;
+  else if (wepId) {
     if (wepId.includes('scimitar')) weapon = 'scimitar';
     else if (wepId.includes('pistol') || wepId === 'glock_18') weapon = 'pistol';
     else if (wepId.includes('bow') && !wepId.includes('bowstring')) weapon = 'bow';
@@ -2273,7 +2358,7 @@ function figureFromAppearance(ids: Record<string, string | null | undefined>, tu
     helm: metalTint(ids.head) ?? undefined,
     bodyArmor: ids.body ? metalTint(ids.body) ?? undefined : undefined,
     legArmor: ids.legs ? metalTint(ids.legs) ?? undefined : undefined,
-    weapon, weaponCol: metalTint(wepId) ?? '#c0c8d0',
+    weapon, weaponCol: uniq?.col ?? metalTint(wepId) ?? '#c0c8d0',
     shieldCol: ids.shield ? (metalTint(ids.shield) ?? '#7a5630') : null,
   });
 }
@@ -2372,10 +2457,20 @@ function animateFigure(root: THREE.Group, moving: boolean, now: number, anim: An
 
 // ================= SPRITE OVERLAYS (hitsplats / health bars / projectile orbs) =================
 const spriteMatCache = new Map<string, THREE.SpriteMaterial>();
+// Ground labels are keyed per "Name (qty)" and chat bubbles per unique message,
+// so the cache grows without bound over a session. LRU-evict past this cap;
+// anything used this frame was just re-gotten (refreshed), so only stale
+// entries are disposed. A disposed CanvasTexture re-uploads if ever reused.
+const SPRITE_MAT_CACHE_MAX = 512;
 
 function canvasSpriteMat(keyStr: string, w: number, h: number, draw: (g: CanvasRenderingContext2D) => void): THREE.SpriteMaterial {
   let m = spriteMatCache.get(keyStr);
-  if (m) return m;
+  if (m) {
+    // LRU refresh: re-insert so most recently used keys sit at the Map's end
+    spriteMatCache.delete(keyStr);
+    spriteMatCache.set(keyStr, m);
+    return m;
+  }
   const cv = document.createElement('canvas');
   cv.width = w; cv.height = h;
   draw(cv.getContext('2d')!);
@@ -2383,12 +2478,25 @@ function canvasSpriteMat(keyStr: string, w: number, h: number, draw: (g: CanvasR
   tex.magFilter = THREE.NearestFilter;
   m = new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true });
   spriteMatCache.set(keyStr, m);
+  for (const [k, old] of spriteMatCache) {
+    if (spriteMatCache.size <= SPRITE_MAT_CACHE_MAX) break;
+    if (old === m) continue;
+    spriteMatCache.delete(k);
+    old.map?.dispose();
+    old.dispose();
+  }
   return m;
 }
 
-function hitsplatMat(dmg: number): THREE.SpriteMaterial {
-  return canvasSpriteMat(`hs${dmg}`, 48, 48, (g) => {
-    g.fillStyle = dmg > 0 ? '#b02020' : '#2848b0';
+// hitsplat colours by kind (docs/EFFECTS.md 3.2): poison green, burn orange,
+// bleed dark red, spec gold; unknown kinds fall back to the classic red/blue.
+const HITSPLAT_KIND_COLORS: Record<string, string> = {
+  poison: '#2e9e30', burn: '#e07818', bleed: '#701414', spec: '#b89018',
+};
+function hitsplatMat(dmg: number, kind?: string): THREE.SpriteMaterial {
+  const col = (kind && HITSPLAT_KIND_COLORS[kind]) || (dmg > 0 ? '#b02020' : '#2848b0');
+  return canvasSpriteMat(`hs${kind ?? 'hit'}|${dmg}`, 48, 48, (g) => {
+    g.fillStyle = col;
     g.beginPath();
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * Math.PI * 2;
@@ -2425,6 +2533,18 @@ function nameLabelMat(name: string): THREE.SpriteMaterial {
   });
 }
 
+// RuneLite-style floating ground item label (cached per text+colour)
+function groundLabelMat(text: string, color: string): THREE.SpriteMaterial {
+  return canvasSpriteMat(`gl|${color}|${text}`, 256, 36, (g) => {
+    g.font = 'bold 19px Verdana';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineWidth = 5; g.strokeStyle = 'rgba(0,0,0,0.85)';
+    g.strokeText(text, 128, 18);
+    g.fillStyle = color;
+    g.fillText(text, 128, 18);
+  });
+}
+
 // overhead chat text (cached per message; messages are <=80 chars and short-lived)
 function chatBubbleMat(text: string): THREE.SpriteMaterial {
   const short = text.length > 60 ? text.slice(0, 57) + '...' : text;
@@ -2456,7 +2576,12 @@ function bossBarMat(name: string, ratio: number): THREE.SpriteMaterial {
 
 function orbMat(): THREE.SpriteMaterial {
   let m = spriteMatCache.get('orb');
-  if (m) return m;
+  if (m) {
+    // same LRU refresh as canvasSpriteMat so the shared orb never gets evicted
+    spriteMatCache.delete('orb');
+    spriteMatCache.set('orb', m);
+    return m;
+  }
   const cv = document.createElement('canvas');
   cv.width = 64; cv.height = 64;
   const g = cv.getContext('2d')!;
@@ -2815,8 +2940,28 @@ function syncObjects(now: number, px: number, pz: number) {
   }
 }
 
-function syncGroundItems(now: number) {
+// ---- ground item labels + loot beams (RuneLite-style) ----
+const LABEL_RANGE2 = 12 * 12; // labels readable within ~12 tiles
+// stack value tiers: white common, green >1k, orange >10k, purple uniques/rares
+function lootInfo(id: string, qty: number): { col: string; beam: boolean } {
+  const def = ITEMS[id];
+  const total = (def?.value ?? 0) * qty;
+  const unique = !!(def?.spec || (def?.effects && def.effects.length));
+  const col = unique || total >= 50000 ? '#d878ff'
+    : total >= 10000 ? '#ffb347'
+    : total >= 1000 ? '#80e860'
+    : '#f4f0e8';
+  return { col, beam: unique || total > 5000 };
+}
+
+// loot beams: thin glowing columns over drops worth chasing, pooled per item
+const beamInst = new Map<GroundItem, { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial }>();
+const beamGeo = new THREE.CylinderGeometry(0.07, 0.1, 2.4, 6, 1, true);
+
+function syncGroundItems(now: number, px: number, pz: number) {
   const seen = new Set<GroundItem>();
+  // group co-tile items so their labels stack vertically
+  const tiles = new Map<string, GroundItem[]>();
   for (const gi of state.groundItems) {
     seen.add(gi);
     let m = giInst.get(gi);
@@ -2829,9 +2974,54 @@ function syncGroundItems(now: number) {
     m.position.set(gi.x + 0.5, base + 0.28 + Math.sin(now / 500 + gi.x * 3 + gi.y) * 0.05, gi.y + 0.5);
     m.rotation.y = now * 0.0025 + gi.x;
     m.rotation.x = 0.6;
+
+    const info = lootInfo(gi.item, gi.qty);
+    // loot beam over valuable / effect-bearing drops, despawning with the item
+    let beam = beamInst.get(gi);
+    if (info.beam && !beam) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(info.col), transparent: true, opacity: 0.32,
+        blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(beamGeo, mat);
+      mesh.position.set(gi.x + 0.5, base + 1.2, gi.y + 0.5);
+      beam = { mesh, mat };
+      beamInst.set(gi, beam);
+      objectGroup!.add(mesh);
+    }
+    if (beam) {
+      beam.mat.opacity = 0.22 + Math.sin(now / 320 + gi.x) * 0.1; // slow breathing glow
+      beam.mesh.rotation.y = now * 0.0012;
+    }
+
+    const dx = gi.x + 0.5 - px, dz = gi.y + 0.5 - pz;
+    if (dx * dx + dz * dz < LABEL_RANGE2) {
+      const k = `${gi.x},${gi.y}`;
+      let arr = tiles.get(k);
+      if (!arr) { arr = []; tiles.set(k, arr); }
+      arr.push(gi);
+    }
+  }
+  // floating name labels — most valuable stack on top, depth-test off so readable
+  for (const arr of tiles.values()) {
+    arr.sort((a, b) => (ITEMS[a.item]?.value ?? 0) * a.qty - (ITEMS[b.item]?.value ?? 0) * b.qty);
+    const base = groundH(arr[0].x + 0.5, arr[0].y + 0.5);
+    for (let i = 0; i < arr.length; i++) {
+      const gi = arr[i];
+      const info = lootInfo(gi.item, gi.qty);
+      const name = ITEMS[gi.item]?.name ?? gi.item;
+      const text = gi.qty > 1 ? `${name} (${gi.qty})` : name;
+      const s = takeSprite();
+      s.material = groundLabelMat(text, info.col);
+      s.position.set(gi.x + 0.5, base + 0.62 + i * 0.2, gi.y + 0.5);
+      s.scale.set(1.45, 0.2, 1);
+    }
   }
   for (const [gi, m] of giInst) {
     if (!seen.has(gi)) { objectGroup!.remove(m); giInst.delete(gi); }
+  }
+  for (const [gi, b] of beamInst) {
+    if (!seen.has(gi)) { objectGroup!.remove(b.mesh); b.mat.dispose(); beamInst.delete(gi); }
   }
 }
 
@@ -2852,7 +3042,7 @@ function placeEntity(node: THREE.Group, e: { x: number; y: number; prevX: number
   animateFigure(node, moving, now, anim);
 }
 
-function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }, hitsplat: { dmg: number; until: number } | null, hpRatio: number | null, height: number, alphaOverride?: number) {
+function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number; updatedAt?: number }, hitsplat: { dmg: number; until: number; kind?: string } | null, hpRatio: number | null, height: number, alphaOverride?: number) {
   const now = performance.now();
   const t = alphaOverride ?? moveAlpha(e, now);
   const fx = lerp(e.prevX, e.x, t) + 0.5;
@@ -2866,7 +3056,7 @@ function entityOverlays(e: { x: number; y: number; prevX: number; prevY: number;
   }
   if (hitsplat && now < hitsplat.until) {
     const s = takeSprite();
-    s.material = hitsplatMat(hitsplat.dmg);
+    s.material = hitsplatMat(hitsplat.dmg, hitsplat.kind);
     s.position.set(fx, gy + height * 0.55, fz);
     s.scale.set(0.55, 0.55, 1);
   }
@@ -3525,7 +3715,7 @@ export function render() {
   updateRoofs(p.x, p.y);
   syncObjects(now, pfx, pfz);
   syncSkillFx(now);
-  syncGroundItems(now);
+  syncGroundItems(now, pfx, pfz);
   syncNpcs(now, p.x, p.y);
   syncPlayer(now);
   syncRemotePlayers(now, pfx, pfz);

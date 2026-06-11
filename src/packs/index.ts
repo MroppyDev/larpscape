@@ -43,3 +43,4 @@ import './keep_the_light';          // Q8
 import './thunder_on_the_tide';     // Q9
 import './against_the_grain';       // Q10
 import './untuned_mine';            // solo dungeon (gated by Q3)
+import './slayer_tasks';            // slayer assignment loop + points shop (Brogan)

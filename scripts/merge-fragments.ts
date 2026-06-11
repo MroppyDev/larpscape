@@ -13,6 +13,13 @@
 //     must not be water/wall/fence/lava terrain and must not already hold an
 //     object. Occupied/blocked targets are nudged to the nearest free adjacent
 //     tile (spiral out to radius 3) and the move is noted.
+//   - dropRemoves [{ npc, item }] remove matching entries from the npc's drops
+//     (applied BEFORE dropAdds so a remove+re-add in the same wave works).
+//   - dropAdds [{ npc, item, qty:[min,max], chance }] append to the npc's
+//     drops array. Unknown npc id is an ERROR (exit 1 at the end).
+//   - post-merge sanity: every drop's item id must exist in items.json, and
+//     every item's effects/spec payload is validated against docs/EFFECTS.md
+//     (shapes, clamp ranges, family_bane family tags present on some NPC).
 //
 // Run: npx tsx scripts/merge-fragments.ts
 // (this script does NOT delete the fragments — the integrator does that after
@@ -78,8 +85,10 @@ const tileFree = (x: number, y: number) =>
   && !occupied.has(y * W + x);
 
 // ---- merge ----
-const stats: Record<string, number> = { items: 0, npcs: 0, objects: 0, shops: 0, npcSpawns: 0, groundSpawns: 0, mapObjects: 0 };
+const stats: Record<string, number> = { items: 0, npcs: 0, objects: 0, shops: 0, npcSpawns: 0, groundSpawns: 0, mapObjects: 0, dropAdds: 0, dropRemoves: 0 };
 let collisions = 0, skippedDupes = 0;
+let errors = 0;
+const error = (msg: string) => { errors++; console.error(`\n!!! ERROR: ${msg}\n`); };
 
 function mergeDefs(kind: string, target: Record<string, any>, list: any[] | undefined, src: string, transform?: (e: any) => any) {
   for (const entry of list ?? []) {
@@ -151,7 +160,120 @@ for (const f of fragFiles) {
   }
 }
 
+// ---- drops: removes FIRST (against pre-add state), then adds ----
+// A dropRemove is meant to retire an EXISTING drop (e.g. ice_queen's old
+// rimeglass_blade rate) — applying removes first lets the same wave re-add the
+// item at a new rate without the remove eating the new entry.
+const frags = fragFiles.map((f) => ({ src: `_fragments/${f}`, frag: readJson(path.join(FRAG_DIR, f)) }));
+
+for (const { src, frag } of frags) {
+  for (const r of frag.dropRemoves ?? []) {
+    const npc = npcs[r.npc];
+    if (!npc) { error(`${src}: dropRemoves references unknown npc '${r.npc}'`); continue; }
+    const drops: any[] = npc.drops ?? [];
+    const before = drops.length;
+    npc.drops = drops.filter((d) => d.item !== r.item);
+    const removed = before - npc.drops.length;
+    if (removed === 0) {
+      warn(`${src}: dropRemoves { ${r.npc}, ${r.item} } matched nothing.`);
+    } else {
+      stats.dropRemoves += removed;
+      console.log(`  drop removed: ${r.npc} -x ${r.item} (${removed}) [${src}]`);
+    }
+  }
+}
+for (const { src, frag } of frags) {
+  for (const a of frag.dropAdds ?? []) {
+    const npc = npcs[a.npc];
+    if (!npc) { error(`${src}: dropAdds references unknown npc '${a.npc}'`); continue; }
+    if (!a.item || !Array.isArray(a.qty) || a.qty.length !== 2 || typeof a.chance !== 'number' || a.chance <= 0 || a.chance > 1) {
+      error(`${src}: malformed dropAdd ${JSON.stringify(a)}`); continue;
+    }
+    npc.drops = npc.drops ?? [];
+    if (npc.drops.some((d: any) => d.item === a.item && d.qty?.[0] === a.qty[0] && d.qty?.[1] === a.qty[1] && d.chance === a.chance)) {
+      skippedDupes++; continue;
+    }
+    if (npc.drops.some((d: any) => d.item === a.item)) {
+      warn(`dropAdd ${a.npc} -> ${a.item} (${src}): npc already drops this item at a different rate — appending anyway, review.`);
+    }
+    npc.drops.push({ item: a.item, qty: a.qty, chance: a.chance });
+    stats.dropAdds++;
+  }
+}
+
+// ---- post-merge sanity ----
+// 1. every drop item id exists
+for (const [nid, npc] of Object.entries(npcs)) {
+  for (const d of npc.drops ?? []) {
+    if (!(d.item in items)) error(`npc '${nid}' drops unknown item '${d.item}'`);
+  }
+}
+
+// 2. effects/spec shapes per docs/EFFECTS.md
+const FAMILIES = new Set(Object.values(npcs).map((n: any) => n.family).filter(Boolean));
+const DOT_KINDS = new Set(['poison', 'burn', 'bleed']);
+const SPEC_KINDS = new Set(['double_hit', 'heavy_hit', 'aoe_adjacent', 'stun', 'drain_def', 'warcry_aoe_debuff', 'guaranteed_dot']);
+const inRange = (v: any, lo: number, hi: number) => typeof v === 'number' && v >= lo && v <= hi;
+
+function checkEffect(owner: string, e: any, ctx = 'effects') {
+  const bad = (why: string) => error(`item '${owner}' ${ctx}: ${why} — ${JSON.stringify(e)}`);
+  if (!e || typeof e !== 'object') return bad('not an object');
+  if (DOT_KINDS.has(e.type)) {
+    if (ctx === 'effects' && !inRange(e.chance, 0, 1)) bad('chance must be 0..1');
+    if (!inRange(e.dmg, 1, 10)) bad('dmg must be 1..10');
+    if (!inRange(e.hits, 1, 20)) bad('hits must be 1..20');
+    if (!inRange(e.every, 1, 20)) bad('every must be 1..20');
+    if (e.maxStacks !== undefined && !inRange(e.maxStacks, 1, 99)) bad('maxStacks must be >=1');
+  } else if (e.type === 'freeze') {
+    if (!inRange(e.chance, 0, 1)) bad('chance must be 0..1');
+    if (!inRange(e.holdTicks, 1, 16)) bad('holdTicks must be 1..16');
+  } else if (e.type === 'lifesteal') {
+    if (!inRange(e.pct, 0, 1)) bad('pct must be 0..1');
+  } else if (e.type === 'family_bane') {
+    if (!FAMILIES.has(e.family)) bad(`family '${e.family}' is not tagged on any npc`);
+    if (e.accMult !== undefined && !inRange(e.accMult, 0.1, 5)) bad('accMult out of range');
+    if (e.dmgMult !== undefined && !inRange(e.dmgMult, 0.1, 5)) bad('dmgMult out of range');
+  } else {
+    bad(`unknown effect type '${e.type}'`);
+  }
+}
+
+for (const [iid, item] of Object.entries(items)) {
+  if (item.effects !== undefined) {
+    if (!Array.isArray(item.effects)) { error(`item '${iid}': effects is not an array`); }
+    else for (const e of item.effects) checkEffect(iid, e);
+  }
+  const s = item.spec;
+  if (s !== undefined) {
+    const bad = (why: string) => error(`item '${iid}' spec: ${why}`);
+    if (!s || typeof s !== 'object') { bad('not an object'); continue; }
+    if (typeof s.name !== 'string' || !s.name) bad('missing name');
+    if (!inRange(s.energy, 25, 100)) bad('energy must be 25..100');
+    if (typeof s.desc !== 'string' || !s.desc) bad('missing desc');
+    if (!SPEC_KINDS.has(s.kind)) { bad(`unknown kind '${s.kind}'`); continue; }
+    const p = s.params ?? {};
+    if (s.kind === 'heavy_hit' && p.accMult !== undefined && !inRange(p.accMult, 0.25, 3)) bad('heavy_hit accMult must be 0.25..3');
+    if (s.kind === 'heavy_hit' && p.dmgMult !== undefined && !inRange(p.dmgMult, 0, 3)) bad('heavy_hit dmgMult must be 0..3');
+    if (s.kind === 'aoe_adjacent' && p.radius !== undefined && !inRange(p.radius, 1, 3)) bad('aoe radius must be 1..3');
+    if (s.kind === 'stun' && p.holdTicks !== undefined && !inRange(p.holdTicks, 1, 8)) bad('stun holdTicks must be 1..8');
+    if (s.kind === 'drain_def' && p.amount !== undefined && !inRange(p.amount, 1, 30)) bad('drain_def amount must be 1..30');
+    if (s.kind === 'warcry_aoe_debuff') {
+      if (p.radius !== undefined && !inRange(p.radius, 1, 5)) bad('warcry radius must be 1..5');
+      if (p.atkMult !== undefined && !inRange(p.atkMult, 0.25, 1)) bad('warcry atkMult must be 0.25..1');
+      if (p.ticks !== undefined && !inRange(p.ticks, 1, 50)) bad('warcry ticks must be 1..50');
+    }
+    if (s.kind === 'guaranteed_dot') {
+      if (!p.dot || !DOT_KINDS.has(p.dot.type)) bad('guaranteed_dot needs params.dot with a DoT type');
+      else checkEffect(iid, p.dot, 'spec.params.dot');
+    }
+  }
+}
+
 // ---- write ----
+if (errors > 0) {
+  console.error(`\n${errors} ERROR(S) — NOT writing data files. Fix the fragments and re-run.`);
+  process.exit(1);
+}
 writeJson(itemsPath, items);
 writeJson(npcsPath, npcs);
 writeJson(objectsPath, objectsFile);

@@ -5,6 +5,7 @@
 // Mechanics and numbers follow the classic publicly documented formulas;
 // all text/art here is original.
 
+import type { EffectDef, SpecDef } from '../shared/effects';
 import itemsJson from '../data/items.json';
 import npcsJson from '../data/npcs.json';
 import objectsJson from '../data/objects.json';
@@ -67,7 +68,11 @@ export interface ItemDef {
   edible?: { heals: number };
   buryXp?: number;          // prayer xp when buried
   restoresPrayer?: number;  // prayer points restored when drunk (content wires drinking)
+  effects?: EffectDef[];    // on-hit combat effects (see docs/EFFECTS.md)
+  spec?: SpecDef;           // special attack (weapon/shield slot; see docs/EFFECTS.md)
 }
+
+export type { EffectDef, SpecDef } from '../shared/effects';
 
 export const ITEMS: Record<string, ItemDef> = itemsJson as unknown as Record<string, ItemDef>;
 
@@ -80,6 +85,7 @@ export interface NpcDef {
   id: string;
   name: string;
   examine: string;
+  family?: string;            // family tag for family_bane effects (see docs/EFFECTS.md)
   combatLevel: number;
   hitpoints: number;
   attack: number; strength: number; defence: number;

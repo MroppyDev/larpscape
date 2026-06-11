@@ -3,7 +3,7 @@
 
 import {
   SKILLS, SkillName, levelForXp, XP_TABLE, ITEMS, NPCS, NpcDef,
-  TICK_MS, EquipSlot, SPELLS, PRAYERS,
+  TICK_MS, EquipSlot, SPELLS, PRAYERS, type SpecDef,
 } from './defs';
 import {
   buildWorld, blocked, findPath, objects, objectAt, removeObject,
@@ -27,7 +27,9 @@ export interface Npc {
   target: 'player' | null;   // 'player' = targeting ME (drives attack anims)
   attackCooldown: number;
   wanderCooldown: number;
-  hitsplat: { dmg: number; until: number } | null;
+  // kind colors the splat: 'hit' (default red/blue), 'poison' green, 'burn'
+  // orange, 'bleed' dark red, 'spec' gold — see docs/EFFECTS.md
+  hitsplat: { dmg: number; until: number; kind?: string } | null;
   lastDamagedAt: number;
   updatedAt?: number; // performance.now() when the server last moved this NPC — drives interpolation
   meta: Record<string, any>;
@@ -61,6 +63,8 @@ export interface Player {
   path: { x: number; y: number }[];
   run: boolean;
   energy: number;
+  specEnergy: number;   // special attack energy 0..100 (persisted)
+  specArmed: boolean;   // next eligible swing consumes the spec (not persisted)
   xp: number[];
   curHp: number;
   prayerPoints: number;
@@ -69,6 +73,8 @@ export interface Player {
   equipment: Record<EquipSlot, ItemStack | null>;
   bank: ItemStack[];
   quests: Record<string, number>;
+  // first-time obtains of collection-worthy items: itemId -> tick first obtained
+  collectionLog: Record<string, number>;
   slayerTask: { npc: string; remaining: number } | null;
   action: PendingAction | null;
   attackCooldown: number;
@@ -131,6 +137,7 @@ export const events = {
   onStatsChange: (() => {}) as () => void,
   onBankShopChange: (() => {}) as () => void,
   onDialogueChange: (() => {}) as () => void,
+  onCollection: (() => {}) as () => void,
   // ui assigns: shows a make-X picker; calls cb with chosen option id + quantity (0 = cancel)
   onRequestMake: ((_opts, cb) => cb(null, 0)) as (opts: MakeOption[], cb: (id: string | null, qty: number) => void) => void,
 };
@@ -294,20 +301,71 @@ export function addItem(id: string, qty = 1): boolean {
   const inv = state.player.inventory;
   if (def.stackable) {
     const slot = inv.find((s) => s && s.id === id);
-    if (slot) { slot.qty += qty; events.onInvChange(); return true; }
+    if (slot) { slot.qty += qty; recordCollectible(id); events.onInvChange(); return true; }
     const i = inv.indexOf(null);
     if (i < 0) return false;
     inv[i] = { id, qty };
+    recordCollectible(id);
     events.onInvChange();
     return true;
   }
   for (let n = 0; n < qty; n++) {
     const i = inv.indexOf(null);
-    if (i < 0) { events.onInvChange(); return n > 0; }
+    if (i < 0) { if (n > 0) recordCollectible(id); events.onInvChange(); return n > 0; }
     inv[i] = { id, qty: 1 };
   }
+  recordCollectible(id);
   events.onInvChange();
   return true;
+}
+
+// ---------------- Collection log ----------------
+// Collection-worthy = any item that appears as an NPC drop with chance <= 5%.
+// Categories come from the dropping NPC: boss flag -> Bosses, the Untuned Mine
+// roster -> Dungeon, the slayer task pool -> Slayer, everything else -> Misc.
+export type CollectionCategory = 'Bosses' | 'Slayer' | 'Dungeon' | 'Misc';
+export const COLLECTION_CATEGORIES: CollectionCategory[] = ['Bosses', 'Slayer', 'Dungeon', 'Misc'];
+
+// Untuned Mine instance roster (mirrors server/dungeon.ts SPAWN_SET defs).
+const DUNGEON_NPC_IDS = new Set([
+  'discord_mote', 'untuned_golem', 'seam_creeper', 'foreman_echo', 'crystal_heart', 'the_dissonant',
+]);
+// Slayer assignment pool (mirrors TASK_POOL in src/packs/slayer_tasks.ts).
+const SLAYER_NPC_IDS = new Set([
+  'chicken', 'cow', 'giant_rat', 'goblin', 'scorpion', 'forest_spider',
+  'ice_wolf', 'dire_wolf', 'bear', 'desert_bandit', 'pirate', 'ice_troll',
+  'magma_crawler', 'ash_fiend', 'ruin_wraith', 'discord_wisp',
+  'hollow_miner', 'manor_revenant',
+]);
+
+const COLLECTIBLE_CHANCE = 0.05;
+const CAT_PRIORITY: Record<CollectionCategory, number> = { Bosses: 0, Dungeon: 1, Slayer: 2, Misc: 3 };
+
+export const COLLECTIBLES: Map<string, CollectionCategory> = (() => {
+  const map = new Map<string, CollectionCategory>();
+  for (const def of Object.values(NPCS)) {
+    for (const d of def.drops ?? []) {
+      if (d.chance > COLLECTIBLE_CHANCE || !ITEMS[d.item]) continue;
+      const cat: CollectionCategory = def.boss ? 'Bosses'
+        : DUNGEON_NPC_IDS.has(def.id) ? 'Dungeon'
+        : SLAYER_NPC_IDS.has(def.id) ? 'Slayer'
+        : 'Misc';
+      const prev = map.get(d.item);
+      if (!prev || CAT_PRIORITY[cat] < CAT_PRIORITY[prev]) map.set(d.item, cat);
+    }
+  }
+  return map;
+})();
+
+function recordCollectible(id: string) {
+  const p = state.player;
+  if (!p || !COLLECTIBLES.has(id)) return;
+  if (!p.collectionLog) p.collectionLog = {};
+  if (p.collectionLog[id] !== undefined) return;
+  p.collectionLog[id] = state.tick;
+  audio.sfx('levelup');
+  msg(`New item added to your collection log: ${ITEMS[id].name}.`, 'collection');
+  events.onCollection();
 }
 
 export function removeItem(id: string, qty = 1): boolean {
@@ -360,6 +418,7 @@ function freshPlayer(): Player {
     name: 'Adventurer',
     x: 22, y: 38, prevX: 22, prevY: 38,
     path: [], run: false, energy: 100,
+    specEnergy: 100, specArmed: false,
     xp, curHp: 10,
     prayerPoints: 1,
     activePrayers: new Set(),
@@ -367,6 +426,7 @@ function freshPlayer(): Player {
     equipment,
     bank: [{ id: 'coins', qty: 25 }],
     quests: {},
+    collectionLog: {},
     slayerTask: null,
     action: null, attackCooldown: 0,
     combatStyle: 'accurate',
@@ -382,8 +442,10 @@ export function saveGame() {
   const data = {
     name: p.name, x: p.x, y: p.y, xp: p.xp, curHp: p.curHp,
     prayerPoints: p.prayerPoints, run: p.run, energy: p.energy,
+    specEnergy: p.specEnergy,
     inventory: p.inventory, equipment: p.equipment, bank: p.bank,
     quests: p.quests, slayerTask: p.slayerTask, combatStyle: p.combatStyle,
+    collectionLog: p.collectionLog,
     autocastSpell: p.autocastSpell,
     music: [...audio.unlocked],
   };
@@ -412,11 +474,13 @@ function loadSave(p: Player, provided?: any): boolean {
     p.curHp = d.curHp ?? p.curHp;
     p.prayerPoints = d.prayerPoints ?? p.prayerPoints;
     p.run = d.run ?? false; p.energy = d.energy ?? 100;
+    p.specEnergy = typeof d.specEnergy === 'number' ? Math.max(0, Math.min(100, d.specEnergy)) : 100;
     if (Array.isArray(d.inventory)) p.inventory = d.inventory;
     if (d.equipment) for (const s of EQUIP_SLOTS) p.equipment[s] = d.equipment[s] ?? null;
     if (Array.isArray(d.bank)) p.bank = d.bank;
     p.quests = d.quests ?? {};
     p.slayerTask = d.slayerTask ?? null;
+    p.collectionLog = (d.collectionLog && typeof d.collectionLog === 'object') ? d.collectionLog : {};
     p.combatStyle = d.combatStyle ?? 'accurate';
     p.autocastSpell = d.autocastSpell ?? null;
     for (const m of d.music ?? []) audio.unlocked.add(m);
@@ -534,19 +598,25 @@ export function netWorldDelta(data: { n?: NpcWire[]; ga?: GroundWire[]; gr?: num
 }
 
 // someone (possibly me) hit an NPC — show the splat + update hp everywhere
-export function netHit(msg: { npc: number; dmg: number; hp: number; by: string }) {
+export function netHit(msg: { npc: number; dmg: number; hp: number; by: string; kind?: string }) {
   const n = npcBySid.get(msg.npc);
   if (!n) return;
   n.hp = msg.hp;
-  n.hitsplat = { dmg: msg.dmg, until: performance.now() + 900 };
+  n.hitsplat = { dmg: msg.dmg, until: performance.now() + 900, kind: msg.kind ?? 'hit' };
   n.lastDamagedAt = state.tick;
   if (msg.by === state.player?.name) audio.sfx(msg.dmg > 0 ? 'hit' : 'miss');
 }
 
 // my swing landed — grant xp (mode comes back from the server)
-export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'gun' | 'magic' }) {
+export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'gun' | 'magic'; heal?: number }) {
   const p = state.player;
-  if (!p || msg.dmg <= 0) return;
+  if (!p) return;
+  // lifesteal effects come back as a heal rider on the hit confirmation
+  if (msg.heal && msg.heal > 0 && !p.dead) {
+    p.curHp = Math.min(level('Hitpoints'), p.curHp + msg.heal);
+    events.onStatsChange();
+  }
+  if (msg.dmg <= 0) return;
   if (msg.mode === 'melee') {
     if (p.combatStyle === 'accurate') addXp('Attack', msg.dmg * 4);
     else if (p.combatStyle === 'aggressive') addXp('Strength', msg.dmg * 4);
@@ -767,6 +837,11 @@ export function gameTick() {
   if (p.dead) return;
 
   if (state.tick % 2 === 0 && p.energy < 100 && p.path.length === 0) p.energy = Math.min(100, p.energy + 1);
+  // special attack energy: +10 every 30s (50 ticks)
+  if (state.tick % 50 === 0 && p.specEnergy < 100) {
+    p.specEnergy = Math.min(100, p.specEnergy + 10);
+    events.onStatsChange();
+  }
   if (state.tick % 100 === 0 && p.curHp < level('Hitpoints')) { p.curHp++; events.onStatsChange(); }
   tickPrayerDrain();
 
@@ -1008,6 +1083,62 @@ export function equipBonus(kind: 'att' | 'str' | 'def' | 'ranged' | 'gun'): numb
   return b;
 }
 
+// ---------------- Weapon effects + special attack (docs/EFFECTS.md) ----------------
+// Equipped items that carry combat effects or a spec, sent with each swing as
+// plain ids; the server re-reads the actual effect data from its own item
+// catalog, so the client can never invent effects.
+export function effectGear(): string[] {
+  const ids: string[] = [];
+  for (const it of Object.values(state.player.equipment)) {
+    if (!it) continue;
+    const d = ITEMS[it.id];
+    if ((d?.effects?.length || d?.spec) && !ids.includes(it.id)) ids.push(it.id);
+  }
+  return ids;
+}
+
+// The spec the player can currently fire: weapon first, then shield slot.
+export function specItem(): { itemId: string; spec: SpecDef } | null {
+  const p = state.player;
+  for (const slot of ['weapon', 'shield'] as EquipSlot[]) {
+    const it = p.equipment[slot];
+    const spec = it ? ITEMS[it.id]?.spec : undefined;
+    if (it && spec) return { itemId: it.id, spec };
+  }
+  return null;
+}
+
+// Arm/disarm the special attack (spec bar click). The next melee/ranged/gun
+// swing consumes the energy and fires the spec.
+export function toggleSpecAttack() {
+  const p = state.player;
+  const s = specItem();
+  if (!s) { msg('Your equipment has no special attack.'); return; }
+  if (!p.specArmed && p.specEnergy < s.spec.energy) {
+    msg(`You need ${s.spec.energy}% special attack energy to use ${s.spec.name}.`);
+    return;
+  }
+  p.specArmed = !p.specArmed;
+  events.onStatsChange();
+}
+
+// Consume the armed spec for an outgoing swing; returns the spec item id (sent
+// on the wire so the server knows whose spec def to run) or null.
+function consumeSpec(): string | null {
+  const p = state.player;
+  if (!p.specArmed) return null;
+  // offline: the swing intent can't reach the server — keep the energy and
+  // stay armed rather than burning the spec on a dropped packet
+  if (!netLink.send) return null;
+  p.specArmed = false;
+  const s = specItem();
+  if (!s || p.specEnergy < s.spec.energy) { events.onStatsChange(); return null; }
+  p.specEnergy -= s.spec.energy;
+  msg(`You unleash ${s.spec.name}!`, 'level');
+  events.onStatsChange();
+  return s.itemId;
+}
+
 export type AttackMode = 'melee' | 'ranged' | 'gun' | 'magic';
 export function currentAttackMode(): AttackMode {
   const p = state.player;
@@ -1157,9 +1288,11 @@ function tickPlayerCombat(npc: Npc) {
   p.attackCooldown = weaponSpeed();
   const styleAtt = p.combatStyle === 'accurate' ? 3 : 0;
   const effAtt = Math.floor(level('Attack') * prayerMult('attack')) + styleAtt;
+  const specId = consumeSpec();
   netSend({
     t: 'swing', npc: npc.sid, mode: 'melee',
     eff: effAtt, bonus: equipBonus('att'), maxHit: playerMaxHit(), speed: weaponSpeed(),
+    gear: effectGear(), ...(specId ? { spec: specId } : {}),
   });
 }
 
@@ -1174,10 +1307,11 @@ function shootNpc(npc: Npc) {
   events.onInvChange();
   audio.sfx('bow');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 300, kind: 'arrow' });
+  const specId = consumeSpec();
   netSend({
     t: 'swing', npc: npc.sid, mode: 'ranged',
     eff: level('Ranged'), bonus: equipBonus('ranged'), maxHit: rangedMaxHit(), speed: weaponSpeed(),
-    ammo: ammoId,
+    ammo: ammoId, gear: effectGear(), ...(specId ? { spec: specId } : {}),
   });
 }
 
@@ -1192,10 +1326,11 @@ function shootGun(npc: Npc) {
   events.onInvChange();
   audio.sfx('gun');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 180, kind: 'bullet' });
+  const specId = consumeSpec();
   netSend({
     t: 'swing', npc: npc.sid, mode: 'gun',
     eff: level('Gun'), bonus: equipBonus('gun'), maxHit: gunMaxHit(), speed: weaponSpeed(),
-    ammo: ammoId,
+    ammo: ammoId, gear: effectGear(), ...(specId ? { spec: specId } : {}),
   });
 }
 
@@ -1212,6 +1347,7 @@ function castOnNpc(npc: Npc) {
   netSend({
     t: 'swing', npc: npc.sid, mode: 'magic',
     eff: level('Magic'), bonus: 0, maxHit: spell.maxHit, speed: 5,
+    gear: effectGear(), // gear effects (lifesteal etc.) apply; specs are melee/ranged/gun only
   });
   addXp('Magic', spell.xp); // base cast xp; dmg*2 lands with youHit
 }

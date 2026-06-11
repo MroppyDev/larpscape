@@ -453,6 +453,34 @@ canvas { image-rendering: pixelated; }
   text-align: center; font-size: 11px; font-weight: bold; color: #5a2000;
 }
 
+/* Special attack bar (combat tab) — see docs/EFFECTS.md */
+.spec-box { margin-top: 10px; }
+.spec-box.none { opacity: 0.55; }
+.spec-label {
+  font-size: 11px; font-weight: bold; color: #5a2000;
+  margin-bottom: 3px; text-align: center;
+}
+.spec-bar {
+  position: relative; height: 16px; cursor: pointer;
+  background: #3a2a18;
+  border: 1px solid;
+  border-color: rgba(60,45,25,0.7) rgba(255,245,220,0.45) rgba(255,245,220,0.45) rgba(60,45,25,0.7);
+  border-radius: 3px; overflow: hidden;
+}
+.spec-box.none .spec-bar { cursor: default; }
+.spec-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #4fc3f7, #1565c0);
+  transition: width 0.3s;
+}
+.spec-bar.armed .spec-fill { background: linear-gradient(180deg, #ffd54f, #b07800); }
+.spec-bar.armed { box-shadow: 0 0 4px 1px rgba(255,210,80,0.8); }
+.spec-pct {
+  position: absolute; inset: 0; text-align: center; line-height: 16px;
+  font-size: 10px; font-weight: bold; color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
 /* Quests */
 .quest-list { display: flex; flex-direction: column; }
 .quest-row { padding: 3px 4px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 2px; }
@@ -673,3 +701,48 @@ canvas { image-rendering: pixelated; }
 .guild-rank { width: 14px; text-align: center; font-size: 11px; }
 .guild-rank-leader { color: #c8a020; }
 .guild-rank-officer { color: #4a6ac0; }
+
+/* ---------------- Collection log ---------------- */
+.quest-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.quest-head .panel-title { flex: 1; }
+.clog-btn { white-space: nowrap; }
+.clog-cat {
+  margin-top: 8px; padding: 2px 4px; font-weight: bold; font-size: 11px; color: #3a2d18;
+  background: rgba(0,0,0,0.08); border: 1px solid rgba(80,60,30,0.4); border-radius: 3px;
+}
+.clog-cat.clog-complete { color: #1a5a1a; }
+.clog-list { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+.clog-row { display: flex; align-items: center; gap: 5px; padding: 1px 3px; font-size: 11px; border-radius: 2px; }
+.clog-row canvas { width: 18px; height: 18px; image-rendering: pixelated; flex: 0 0 auto; }
+.clog-row.clog-got { color: #1a5a1a; font-weight: bold; cursor: pointer; }
+.clog-row.clog-got:hover { background: rgba(0,0,0,0.08); }
+.clog-row.clog-missing { color: #8a7a5c; }
+.clog-row.clog-missing canvas { filter: grayscale(1) brightness(0.55); opacity: 0.6; }
+
+/* collection log chat fanfare */
+.chat-line.collection {
+  color: #7f1fbf; font-weight: bold;
+  animation: clog-flash 1.2s ease-out 1;
+}
+@keyframes clog-flash {
+  0% { text-shadow: 0 0 6px rgba(190,90,255,0.9); }
+  100% { text-shadow: none; }
+}
+
+/* ---------------- Item stat tooltip (inventory/equipment hover) ---------------- */
+#item-tooltip {
+  position: fixed; display: none; z-index: 80; pointer-events: none;
+  max-width: 230px; padding: 6px 8px;
+  background: rgba(43, 33, 24, 0.96); color: #e8dcc0;
+  border: 1px solid #8a7340; border-radius: 3px;
+  font-size: 11px; line-height: 1.35;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+}
+#item-tooltip .tt-name { color: #ff981f; font-weight: bold; margin-bottom: 2px; }
+#item-tooltip .tt-vs { color: #b0a080; font-style: italic; font-size: 10px; margin-bottom: 2px; }
+#item-tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; }
+#item-tooltip .tt-up { color: #4fdc4f; }
+#item-tooltip .tt-down { color: #ff5a4a; }
+#item-tooltip .tt-same { color: #b0a080; }
+#item-tooltip .tt-fx { margin-top: 3px; color: #8fd4ff; font-style: italic; }
+#item-tooltip .tt-hint { margin-top: 3px; color: #b0a080; font-size: 10px; }
