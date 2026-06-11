@@ -512,27 +512,29 @@ export function trackForRegion(x: number, y: number): string {
   if (x >= 60 && x <= 150 && y >= 110 && y <= 160) return 'Underdeep'; // cavern
   // Phase-6 districts. The Ashen Depths check sits AFTER the cavern box above,
   // so the old cavern keeps 'Underdeep' and only the eastern extension is ash.
-  if (x >= 152 && y >= 108 && y <= 162) return 'Ashfall'; // ashen depths
-  if (x >= 168 && y <= 104) return 'Rimewind'; // frostpeak mountains
-  if (x <= 64 && y >= 168) return 'Sunscorch'; // sunscorch desert
+  // (the three open-ended bands below are clamped to the legacy 224 box so the
+  // Phase 5 expansion east/south of it can carry its own music)
+  if (x >= 152 && x < 224 && y >= 108 && y <= 162) return 'Ashfall'; // ashen depths
+  if (x >= 168 && x < 224 && y <= 104) return 'Rimewind'; // frostpeak mountains
+  if (x <= 64 && y >= 168 && y < 224) return 'Sunscorch'; // sunscorch desert
   if (x >= 70 && x <= 140 && y >= 178 && y <= 223) return 'Brackwater Tide'; // port
   if (x >= 8 && x <= 40 && y >= 80 && y <= 110) return 'Boghollow'; // deep bog
-  if (x >= 42 && x <= 54) return 'Riverside';
+  if (x >= 42 && x <= 54 && y < 224) return 'Riverside';
   if (y < 22 && x < 46) return "Shepherd's Rest";
   if (x >= 29 && x <= 41 && y >= 40 && y <= 62) return 'Market Day';
   if (x >= 60 && x <= 70 && y >= 58 && y <= 68) return 'Whispering Stones';
   if (x >= 56 && x <= 72 && y >= 70 && y <= 84) return 'Quiet Meadow';
   if (x >= 61 && x <= 68 && y >= 38 && y <= 44) return 'Rainbow Avenue';
   if (x >= 54 && x <= 60 && y >= 38 && y <= 44) return 'Market Day';
-  // Phase 7 expansion (500×500 map) — checked after all legacy boxes above.
-  if (x >= 278 && x <= 322 && y >= 238 && y <= 282) return 'Quiet Meadow';
-  if (x >= 338 && x <= 425 && y >= 298 && y <= 385) return 'Whispering Stones';
-  if (x >= 398 && x <= 442 && y >= 98 && y <= 142) return 'Warbanner';
-  if (x >= 58 && x <= 102 && y >= 358 && y <= 402) return 'Brackwater Tide';
-  if (x >= 298 && x <= 358 && y >= 228 && y <= 268) return 'Riverside';
-  if (x >= 418 && x <= 478 && y >= 278 && y <= 338) return 'Boghollow';
-  if (x >= 278 && x <= 418 && y >= 400 && y <= 478) return 'Sunscorch';
-  if (x >= 448 && x <= 492 && y >= 448 && y <= 492) return 'Ashfall';
-  if (x > 260 && y < 140) return 'Rimewind';
+  // Phase 5 handcrafted expansion (300×300) — checked after all legacy boxes.
+  if (y >= 217) return 'Brackwater Tide'; // southern sea + Gullswreck Cove
+  if (x >= 224) {
+    if (y <= 26) return 'Rimewind'; // Frostpeak's eastern skirts
+    if (x >= 244 && x <= 272 && y >= 62 && y <= 106) return 'Quiet Meadow'; // Eldermere
+    if (x <= 260 && y >= 64 && y <= 136) return 'Whispering Stones'; // the Tanglewood
+    if (y <= 62) return "Shepherd's Rest"; // farm belt on the Aldgate road
+    if (x >= 256 && y >= 156 && y <= 200) return 'Stonecourt'; // Stonewatch (duchy garrison)
+    if (y >= 106 && y <= 156) return 'Whispering Stones'; // danger corridor
+  }
   return 'Newbie Meadow';
 }

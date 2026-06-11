@@ -45,7 +45,7 @@ for (const k of Object.keys(TERRAIN_COLS)) {
 interface PoiDef { glyph: string; color: string; bg: string; label: string; }
 const POI: Record<string, PoiDef> = {
   bank_booth: { glyph: '$', color: '#1a1a1a', bg: '#f0d040', label: 'Bank' },
-  ge_booth: { glyph: 'E', color: '#fff', bg: '#b06010', label: 'Grand Exchange' },
+  ge_booth: { glyph: 'E', color: '#fff', bg: '#b06010', label: 'Aldgate Exchange' },
   altar: { glyph: '✟', color: '#fff', bg: '#7a4ab0', label: 'Altar' },
   air_altar: { glyph: 'R', color: '#fff', bg: '#4a6ab8', label: 'Runecrafting altar' },
   furnace: { glyph: 'F', color: '#fff', bg: '#c05818', label: 'Furnace' },
@@ -119,13 +119,14 @@ const LEGACY_LABELS: { x: number; y: number; text: string }[] = [
 // world.ts is being rewritten concurrently — read POIS defensively per the SPEC contract.
 function regionLabels(): { x: number; y: number; text: string }[] {
   const labels = [...LEGACY_LABELS];
-  const pois: { id: string; name: string; kind: string; x: number; y: number }[] =
+  const pois: { id: string; label?: string; name?: string; x: number; y: number }[] =
     (world as any).POIS ?? [];
   for (const p of pois) {
-    if (!p || typeof p.x !== 'number' || typeof p.y !== 'number' || !p.name) continue;
+    const text = p?.label ?? p?.name;
+    if (!p || typeof p.x !== 'number' || typeof p.y !== 'number' || !text) continue;
     // skip anything sitting inside the legacy box already covered by hand labels
     if (p.x < 224 && p.y < 224) continue;
-    labels.push({ x: p.x, y: p.y, text: p.name });
+    labels.push({ x: p.x, y: p.y, text });
   }
   return labels;
 }
@@ -392,9 +393,41 @@ function renderBase() {
     g.fillText(l.text, px, py);
   }
   renderedZoom = zoom;
+  prevDotTiles = []; // fresh base: nothing to restore (avoids erasing icons)
 }
 
 let playerDotTimer: number | null = null;
+
+// OSRS-convention live entity dots: yellow for NPCs, white for other players,
+// red for ground items. Previous dot tiles get their terrain restored each
+// refresh so moving entities don't smear trails over the base render.
+let prevDotTiles: { x: number; y: number }[] = [];
+
+function drawEntityDots() {
+  if (!mapCanvas) return;
+  const g = mapCanvas.getContext('2d')!;
+  const s = S();
+  // restore terrain under last frame's dots
+  for (const t of prevDotTiles) {
+    g.fillStyle = TERRAIN_COLS[terrain[key(t.x, t.y)]] ?? '#000';
+    g.fillRect(t.x * s, t.y * s, s, s);
+  }
+  prevDotTiles = [];
+  const r = Math.max(1.5, s * 0.45);
+  const dot = (x: number, y: number, fill: string) => {
+    if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return;
+    g.fillStyle = fill;
+    g.strokeStyle = 'rgba(0,0,0,0.8)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.arc(x * s + s / 2, y * s + s / 2, r, 0, 7);
+    g.fill(); g.stroke();
+    prevDotTiles.push({ x, y });
+  };
+  for (const gi of state.groundItems) dot(gi.x, gi.y, '#e02020');
+  for (const n of state.npcs) if (!n.dead) dot(n.x, n.y, '#f0e030');
+  for (const rp of state.remotePlayers) if (!rp.dead) dot(rp.x, rp.y, '#ffffff');
+}
 
 function drawPlayerDot() {
   // re-render base then dot, so the pulse animates cleanly
@@ -421,6 +454,7 @@ export function openMap() {
     playerDotTimer = window.setInterval(() => {
       if (overlay!.style.display === 'none') return;
       renderBaseRegion();
+      drawEntityDots();
       drawPlayerDot();
     }, 120);
   }

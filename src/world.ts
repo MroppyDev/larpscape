@@ -23,6 +23,11 @@ export const POIS: Poi[] = [
   { id: 'sunscorch_legacy', label: 'Sunscorch Desert', x: 35, y: 190 },
   { id: 'port_brackwater', label: 'Port Brackwater', x: 105, y: 196 },
   { id: 'ashen_depths', label: 'Ashen Depths', x: 190, y: 135 },
+  // Phase 5 handcrafted expansion (300×300): east + south new land
+  { id: 'eldermere', label: 'Eldermere', x: 256, y: 84 },
+  { id: 'tanglewood', label: 'The Tanglewood', x: 232, y: 110 },
+  { id: 'stonewatch', label: 'Stonewatch', x: 272, y: 178 },
+  { id: 'gullswreck', label: 'Gullswreck Cove', x: 94, y: 262 },
 ];
 
 // terrain codes
@@ -144,36 +149,9 @@ export function findPath(sx: number, sy: number, tx: number, ty: number, acceptA
   return path;
 }
 
-// ---- biome lookup (mirrors scripts/world-gen-utils.ts) ----
-
-function hash2(x: number, y: number, seed: number): number {
-  let h = (x * 374761393 + y * 668265263 + seed * 1442695041) | 0;
-  h = (h ^ (h >>> 13)) | 0;
-  h = Math.imul(h, 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
-
-function noise2(x: number, y: number, seed: number): number {
-  const ix = Math.floor(x), iy = Math.floor(y);
-  const fx = x - ix, fy = y - iy;
-  const a = hash2(ix, iy, seed);
-  const b = hash2(ix + 1, iy, seed);
-  const c = hash2(ix, iy + 1, seed);
-  const d = hash2(ix + 1, iy + 1, seed);
-  const ux = fx * fx * (3 - 2 * fx);
-  const uy = fy * fy * (3 - 2 * fy);
-  return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
-}
-
-function fbm(x: number, y: number, seed: number, oct = 4): number {
-  let v = 0, amp = 0.5, freq = 1;
-  for (let i = 0; i < oct; i++) {
-    v += amp * noise2(x * freq, y * freq, seed + i * 97);
-    amp *= 0.5;
-    freq *= 2;
-  }
-  return v;
-}
+// ---- biome lookup (Phase 5 handcrafted 300×300 expansion) ----
+// Every region below was placed by hand in scripts/author-expansion.ts;
+// the boxes here mirror that layout. No noise functions — deliberate design.
 
 export type Biome =
   | 'legacy' | 'sea' | 'coast' | 'plains' | 'forest' | 'marsh' | 'desert'
@@ -182,32 +160,19 @@ export type Biome =
 export function biomeAt(x: number, y: number): Biome {
   if (x < LEGACY_SIZE && y < LEGACY_SIZE) return 'legacy';
 
-  if (x >= 278 && x <= 322 && y >= 238 && y <= 282) return 'village';
-  if (x >= 338 && x <= 425 && y >= 298 && y <= 385) return 'tanglewood';
-  if (x >= 398 && x <= 442 && y >= 98 && y <= 142) return 'village';
-  if (x >= 58 && x <= 102 && y >= 358 && y <= 402) return 'coast';
-  if (x >= 418 && x <= 478 && y >= 278 && y <= 338) return 'marsh';
-  if (x >= 278 && x <= 418 && y >= 400 && y <= 478) return 'desert';
-  if (x >= 298 && x <= 358 && y >= 228 && y <= 268) return 'coast';
-  if (x >= 448 && x <= 492 && y >= 448 && y <= 492) return 'lava';
+  // Southern sea (y >= ~217) and Gullswreck Cove island
+  if (y >= 217) {
+    if (x >= 52 && x <= 132 && y >= 230 && y <= 296) return 'coast'; // Gullswreck
+    return 'sea';
+  }
 
-  const elev = fbm(x * 0.012, y * 0.012, 42);
-  const moist = fbm(x * 0.015 + 100, y * 0.015, 77);
-  const temp = fbm(x * 0.01 + 50, y * 0.008, 13);
-
-  const edgeDist = Math.min(x, y, MAP_W - 1 - x, MAP_H - 1 - y);
-  if (edgeDist < 8 && elev < 0.42) return 'sea';
-  if (edgeDist < 14 && elev < 0.48) return 'coast';
-
-  if (y < 280 && x > 260 && elev > 0.62) return y < 120 ? 'snow' : 'mountain';
-  if (y < 200 && x > 300 && elev > 0.58) return 'mountain';
-
-  if (x > 380 && y > 300 && elev > 0.7 && moist < 0.35) return 'lava';
-  if (x > 360 && y > 280 && elev > 0.65) return 'cave';
-
-  if (moist > 0.62 && elev < 0.52) return 'marsh';
-  if (temp > 0.58 && moist < 0.38) return 'desert';
-  if (elev > 0.55) return 'mountain';
-  if (moist > 0.48) return 'forest';
+  // Eastern landmass (x >= 224, y 0..216)
+  if (y <= 26) return 'snow';                                       // Frostpeak's eastern skirts
+  if (x >= 244 && x <= 272 && y >= 62 && y <= 106) return 'village'; // Eldermere
+  if (x <= 260 && y >= 64 && y <= 136) return 'tanglewood';          // the Tanglewood
+  if (y <= 62) return 'plains';                                      // farm belt on the Aldgate road
+  if (x >= 256 && x <= 292 && y >= 156 && y <= 200) return 'mountain'; // Stonewatch plateau
+  if (y >= 106 && y <= 156) return 'forest';                         // wraith/wolf danger corridor
+  if (y >= 208) return 'coast';                                      // southern beach fringe
   return 'plains';
 }

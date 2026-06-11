@@ -469,6 +469,206 @@
       "id": "man",
       "x": 118,
       "y": 194
+    },
+    {
+      "id": "village_elder",
+      "x": 248,
+      "y": 68
+    },
+    {
+      "id": "wayfarer",
+      "x": 256,
+      "y": 90
+    },
+    {
+      "id": "wayfarer",
+      "x": 238,
+      "y": 43
+    },
+    {
+      "id": "cow",
+      "x": 242,
+      "y": 36
+    },
+    {
+      "id": "cow",
+      "x": 244,
+      "y": 38
+    },
+    {
+      "id": "cow",
+      "x": 241,
+      "y": 38
+    },
+    {
+      "id": "cow",
+      "x": 245,
+      "y": 35
+    },
+    {
+      "id": "chicken",
+      "x": 240,
+      "y": 58
+    },
+    {
+      "id": "chicken",
+      "x": 241,
+      "y": 59
+    },
+    {
+      "id": "chicken",
+      "x": 243,
+      "y": 58
+    },
+    {
+      "id": "chicken",
+      "x": 244,
+      "y": 57
+    },
+    {
+      "id": "sheep",
+      "x": 250,
+      "y": 44
+    },
+    {
+      "id": "sheep",
+      "x": 252,
+      "y": 46
+    },
+    {
+      "id": "sheep",
+      "x": 249,
+      "y": 47
+    },
+    {
+      "id": "sheep",
+      "x": 253,
+      "y": 43
+    },
+    {
+      "id": "forest_spider",
+      "x": 229,
+      "y": 101
+    },
+    {
+      "id": "forest_spider",
+      "x": 227,
+      "y": 107
+    },
+    {
+      "id": "forest_spider",
+      "x": 229,
+      "y": 113
+    },
+    {
+      "id": "forest_spider",
+      "x": 232,
+      "y": 118
+    },
+    {
+      "id": "forest_spider",
+      "x": 235,
+      "y": 122
+    },
+    {
+      "id": "forest_spider",
+      "x": 238,
+      "y": 124
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 268,
+      "y": 129
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 264,
+      "y": 127
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 259,
+      "y": 121
+    },
+    {
+      "id": "ruin_wraith",
+      "x": 262,
+      "y": 137
+    },
+    {
+      "id": "dire_wolf",
+      "x": 262,
+      "y": 118
+    },
+    {
+      "id": "dire_wolf",
+      "x": 266,
+      "y": 144
+    },
+    {
+      "id": "dire_wolf",
+      "x": 274,
+      "y": 140
+    },
+    {
+      "id": "dire_wolf",
+      "x": 270,
+      "y": 134
+    },
+    {
+      "id": "bear",
+      "x": 253,
+      "y": 144
+    },
+    {
+      "id": "bear",
+      "x": 257,
+      "y": 148
+    },
+    {
+      "id": "bear",
+      "x": 251,
+      "y": 150
+    },
+    {
+      "id": "bear",
+      "x": 259,
+      "y": 143
+    },
+    {
+      "id": "trapper",
+      "x": 277,
+      "y": 183
+    },
+    {
+      "id": "boatman",
+      "x": 109,
+      "y": 262
+    },
+    {
+      "id": "pirate",
+      "x": 101,
+      "y": 274
+    },
+    {
+      "id": "pirate",
+      "x": 104,
+      "y": 276
+    },
+    {
+      "id": "pirate",
+      "x": 99,
+      "y": 277
+    },
+    {
+      "id": "pirate",
+      "x": 103,
+      "y": 272
+    },
+    {
+      "id": "pirate",
+      "x": 106,
+      "y": 278
     }
   ],
   "groundSpawns": [
@@ -507,6 +707,66 @@
       "x": 105,
       "y": 31,
       "respawnTicks": 100
+    },
+    {
+      "item": "bones",
+      "x": 262,
+      "y": 120,
+      "respawnTicks": 120
+    },
+    {
+      "item": "bones",
+      "x": 258,
+      "y": 136,
+      "respawnTicks": 120
+    },
+    {
+      "item": "grave_dust",
+      "x": 268,
+      "y": 128,
+      "respawnTicks": 200
+    },
+    {
+      "item": "grave_dust",
+      "x": 270,
+      "y": 129,
+      "respawnTicks": 200
+    },
+    {
+      "item": "coins",
+      "x": 256,
+      "y": 128,
+      "respawnTicks": 150
+    },
+    {
+      "item": "coins",
+      "x": 264,
+      "y": 144,
+      "respawnTicks": 150
+    },
+    {
+      "item": "egg",
+      "x": 240,
+      "y": 57,
+      "respawnTicks": 50
+    },
+    {
+      "item": "egg",
+      "x": 243,
+      "y": 59,
+      "respawnTicks": 50
+    },
+    {
+      "item": "fishing_bait",
+      "x": 107,
+      "y": 262,
+      "respawnTicks": 60
+    },
+    {
+      "item": "fishing_bait",
+      "x": 108,
+      "y": 263,
+      "respawnTicks": 60
     }
   ]
 }

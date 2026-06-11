@@ -22,9 +22,9 @@ import './skills_production';
 import './quest6_a';
 import './quest6_b';
 import './quest6_c';
-// Phase 7 expansion hubs — disabled until the map grows organically past 224×224
-// (their NPCs only spawned in the removed generated zones; re-enable per region).
-// import './hub_eldermere';
-// import './hub_stonewatch';
-// import './hub_gullswreck';
+// Phase 5 expansion hubs — re-enabled now that the handcrafted 300×300 map
+// gives Eldermere, Stonewatch and Gullswreck Cove real ground to stand on.
+import './hub_eldermere';
+import './hub_stonewatch';
+import './hub_gullswreck';
 import './wildlife';
