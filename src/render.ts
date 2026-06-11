@@ -3299,6 +3299,69 @@ function bindInput(cv: HTMLCanvasElement) {
     distT = Math.max(DIST_MIN, Math.min(DIST_MAX, distT * Math.exp(e.deltaY * 0.0012)));
   }, { passive: false });
 
+  // ---- touch controls (mobile) ----
+  // 1 finger: tap = click, long-press (500ms, still) = context menu.
+  // 2 fingers: pinch = zoom, drag = orbit (horizontal yaw / vertical pitch).
+  let touchStartX = 0, touchStartY = 0, touchStartAt = 0, touchMoved = false;
+  let longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  let pinchDist = 0, twoFingerX = 0, twoFingerY = 0;
+  const cancelLongPress = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+  const synth = (type: string, x: number, y: number) =>
+    cv.dispatchEvent(new MouseEvent(type, { clientX: x, clientY: y, button: type === 'contextmenu' ? 2 : 0, bubbles: true, cancelable: true }));
+
+  cv.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // we synthesize clicks ourselves; stop browser scroll/zoom
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchStartX = t.clientX; touchStartY = t.clientY;
+      touchStartAt = performance.now(); touchMoved = false;
+      cancelLongPress();
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        if (!touchMoved) synth('contextmenu', touchStartX, touchStartY);
+      }, 500);
+    } else if (e.touches.length === 2) {
+      cancelLongPress();
+      const [a, b] = [e.touches[0], e.touches[1]];
+      pinchDist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      twoFingerX = (a.clientX + b.clientX) / 2;
+      twoFingerY = (a.clientY + b.clientY) / 2;
+    }
+  }, { passive: false });
+
+  cv.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY) > 12) {
+        touchMoved = true;
+        cancelLongPress();
+      }
+    } else if (e.touches.length === 2) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      if (pinchDist > 0) {
+        distT = Math.max(DIST_MIN, Math.min(DIST_MAX, distT * (pinchDist / Math.max(1, d))));
+      }
+      pinchDist = d;
+      const cx = (a.clientX + b.clientX) / 2, cy = (a.clientY + b.clientY) / 2;
+      yawT -= (cx - twoFingerX) * 0.01;
+      pitchT = Math.max(PITCH_MIN, Math.min(PITCH_MAX, pitchT + (cy - twoFingerY) * 0.008));
+      twoFingerX = cx; twoFingerY = cy;
+    }
+  }, { passive: false });
+
+  cv.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    cancelLongPress();
+    if (e.touches.length === 0 && !touchMoved && performance.now() - touchStartAt < 450) {
+      synth('mousemove', touchStartX, touchStartY); // refresh hover/pick under the finger
+      synth('click', touchStartX, touchStartY);
+    }
+    pinchDist = 0;
+  }, { passive: false });
+  cv.addEventListener('touchcancel', () => { cancelLongPress(); pinchDist = 0; }, { passive: true });
+
   const compass = document.getElementById('compass');
   if (compass) {
     compass.style.cursor = 'pointer';

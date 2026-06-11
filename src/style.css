@@ -46,7 +46,26 @@ body {
 /* pixel-art sprites stay chunky when the client scales up; the 3D viewport
    re-renders at native resolution instead */
 canvas { image-rendering: pixelated; }
-#viewport { image-rendering: auto; }
+#viewport { image-rendering: auto; touch-action: none; }
+
+/* ---- mobile (body.mobile set by main.ts when pointer is coarse) ---- */
+#rotate-hint {
+  position: fixed; inset: 0; z-index: 1000; display: none;
+  flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(10, 8, 5, 0.92); color: var(--parchment);
+  font-size: 15px; text-align: center; line-height: 1.5;
+}
+#rotate-hint div { font-size: 52px; animation: rotatehint 2s ease-in-out infinite; }
+@keyframes rotatehint { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-90deg); } }
+
+/* bigger touch targets — these only apply under body.mobile */
+body.mobile .cm-opt { padding: 8px 12px; font-size: 14px; }
+body.mobile #context-menu { min-width: 180px; }
+body.mobile .chat-tab { padding: 5px 14px; font-size: 12px; }
+body.mobile .tab-row > * { min-height: 38px; }
+body.mobile #chat-input { font-size: 16px; } /* 16px stops iOS auto-zoom on focus */
+body.mobile .inv-slot { min-width: 38px; min-height: 36px; }
+body.mobile .mini-btn, body.mobile .style-btn { min-height: 34px; }
 
 #client { display: flex; width: 765px; height: 503px; background: #000; }
 

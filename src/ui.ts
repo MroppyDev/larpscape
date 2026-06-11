@@ -40,8 +40,22 @@ let activeTab: TabName = 'inventory';
 let selectedQuest: string | null = null;
 let collectionView = false; // quests tab: showing the collection log sub-view
 let chatFilter: 'all' | 'game' | 'public' = 'all';
-let musicVol = 0.5;
-let sfxVol = 0.5;
+// Sound settings persist across sessions — players who mute the music should
+// never have to mute it twice.
+const VOL_KEY = 'bs-volumes';
+function loadVolumes(): { music: number; sfx: number } {
+  try {
+    const v = JSON.parse(localStorage.getItem(VOL_KEY) ?? '');
+    if (typeof v?.music === 'number' && typeof v?.sfx === 'number') {
+      return { music: Math.max(0, Math.min(1, v.music)), sfx: Math.max(0, Math.min(1, v.sfx)) };
+    }
+  } catch { /* first run / bad data */ }
+  return { music: 0.5, sfx: 0.5 };
+}
+function saveVolumes() {
+  try { localStorage.setItem(VOL_KEY, JSON.stringify({ music: musicVol, sfx: sfxVol })); } catch { /* ignore */ }
+}
+let { music: musicVol, sfx: sfxVol } = loadVolumes();
 let resetArmed = false;
 
 // local chat log (game messages + player speech)
@@ -997,8 +1011,8 @@ function renderSettings(panel: HTMLElement) {
     row.appendChild(input);
     panel.appendChild(row);
   };
-  mkSlider('Music volume', musicVol, (v) => { musicVol = v; audio.setMusicVolume(v); });
-  mkSlider('Sound effects', sfxVol, (v) => { sfxVol = v; audio.setSfxVolume(v); });
+  mkSlider('Music volume', musicVol, (v) => { musicVol = v; audio.setMusicVolume(v); saveVolumes(); });
+  mkSlider('Sound effects', sfxVol, (v) => { sfxVol = v; audio.setSfxVolume(v); saveVolumes(); });
 
   const runRow = document.createElement('div');
   runRow.className = 'setting-row';
