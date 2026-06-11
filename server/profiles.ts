@@ -397,6 +397,14 @@ export function initProfiles(app: Express, db: Database, helpers: ProfileHelpers
 
   const form = express.urlencoded({ extended: false, limit: '32kb' });
 
+  // Profile pages embed session-derived content (own-profile edit forms, flash
+  // messages). Prevent a shared proxy from caching a personalized page and
+  // serving it to another viewer (audit web #3).
+  app.use('/profile', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'private, no-store');
+    next();
+  });
+
   function userByName(username: string): UserRow | null {
     if (typeof username !== 'string' || username.length > 12) return null;
     return (db.prepare('SELECT id, username, created_at FROM users WHERE username = ?')

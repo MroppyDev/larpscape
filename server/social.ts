@@ -487,6 +487,10 @@ CREATE TABLE IF NOT EXISTS guild_vault (
     });
 
     app.post('/api/coinflip/offer', requireAuth, (req: any, res: Response) => {
+      // Wealth-shaped: the stake is not yet server-escrowed (audit H2). Gate it
+      // behind the freeze for consistency with GE/market/trade so it cannot be
+      // the one un-migrated coin path once the economy is server-owned.
+      if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
       const to = typeof req.body?.to === 'string' ? req.body.to.trim() : '';
       const amount = req.body?.amount;
       if (!usernameRe.test(to)) { res.status(400).json({ error: 'invalid target' }); return; }
@@ -509,6 +513,7 @@ CREATE TABLE IF NOT EXISTS guild_vault (
     });
 
     app.post('/api/coinflip/accept', requireAuth, (req: any, res: Response) => {
+      if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
       const id = typeof req.body?.id === 'string' ? req.body.id : '';
       const offer = cfOffers.get(id);
       if (!offer || offer.toId !== req.userId) { res.status(404).json({ error: 'offer not found' }); return; }
@@ -542,6 +547,9 @@ CREATE TABLE IF NOT EXISTS guild_vault (
     // Creation costs 5000 coins — same client-trusted escrow model as the GE:
     // the client removes the coins from its inventory before calling this.
     app.post('/api/guild/create', requireAuth, (req: any, res: Response) => {
+      // The 5000-coin cost is not yet server-charged (audit H4). Wealth-shaped,
+      // so gate behind the freeze until creation debits server-owned coins.
+      if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
       const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
       const tag = typeof req.body?.tag === 'string' ? req.body.tag.trim().toUpperCase() : '';
       if (!GUILD_NAME_RE.test(name)) { res.status(400).json({ error: 'guild name must be 3-24 letters/numbers/spaces' }); return; }
@@ -690,6 +698,10 @@ CREATE TABLE IF NOT EXISTS guild_vault (
 
     // Deposit: client removed the items from its inventory first (GE trust model).
     app.post('/api/guild/vault/deposit', requireAuth, (req: any, res: Response) => {
+      // Deposit is unbacked (audit H3): it trusts the client removed the items.
+      // The vault is a cross-account item pool, so freeze it until deposits
+      // debit a server-owned inventory in the same transaction.
+      if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
       const m = membershipOf(req.userId);
       if (!m) { res.status(403).json({ error: 'you are not in a guild' }); return; }
       const item = typeof req.body?.item === 'string' ? req.body.item : '';
@@ -712,6 +724,9 @@ CREATE TABLE IF NOT EXISTS guild_vault (
     });
 
     app.post('/api/guild/vault/withdraw', requireAuth, (req: any, res: Response) => {
+      // Counterpart to the frozen deposit: withdraw grants items to the client
+      // from a pool that can be conjured. Freeze until the vault is server-backed.
+      if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
       const m = membershipOf(req.userId);
       if (!m) { res.status(403).json({ error: 'you are not in a guild' }); return; }
       if (m.rank === 'member' && m.member_deposit_only) {

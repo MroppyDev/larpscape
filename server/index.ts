@@ -248,8 +248,19 @@ function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   next();
 }
 
+// Constant-time admin-token check. Compare fixed-length SHA-256 digests so the
+// comparison time does not leak token contents (the login path uses the same
+// pattern). A missing/empty header still fails closed.
+const ADMIN_TOKEN_DIGEST = ADMIN_TOKEN
+  ? crypto.createHash('sha256').update(ADMIN_TOKEN).digest()
+  : null;
 function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (!ADMIN_TOKEN || req.headers['x-admin-token'] !== ADMIN_TOKEN) {
+  const provided = req.headers['x-admin-token'];
+  if (!ADMIN_TOKEN_DIGEST || typeof provided !== 'string') {
+    res.status(401).json({ error: 'unauthorized' }); return;
+  }
+  const providedDigest = crypto.createHash('sha256').update(provided).digest();
+  if (!crypto.timingSafeEqual(providedDigest, ADMIN_TOKEN_DIGEST)) {
     res.status(401).json({ error: 'unauthorized' }); return;
   }
   next();
@@ -321,6 +332,16 @@ const app = express();
 // direct remote connection spoof X-Forwarded-For.
 app.set('trust proxy', 'loopback');
 app.use(express.json({ limit: '1mb' }));
+
+// Baseline hardening headers (audit web #1/#2) on every response — clickjacking
+// and MIME-sniffing defense at the app layer (nginx adds the same + HSTS/CSP at
+// the edge). DENY because no first-party page legitimately frames these routes.
+app.use((_req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Generic fixed-window per-IP rate limiter (same shape as the hiscores one).
 function ipRateLimit(windowMs: number, max: number) {
@@ -1005,6 +1026,9 @@ interface Client {
   app: unknown; // equipment appearance ids, opaque to the server
   lastPos: number;
   alive: boolean;
+  // Inbound message-rate token bucket (per connection). Refilled lazily.
+  msgTokens: number;
+  msgRefill: number;
   view: PlayerView; // shared with the world sim (combat stats snapshot etc.)
 }
 
@@ -1096,7 +1120,29 @@ initDungeon(db, (userId, msg) => {
   }
 });
 
+// Per-IP WS-upgrade rate limit (audit M3): a reconnect loop forces a fresh
+// fullSnapshot + per-friend presence query on every connect — a cheap DoS /
+// friend-spam amplifier. Cap upgrades per IP per minute. nginx is the only
+// proxy (trust proxy = loopback), so the left-most X-Forwarded-For entry is the
+// real client; fall back to the socket address for direct connections.
+const wsUpgradeHits = new Map<string, { count: number; reset: number }>();
+function wsUpgradeAllowed(req: import('http').IncomingMessage): boolean {
+  const xff = req.headers['x-forwarded-for'];
+  const fwd = Array.isArray(xff) ? xff[0] : xff;
+  const ip = (fwd ? String(fwd).split(',')[0].trim() : '')
+    || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
+  let entry = wsUpgradeHits.get(ip);
+  if (!entry || now >= entry.reset) {
+    if (wsUpgradeHits.size > 10_000) wsUpgradeHits.clear(); // bound memory
+    entry = { count: 0, reset: now + 60_000 };
+    wsUpgradeHits.set(ip, entry);
+  }
+  return ++entry.count <= 60; // 60 upgrades / min / IP
+}
+
 wss.on('connection', (ws, req) => {
+  if (!wsUpgradeAllowed(req)) { ws.close(4008, 'rate limited'); return; }
   const url = new URL(req.url ?? '/ws', 'http://localhost');
   // ?token= (Bearer-style, the game client's stored token) wins; otherwise
   // accept the bs_session cookie sent on the upgrade request.
@@ -1131,6 +1177,7 @@ wss.on('connection', (ws, req) => {
   const client: Client = {
     ws, userId: user.id, name: user.username,
     x: 0, y: 0, app: null, lastPos: 0, alive: true,
+    msgTokens: 60, msgRefill: Date.now(),
     view,
   };
   clients.add(client);
@@ -1144,6 +1191,16 @@ wss.on('connection', (ws, req) => {
     typeof n === 'number' && Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
 
   ws.on('message', (raw) => {
+    // Per-connection inbound message-rate cap (audit M3): a token bucket that
+    // refills at ~30 msg/s up to a 60-msg burst, covering EVERY message type
+    // (pos has its own 200ms throttle; swing is cooldown-bound; this bounds the
+    // rest — stats/interact/trade_*/chat — and blunts tight reconnect-free spam).
+    const now = Date.now();
+    const refilled = client.msgTokens + ((now - client.msgRefill) / 1000) * 30;
+    client.msgTokens = Math.min(60, refilled);
+    client.msgRefill = now;
+    if (client.msgTokens < 1) return; // drop silently when over budget
+    client.msgTokens -= 1;
     let msg: any;
     try { msg = JSON.parse(String(raw).slice(0, 2048)); } catch { return; }
     if (!msg || typeof msg !== 'object') return;

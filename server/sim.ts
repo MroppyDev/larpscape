@@ -637,16 +637,11 @@ export function handleSwing(p: PlayerView, msg: any) {
   }
   let totalDmg = hits.reduce((s, d) => s + d, 0);
 
-  // ranged: ~20% arrow recovery on the ground
-  if (mode === 'ranged' && typeof msg.ammo === 'string' && /^[a-z][a-z0-9_]{0,47}$/.test(msg.ammo)
-    && msg.ammo.endsWith('_arrow') && Math.random() < 0.2) {
-    addGroundItem(msg.ammo, 1, n.x, n.y, sim.tick + 100);
-  }
-  // gun: ~5% round recovery (spent brass is harder to reclaim)
-  if (mode === 'gun' && typeof msg.ammo === 'string' && /^[a-z][a-z0-9_]{0,47}$/.test(msg.ammo)
-    && msg.ammo.endsWith('_round') && Math.random() < 0.05) {
-    addGroundItem(msg.ammo, 1, n.x, n.y, sim.tick + 100);
-  }
+  // Ammo recovery (arrows/rounds on the ground) is DISABLED: the spawn was
+  // speculative — it trusted the client-named `msg.ammo` with no proof the
+  // player owned or fired it, so a scripted client could spam swings and harvest
+  // a free item faucet (audit M5). Re-enable only when ammo consumption is
+  // server-owned, tying recovery to a real server-side ammo debit.
 
   // ----- on-hit gear effects (proc on a damaging main hit) -----
   if (totalDmg > 0) {

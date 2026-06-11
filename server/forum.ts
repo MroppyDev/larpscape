@@ -364,6 +364,10 @@ ${jumpBox()}
   }
 
   function send(res: Response, html: string, status = 200) {
+    // Forum shells embed session-derived content ("Logged in as", Warden mod
+    // controls, quote-prefill). Keep a shared/intermediary proxy from caching a
+    // personalized page and serving it to another user (audit web #3).
+    res.setHeader('Cache-Control', 'private, no-store');
     res.status(status).type('html').send(html);
   }
 
@@ -638,7 +642,7 @@ ${modBar}`;
 <tr><th class="cathead">Preview</th></tr>
 <tr><td class="row1"><div class="postbody">${renderBBCode(body)}</div></td></tr></table>`
       : '';
-    const errBox = error ? `<div class="errbox">${error}</div>` : '';
+    const errBox = error ? `<div class="errbox">${esc(error)}</div>` : '';
     const heading = ctx.mode === 'newtopic'
       ? `Post a new topic in ${esc(ctx.board.name)}`
       : `Reply to: ${esc(ctx.thread!.title)}`;
@@ -673,7 +677,7 @@ ${subjectRow}
          [ctx.thread!.title, `/forum/viewtopic?t=${ctx.thread!.id}`], ['Reply', null]]
       : [[ctx.board.name, `/forum/viewforum?f=${ctx.board.id}`], ['New Topic', null]];
     if (refusal) {
-      send(res, shell(user, 'Posting', crumbs, `<div class="errbox">${refusal}</div>`), user ? 403 : 401);
+      send(res, shell(user, 'Posting', crumbs, `<div class="errbox">${esc(refusal)}</div>`), user ? 403 : 401);
       return;
     }
     send(res, shell(user, 'Posting', crumbs, postingForm(user, ctx, '', body, null, false)));
@@ -687,7 +691,7 @@ ${subjectRow}
     const crumbs: Crumb[] = [[ctx.board.name, `/forum/viewforum?f=${ctx.board.id}`], ['Posting', null]];
     const refusal = postingRefusal(ctx, user);
     if (refusal) {
-      send(res, shell(user, 'Posting', crumbs, `<div class="errbox">${refusal}</div>`), user ? 403 : 401);
+      send(res, shell(user, 'Posting', crumbs, `<div class="errbox">${esc(refusal)}</div>`), user ? 403 : 401);
       return;
     }
     const b = req.body as Record<string, unknown>;

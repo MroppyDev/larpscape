@@ -44,7 +44,9 @@ fi
 if ! grep -q '^ADMIN_PASSWORD=' /etc/larpscape/env; then
   ADMIN_PASSWORD="$(head -c 12 /dev/urandom | base64 | tr -d '/+=' | head -c 16)"
   echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> /etc/larpscape/env
-  echo "    generated ADMIN_PASSWORD: $ADMIN_PASSWORD  (admin console login — also in /etc/larpscape/env)"
+  # Do NOT echo the value — it would land in terminal scrollback / CI logs /
+  # journalctl. Read it from the 0600 env file instead (audit infra #3).
+  echo "    generated ADMIN_PASSWORD (admin console login — see /etc/larpscape/env)"
 fi
 
 echo "==> sudoers rule (admin console may restart the game service)"
