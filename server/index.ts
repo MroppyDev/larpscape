@@ -24,6 +24,7 @@ import {
   OVERWORLD_EXIT, onDisconnect as dungeonOnDisconnect,
 } from './dungeon';
 import { getRanking, getPlayerHiscores } from './hiscores';
+import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
 import { initForum } from './forum';
 import { initMarket } from './market';
 import { initPortraits } from './portrait';
@@ -150,12 +151,26 @@ function createSession(userId: number): string {
   return token;
 }
 
+// Sessions expire server-side after 90 days (matches the cookie Max-Age).
+// Expired rows are deleted lazily on next use so a leaked token can't grant
+// indefinite access.
+const SESSION_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 function userForToken(token: string): { id: number; username: string } | null {
   if (!token || typeof token !== 'string' || token.length > 128) return null;
   const row = db.prepare(
-    'SELECT u.id, u.username FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
-  ).get(token) as { id: number; username: string } | undefined;
-  return row ?? null;
+    'SELECT u.id, u.username, s.created_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?'
+  ).get(token) as { id: number; username: string; created_at: number } | undefined;
+  if (!row) return null;
+  if (Date.now() - row.created_at > SESSION_TTL_MS) {
+    db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+    return null;
+  }
+  return { id: row.id, username: row.username };
+}
+
+// Invalidate every session for a user (e.g. after password change or on demand).
+export function invalidateAllSessions(userId: number) {
+  db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
 }
 
 // --- Cookie sessions ---------------------------------------------------------
@@ -327,6 +342,8 @@ function ipRateLimit(windowMs: number, max: number) {
 }
 
 // Brute-force / spam guards on credential endpoints.
+const saveRateLimit = ipRateLimit(60_000, 60);         // 60 saves / min / IP (debounced client sends ~1/2s)
+const offerRateLimit = ipRateLimit(60_000, 30);        // 30 GE offers / min / IP
 const loginRateLimit = ipRateLimit(10 * 60_000, 20);   // 20 attempts / 10 min / IP
 const registerRateLimit = ipRateLimit(60 * 60_000, 10); // 10 accounts / hour / IP
 
@@ -417,7 +434,7 @@ function fenceSaves(userIds: number[]) {
   for (const id of userIds) saveFence.set(id, until);
 }
 
-app.put('/api/character', requireAuth, (req: AuthedRequest, res) => {
+app.put('/api/character', saveRateLimit, requireAuth, (req: AuthedRequest, res) => {
   const fencedUntil = saveFence.get(req.userId!) ?? 0;
   if (fencedUntil > Date.now()) {
     res.status(409).json({ error: 'save_fenced' }); return;
@@ -464,9 +481,12 @@ const matchOffer = db.transaction((incoming: OfferRow): OfferRow => {
   // Best price first, then oldest (price-time priority).
   const order = incoming.kind === 'buy' ? 'price ASC, id ASC' : 'price DESC, id ASC';
   const priceCond = incoming.kind === 'buy' ? 'price <= ?' : 'price >= ?';
+  // Never self-match: matching your own buy with your own sell mints/launders
+  // value with no counterparty.
   const book = db.prepare(
-    `SELECT * FROM offers WHERE item = ? AND kind = ? AND active = 1 AND filled < qty AND ${priceCond} ORDER BY ${order}`
-  ).all(incoming.item, opposite, incoming.price) as OfferRow[];
+    `SELECT * FROM offers WHERE item = ? AND kind = ? AND active = 1 AND filled < qty
+       AND user_id != ? AND ${priceCond} ORDER BY ${order}`
+  ).all(incoming.item, opposite, incoming.user_id, incoming.price) as OfferRow[];
 
   for (const resting of book) {
     if (remaining <= 0) break;
@@ -495,7 +515,8 @@ const matchOffer = db.transaction((incoming: OfferRow): OfferRow => {
   return db.prepare('SELECT * FROM offers WHERE id = ?').get(incoming.id) as OfferRow;
 });
 
-app.post('/api/ge/offer', requireAuth, (req: AuthedRequest, res) => {
+app.post('/api/ge/offer', offerRateLimit, requireAuth, (req: AuthedRequest, res) => {
+  if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
   const { kind, item, qty, price } = req.body ?? {};
   if (kind !== 'buy' && kind !== 'sell') { res.status(400).json({ error: 'kind must be buy or sell' }); return; }
   if (typeof item !== 'string' || !ITEM_RE.test(item)) { res.status(400).json({ error: 'invalid item id' }); return; }
@@ -543,6 +564,7 @@ app.post('/api/ge/abort', requireAuth, (req: AuthedRequest, res) => {
 });
 
 app.post('/api/ge/collect', requireAuth, (req: AuthedRequest, res) => {
+  if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
   const { id } = req.body ?? {};
   if (!isPosInt(id, Number.MAX_SAFE_INTEGER)) { res.status(400).json({ error: 'bad id' }); return; }
   const o = db.prepare('SELECT * FROM offers WHERE id = ? AND user_id = ?')

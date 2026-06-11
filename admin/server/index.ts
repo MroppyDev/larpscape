@@ -68,9 +68,11 @@ let loginLockUntil = 0;
 app.post('/admin-api/login', (req, res) => {
   if (Date.now() < loginLockUntil) { res.status(429).json({ error: 'too many attempts, wait a minute' }); return; }
   const { password } = req.body ?? {};
+  // Compare fixed-width SHA-256 digests so neither the timing nor the
+  // (previously length-gated) comparison leaks the password's length.
+  const digest = (s: string) => crypto.createHash('sha256').update(s, 'utf8').digest();
   if (!ADMIN_PASSWORD || typeof password !== 'string' ||
-      password.length !== ADMIN_PASSWORD.length ||
-      !crypto.timingSafeEqual(Buffer.from(password), Buffer.from(ADMIN_PASSWORD))) {
+      !crypto.timingSafeEqual(digest(password), digest(ADMIN_PASSWORD))) {
     loginFailures++;
     if (loginFailures >= 5) { loginLockUntil = Date.now() + 60_000; loginFailures = 0; }
     res.status(401).json({ error: 'wrong password' });

@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { Response } from 'express';
 import type Database from 'better-sqlite3';
+import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -274,6 +275,14 @@ CREATE TABLE IF NOT EXISTS guild_vault (
   function finishTrade(s: TradeSession) {
     trades.delete(s.a.userId);
     trades.delete(s.b.userId);
+    // EMERGENCY: P2P trade validates possession against the client-forgeable
+    // save. Frozen until inventory is server-owned. (server/econ-freeze.ts)
+    if (ECONOMY_FROZEN) {
+      const payload = { t: 'trade_cancelled', reason: FREEZE_MSG };
+      sendTo(s.a.userId, payload);
+      sendTo(s.b.userId, payload);
+      return;
+    }
     let err: string | null;
     try { err = execTrade(s); } catch { err = 'trade failed'; }
     if (!err) onSavesMutated?.([s.a.userId, s.b.userId]);

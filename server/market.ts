@@ -47,6 +47,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import type { Express, Request, Response } from 'express';
 import type Database from 'better-sqlite3';
+import { ECONOMY_FROZEN, FREEZE_MSG } from './econ-freeze';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -292,6 +293,7 @@ CREATE TABLE IF NOT EXISTS market_proceeds (
   });
 
   app.post('/api/market/list', (req, res) => {
+    if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
     const user = requireUser(req, res);
     if (!user) return;
     const { item, qty, price } = req.body ?? {};
@@ -344,6 +346,7 @@ CREATE TABLE IF NOT EXISTS market_proceeds (
   });
 
   app.post('/api/market/buy', (req, res) => {
+    if (ECONOMY_FROZEN) { res.status(503).json({ error: FREEZE_MSG }); return; }
     const user = requireUser(req, res);
     if (!user) return;
     const { id } = req.body ?? {};

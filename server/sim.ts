@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { blocked } from './world';
 import { tickBosses } from './bosses';
+import { ECONOMY_FROZEN } from './econ-freeze';
 import {
   EffectDef, SpecDef, ActiveDot, HitsplatKind,
   familyMods, applyDotStack, isSpecKind, clampNum,
@@ -739,6 +740,10 @@ export function handlePickup(p: PlayerView, msg: any) {
 
 export function handleDrop(p: PlayerView, msg: any) {
   if (p.dead) return;
+  // EMERGENCY: handleDrop spawns a ground item with no server-side ownership
+  // check — a cross-account item-injection/transfer primitive. Disabled until
+  // inventory is server-owned. (See server/econ-freeze.ts.)
+  if (ECONOMY_FROZEN) { p.send({ t: 'deny', what: 'drop' }); return; }
   const item = String(msg.item ?? '');
   if (!ITEM_RE.test(item)) return;
   const qty = clamp(msg.qty, 1, 2_000_000_000, 1);
