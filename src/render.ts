@@ -450,6 +450,14 @@ const torusG = (r: number, tube: number, col: string) =>
   coloredGeo(`o${r},${tube}`, () => new THREE.TorusGeometry(r, tube, 5, 10), col, 0.05);
 const ringG = (ri: number, ro: number, col: string) =>
   coloredGeo(`r${ri},${ro}`, () => new THREE.RingGeometry(ri, ro, 14), col, 0);
+// Rounded low-poly primitives — faceted enough to read as classic low-poly,
+// but no more cubes for organic shapes (heads, limbs, torsos).
+const sphG = (r: number, col: string, w = 7, h = 5, facet = 0.06) =>
+  coloredGeo(`s${r},${w},${h}`, () => new THREE.SphereGeometry(r, w, h), col, facet);
+const capG = (r: number, len: number, col: string, facet = 0.06) =>
+  coloredGeo(`p${r},${len}`, () => new THREE.CapsuleGeometry(r, len, 2, 6), col, facet);
+const domeG = (r: number, col: string, facet = 0.06) =>
+  coloredGeo(`d${r}`, () => new THREE.SphereGeometry(r, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2), col, facet);
 
 function lm(geo: THREE.BufferGeometry, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0): THREE.Mesh {
   const m = new THREE.Mesh(geo, litMat);
@@ -1309,50 +1317,85 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
   const body = new THREE.Group();
   root.add(body);
 
-  // legs
+  // legs — tapered hexagonal columns with rounded boots
   const legY = legH;
-  const mkLeg = (sx: number) =>
-    limbGroup(lm(boxG(0.11, legH, 0.12, o.legArmor ?? pants), 0, -legH / 2, 0), sx * 0.09, legY, 0);
+  const legCol = o.legArmor ?? pants;
+  const mkLeg = (sx: number) => {
+    const g = limbGroup(lm(cylG(0.05, 0.062, legH - 0.06, legCol, 6), 0, -legH / 2 + 0.02, 0), sx * 0.085, legY, 0);
+    const boot = lm(sphG(0.062, '#3a3026'), 0, -legH + 0.045, 0.015);
+    boot.scale.set(1, 0.7, 1.25);
+    g.add(boot);
+    return g;
+  };
   const ll = mkLeg(-1), rl = mkLeg(1);
   body.add(ll, rl);
 
-  // torso
+  // hips bridge the legs into the torso
+  const hips = lm(sphG(0.125, legCol), 0, legH + 0.01, 0);
+  hips.scale.set(torsoW / 0.34, 0.55, 0.72);
+  body.add(hips);
+
+  // torso — tapered octagonal chest, broad at the shoulders
   const torsoY = legH + torsoH / 2;
-  const torso = lm(boxG(torsoW, torsoH, torsoD, tunic), 0, torsoY, 0);
+  const torso = lm(cylG(torsoW * 0.5, torsoW * 0.38, torsoH, tunic, 8), 0, torsoY, 0);
+  torso.scale.z = 0.62;
   if (gob) { torso.rotation.x = 0.3; torso.position.z = 0.04; }
   body.add(torso);
-  if (o.apron) body.add(lm(boxG(torsoW * 0.8, torsoH * 0.85, 0.03, o.apron), 0, torsoY - 0.03, torsoD / 2 + 0.02));
-
-  // arms
+  // shoulder caps (pads when armoured, cloth otherwise)
   const shoulderY = legH + torsoH - 0.03;
+  for (const sx of [-1, 1]) {
+    const pad = lm(sphG(o.bodyArmor ? 0.075 : 0.06, o.bodyArmor ?? tunic), sx * (torsoW / 2 + 0.04), shoulderY + 0.015, gob ? 0.06 : 0);
+    pad.scale.y = 0.8;
+    body.add(pad);
+  }
+  if (o.apron) {
+    const ap = lm(sphG(torsoW * 0.42, o.apron), 0, torsoY - 0.04, torsoD * 0.32 + 0.02);
+    ap.scale.set(0.95, torsoH * 2.1, 0.28);
+    body.add(ap);
+  }
+
+  // arms — slim capsules with sphere hands
+  const armCol = o.bodyArmor ?? tunic;
   const mkArm = (sx: number) =>
-    limbGroup(lm(boxG(0.09, armH, 0.1, o.bodyArmor ?? tunic), 0, -armH / 2 + 0.02, 0), sx * (torsoW / 2 + 0.055), shoulderY, gob ? 0.06 : 0);
+    limbGroup(lm(capG(0.042, armH - 0.1, armCol), 0, -armH / 2 + 0.02, 0), sx * (torsoW / 2 + 0.055), shoulderY, gob ? 0.06 : 0);
   const la = mkArm(-1), ra = mkArm(1);
   body.add(la, ra);
   // hands
-  la.add(lm(boxG(0.085, 0.08, 0.09, skin), 0, -armH + 0.02, 0));
-  ra.add(lm(boxG(0.085, 0.08, 0.09, skin), 0, -armH + 0.02, 0));
+  la.add(lm(sphG(0.048, skin), 0, -armH + 0.02, 0));
+  ra.add(lm(sphG(0.048, skin), 0, -armH + 0.02, 0));
 
-  // head
-  const headY = legH + torsoH + headS / 2 + 0.02;
+  // head — faceted sphere with a neck
+  const headR = headS * 0.56;
+  const headY = legH + torsoH + headR + 0.035;
+  body.add(lm(cylG(0.045, 0.055, 0.06, skin, 6), 0, legH + torsoH + 0.015, gob ? 0.05 : 0));
   const head = new THREE.Group();
   head.position.set(0, headY, gob ? 0.09 : 0);
-  head.add(lm(boxG(headS, headS, headS, skin)));
+  const skull = lm(sphG(headR, skin));
+  skull.scale.set(0.92, 1.04, 0.95);
+  head.add(skull);
+  if (gob) head.scale.setScalar(1.18);
   // eyes
-  head.add(lm(boxG(0.035, 0.035, 0.012, '#24201c'), -0.05, 0.03, headS / 2 + 0.004));
+  head.add(lm(boxG(0.032, 0.032, 0.012, '#24201c'), -0.045, 0.02, headR * 0.85));
   if (o.eyepatch) {
-    head.add(lm(boxG(0.06, 0.05, 0.014, '#181614'), 0.05, 0.03, headS / 2 + 0.005));
-    head.add(lm(boxG(headS + 0.02, 0.018, headS + 0.02, '#181614'), 0, 0.055, 0));
+    head.add(lm(boxG(0.055, 0.045, 0.014, '#181614'), 0.045, 0.02, headR * 0.86));
+    head.add(lm(torusG(headR * 0.95, 0.01, '#181614'), 0, 0.04, 0, Math.PI / 2.3));
   } else {
-    head.add(lm(boxG(0.035, 0.035, 0.012, '#24201c'), 0.05, 0.03, headS / 2 + 0.004));
+    head.add(lm(boxG(0.032, 0.032, 0.012, '#24201c'), 0.045, 0.02, headR * 0.85));
   }
-  if (o.beard) head.add(lm(boxG(0.12, 0.1, 0.03, o.beard), 0, -0.09, headS / 2 + 0.01));
+  if (o.beard) {
+    const bd = lm(sphG(headR * 0.72, o.beard), 0, -headR * 0.62, headR * 0.42);
+    bd.scale.set(0.85, 0.8, 0.6);
+    head.add(bd);
+  }
   if (gob) {
-    head.add(lm(tetraG(0.07, skin), -headS / 2 - 0.05, 0.04, 0, 0, 0, 1.9));
-    head.add(lm(tetraG(0.07, skin), headS / 2 + 0.05, 0.04, 0, 0, 0, -1.9));
+    head.add(lm(tetraG(0.07, skin), -headR - 0.045, 0.04, 0, 0, 0, 1.9));
+    head.add(lm(tetraG(0.07, skin), headR + 0.045, 0.04, 0, 0, 0, -1.9));
   }
   if (o.helm) {
-    head.add(lm(boxG(headS + 0.05, headS * 0.75, headS + 0.05, o.helm), 0, 0.05, 0));
+    // rounded dome helm with a rim and nose guard
+    head.add(lm(domeG(headR + 0.035, o.helm), 0, -0.005, 0));
+    head.add(lm(cylG(headR + 0.04, headR + 0.045, 0.035, o.helm, 8), 0, -0.005, 0));
+    head.add(lm(boxG(0.03, 0.1, 0.02, o.helm), 0, -0.02, headR + 0.02));
   } else if (o.hat === 'wizard') {
     const hc = o.hatCol ?? '#3a4ea8';
     head.add(lm(cylG(0.17, 0.19, 0.03, hc, 8), 0, headS / 2 + 0.01, 0));
@@ -1364,7 +1407,11 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     head.add(lm(cylG(0.12, 0.1, 0.2, '#f2f0ea', 8), 0, headS / 2 + 0.1, 0));
     head.add(lm(cylG(0.13, 0.13, 0.04, '#f8f6f2', 8), 0, headS / 2 + 0.21, 0));
   } else if (o.hair) {
-    head.add(lm(boxG(headS + 0.02, 0.07, headS + 0.02, o.hair), 0, headS / 2, -0.005));
+    // rounded hair: dome cap on top, blob hugging the back of the skull
+    head.add(lm(domeG(headR + 0.015, o.hair), 0, 0.012, -0.008));
+    const back = lm(sphG(headR * 0.92, o.hair), 0, -0.01, -headR * 0.38);
+    back.scale.set(0.95, 0.9, 0.6);
+    head.add(back);
   }
   body.add(head);
 
@@ -1418,13 +1465,15 @@ function makeQuadruped(opts: { body: string; patches?: boolean; horns?: boolean;
 
   if (opts.rat) {
     const fur = opts.body;
-    body.add(lm(boxG(0.3, 0.22, 0.58, fur), 0, 0.24, 0));
-    body.add(lm(coneG(0.12, 0.26, fur, 5), 0, 0.26, 0.4, Math.PI / 2));
+    const trunk = lm(sphG(0.22, fur), 0, 0.24, -0.04);
+    trunk.scale.set(0.72, 0.6, 1.5);
+    body.add(trunk);
+    body.add(lm(coneG(0.11, 0.28, fur, 6), 0, 0.26, 0.42, Math.PI / 2));
     body.add(lm(tetraG(0.05, '#caa8a0'), -0.08, 0.38, 0.32));
     body.add(lm(tetraG(0.05, '#caa8a0'), 0.08, 0.38, 0.32));
     body.add(lm(cylG(0.012, 0.03, 0.55, '#b08878', 4), 0, 0.2, -0.5, Math.PI / 2.4));
     const mkLeg = (sx: number, sz: number) =>
-      limbGroup(lm(boxG(0.07, 0.16, 0.07, fur), 0, -0.08, 0), sx * 0.12, 0.16, sz * 0.2);
+      limbGroup(lm(cylG(0.03, 0.038, 0.16, fur, 5), 0, -0.08, 0), sx * 0.12, 0.16, sz * 0.2);
     const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
     body.add(fl, fr, bl, br);
     fig.limbs = { la: fl, ra: br, ll: bl, rl: fr };
@@ -1433,40 +1482,56 @@ function makeQuadruped(opts: { body: string; patches?: boolean; horns?: boolean;
     body.add(lm(icoG(0.3, wool, 0), 0, 0.46, 0));
     body.add(lm(icoG(0.24, '#ded8ca', 0), 0, 0.5, 0.22));
     body.add(lm(icoG(0.22, '#e2dccf', 0), 0.02, 0.5, -0.2));
-    body.add(lm(boxG(0.16, 0.16, 0.2, '#3a3530'), 0, 0.52, 0.42));
+    const sheepHead = lm(sphG(0.1, '#3a3530'), 0, 0.52, 0.44);
+    sheepHead.scale.set(0.85, 0.85, 1.15);
+    body.add(sheepHead);
     const mkLeg = (sx: number, sz: number) =>
-      limbGroup(lm(boxG(0.08, 0.26, 0.08, '#3a3530'), 0, -0.13, 0), sx * 0.14, 0.27, sz * 0.18);
+      limbGroup(lm(cylG(0.035, 0.042, 0.26, '#3a3530', 5), 0, -0.13, 0), sx * 0.14, 0.27, sz * 0.18);
     const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
     body.add(fl, fr, bl, br);
     fig.limbs = { la: fl, ra: br, ll: bl, rl: fr };
   } else if (opts.sheared) {
-    body.add(lm(boxG(0.34, 0.3, 0.6, '#d8c8be'), 0, 0.42, 0));
-    body.add(lm(boxG(0.16, 0.16, 0.2, '#3a3530'), 0, 0.52, 0.4));
+    const trunk = lm(sphG(0.24, '#d8c8be'), 0, 0.42, 0);
+    trunk.scale.set(0.75, 0.65, 1.35);
+    body.add(trunk);
+    const sheepHead = lm(sphG(0.1, '#3a3530'), 0, 0.52, 0.42);
+    sheepHead.scale.set(0.85, 0.85, 1.15);
+    body.add(sheepHead);
     const mkLeg = (sx: number, sz: number) =>
-      limbGroup(lm(boxG(0.08, 0.26, 0.08, '#3a3530'), 0, -0.13, 0), sx * 0.12, 0.27, sz * 0.18);
+      limbGroup(lm(cylG(0.035, 0.042, 0.26, '#3a3530', 5), 0, -0.13, 0), sx * 0.12, 0.27, sz * 0.18);
     const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
     body.add(fl, fr, bl, br);
     fig.limbs = { la: fl, ra: br, ll: bl, rl: fr };
   } else {
-    // cow
-    body.add(lm(boxG(0.48, 0.42, 0.84, opts.body), 0, 0.56, 0));
+    // cow — barrel body, muzzled head, rounded haunches
+    const trunk = lm(sphG(0.3, opts.body), 0, 0.56, 0);
+    trunk.scale.set(0.85, 0.75, 1.5);
+    body.add(trunk);
     if (opts.patches) {
-      body.add(lm(boxG(0.5, 0.2, 0.22, '#46423c'), 0, 0.62, 0.16));
-      body.add(lm(boxG(0.5, 0.16, 0.18, '#46423c'), 0, 0.5, -0.26));
-      body.add(lm(boxG(0.24, 0.44, 0.2, '#46423c'), 0.14, 0.55, -0.02));
+      for (const [px, py, pz, ps] of [[0.16, 0.62, 0.2, 0.16], [-0.12, 0.52, -0.24, 0.18], [0.14, 0.55, -0.02, 0.14]] as const) {
+        const patch = lm(sphG(ps, '#46423c'), px, py, pz);
+        patch.scale.set(1.4, 0.9, 1.2);
+        body.add(patch);
+      }
     }
     const head = new THREE.Group();
     head.position.set(0, 0.74, 0.52);
-    head.add(lm(boxG(0.26, 0.26, 0.26, opts.body)));
-    head.add(lm(boxG(0.18, 0.12, 0.08, '#caa0a0'), 0, -0.07, 0.16));
+    const skull = lm(sphG(0.15, opts.body));
+    skull.scale.set(0.9, 0.95, 1.05);
+    head.add(skull);
+    const muzzle = lm(sphG(0.09, '#caa0a0'), 0, -0.05, 0.12);
+    muzzle.scale.set(1.1, 0.75, 0.9);
+    head.add(muzzle);
+    head.add(lm(tetraG(0.045, opts.body), -0.14, 0.08, -0.02, 0, 0, 1.6));
+    head.add(lm(tetraG(0.045, opts.body), 0.14, 0.08, -0.02, 0, 0, -1.6));
     if (opts.horns) {
-      head.add(lm(boxG(0.05, 0.05, 0.12, '#e8e4d8'), -0.16, 0.1, 0.04));
-      head.add(lm(boxG(0.05, 0.05, 0.12, '#e8e4d8'), 0.16, 0.1, 0.04));
+      head.add(lm(coneG(0.03, 0.14, '#e8e4d8', 5), -0.15, 0.12, 0.02, 0, 0, 0.9));
+      head.add(lm(coneG(0.03, 0.14, '#e8e4d8', 5), 0.15, 0.12, 0.02, 0, 0, -0.9));
     }
     body.add(head);
     body.add(lm(cylG(0.015, 0.02, 0.34, opts.body, 4), 0, 0.6, -0.48, 0.5));
     const mkLeg = (sx: number, sz: number) =>
-      limbGroup(lm(boxG(0.11, 0.36, 0.11, opts.body), 0, -0.18, 0), sx * 0.17, 0.37, sz * 0.3);
+      limbGroup(lm(cylG(0.05, 0.06, 0.36, opts.body, 6), 0, -0.18, 0), sx * 0.17, 0.37, sz * 0.3);
     const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
     body.add(fl, fr, bl, br);
     fig.limbs = { la: fl, ra: br, ll: bl, rl: fr };
@@ -1481,13 +1546,18 @@ function makeChicken(scale: number): THREE.Group {
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  body.add(lm(boxG(0.24, 0.22, 0.3, '#eae4d6'), 0, 0.3, 0));
-  body.add(lm(boxG(0.13, 0.13, 0.13, '#eae4d6'), 0, 0.48, 0.16));
-  body.add(lm(tetraG(0.045, '#e8a020'), 0, 0.48, 0.26, 0, 0.7));
-  body.add(lm(boxG(0.03, 0.07, 0.08, '#d23a2a'), 0, 0.58, 0.15));
+  const trunk = lm(sphG(0.15, '#eae4d6'), 0, 0.3, 0);
+  trunk.scale.set(0.85, 0.8, 1.1);
+  body.add(trunk);
+  body.add(lm(sphG(0.075, '#eae4d6'), 0, 0.48, 0.16));
+  body.add(lm(coneG(0.028, 0.08, '#e8a020', 5), 0, 0.48, 0.26, Math.PI / 2));
+  body.add(lm(boxG(0.025, 0.06, 0.07, '#d23a2a'), 0, 0.57, 0.15));
   body.add(lm(tetraG(0.1, '#dcd6c8'), 0, 0.34, -0.18, 0.5, 0.4));
-  const mkWing = (sx: number) =>
-    limbGroup(lm(boxG(0.035, 0.14, 0.2, '#dcd6c8'), sx * 0.02, -0.07, 0), sx * 0.13, 0.38, 0);
+  const mkWing = (sx: number) => {
+    const wing = lm(sphG(0.09, '#dcd6c8'), sx * 0.02, -0.06, 0);
+    wing.scale.set(0.35, 0.85, 1.15);
+    return limbGroup(wing, sx * 0.13, 0.38, 0);
+  };
   const lw = mkWing(-1), rw = mkWing(1);
   body.add(lw, rw);
   const mkLeg = (sx: number) =>
