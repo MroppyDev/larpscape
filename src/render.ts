@@ -215,6 +215,16 @@ let renderer: THREE.WebGLRenderer | null = null;
 let scene: THREE.Scene | null = null;
 let cam3: THREE.PerspectiveCamera | null = null;
 let sunLight: THREE.DirectionalLight | null = null;
+let viewScale = 1;
+
+// Called when scaled fixed mode rescales the client: bump the internal render
+// resolution so the upscaled canvas stays crisp.
+export function setViewportScale(s: number) {
+  viewScale = s;
+  if (renderer) {
+    renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * viewScale, 3));
+  }
+}
 let pickMeshes: THREE.Mesh[] = [];
 let waterMesh: THREE.Mesh | null = null;
 let waterBase: Float32Array | null = null;
@@ -2750,7 +2760,7 @@ function ensureScene(): boolean {
 
   renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
   const w = cv.clientWidth || 515, h = cv.clientHeight || 336;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min((window.devicePixelRatio || 1) * viewScale, 3));
   renderer.setSize(w, h, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;

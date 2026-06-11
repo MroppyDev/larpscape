@@ -27,7 +27,14 @@ body {
   overflow: hidden;
 }
 
-#frame { padding: 8px; background: #000; border: 2px solid #382f22; border-radius: 3px; }
+/* RuneLite-style scaled fixed mode: the authentic 765×503 layout, scaled to
+   fill the window (transform set from main.ts on load/resize). */
+#frame { padding: 8px; background: #000; border: 2px solid #382f22; border-radius: 3px; transform-origin: center center; }
+
+/* pixel-art sprites stay chunky when the client scales up; the 3D viewport
+   re-renders at native resolution instead */
+canvas { image-rendering: pixelated; }
+#viewport { image-rendering: auto; }
 
 #client { display: flex; width: 765px; height: 503px; background: #000; }
 

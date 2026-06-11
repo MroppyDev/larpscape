@@ -10,7 +10,7 @@ import './tutorial';
 import './worldmap';
 import { net } from './net';
 import { initUI } from './ui';
-import { render, renderMinimap, buildMinimapBase, markTick } from './render';
+import { render, renderMinimap, buildMinimapBase, markTick, setViewportScale } from './render';
 import { audio, TRACKS, trackForRegion } from './audio';
 import { TICK_MS } from './defs';
 
@@ -20,6 +20,19 @@ document.addEventListener('pointerdown', () => audio.warmUp(), { once: true });
 
 let lastRegionTrack = '';
 let booted = false;
+
+// Scaled fixed mode: keep the authentic 765×503 layout but scale it to fill
+// the window (like RuneLite's scaled fixed mode). The 3D viewport re-renders
+// at the scaled resolution so it stays sharp instead of blurring up.
+function applyScale() {
+  const frame = document.getElementById('frame');
+  if (!frame) return;
+  const s = Math.max(1, Math.min((window.innerWidth - 24) / 785, (window.innerHeight - 24) / 523, 2.6));
+  frame.style.transform = s > 1.02 ? `scale(${s.toFixed(3)})` : '';
+  setViewportScale(s);
+}
+window.addEventListener('resize', applyScale);
+applyScale();
 
 async function boot() {
   // net.bootstrap shows the login/register UI and only resolves once a server
