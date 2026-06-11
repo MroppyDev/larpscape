@@ -80,6 +80,18 @@ if [[ -f deploy/nginx-larpscape-wiki.conf ]]; then
     bash deploy/enable-wiki-ssl.sh
   fi
 fi
+# forum.larpscape.net vhost. HTTPS comes from a one-time manual step post-DNS:
+# run bash deploy/bootstrap-forum-ssl.sh on the VPS AFTER the forum A record is
+# added — later deploys then re-enable HTTPS automatically via enable-forum-ssl.sh.
+if [[ -f deploy/nginx-larpscape-forum.conf ]]; then
+  mkdir -p /var/www/certbot
+  cp deploy/nginx-larpscape-forum.conf /etc/nginx/sites-available/larpscape-forum
+  ln -sf /etc/nginx/sites-available/larpscape-forum /etc/nginx/sites-enabled/larpscape-forum
+  # If HTTPS cert already exists, append the SSL vhost
+  if [[ -f /etc/letsencrypt/live/forum.larpscape.net/fullchain.pem ]] && [[ -f deploy/nginx-larpscape-forum-ssl.conf ]]; then
+    bash deploy/enable-forum-ssl.sh
+  fi
+fi
 rm -f /etc/nginx/sites-enabled/default
 echo "==> Syncing nginx vhosts"
 if nginx -t; then

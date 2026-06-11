@@ -9,6 +9,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, '../dist-home'),
     emptyOutDir: true,
+    rollupOptions: {
+      // MPA entries: / (homepage) + the auth pages. nginx serves the clean
+      // URLs /login, /register, /profile via try_files $uri $uri.html.
+      input: {
+        index: path.resolve(__dirname, 'index.html'),
+        login: path.resolve(__dirname, 'login.html'),
+        register: path.resolve(__dirname, 'register.html'),
+        profile: path.resolve(__dirname, 'profile.html'),
+      },
+    },
   },
   server: {
     port: 5176,

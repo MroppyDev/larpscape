@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your account — Larpscape</title>
+  <meta name="description" content="Your Larpscape account." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="auth-page">
+  <a class="skip-link" href="#auth-main">Skip to content</a>
+
+  <div class="auth-wrap">
+    <a class="auth-mast" href="/" aria-label="Larpscape home">
+      <svg viewBox="0 0 560 96" role="img" aria-label="Larpscape">
+        <defs>
+          <linearGradient id="goldtxt-auth" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffefb0" />
+            <stop offset=".45" stop-color="#f1c85a" />
+            <stop offset=".75" stop-color="#c8922a" />
+            <stop offset="1" stop-color="#9a6a1c" />
+          </linearGradient>
+        </defs>
+        <text x="50%" y="72" text-anchor="middle" class="wordmark-text" fill="url(#goldtxt-auth)" stroke="#171008" stroke-width="6" paint-order="stroke">LARPSCAPE</text>
+      </svg>
+    </a>
+
+    <main id="auth-main">
+      <section class="panel auth-panel" aria-labelledby="auth-h">
+        <h1 class="panel-h" id="auth-h">Your account</h1>
+        <p class="auth-sub" id="profile-line">Checking the gate ledger&hellip;</p>
+
+        <div class="profile-actions" id="profile-actions" hidden>
+          <a class="btn btn-primary btn-block" href="https://play.larpscape.net">Enter Cantorne</a>
+          <a class="btn btn-block" href="https://forum.larpscape.net">Visit the forum</a>
+          <a class="btn btn-block" href="https://wiki.larpscape.net">Read the wiki</a>
+          <button class="btn btn-block" id="logout-btn" type="button">Log out</button>
+        </div>
+      </section>
+      <p class="auth-foot"><a href="/">&larr; Back to larpscape.net</a></p>
+    </main>
+  </div>
+
+  <script type="module" src="/src/profile.ts"></script>
+</body>
+</html>

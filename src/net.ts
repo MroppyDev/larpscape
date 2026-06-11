@@ -1,6 +1,9 @@
-// Network layer: login/register UI, server save provider, world-state
-// websocket (NPCs/combat/ground items are server-authoritative), chat relay.
+// Network layer: session bootstrap (website cookie or legacy Bearer token),
+// server save provider, world-state websocket (NPCs/combat/ground items are
+// server-authoritative), chat relay.
 // Login is REQUIRED: there is no offline mode — the world lives on the server.
+// Sign-in happens on the website (larpscape.net/login); the client only shows
+// an interstitial pointing there when no session exists.
 
 import {
   state, msg, setSaveProvider, netLink, combatSnapshot, saveGame,
@@ -43,9 +46,9 @@ async function api(path: string, body?: any): Promise<any> {
   let res: Response;
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json';
-    res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body) });
+    res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body), credentials: 'include' });
   } else {
-    res = await fetch(path, { headers });
+    res = await fetch(path, { headers, credentials: 'include' });
   }
   let data: any = null;
   try { data = await res.json(); } catch { /* non-JSON */ }
@@ -63,13 +66,20 @@ async function api(path: string, body?: any): Promise<any> {
 let pendingSave: any = null;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+function saveHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (net.token) headers['Authorization'] = 'Bearer ' + net.token;
+  return headers;
+}
+
 function putSave(data: any, keepalive = false) {
-  if (!net.token) return;
+  if (!net.online) return;
   try {
     fetch('/api/character', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + net.token },
+      headers: saveHeaders(),
       body: JSON.stringify({ save: data }),
+      credentials: 'include',
       keepalive,
     }).then((res) => {
       // 409 = save fenced (a trade just rewrote the server save). Re-queue a
@@ -95,7 +105,7 @@ function flushSave(keepalive = false) {
 // to land. Used before final trade acceptance so the server-side save (which
 // the trade transaction validates against) matches the live inventory.
 export async function syncSaveNow(): Promise<boolean> {
-  if (!net.token) return false;
+  if (!net.online) return false;
   try { saveGame(); } catch { /* best effort */ }
   if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
   const data = pendingSave;
@@ -104,8 +114,9 @@ export async function syncSaveNow(): Promise<boolean> {
   try {
     const res = await fetch('/api/character', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + net.token },
+      headers: saveHeaders(),
       body: JSON.stringify({ save: data }),
+      credentials: 'include',
     });
     return res.ok;
   } catch { return false; }
@@ -122,12 +133,12 @@ function installServerProvider(initialSave: any) {
     },
   });
   window.addEventListener('beforeunload', () => {
-    if (pendingSave != null && net.token) {
+    if (pendingSave != null && net.online) {
       // keepalive PUT is the reliable path; sendBeacon as a last-ditch extra (POST).
       const data = pendingSave;
       flushSave(true);
       try {
-        if (navigator.sendBeacon) {
+        if (navigator.sendBeacon && net.token) {
           const blob = new Blob(
             [JSON.stringify({ save: data, token: net.token })],
             { type: 'application/json' },
@@ -296,10 +307,14 @@ function handleWsMessage(raw: string) {
 }
 
 function openWs() {
-  if (!net.token || !wsWanted) return;
+  if (!net.online || !wsWanted) return;
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  // With a stored Bearer token, pass it as ?token= (legacy path). Cookie
+  // sessions send bs_session on the upgrade request automatically and the
+  // server accepts that when no token param is present.
+  const qs = net.token ? `?token=${encodeURIComponent(net.token)}` : '';
   try {
-    ws = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(net.token)}`);
+    ws = new WebSocket(`${proto}://${location.host}/ws${qs}`);
   } catch {
     scheduleReconnect();
     return;
@@ -399,74 +414,69 @@ function startPresence() {
 }
 
 // ---------------------------------------------------------------------------
-// Login panel + bootstrap
+// Sign-in interstitial + bootstrap
+//
+// Accounts are managed on the website: players sign in at
+// https://larpscape.net/login?return=play and the site redirects back to
+// https://play.larpscape.net carrying the shared bs_session cookie
+// (Domain=.larpscape.net). The game client itself never shows a
+// username/password form anymore — it resumes a session (cookie or legacy
+// localStorage Bearer token) or points the player at the website.
 // ---------------------------------------------------------------------------
 
-function buildLoginPanel(): {
-  panel: HTMLDivElement;
-  user: HTMLInputElement;
-  pass: HTMLInputElement;
-  loginBtn: HTMLButtonElement;
-  regBtn: HTMLButtonElement;
-  err: HTMLDivElement;
-} {
-  const style = document.createElement('style');
-  style.textContent = `
-    #bs-login { display:flex; flex-direction:column; gap:6px; align-items:center;
-      margin:8px auto 10px; padding:10px 14px; max-width:280px;
-      background:rgba(0,0,0,0.45); border:1px solid #5a4a2a; border-radius:6px; }
-    #bs-login input { width:200px; padding:5px 8px; background:#1b1610; color:#e8dcc0;
-      border:1px solid #6b5a36; border-radius:3px; font:inherit; outline:none; }
-    #bs-login input:focus { border-color:#c8a85a; }
-    #bs-login .bs-login-row { display:flex; gap:6px; }
-    #bs-login button { padding:5px 10px; cursor:pointer; background:#3a2f1c; color:#f0e6c8;
-      border:1px solid #8a7340; border-radius:3px; font:inherit; }
-    #bs-login button:hover { background:#52431f; }
-    #bs-login button:disabled { opacity:0.5; cursor:default; }
-    #bs-login .bs-login-err { min-height:14px; color:#ff7a6a; font-size:11px; text-align:center; }
-    #bs-login .bs-login-title { color:#e8d9a8; font-size:12px; letter-spacing:1px; }
-  `;
-  document.head.appendChild(style);
-
-  const panel = document.createElement('div');
-  panel.id = 'bs-login';
-  panel.innerHTML = `
-    <div class="bs-login-title">ACCOUNT</div>
-    <input id="bs-login-user" maxlength="12" placeholder="Username" autocomplete="username" spellcheck="false"/>
-    <input id="bs-login-pass" type="password" placeholder="Password" autocomplete="current-password"/>
-    <div class="bs-login-row">
-      <button id="bs-login-go">Login</button>
-      <button id="bs-login-reg">Register</button>
-    </div>
-    <div class="bs-login-err" id="bs-login-err"></div>
-  `;
-
-  const nameInput = document.getElementById('name-input');
-  const screen = document.getElementById('welcome-screen');
-  if (nameInput && nameInput.parentElement) {
-    nameInput.parentElement.insertBefore(panel, nameInput);
-  } else if (screen) {
-    screen.appendChild(panel);
-  } else {
-    document.body.appendChild(panel);
-  }
-
-  return {
-    panel,
-    user: panel.querySelector('#bs-login-user') as HTMLInputElement,
-    pass: panel.querySelector('#bs-login-pass') as HTMLInputElement,
-    loginBtn: panel.querySelector('#bs-login-go') as HTMLButtonElement,
-    regBtn: panel.querySelector('#bs-login-reg') as HTMLButtonElement,
-    err: panel.querySelector('#bs-login-err') as HTMLDivElement,
-  };
+// Prod builds always send players to the canonical website login. In dev
+// (vite serve → __BUILD_ID__ === 'dev') fall back to a relative /login so a
+// locally-running homepage (localhost:5176 proxied, or any local stack that
+// serves /login) can handle it.
+function loginUrl(): string {
+  return __BUILD_ID__ === 'dev' ? '/login?return=play' : 'https://larpscape.net/login?return=play';
 }
 
-function goOnline(token: string, username: string | null, save: any) {
+// Styled interstitial inside the welcome panel (styles in src/style.css).
+function showSignin(note?: string) {
+  let box = document.getElementById('bs-signin');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'bs-signin';
+    box.innerHTML = `
+      <div class="bs-signin-msg">Adventurers sign in at <strong>larpscape.net</strong></div>
+      <a id="bs-signin-btn" href="${loginUrl()}">LOG IN</a>
+      <div class="bs-signin-note" id="bs-signin-note"></div>
+    `;
+    const nameInput = document.getElementById('name-input');
+    const screen = document.getElementById('welcome-screen');
+    if (nameInput && nameInput.parentElement) {
+      nameInput.parentElement.insertBefore(box, nameInput);
+    } else if (screen) {
+      screen.appendChild(box);
+    } else {
+      document.body.appendChild(box);
+    }
+    // the name prompt + play button are meaningless without a session
+    const ni = document.getElementById('name-input');
+    const pb = document.getElementById('play-btn');
+    if (ni) ni.style.display = 'none';
+    if (pb) pb.style.display = 'none';
+  }
+  const noteEl = document.getElementById('bs-signin-note');
+  if (noteEl) noteEl.textContent = note ?? '';
+}
+
+function removeSignin() {
+  document.getElementById('bs-signin')?.remove();
+  const ni = document.getElementById('name-input');
+  const pb = document.getElementById('play-btn');
+  if (ni) ni.style.display = '';
+  if (pb) pb.style.display = '';
+}
+
+// token === null means cookie-session mode (bs_session rides on every fetch).
+function goOnline(token: string | null, username: string | null, save: any) {
   net.token = token;
   net.username = username;
   net.online = true;
   try {
-    localStorage.setItem(TOKEN_KEY, token);
+    if (token) localStorage.setItem(TOKEN_KEY, token);
     if (username) localStorage.setItem(USER_KEY, username);
   } catch { /* ignore */ }
   installServerProvider(save);
@@ -475,10 +485,13 @@ function goOnline(token: string, username: string | null, save: any) {
   void loadGuild();
 }
 
-async function bootstrap(): Promise<any | null> {
-  const ui = buildLoginPanel();
+function isNetworkError(e: any): boolean {
+  return e instanceof TypeError || /fetch/i.test(String(e?.message));
+}
 
-  // silent session resume from stored token
+async function bootstrap(): Promise<any | null> {
+  // 1) legacy session resume from a stored Bearer token — existing players
+  //    stay logged in even though the in-client form is gone
   const stored = (() => {
     try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
   })();
@@ -490,68 +503,38 @@ async function bootstrap(): Promise<any | null> {
         try { return localStorage.getItem(USER_KEY); } catch { return null; }
       })();
       goOnline(stored, username, res?.save ?? null);
-      ui.panel.remove();
+      removeSignin();
       return res?.save ?? null;
     } catch (e: any) {
       net.token = null;
-      if (e instanceof TypeError || /fetch/i.test(String(e?.message))) {
-        // server unreachable: the world lives on the server, so all we can do
-        // is ask the player to retry from the login form
-        ui.err.textContent = 'Server unreachable — please try again in a moment.';
-      } else {
-        // token invalid/expired — clear and show the form
-        try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
-        ui.err.textContent = 'Session expired — please log in again.';
+      if (isNetworkError(e)) {
+        showSignin('Server unreachable — please try again in a moment.');
+        return new Promise<never>(() => { /* reload to retry */ });
       }
+      // token invalid/expired — clear it and try the cookie session below
+      try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
     }
   }
 
-  return new Promise<any | null>((resolve) => {
-    let settled = false;
-    const finish = (save: any | null) => {
-      if (settled) return;
-      settled = true;
-      resolve(save);
-    };
+  // 2) cookie session (set by the website login at larpscape.net)
+  try {
+    const me = await fetch('/api/me', { credentials: 'include' });
+    if (me.ok) {
+      const j = await me.json().catch(() => null);
+      const username = typeof j?.username === 'string' ? j.username : null;
+      const res = await api('/api/character'); // cookie-authenticated
+      goOnline(null, username, res?.save ?? null);
+      removeSignin();
+      return res?.save ?? null;
+    }
+  } catch {
+    showSignin('Server unreachable — please try again in a moment.');
+    return new Promise<never>(() => { /* reload to retry */ });
+  }
 
-    const setBusy = (busy: boolean) => {
-      ui.loginBtn.disabled = busy;
-      ui.regBtn.disabled = busy;
-    };
-
-    const attempt = async (path: '/api/login' | '/api/register') => {
-      const username = ui.user.value.trim();
-      const password = ui.pass.value;
-      ui.err.textContent = '';
-      if (!/^[a-zA-Z0-9]{3,12}$/.test(username)) {
-        ui.err.textContent = 'Username must be 3-12 letters/numbers.';
-        return;
-      }
-      if (!password) { ui.err.textContent = 'Enter a password.'; return; }
-      setBusy(true);
-      try {
-        net.token = null;
-        const auth = await api(path, { username, password });
-        net.token = auth.token;
-        const res = await api('/api/character');
-        goOnline(auth.token, auth.username ?? username, res?.save ?? null);
-        ui.panel.remove();
-        finish(res?.save ?? null);
-      } catch (e: any) {
-        net.token = null;
-        ui.err.textContent =
-          e instanceof TypeError ? 'Server unreachable — please try again in a moment.'
-          : String(e?.message || 'Login failed.');
-      } finally {
-        setBusy(false);
-      }
-    };
-
-    ui.loginBtn.addEventListener('click', () => { void attempt('/api/login'); });
-    ui.regBtn.addEventListener('click', () => { void attempt('/api/register'); });
-    ui.pass.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') void attempt('/api/login');
-    });
-    // no offline mode: bootstrap only resolves once a session exists
-  });
+  // 3) no session: point the player at the website. The login page redirects
+  //    back to play.larpscape.net, so this page load never resumes — the
+  //    promise intentionally never resolves.
+  showSignin();
+  return new Promise<never>(() => { /* navigation away handles the rest */ });
 }

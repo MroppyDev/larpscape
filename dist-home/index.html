@@ -13,18 +13,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;600;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-DrxNUD_T.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-Dv_jxgM8.css">
+  <script type="module" crossorigin src="/assets/index-CE2REjRh.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth-BqGd6f3R.js">
+  <link rel="stylesheet" crossorigin href="/assets/auth-C3_bTczM.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- §1.1 utility strip -->
-  <div class="util-strip">
-    <a class="login-plaque" href="https://play.larpscape.net">
+  <div class="util-strip" id="auth-strip">
+    <a class="login-plaque" href="/login">
       <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M8 1a3.2 3.2 0 0 0-3.2 3.2V6H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-.8V4.2A3.2 3.2 0 0 0 8 1Zm-1.7 3.2a1.7 1.7 0 1 1 3.4 0V6H6.3ZM8 8.6a1.1 1.1 0 0 1 .55 2.05V12h-1.1v-1.35A1.1 1.1 0 0 1 8 8.6Z" fill="currentColor"/></svg>
       Existing adventurer? Log in
     </a>
+    <a class="login-plaque" href="/register">Create account</a>
   </div>
 
   <!-- §1.2 banner header / hero -->
@@ -142,13 +144,14 @@
         <a href="https://play.larpscape.net">Play</a>
         <a href="#news">News</a>
         <a href="#hiscores">Hiscores</a>
+        <a class="ext" href="https://forum.larpscape.net">Forum</a>
         <a class="ext" href="https://wiki.larpscape.net">Wiki</a>
         <a class="ext" href="https://github.com/MroppyDev/larpscape">GitHub</a>
       </nav>
 
       <div class="hero-cta">
         <a class="btn btn-primary" href="https://play.larpscape.net">Play Now</a>
-        <a class="btn" href="https://play.larpscape.net">Create an Account</a>
+        <a class="btn" href="/register">Create an Account</a>
       </div>
       <p class="hero-disclaimer">An original fan homage to the classic browser MMO. Not affiliated with or endorsed by Jagex Ltd. All content, art, and writing are original.</p>
     </div>
@@ -175,7 +178,7 @@
 
       <div class="cta-stack">
         <a class="btn btn-primary btn-block" href="https://play.larpscape.net">Play Now</a>
-        <a class="btn btn-block" href="https://play.larpscape.net">Create Account</a>
+        <a class="btn btn-block" href="/register">Create Account</a>
         <a class="btn btn-block" href="#hiscores">Hiscores</a>
         <a class="foot-link" href="https://wiki.larpscape.net/guide/getting-started">New player? Start here</a>
       </div>
@@ -236,13 +239,14 @@
       <nav aria-labelledby="f-game"><h3 id="f-game">Game</h3>
         <ul>
           <li><a href="https://play.larpscape.net">Play Larpscape</a></li>
-          <li><a href="https://play.larpscape.net">Create an account</a></li>
+          <li><a href="/register">Create an account</a></li>
           <li><a href="#hiscores">Hiscores</a></li>
           <li><a href="#news">News &amp; updates</a></li>
         </ul>
       </nav>
       <nav aria-labelledby="f-community"><h3 id="f-community">Community</h3>
         <ul>
+          <li><a class="ext" href="https://forum.larpscape.net">The Larpscape Forum</a></li>
           <li><a class="ext" href="https://wiki.larpscape.net">The Larpscape Wiki</a></li>
           <li><a class="ext" href="https://wiki.larpscape.net/lore/world">The Cantorne Codex</a></li>
           <li><a class="ext" href="https://github.com/MroppyDev/larpscape">GitHub</a></li>

@@ -50,7 +50,9 @@ export async function removeFriend(username: string): Promise<void> {
   try {
     const res = await fetch(`/api/friends/${encodeURIComponent(username)}`, {
       method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + net.token },
+      // Bearer header for legacy token sessions; cookie sessions ride on credentials.
+      headers: net.token ? { Authorization: 'Bearer ' + net.token } : {},
+      credentials: 'include',
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || 'failed');

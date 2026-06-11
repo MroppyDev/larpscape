@@ -24,6 +24,9 @@ import {
   OVERWORLD_EXIT, onDisconnect as dungeonOnDisconnect,
 } from './dungeon';
 import { getRanking, getPlayerHiscores } from './hiscores';
+import { initForum } from './forum';
+import { initPortraits } from './portrait';
+import { initProfiles } from './profiles';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -154,10 +157,75 @@ function userForToken(token: string): { id: number; username: string } | null {
   return row ?? null;
 }
 
+// --- Cookie sessions ---------------------------------------------------------
+// The same session token lives in the sessions table whether it arrived as a
+// Bearer header (game client localStorage) or as the bs_session cookie (set on
+// login/register so larpscape.net / play / forum share one sign-in).
+
+const SESSION_COOKIE = 'bs_session';
+const SESSION_MAX_AGE_S = 90 * 24 * 60 * 60; // 90 days
+
+function parseCookieHeader(header: string | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!header) return out;
+  for (const part of header.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq < 0) continue;
+    const k = part.slice(0, eq).trim();
+    if (!k) continue;
+    let v = part.slice(eq + 1).trim();
+    try { v = decodeURIComponent(v); } catch { /* keep raw */ }
+    out[k] = v;
+  }
+  return out;
+}
+
+function requestHost(req: Request): string {
+  const raw = String(req.headers['x-forwarded-host'] || req.headers.host || '');
+  return raw.split(',')[0].trim().split(':')[0].toLowerCase();
+}
+
+function isSecureRequest(req: Request): boolean {
+  return String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim() === 'https';
+}
+
+function isLarpscapeHost(host: string): boolean {
+  return host === 'larpscape.net' || host.endsWith('.larpscape.net');
+}
+
+function sessionCookieAttrs(req: Request): string[] {
+  const attrs = ['Path=/', 'HttpOnly', 'SameSite=Lax'];
+  // Share the cookie across larpscape.net subdomains in production; omit
+  // Domain entirely on localhost so dev still works. Exact-suffix match so a
+  // spoofed Host like "evillarpscape.net" can never pick up the shared Domain.
+  if (isLarpscapeHost(requestHost(req))) attrs.push('Domain=.larpscape.net');
+  if (isSecureRequest(req)) attrs.push('Secure');
+  return attrs;
+}
+
+function setSessionCookie(req: Request, res: Response, token: string) {
+  res.append('Set-Cookie',
+    [`${SESSION_COOKIE}=${token}`, `Max-Age=${SESSION_MAX_AGE_S}`, ...sessionCookieAttrs(req)].join('; '));
+}
+
+function clearSessionCookie(req: Request, res: Response) {
+  res.append('Set-Cookie',
+    [`${SESSION_COOKIE}=`, 'Max-Age=0', ...sessionCookieAttrs(req)].join('; '));
+}
+
+function bearerToken(req: Request): string | null {
+  const m = /^Bearer\s+(\S+)$/.exec(req.headers.authorization || '');
+  return m ? m[1] : null;
+}
+
+// Bearer header wins; the cookie is the fallback.
+function requestToken(req: Request): string | null {
+  return bearerToken(req) ?? parseCookieHeader(req.headers.cookie)[SESSION_COOKIE] ?? null;
+}
+
 function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
-  const header = req.headers.authorization || '';
-  const m = /^Bearer\s+(\S+)$/.exec(header);
-  const user = m ? userForToken(m[1]) : null;
+  const token = requestToken(req);
+  const user = token ? userForToken(token) : null;
   if (!user) { res.status(401).json({ error: 'unauthorized' }); return; }
   req.userId = user.id;
   req.username = user.username;
@@ -232,9 +300,53 @@ function kickClient(userId: number, code: number, reason: string): boolean {
 // ---------------------------------------------------------------------------
 
 const app = express();
+// nginx terminates TLS on the same box — trust loopback proxies only so
+// req.ip reflects the real client (per-IP rate limits) without letting a
+// direct remote connection spoof X-Forwarded-For.
+app.set('trust proxy', 'loopback');
 app.use(express.json({ limit: '1mb' }));
 
-app.post('/api/register', (req, res) => {
+// Generic fixed-window per-IP rate limiter (same shape as the hiscores one).
+function ipRateLimit(windowMs: number, max: number) {
+  const hits = new Map<string, { count: number; reset: number }>();
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = req.ip || 'unknown';
+    const now = Date.now();
+    let entry = hits.get(ip);
+    if (!entry || now >= entry.reset) {
+      if (hits.size > 10_000) hits.clear(); // bound memory
+      entry = { count: 0, reset: now + windowMs };
+      hits.set(ip, entry);
+    }
+    if (++entry.count > max) {
+      res.status(429).json({ error: 'too many attempts, slow down' }); return;
+    }
+    next();
+  };
+}
+
+// Brute-force / spam guards on credential endpoints.
+const loginRateLimit = ipRateLimit(10 * 60_000, 20);   // 20 attempts / 10 min / IP
+const registerRateLimit = ipRateLimit(60 * 60_000, 10); // 10 accounts / hour / IP
+
+// CSRF guard: a NON-GET /api request that authenticates via the session cookie
+// (i.e. carries bs_session but no Bearer header) must originate from a
+// larpscape.net page (or localhost in dev). Bearer-authenticated requests —
+// the game client's normal path — skip this entirely.
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') { next(); return; }
+  if (bearerToken(req)) { next(); return; }
+  if (!parseCookieHeader(req.headers.cookie)[SESSION_COOKIE]) { next(); return; }
+  const src = String(req.headers.origin || req.headers.referer || '');
+  let host = '';
+  try { host = new URL(src).hostname.toLowerCase(); } catch { host = ''; }
+  const ok = host === 'localhost' || host === '127.0.0.1'
+    || host === 'larpscape.net' || host.endsWith('.larpscape.net');
+  if (!ok) { res.status(403).json({ error: 'csrf check failed' }); return; }
+  next();
+});
+
+app.post('/api/register', registerRateLimit, (req, res) => {
   const { username, password } = req.body ?? {};
   if (typeof username !== 'string' || !USERNAME_RE.test(username)) {
     res.status(400).json({ error: 'username must be 3-12 alphanumeric characters' }); return;
@@ -248,10 +360,11 @@ app.post('/api/register', (req, res) => {
   const info = db.prepare('INSERT INTO users (username, passhash, created_at) VALUES (?,?,?)')
     .run(username, passhash, Date.now());
   const token = createSession(Number(info.lastInsertRowid));
+  setSessionCookie(req, res, token);
   res.json({ token, username });
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', loginRateLimit, (req, res) => {
   const { username, password } = req.body ?? {};
   if (typeof username !== 'string' || typeof password !== 'string') {
     res.status(400).json({ error: 'bad request' }); return;
@@ -263,7 +376,24 @@ app.post('/api/login', (req, res) => {
   }
   if (isBanned(user.id)) { res.status(403).json({ error: 'account banned' }); return; }
   const token = createSession(user.id);
+  setSessionCookie(req, res, token);
   res.json({ token, username: user.username });
+});
+
+// GET /api/me — who am I (Bearer or cookie)? 200 {username} or 401.
+app.get('/api/me', (req, res) => {
+  const token = requestToken(req);
+  const user = token ? userForToken(token) : null;
+  if (!user || isBanned(user.id)) { res.status(401).json({ error: 'unauthorized' }); return; }
+  res.json({ username: user.username });
+});
+
+// POST /api/auth/logout — deletes the session row and clears the cookie.
+app.post('/api/auth/logout', (req, res) => {
+  const token = requestToken(req);
+  if (token && token.length <= 128) db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+  clearSessionCookie(req, res);
+  res.json({ ok: true });
 });
 
 app.get('/api/character', requireAuth, (req: AuthedRequest, res) => {
@@ -541,6 +671,21 @@ app.get('/api/version', (_req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Forum, profiles, portraits (self-contained modules — server/forum.ts,
+// server/profiles.ts, server/portrait.ts). Registered BEFORE the production
+// static catch-all so /forum and /profile pages are reachable.
+// ---------------------------------------------------------------------------
+
+function userFromRequest(req: Request): { id: number; username: string } | null {
+  const token = requestToken(req);
+  return token ? userForToken(token) : null;
+}
+
+initPortraits(app, db);
+initProfiles(app, db, { userFromRequest }); // creates profile_meta (forum reads signatures from it)
+initForum(app, db, { userFromRequest, onlineCount: () => clients.size });
+
+// ---------------------------------------------------------------------------
 // Static frontend (production)
 // ---------------------------------------------------------------------------
 
@@ -561,7 +706,8 @@ if (process.env.NODE_ENV === 'production') {
       },
     }));
     app.use((req, res, next) => {
-      if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/ws')) {
+      if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/ws')
+          && !req.path.startsWith('/forum') && !req.path.startsWith('/profile')) {
         res.setHeader('Cache-Control', 'no-cache');
         res.sendFile(path.join(dist, 'index.html'));
       } else next();
@@ -865,7 +1011,22 @@ initDungeon(db, (userId, msg) => {
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url ?? '/ws', 'http://localhost');
-  const user = userForToken(url.searchParams.get('token') ?? '');
+  // ?token= (Bearer-style, the game client's stored token) wins; otherwise
+  // accept the bs_session cookie sent on the upgrade request.
+  const queryToken = url.searchParams.get('token');
+  const cookieToken = parseCookieHeader(req.headers.cookie)[SESSION_COOKIE] || '';
+  // Cross-site WS guard: when authentication rides in on the ambient cookie
+  // (no explicit ?token=), the upgrade must come from a larpscape.net page.
+  // Browsers always send Origin on WebSocket upgrades, so a present-but-foreign
+  // Origin means a cross-site page is trying to use the victim's cookie.
+  if (!queryToken && cookieToken && req.headers.origin) {
+    let oHost = '';
+    try { oHost = new URL(String(req.headers.origin)).hostname.toLowerCase(); } catch { oHost = ''; }
+    const okOrigin = oHost === 'localhost' || oHost === '127.0.0.1' || isLarpscapeHost(oHost);
+    if (!okOrigin) { ws.close(4007, 'forbidden origin'); return; }
+  }
+  const token = queryToken || cookieToken;
+  const user = userForToken(token);
   if (!user) { ws.close(4001, 'unauthorized'); return; }
   if (isBanned(user.id)) { ws.close(4006, 'banned'); return; }
 

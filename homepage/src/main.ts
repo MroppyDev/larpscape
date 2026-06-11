@@ -5,6 +5,7 @@
 import { NEWS_POSTS, type NewsPost } from '../news';
 import { ICONS, FEATURE_ICONS, CATEGORY_MOTIFS } from './icons';
 import { renderMarkdown } from './md';
+import { apiMe, logout, FORUM_URL } from './auth';
 
 const PLAY_URL = 'https://play.larpscape.net';
 const WIKI_URL = 'https://wiki.larpscape.net';
@@ -34,13 +35,14 @@ const RAIL: Record<string, RailLink[]> = {
     { label: 'New player guide', href: `${WIKI_URL}/guide/getting-started`, icon: 'book', ext: true },
   ],
   'rail-community-list': [
+    { label: 'Forum', href: FORUM_URL, icon: 'quill', ext: true },
     { label: 'The Larpscape Wiki', href: WIKI_URL, icon: 'book', ext: true },
     { label: 'Guilds & trading', href: '#about', icon: 'banner' },
     { label: 'GitHub', href: GITHUB_URL, icon: 'code', ext: true },
   ],
   'rail-account-list': [
-    { label: 'Create account', href: PLAY_URL, icon: 'quill', ext: true },
-    { label: 'Log in', href: PLAY_URL, icon: 'key', ext: true },
+    { label: 'Create account', href: '/register', icon: 'quill' },
+    { label: 'Log in', href: '/login', icon: 'key' },
     { label: 'Support', href: `${GITHUB_URL}/issues`, icon: 'bell', ext: true },
   ],
 };
@@ -53,6 +55,33 @@ for (const [listId, links] of Object.entries(RAIL)) {
     )
     .join('');
 }
+
+// ---------------------------------------------------------------------------
+// Util-strip auth state (spec §2): /api/me decides between the static
+// logged-out plaques (Log in / Create account, already in the HTML) and a
+// "Logged in as <name>" plaque + Log out. PLAY NOW keeps pointing at the game.
+// ---------------------------------------------------------------------------
+
+void (async () => {
+  const username = await apiMe();
+  if (!username) return; // keep the server-rendered logged-out links
+  const strip = el('auth-strip');
+  strip.innerHTML = `
+    <a class="login-plaque" href="/profile">
+      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M8 1.4a3.1 3.1 0 1 1 0 6.2 3.1 3.1 0 0 1 0-6.2ZM2.6 14a5.4 5.4 0 0 1 10.8 0Z" fill="currentColor"/></svg>
+      Logged in as <strong>${escapeHtml(username)}</strong>
+    </a>
+    <button class="login-plaque" id="strip-logout" type="button">Log out</button>`;
+  el<HTMLButtonElement>('strip-logout').addEventListener('click', () => {
+    void (async () => {
+      const btn = el<HTMLButtonElement>('strip-logout');
+      btn.disabled = true;
+      btn.textContent = 'Logging out…';
+      await logout();
+      location.reload();
+    })();
+  });
+})();
 
 // ---------------------------------------------------------------------------
 // Promo slot (spec §1.5 — config-driven, swappable; set to null to ship empty)
