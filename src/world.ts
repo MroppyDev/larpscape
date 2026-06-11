@@ -23,15 +23,6 @@ export const POIS: Poi[] = [
   { id: 'sunscorch_legacy', label: 'Sunscorch Desert', x: 35, y: 190 },
   { id: 'port_brackwater', label: 'Port Brackwater', x: 105, y: 196 },
   { id: 'ashen_depths', label: 'Ashen Depths', x: 190, y: 135 },
-  // Phase 7 expansion hubs
-  { id: 'eldermere', label: 'Eldermere', x: 300, y: 260, glyph: '⌂' },
-  { id: 'tanglewood', label: 'Tanglewood', x: 382, y: 342, glyph: '♣' },
-  { id: 'stonewatch', label: 'Stonewatch', x: 420, y: 120, glyph: '⚑' },
-  { id: 'gullswreck', label: 'Gullswreck Cove', x: 80, y: 380, glyph: '⚓' },
-  { id: 'mirrormere', label: 'Mirrormere', x: 328, y: 248, glyph: '≋' },
-  { id: 'eastern_marshes', label: 'Eastern Marshes', x: 448, y: 308, glyph: '≈' },
-  { id: 'southern_savanna', label: 'Southern Savanna', x: 348, y: 439, glyph: '☀' },
-  { id: 'cinderholm', label: 'Cinderholm', x: 470, y: 470, glyph: '♨' },
 ];
 
 // terrain codes

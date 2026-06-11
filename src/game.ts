@@ -7,7 +7,7 @@ import {
 } from './defs';
 import {
   buildWorld, blocked, findPath, objects, objectAt, removeObject,
-  WorldObject, GroundItem, key,
+  WorldObject, GroundItem, key, MAP_W, MAP_H,
 } from './world';
 import { audio, trackForRegion, TRACKS } from './audio';
 
@@ -436,7 +436,13 @@ export function initGame(savedData?: any) {
     if (aSlot >= 0) { p.equipment.ammo = { id: 'bronze_round', qty: 50 }; p.inventory[aSlot] = null; }
     events.onInvChange();
   }
-  if (blocked(state.player.x, state.player.y)) { state.player.x = 22; state.player.y = 38; }
+  // Rescue saves from removed map regions (the old generated 500×500 zones)
+  // or otherwise-invalid tiles by snapping to spawn.
+  if (
+    state.player.x < 0 || state.player.y < 0 ||
+    state.player.x >= MAP_W || state.player.y >= MAP_H ||
+    blocked(state.player.x, state.player.y)
+  ) { state.player.x = 22; state.player.y = 38; }
   // NPCs + ground items are server-authoritative: the mirrors fill in when the
   // websocket delivers the world snapshot (net.ts -> netWorldSnapshot).
   msg(loaded ? `Welcome back to Larpscape, ${state.player.name}.` : 'Welcome to Larpscape.');

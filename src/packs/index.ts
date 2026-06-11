@@ -22,8 +22,9 @@ import './skills_production';
 import './quest6_a';
 import './quest6_b';
 import './quest6_c';
-// Phase 7 content
-import './hub_eldermere';
-import './hub_stonewatch';
-import './hub_gullswreck';
+// Phase 7 expansion hubs — disabled until the map grows organically past 224×224
+// (their NPCs only spawned in the removed generated zones; re-enable per region).
+// import './hub_eldermere';
+// import './hub_stonewatch';
+// import './hub_gullswreck';
 import './wildlife';
