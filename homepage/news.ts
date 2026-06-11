@@ -20,6 +20,32 @@ export interface NewsPost {
 
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: 'the-concord-audit',
+    title: 'The Concord Audit — We Closed a Hole and Reset the Ledgers',
+    category: 'Dev Blog',
+    date: '2026-06-11',
+    excerpt:
+      'A flaw let a handful of accounts mint coins and items from nothing. We have rebuilt the economy so the server — not your browser — is the keeper of every coin, and we have wiped the slate clean. Here is exactly what happened.',
+    accent: '#b91c1c',
+    body: `The Concord of Weights audits the chalk on every ledger in Cantorne. This week, so did we — and we did not like what we found.
+
+**What went wrong.** For a window of time, the game trusted your own browser to report how much you owned. Your coins, items, levels and quest progress were written by the client and stored more or less as-is. A determined player could edit that record and hand themselves wealth that never existed — then sell it, trade it, or list it at the Aldgate Exchange as if it were real. A few accounts did exactly that. One had walked off with the better part of a billion forged coins.
+
+This is our mistake, plainly. The convenience of a client-owned save was a door we left unlocked, and we are not going to dress it up as anything else.
+
+**What we did about it.** The moment we confirmed it, we froze every path that moves wealth between players — the Exchange, the market, trading, drops — so the bleeding stopped while we rebuilt. Then we rebuilt the foundation properly:
+
+- **The server is now the sole keeper of value.** Coins, bank, inventory, equipment, experience, quest stages — all of it lives on our side now. Your client *asks* to mine a rock or sell a bar; the server checks you have the tool, the level, the range, and the goods, then grants the result. Editing your local save now does precisely nothing.
+- **Combat is honest.** Your hit, your speed, your defences and your health are all worked out on the server from your real, earned stats. No more reporting yourself unkillable.
+- **The Exchange, market, trading, drops and the guild vault** all move real, backed value now — escrowed properly, conserved exactly. We threw thirty separate attacks at the new system, replaying every trick that worked before. All thirty bounced.
+
+**The reset.** Because forged wealth had already leaked into the world, the only fair fix was the clean one. **Every account has been reset to a fresh new-beginner character.** Twenty-five coins, an empty pack, and the whole world ahead of you again — same as your first morning in Bellmeadow. We kept full backups of every prior character, so nothing is truly lost on our end, but the live ledgers all start from zero today.
+
+We know a reset stings, especially if you played fair. We are sorry to spend your time twice. But a marketplace is only worth anything if every coin in it was earned, and we would rather hand you an honest world a day late than a rigged one on schedule.
+
+The vale is quiet, the chalk is clean, and the Exchange is open for honest business. We will see you on the road. — *The Larpscape team*`,
+  },
+  {
     slug: 'the-gathering-discord',
     title: 'The Gathering Discord — the Quiet Measure Is Ending',
     category: 'Game Updates',
