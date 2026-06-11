@@ -19,6 +19,10 @@ import {
   type PlayerView,
 } from './sim';
 import { initSocial } from './social';
+import {
+  initDungeon, startRun, endRun, getRecords, inDungeon,
+  OVERWORLD_EXIT, onDisconnect as dungeonOnDisconnect,
+} from './dungeon';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -269,7 +273,24 @@ app.get('/api/character', requireAuth, (req: AuthedRequest, res) => {
   catch { res.json({ save: null }); }
 });
 
+// Anti-dupe fence: after a trade mutates a user's save server-side, reject
+// client save PUTs for a short window so an in-flight PUT carrying pre-trade
+// inventory cannot overwrite the trade result. The client retries after the
+// window with post-trade state (it applies the trade diff on trade_complete).
+export const SAVE_FENCE_MS = 4000;
+const saveFence = new Map<number, number>(); // userId -> fence expiry (ms epoch)
+
+function fenceSaves(userIds: number[]) {
+  const until = Date.now() + SAVE_FENCE_MS;
+  for (const id of userIds) saveFence.set(id, until);
+}
+
 app.put('/api/character', requireAuth, (req: AuthedRequest, res) => {
+  const fencedUntil = saveFence.get(req.userId!) ?? 0;
+  if (fencedUntil > Date.now()) {
+    res.status(409).json({ error: 'save_fenced' }); return;
+  }
+  if (fencedUntil) saveFence.delete(req.userId!);
   const { save } = req.body ?? {};
   if (save === undefined || save === null || typeof save !== 'object') {
     res.status(400).json({ error: 'save must be an object' }); return;
@@ -419,6 +440,39 @@ app.get('/api/ge/prices', (_req, res) => {
   for (const r of rows) prices[r.item] = r.price;
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.json({ prices });
+});
+
+// ---------------------------------------------------------------------------
+// The Untuned Mine — instanced dungeon (server/dungeon.ts)
+// ---------------------------------------------------------------------------
+
+// POST /api/dungeon/enter — validates quest access against the stored save
+// (gd3_sealed_wing >= 6, the exact gate from QUEST-DESIGN §14.2), creates a
+// private run, spawns its owner-tagged NPC set and replies with spawn coords.
+app.post('/api/dungeon/enter', requireAuth, (req: AuthedRequest, res) => {
+  const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
+    .get(req.userId) as { save: string } | undefined;
+  let stage = 0;
+  try {
+    const save = row ? JSON.parse(row.save) : null;
+    stage = Number(save?.quests?.['gd3_sealed_wing'] ?? 0);
+  } catch { stage = 0; }
+  if (!(stage >= 6)) {
+    res.status(403).json({ error: 'the sealed wing has not been opened' }); return;
+  }
+  const spawn = startRun(req.userId!);
+  res.json({ x: spawn.x, y: spawn.y });
+});
+
+// POST /api/dungeon/exit — despawns the run; replies with the breach-side tile.
+app.post('/api/dungeon/exit', requireAuth, (req: AuthedRequest, res) => {
+  endRun(req.userId!, 'exit');
+  res.json({ x: OVERWORLD_EXIT.x, y: OVERWORLD_EXIT.y });
+});
+
+// GET /api/dungeon/records — fastest boss-kill times (the entrance plaque).
+app.get('/api/dungeon/records', requireAuth, (req: AuthedRequest, res) => {
+  res.json(getRecords(req.userId));
 });
 
 // ---------------------------------------------------------------------------
@@ -723,6 +777,7 @@ const social = initSocial({
   },
   usernameRe: USERNAME_RE,
   isPosInt,
+  onSavesMutated: fenceSaves,
 });
 social.registerRoutes(app, requireAuth);
 
@@ -744,6 +799,13 @@ function wsBroadcast(msg: unknown) {
 }
 
 initSim(wsBroadcast);
+initDungeon(db, (userId, msg) => {
+  for (const c of clients) {
+    if (c.userId === userId && c.ws.readyState === WebSocket.OPEN) {
+      c.ws.send(JSON.stringify(msg));
+    }
+  }
+});
 
 wss.on('connection', (ws, req) => {
   const url = new URL(req.url ?? '/ws', 'http://localhost');
@@ -771,7 +833,8 @@ wss.on('connection', (ws, req) => {
   ws.send(JSON.stringify({ t: 'hello', name: user.username, buildId: BUILD_ID }));
   social.notifyFriendsOnline(user.id, user.username, true);
   // authoritative world state: full NPC + ground item snapshot on connect
-  ws.send(JSON.stringify(fullSnapshot()));
+  // (filtered to this user — instanced dungeon NPCs stay private)
+  ws.send(JSON.stringify(fullSnapshot(user.id)));
 
   const clampStat = (n: unknown, lo: number, hi: number, dflt: number) =>
     typeof n === 'number' && Number.isFinite(n) ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
@@ -817,10 +880,20 @@ wss.on('connection', (ws, req) => {
         }
         return;
       }
-      const payload = JSON.stringify({ t: 'chat', from: client.name, text });
+      // '/g ' prefix: guild channel — delivered only to online guildmates
+      if (/^\/g(\s|$)/i.test(text)) {
+        const gText = text.replace(/^\/g\s*/i, '').slice(0, 80);
+        if (gText) social.guildChat({ userId: client.userId, name: client.name, send: view.send }, gText);
+        return;
+      }
+      const payload = JSON.stringify({
+        t: 'chat', from: client.name, tag: social.getGuildTag(client.userId), text,
+      });
       for (const c of clients) {
         if (c !== client && c.ws.readyState === WebSocket.OPEN) c.ws.send(payload);
       }
+    } else if (typeof msg.t === 'string' && msg.t.startsWith('trade_')) {
+      social.handleTradeWs({ userId: client.userId, name: client.name, send: view.send }, msg);
     }
   });
 
@@ -828,11 +901,15 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     clients.delete(client);
     dropPlayer(client.userId);
+    dungeonOnDisconnect(client.userId); // despawns any active dungeon run
+    social.onDisconnect(client.userId); // cancels any in-flight trade
     social.notifyFriendsOnline(client.userId, client.name, false);
   });
   ws.on('error', () => {
     clients.delete(client);
     dropPlayer(client.userId);
+    dungeonOnDisconnect(client.userId);
+    social.onDisconnect(client.userId);
     social.notifyFriendsOnline(client.userId, client.name, false);
   });
 });
@@ -852,9 +929,13 @@ setInterval(() => {
     const others = [];
     for (const o of clients) {
       if (o === c) continue;
+      // players inside the instanced dungeon are invisible to everyone:
+      // runs are private, so presence stops broadcasting their position
+      if (inDungeon(o.x, o.y)) continue;
       others.push({
         name: o.name, x: o.x, y: o.y, app: o.app,
         cb: o.view.cb, hp: o.view.hp, maxHp: o.view.maxHp, d: o.view.dead,
+        tag: social.getGuildTag(o.userId), // guild tag for the overhead label
       });
     }
     c.ws.send(JSON.stringify({ t: 'players', players: others }));

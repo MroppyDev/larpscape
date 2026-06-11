@@ -98,6 +98,7 @@ export interface RemotePlayer {
   prevX: number; prevY: number;
   updatedAt?: number; // performance.now() when the position last changed — drives interpolation
   app: Record<string, string | null>; // equipment ids for appearance
+  tag?: string | null; // guild tag, shown as [TAG] on the name label
   chat?: { text: string; until: number };
   cb?: number;
   hp?: number;
@@ -183,9 +184,16 @@ function netSend(m: any): boolean {
   netLink.send(m);
   return true;
 }
+// raw websocket send for UI features (trading etc.); false when offline
+export function sendWs(m: any): boolean { return netSend(m); }
 
-// fx events from the server (boss telegraphs etc.) — packs register renderers
-export type FxHandler = (npc: Npc | null) => void;
+// PvP is disabled everywhere for now. The combat plumbing (attack option,
+// swing intents, pvp* net events) stays in place behind this one switch.
+export const ENABLE_PVP = false;
+
+// fx events from the server (boss telegraphs etc.) — packs register renderers.
+// `data` is the raw fx message; some fx carry extra payload (telegraph tiles).
+export type FxHandler = (npc: Npc | null, data?: any) => void;
 const fxHandlers = new Map<string, FxHandler>();
 export function registerFx(kind: string, h: FxHandler) { fxHandlers.set(kind, h); }
 
@@ -596,9 +604,9 @@ export function netGot(m: { item: string; qty: number }) {
 }
 
 // boss telegraphs and other server fx
-export function netFx(m: { npc: number; kind: string }) {
+export function netFx(m: { npc: number; kind: string; [k: string]: any }) {
   const n = npcBySid.get(m.npc) ?? null;
-  fxHandlers.get(m.kind)?.(n);
+  fxHandlers.get(m.kind)?.(n, m);
 }
 
 export function npcBySidLookup(sid: number): Npc | undefined { return npcBySid.get(sid); }
@@ -709,6 +717,7 @@ export function attackNpc(n: Npc) {
 }
 
 export function attackPlayer(name: string) {
+  if (!ENABLE_PVP) { msg("You can't attack other adventurers."); return; }
   const rp = state.remotePlayers.find((r) => r.name === name);
   if (!rp) { msg('They are no longer here.'); return; }
   startAction({ type: 'attack-player', playerName: name }, rp.x, rp.y);

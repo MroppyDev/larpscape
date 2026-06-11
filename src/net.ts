@@ -9,7 +9,7 @@ import {
   netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
 } from './game';
 import type { RemotePlayer } from './game';
-import { loadFriends, setFriendOnline } from './friends';
+import { loadFriends, loadGuild, setFriendOnline } from './friends';
 
 const TOKEN_KEY = 'bs-token';
 const USER_KEY = 'bs-username';
@@ -71,6 +71,13 @@ function putSave(data: any, keepalive = false) {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + net.token },
       body: JSON.stringify({ save: data }),
       keepalive,
+    }).then((res) => {
+      // 409 = save fenced (a trade just rewrote the server save). Re-queue a
+      // FRESH snapshot after the fence so the post-trade state persists —
+      // never resend `data`, it predates the trade.
+      if (res.status === 409) {
+        setTimeout(() => { try { saveGame(); } catch { /* best effort */ } }, 2500);
+      }
     }).catch(() => { /* fire-and-forget */ });
   } catch { /* ignore */ }
 }
@@ -82,6 +89,26 @@ function flushSave(keepalive = false) {
     pendingSave = null;
     putSave(data, keepalive);
   }
+}
+
+// Awaited save flush: captures the CURRENT game state and waits for the PUT
+// to land. Used before final trade acceptance so the server-side save (which
+// the trade transaction validates against) matches the live inventory.
+export async function syncSaveNow(): Promise<boolean> {
+  if (!net.token) return false;
+  try { saveGame(); } catch { /* best effort */ }
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  const data = pendingSave;
+  pendingSave = null;
+  if (data == null) return true;
+  try {
+    const res = await fetch('/api/character', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + net.token },
+      body: JSON.stringify({ save: data }),
+    });
+    return res.ok;
+  } catch { return false; }
 }
 
 function installServerProvider(initialSave: any) {
@@ -143,7 +170,7 @@ function sendChat(text: string) {
   if (t && net.online) wsSend({ t: 'chat', text: t });
 }
 
-function handlePlayers(players: { name: string; x: number; y: number; app: any; cb?: number; hp?: number; maxHp?: number; d?: boolean }[]) {
+function handlePlayers(players: { name: string; x: number; y: number; app: any; cb?: number; hp?: number; maxHp?: number; d?: boolean; tag?: string | null }[]) {
   const prev = new Map<string, RemotePlayer>();
   for (const rp of state.remotePlayers) prev.set(rp.name, rp);
   const next: RemotePlayer[] = [];
@@ -166,6 +193,7 @@ function handlePlayers(players: { name: string; x: number; y: number; app: any; 
       }
       // unchanged position: leave prev/x/updatedAt alone so in-flight interpolation finishes
       old.app = p.app ?? old.app;
+      old.tag = p.tag ?? null;
       if (typeof p.cb === 'number') old.cb = p.cb;
       if (typeof p.hp === 'number') old.hp = p.hp;
       if (typeof p.maxHp === 'number') old.maxHp = p.maxHp;
@@ -175,7 +203,7 @@ function handlePlayers(players: { name: string; x: number; y: number; app: any; 
     } else {
       next.push({
         name: p.name, x: p.x, y: p.y, prevX: p.x, prevY: p.y, updatedAt: performance.now(),
-        app: p.app ?? {}, cb: p.cb, hp: p.hp, maxHp: p.maxHp, dead: p.d,
+        app: p.app ?? {}, cb: p.cb, hp: p.hp, maxHp: p.maxHp, dead: p.d, tag: p.tag ?? null,
       });
     }
   }
@@ -211,15 +239,41 @@ function handleWsMessage(raw: string) {
     netDeny(m);
   } else if (m.t === 'chat' && typeof m.text === 'string') {
     const from = typeof m.from === 'string' ? m.from : '???';
-    msg(from + ': ' + m.text, 'player-msg');
+    const tag = typeof m.tag === 'string' && m.tag ? `[${m.tag}] ` : '';
+    msg(tag + from + ': ' + m.text, 'player-msg');
     const rp = state.remotePlayers.find((r) => r.name === from);
     if (rp) rp.chat = { text: m.text, until: performance.now() + 4000 };
+  } else if (m.t === 'gchat' && typeof m.text === 'string' && typeof m.from === 'string') {
+    msg(`[${m.tag ?? 'Guild'}] ${m.from}: ${m.text}`, 'guild-msg');
+  } else if (m.t === 'trade_req' && typeof m.id === 'string' && typeof m.from === 'string') {
+    import('./ui').then((u) => u.showTradeRequest(m.id, m.from));
+  } else if (m.t === 'trade_req_declined' && typeof m.from === 'string') {
+    msg(`${m.from} declined the trade.`, 'game');
+  } else if (m.t === 'trade_open' && typeof m.with === 'string') {
+    import('./ui').then((u) => u.openTradeWindow(m.with));
+  } else if (m.t === 'trade_state') {
+    import('./ui').then((u) => u.updateTradeState(m));
+  } else if (m.t === 'trade_cancelled') {
+    import('./ui').then((u) => u.tradeCancelled(typeof m.reason === 'string' ? m.reason : 'Trade cancelled.'));
+  } else if (m.t === 'trade_complete') {
+    import('./ui').then((u) => u.tradeComplete(m));
+  } else if (m.t === 'guild_invite' && typeof m.id === 'string' && typeof m.from === 'string') {
+    import('./friends').then((f) => f.showGuildInvite(m.id, m.from, String(m.guild ?? ''), String(m.tag ?? '')));
+  } else if (m.t === 'guild_kicked') {
+    msg(`You have been removed from ${m.guild ?? 'your guild'}.`, 'game');
+    import('./friends').then((f) => void f.loadGuild());
+  } else if (m.t === 'guild_update') {
+    if (typeof m.text === 'string') msg(m.text, 'guild-msg');
+    import('./friends').then((f) => void f.loadGuild());
+  } else if (m.t === 'guild_vault_change') {
+    import('./ui').then((u) => u.refreshGuildVault());
   } else if (m.t === 'system' && typeof m.text === 'string') {
     msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
     net.username = m.name;
     if (typeof m.buildId === 'string') checkBuild(m.buildId);
     void loadFriends();
+    void loadGuild();
   } else if (m.t === 'friend_status' && typeof m.username === 'string' && typeof m.online === 'boolean') {
     setFriendOnline(m.username, m.online);
   } else if (m.t === 'cf_offer' && typeof m.id === 'string' && typeof m.from === 'string' && typeof m.amount === 'number') {
@@ -418,6 +472,7 @@ function goOnline(token: string, username: string | null, save: any) {
   installServerProvider(save);
   startPresence();
   void loadFriends();
+  void loadGuild();
 }
 
 async function bootstrap(): Promise<any | null> {

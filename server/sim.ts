@@ -27,6 +27,7 @@ export interface NpcDef {
   attackSpeed: number;
   aggressive?: boolean;
   boss?: boolean;
+  stationary?: boolean; // never moves (e.g. the Crystal Heart)
   respawnTicks: number;
   drops: { item: string; qty: [number, number]; chance: number }[];
   attackable: boolean;
@@ -73,6 +74,9 @@ export interface SNpc {
   shearedUntil: number;
   meta: Record<string, any>; // boss mechanic state
   dirty: boolean;
+  // Instanced (dungeon) NPC: visible to, and aggressive toward, this user only.
+  // null = normal shared-world NPC.
+  ownerUserId: number | null;
 }
 
 export interface SGroundItem {
@@ -81,6 +85,7 @@ export interface SGroundItem {
   qty: number;
   x: number; y: number;
   expiresAt: number; // tick; Infinity for fixed spawns
+  ownerUserId: number | null; // instanced drop: visible/takable by this user only
 }
 
 // ---------------------------------------------------------------------------
@@ -104,13 +109,26 @@ const nextSwingAt = new Map<number, number>();
 
 // pending ground deltas, flushed with the per-tick world delta
 let groundAdds: SGroundItem[] = [];
-let groundRemovals: number[] = [];
+let groundRemovals: { gid: number; owner: number | null }[] = [];
+
+// Extra per-tick simulation hooks (the dungeon instance manager registers one).
+export const simTickHooks: ((players: Map<number, PlayerView>, tick: number) => void)[] = [];
+// NPC death listeners (dungeon completion tracking etc.).
+export const npcDeathHooks: ((n: SNpc, by: PlayerView) => void)[] = [];
+// Injected by the dungeon module: which instance owner (if any) a player's
+// dropped items should be scoped to, based on where they stand.
+export let groundOwnerFor: (p: PlayerView) => number | null = () => null;
+export function setGroundOwnerFor(fn: (p: PlayerView) => number | null) { groundOwnerFor = fn; }
 
 // fixed ground spawn regeneration state
 const groundSpawnState: { item: string; x: number; y: number; respawnTicks: number; nextAt: number }[] =
   SPAWNS.groundSpawns.map((s) => ({ ...s, nextAt: 0 }));
 
 const ITEM_RE = /^[a-z][a-z0-9_]{0,47}$/;
+
+// PvP is disabled game-wide: player-vs-player swing intents are dropped.
+// The resolution code below stays dormant behind this single switch.
+const ENABLE_PVP = false;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -130,8 +148,8 @@ export function rollHit(attLvl: number, attBonus: number, defLvl: number, defBon
   return Math.random() < chance;
 }
 
-export function addGroundItem(item: string, qty: number, x: number, y: number, expiresAt: number) {
-  const gi: SGroundItem = { gid: nextGid++, item, qty, x, y, expiresAt };
+export function addGroundItem(item: string, qty: number, x: number, y: number, expiresAt: number, ownerUserId: number | null = null) {
+  const gi: SGroundItem = { gid: nextGid++, item, qty, x, y, expiresAt, ownerUserId };
   sim.ground.push(gi);
   groundAdds.push(gi);
   return gi;
@@ -140,7 +158,7 @@ export function addGroundItem(item: string, qty: number, x: number, y: number, e
 function removeGroundItem(gi: SGroundItem) {
   const i = sim.ground.indexOf(gi);
   if (i >= 0) sim.ground.splice(i, 1);
-  groundRemovals.push(gi.gid);
+  groundRemovals.push({ gid: gi.gid, owner: gi.ownerUserId });
 }
 
 function serializeNpc(n: SNpc) {
@@ -160,9 +178,12 @@ function playerAt(x: number, y: number): boolean {
   return false;
 }
 
-export function sendFx(to: PlayerView | null, npc: SNpc, kind: string) {
-  const msg = { t: 'fx', npc: npc.id, def: npc.def.id, kind };
-  if (to) to.send(msg); else broadcast(msg);
+export function sendFx(to: PlayerView | null, npc: SNpc, kind: string, extra?: Record<string, unknown>) {
+  const msg = { t: 'fx', npc: npc.id, def: npc.def.id, kind, ...(extra ?? {}) };
+  // owned (instanced) NPCs never broadcast their fx to the whole world
+  if (to) to.send(msg);
+  else if (npc.ownerUserId !== null) players.get(npc.ownerUserId)?.send(msg);
+  else broadcast(msg);
 }
 
 // Boss/NPC damage to a player. Modifiers the server cannot see (prayer
@@ -181,29 +202,54 @@ export function getTargetPlayer(n: SNpc): PlayerView | null {
 // Init
 // ---------------------------------------------------------------------------
 
+let nextNpcId = 1;
+
+// Spawn an NPC at runtime (instanced dungeon mobs, boss adds). ownerUserId
+// scopes visibility + aggression to one user. Returns null for unknown defs
+// (content fragment not merged yet) so callers can degrade gracefully.
+export function spawnNpc(defId: string, x: number, y: number, ownerUserId: number | null = null): SNpc | null {
+  const def = NPCS[defId];
+  if (!def) return null;
+  const n: SNpc = {
+    id: nextNpcId++, def, x, y, spawnX: x, spawnY: y,
+    hp: def.hitpoints, dead: false, respawnAt: 0, target: null,
+    attackCooldown: 0, wanderCooldown: 0, shearedUntil: 0, meta: {}, dirty: false,
+    ownerUserId,
+  };
+  sim.npcs.push(n);
+  npcById.set(n.id, n);
+  return n;
+}
+
+// Remove a runtime NPC entirely (no respawn). The owner's client is resynced
+// with a fresh fullSnapshot by the caller (deltas cannot express removal).
+export function despawnNpc(n: SNpc) {
+  const i = sim.npcs.indexOf(n);
+  if (i >= 0) sim.npcs.splice(i, 1);
+  npcById.delete(n.id);
+}
+
 export function initSim(broadcastFn: (msg: unknown) => void) {
   broadcast = broadcastFn;
-  let id = 1;
   for (const s of SPAWNS.npcSpawns) {
-    const def = NPCS[s.id];
-    if (!def) continue;
-    const n: SNpc = {
-      id: id++, def, x: s.x, y: s.y, spawnX: s.x, spawnY: s.y,
-      hp: def.hitpoints, dead: false, respawnAt: 0, target: null,
-      attackCooldown: 0, wanderCooldown: 0, shearedUntil: 0, meta: {}, dirty: false,
-    };
-    sim.npcs.push(n);
-    npcById.set(n.id, n);
+    if (!NPCS[s.id]) continue;
+    spawnNpc(s.id, s.x, s.y, null);
   }
   console.log(`[sim] spawned ${sim.npcs.length} NPCs`);
 }
 
-export function fullSnapshot() {
+// Full world snapshot, filtered to what `forUserId` may see: all shared NPCs
+// and ground items, plus only their own instanced ones.
+export function fullSnapshot(forUserId?: number) {
   return {
     t: 'world',
     tick: sim.tick,
-    npcs: sim.npcs.map(serializeNpc),
-    ground: sim.ground.map(serializeGround),
+    npcs: sim.npcs
+      .filter((n) => n.ownerUserId === null || n.ownerUserId === forUserId)
+      .map(serializeNpc),
+    ground: sim.ground
+      .filter((g) => g.ownerUserId === null || g.ownerUserId === forUserId)
+      .map(serializeGround),
   };
 }
 
@@ -232,6 +278,9 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
 
   for (const n of sim.npcs) {
     if (n.dead) {
+      // instanced mobs stay down for the rest of the run (the run manager
+      // despawns them); shared mobs respawn normally
+      if (n.ownerUserId !== null) continue;
       if (sim.tick >= n.respawnAt) {
         n.dead = false; n.hp = n.def.hitpoints;
         n.x = n.spawnX; n.y = n.spawnY;
@@ -245,12 +294,20 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
     // sheared flag expiry needs a delta so clients regrow the wool
     if (n.shearedUntil > 0 && n.shearedUntil === sim.tick) n.dirty = true;
 
-    // aggression: nearest eligible player within 4 tiles
+    // aggression: nearest eligible player within 4 tiles.
+    // Instanced NPCs only ever consider (or keep) their owner as a target,
+    // and ignore the combat-level aggro exemption (it's their dungeon run).
+    if (n.ownerUserId !== null && n.target !== null && n.target !== n.ownerUserId) {
+      n.target = null; n.dirty = true;
+    }
     if (n.target === null && n.def.aggressive) {
       let best: PlayerView | null = null;
       let bestDist = Infinity;
       for (const p of players.values()) {
-        if (p.dead || p.cb > n.def.combatLevel * 2 + 1) continue;
+        if (p.dead) continue;
+        if (n.ownerUserId !== null) {
+          if (p.userId !== n.ownerUserId) continue;
+        } else if (p.cb > n.def.combatLevel * 2 + 1) continue;
         const dist = chebyshev(p.x, p.y, n.x, n.y);
         if (dist <= 4 && dist < bestDist) { bestDist = dist; best = p; }
       }
@@ -262,7 +319,14 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
       const dist = chebyshev(target.x, target.y, n.x, n.y);
       const distFromSpawn = chebyshev(n.spawnX, n.spawnY, n.x, n.y);
       if (dist > 12 || distFromSpawn > 16) { n.target = null; n.dirty = true; continue; }
-      if (dist > 1) {
+      if (n.def.stationary) {
+        if (dist <= 1 && n.attackCooldown === 0) {
+          n.attackCooldown = n.def.attackSpeed;
+          const hit = rollHit(n.def.attack, 0, target.effDef, target.defBonus);
+          const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
+          damagePlayer(target, n, hit ? Math.floor(Math.random() * (maxHit + 1)) : 0);
+        }
+      } else if (dist > 1) {
         const dx = Math.sign(target.x - n.x), dy = Math.sign(target.y - n.y);
         const tryMoves = [[dx, dy], [dx, 0], [0, dy]];
         for (const [mx, my] of tryMoves) {
@@ -281,7 +345,7 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
     } else {
       if (n.target !== null) { n.target = null; n.dirty = true; }
       if (n.wanderCooldown > 0) { n.wanderCooldown--; continue; }
-      if (Math.random() < 0.2) {
+      if (Math.random() < 0.2 && !n.def.stationary) {
         const dx = Math.floor(Math.random() * 3) - 1;
         const dy = Math.floor(Math.random() * 3) - 1;
         const nx = n.x + dx, ny = n.y + dy;
@@ -305,23 +369,48 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
     markDirty: (n: SNpc) => { n.dirty = true; },
   });
 
+  // extra sims (dungeon instances)
+  for (const fn of simTickHooks) fn(players, sim.tick);
+
   flushWorldDelta();
 }
 
+// Split pending deltas into the public stream (broadcast) and per-owner
+// streams (sent only to the instance owner's socket).
 function flushWorldDelta() {
-  const deltas: unknown[] = [];
+  const pubN: unknown[] = [];
+  const pubGa: unknown[] = [];
+  const pubGr: number[] = [];
+  const owned = new Map<number, { n: unknown[]; ga: unknown[]; gr: number[] }>();
+  const bucket = (owner: number) => {
+    let b = owned.get(owner);
+    if (!b) { b = { n: [], ga: [], gr: [] }; owned.set(owner, b); }
+    return b;
+  };
+
   for (const n of sim.npcs) {
-    if (n.dirty) { deltas.push(serializeNpc(n)); n.dirty = false; }
+    if (!n.dirty) continue;
+    n.dirty = false;
+    if (n.ownerUserId === null) pubN.push(serializeNpc(n));
+    else bucket(n.ownerUserId).n.push(serializeNpc(n));
   }
-  if (deltas.length === 0 && groundAdds.length === 0 && groundRemovals.length === 0) return;
-  broadcast({
-    t: 'w',
-    n: deltas,
-    ga: groundAdds.map(serializeGround),
-    gr: groundRemovals,
-  });
+  for (const g of groundAdds) {
+    if (g.ownerUserId === null) pubGa.push(serializeGround(g));
+    else bucket(g.ownerUserId).ga.push(serializeGround(g));
+  }
+  for (const r of groundRemovals) {
+    if (r.owner === null) pubGr.push(r.gid);
+    else bucket(r.owner).gr.push(r.gid);
+  }
   groundAdds = [];
   groundRemovals = [];
+
+  if (pubN.length || pubGa.length || pubGr.length) {
+    broadcast({ t: 'w', n: pubN, ga: pubGa, gr: pubGr });
+  }
+  for (const [owner, b] of owned) {
+    players.get(owner)?.send({ t: 'w', n: b.n, ga: b.ga, gr: b.gr });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -332,7 +421,9 @@ function flushWorldDelta() {
 function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView) {
   n.hp -= dmg;
   n.dirty = true;
-  broadcast({ t: 'hit', npc: n.id, dmg, hp: Math.max(0, n.hp), by: by.name });
+  const hitMsg = { t: 'hit', npc: n.id, dmg, hp: Math.max(0, n.hp), by: by.name };
+  if (n.ownerUserId !== null) players.get(n.ownerUserId)?.send(hitMsg);
+  else broadcast(hitMsg);
   if (dmg > 0 && n.target === null) n.target = by.userId; // retaliate
   if (n.hp <= 0) {
     n.dead = true;
@@ -342,10 +433,12 @@ function applyDamageToNpc(n: SNpc, dmg: number, by: PlayerView) {
     for (const d of n.def.drops) {
       if (Math.random() < d.chance) {
         const qty = d.qty[0] + Math.floor(Math.random() * (d.qty[1] - d.qty[0] + 1));
-        addGroundItem(d.item, qty, n.x, n.y, sim.tick + 200);
+        // instanced kills drop owner-scoped loot via the same authoritative path
+        addGroundItem(d.item, qty, n.x, n.y, sim.tick + 200, n.ownerUserId);
       }
     }
     by.send({ t: 'youKilled', npc: n.id, def: n.def.id });
+    for (const fn of npcDeathHooks) fn(n, by);
   }
 }
 
@@ -400,11 +493,12 @@ function handleSwingPvp(p: PlayerView, msg: any) {
 
 export function handleSwing(p: PlayerView, msg: any) {
   if (typeof msg.target === 'string' && msg.target.trim()) {
-    handleSwingPvp(p, msg);
+    if (ENABLE_PVP) handleSwingPvp(p, msg); // PvP disabled: intent dropped
     return;
   }
   const n = npcById.get(Number(msg.npc));
   if (!n || n.dead || !n.def.attackable || p.dead) return;
+  if (n.ownerUserId !== null && n.ownerUserId !== p.userId) return; // not your instance
 
   const mode = msg.mode === 'ranged' || msg.mode === 'gun' || msg.mode === 'magic' ? msg.mode : 'melee';
   const reach = mode === 'melee' ? 1 : 6;
@@ -444,6 +538,7 @@ export function handlePickup(p: PlayerView, msg: any) {
   const gid = Number(msg.gid);
   const gi = sim.ground.find((g) => g.gid === gid);
   if (!gi || p.dead) return;
+  if (gi.ownerUserId !== null && gi.ownerUserId !== p.userId) return; // not your instance
   if (chebyshev(p.x, p.y, gi.x, gi.y) > 2) return; // pos staleness slack
   removeGroundItem(gi);
   p.send({ t: 'got', gid: gi.gid, item: gi.item, qty: gi.qty });
@@ -455,7 +550,8 @@ export function handleDrop(p: PlayerView, msg: any) {
   const item = String(msg.item ?? '');
   if (!ITEM_RE.test(item)) return;
   const qty = clamp(msg.qty, 1, 2_000_000_000, 1);
-  addGroundItem(item, qty, p.x, p.y, sim.tick + 200);
+  // drops made inside an instance stay private to that instance's owner
+  addGroundItem(item, qty, p.x, p.y, sim.tick + 200, groundOwnerFor(p));
   flushGroundNow();
 }
 
@@ -485,7 +581,21 @@ export function dropPlayer(userId: number) {
 // responsive; NPC deltas still ride the next tick.
 function flushGroundNow() {
   if (groundAdds.length === 0 && groundRemovals.length === 0) return;
-  broadcast({ t: 'w', n: [], ga: groundAdds.map(serializeGround), gr: groundRemovals });
+  const pubGa = groundAdds.filter((g) => g.ownerUserId === null);
+  const pubGr = groundRemovals.filter((r) => r.owner === null).map((r) => r.gid);
+  const owners = new Set<number>();
+  for (const g of groundAdds) if (g.ownerUserId !== null) owners.add(g.ownerUserId);
+  for (const r of groundRemovals) if (r.owner !== null) owners.add(r.owner);
+  if (pubGa.length || pubGr.length) {
+    broadcast({ t: 'w', n: [], ga: pubGa.map(serializeGround), gr: pubGr });
+  }
+  for (const owner of owners) {
+    players.get(owner)?.send({
+      t: 'w', n: [],
+      ga: groundAdds.filter((g) => g.ownerUserId === owner).map(serializeGround),
+      gr: groundRemovals.filter((r) => r.owner === owner).map((r) => r.gid),
+    });
+  }
   groundAdds = [];
   groundRemovals = [];
 }

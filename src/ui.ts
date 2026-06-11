@@ -13,7 +13,8 @@ import {
   useItemOnObject, useItemOnItem,
   itemActions, objectActions, npcActions,
   advanceDialogue, chooseOption, togglePrayer, currentAttackMode,
-  saveGame, resetSave, invCount, equipBonus,
+  saveGame, resetSave, invCount, equipBonus, addItem, removeItem, freeSlots,
+  sendWs, ENABLE_PVP,
   Npc, CombatStyle, MakeOption, EQUIP_SLOTS,
 } from './game';
 import { itemIcon, skillIcon, tabIcon, copyCanvas } from './sprites';
@@ -22,7 +23,12 @@ import { objects, objectAt, key, WorldObject, GroundItem } from './world';
 import { audio, TRACKS } from './audio';
 import { QUESTS } from './quests';
 import type { EquipSlot } from './defs';
-import { friends, addFriend, removeFriend, loadFriends, startFriendsPolling, isFriend } from './friends';
+import {
+  friends, addFriend, removeFriend, loadFriends, startFriendsPolling, isFriend,
+  guild, loadGuild, createGuild, guildInvite, guildLeave, guildKick, guildPromote,
+  guildSetDepositOnly, GUILD_COST, GuildMember,
+} from './friends';
+import { net, syncSaveNow } from './net';
 import { openCoinflip } from './packs/gambling';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -69,6 +75,7 @@ export function initUI() {
     if (activeTab === 'music') renderPanel();
   };
   friends.onChange = () => { if (activeTab === 'friends') renderPanel(); };
+  guild.onChange = () => { if (activeTab === 'friends') renderPanel(); };
   startFriendsPolling(() => activeTab === 'friends');
 
   updateOrbs();
@@ -592,31 +599,190 @@ function renderFriends(panel: HTMLElement) {
     empty.className = 'panel-hint';
     empty.textContent = 'No friends yet. Add someone or right-click a player.';
     panel.appendChild(empty);
+  } else {
+    const list = document.createElement('div');
+    list.className = 'friends-list';
+    for (const f of friends.list) {
+      const row = document.createElement('div');
+      row.className = 'friend-row';
+      const dot = document.createElement('span');
+      dot.className = 'friend-dot' + (f.online ? ' online' : '');
+      dot.title = f.online ? 'Online' : 'Offline';
+      const name = document.createElement('span');
+      name.className = 'friend-name';
+      name.textContent = f.username;
+      const rm = document.createElement('button');
+      rm.className = 'mini-btn';
+      rm.textContent = '×';
+      rm.title = 'Remove friend';
+      rm.onclick = () => { void removeFriend(f.username); };
+      row.appendChild(dot);
+      row.appendChild(name);
+      row.appendChild(rm);
+      list.appendChild(row);
+    }
+    panel.appendChild(list);
+  }
+
+  renderGuildSection(panel);
+}
+
+// ---------------- Guild section (friends tab) ----------------
+function renderGuildSection(panel: HTMLElement) {
+  const title = document.createElement('div');
+  title.className = 'panel-title guild-title';
+  title.textContent = 'Guild';
+  panel.appendChild(title);
+
+  if (!guild.loaded) void loadGuild();
+  const g = guild.info;
+
+  if (!g) {
+    const hint = document.createElement('div');
+    hint.className = 'panel-hint';
+    hint.textContent = `Found a guild for ${GUILD_COST.toLocaleString()} coins, or wait for an invitation.`;
+    panel.appendChild(hint);
+
+    const nameRow = document.createElement('div');
+    nameRow.className = 'setting-row';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.maxLength = 24;
+    nameInput.placeholder = 'Guild name';
+    nameInput.className = 'guild-input';
+    nameRow.appendChild(nameInput);
+    panel.appendChild(nameRow);
+
+    const tagRow = document.createElement('div');
+    tagRow.className = 'setting-row';
+    const tagInput = document.createElement('input');
+    tagInput.type = 'text';
+    tagInput.maxLength = 5;
+    tagInput.placeholder = 'Tag (3-5)';
+    tagInput.className = 'guild-input';
+    tagInput.style.width = '70px';
+    const createBtn = document.createElement('button');
+    createBtn.className = 'mini-btn';
+    createBtn.textContent = `Create (${(GUILD_COST / 1000)}k)`;
+    createBtn.onclick = () => {
+      const name = nameInput.value.trim();
+      const tag = tagInput.value.trim();
+      if (name.length < 3) { msg('Guild name must be at least 3 characters.'); return; }
+      if (tag.length < 3) { msg('Guild tag must be 3-5 letters or numbers.'); return; }
+      void createGuild(name, tag).then((ok) => { if (ok) renderPanel(); });
+    };
+    tagRow.appendChild(tagInput);
+    tagRow.appendChild(createBtn);
+    panel.appendChild(tagRow);
     return;
   }
 
+  const head = document.createElement('div');
+  head.className = 'guild-head';
+  head.textContent = `${g.name} [${g.tag}]`;
+  head.title = `You are ${g.rank === 'leader' ? 'the leader' : `an ${g.rank}` } of this guild.`;
+  panel.appendChild(head);
+
+  const myRank = g.rank;
+  const canInvite = myRank !== 'member';
+
+  if (canInvite) {
+    const invRow = document.createElement('div');
+    invRow.className = 'setting-row';
+    const invInput = document.createElement('input');
+    invInput.type = 'text';
+    invInput.maxLength = 12;
+    invInput.placeholder = 'Invite player';
+    invInput.className = 'guild-input';
+    const invBtn = document.createElement('button');
+    invBtn.className = 'mini-btn';
+    invBtn.textContent = 'Invite';
+    invBtn.onclick = () => {
+      const n = invInput.value.trim();
+      if (n) { void guildInvite(n); invInput.value = ''; }
+    };
+    invRow.appendChild(invInput);
+    invRow.appendChild(invBtn);
+    panel.appendChild(invRow);
+  }
+
   const list = document.createElement('div');
-  list.className = 'friends-list';
-  for (const f of friends.list) {
+  list.className = 'friends-list guild-roster';
+  for (const m of g.roster) {
     const row = document.createElement('div');
     row.className = 'friend-row';
     const dot = document.createElement('span');
-    dot.className = 'friend-dot' + (f.online ? ' online' : '');
-    dot.title = f.online ? 'Online' : 'Offline';
+    dot.className = 'friend-dot' + (m.online ? ' online' : '');
+    dot.title = m.online ? 'Online' : 'Offline';
     const name = document.createElement('span');
     name.className = 'friend-name';
-    name.textContent = f.username;
-    const rm = document.createElement('button');
-    rm.className = 'mini-btn';
-    rm.textContent = '×';
-    rm.title = 'Remove friend';
-    rm.onclick = () => { void removeFriend(f.username); };
+    name.textContent = m.username;
+    const rank = document.createElement('span');
+    rank.className = 'guild-rank guild-rank-' + m.rank;
+    rank.textContent = m.rank === 'leader' ? '★' : m.rank === 'officer' ? '◆' : '';
+    rank.title = m.rank;
     row.appendChild(dot);
     row.appendChild(name);
-    row.appendChild(rm);
+    row.appendChild(rank);
+    const isSelf = !!net.username && m.username.toLowerCase() === net.username.toLowerCase();
+    row.oncontextmenu = (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const opts: MenuOption[] = [];
+      if (!isSelf) {
+        const canKick = (myRank === 'leader' && m.rank !== 'leader')
+          || (myRank === 'officer' && m.rank === 'member');
+        if (canKick) opts.push({ label: 'Kick', target: m.username, fn: () => { void guildKick(m.username); } });
+        if (myRank === 'leader') {
+          if (m.rank === 'member') opts.push({ label: 'Promote to officer', target: m.username, fn: () => { void guildPromote(m.username, 'officer'); } });
+          if (m.rank === 'officer') {
+            opts.push({ label: 'Demote to member', target: m.username, fn: () => { void guildPromote(m.username, 'member'); } });
+            opts.push({ label: 'Make leader', target: m.username, fn: () => { void guildPromote(m.username, 'leader'); } });
+          }
+        }
+        if (!isFriend(m.username)) opts.push({ label: 'Add friend', target: m.username, fn: () => { void addFriend(m.username); } });
+      }
+      if (opts.length) showContextMenu(e.clientX, e.clientY, opts);
+    };
     list.appendChild(row);
   }
   panel.appendChild(list);
+
+  if (myRank === 'leader') {
+    const toggleRow = document.createElement('div');
+    toggleRow.className = 'setting-row';
+    toggleRow.innerHTML = '<span>Members deposit-only</span>';
+    const tog = document.createElement('button');
+    tog.className = 'mini-btn';
+    tog.style.width = '50px';
+    tog.textContent = g.memberDepositOnly ? 'On' : 'Off';
+    tog.onclick = () => { void guildSetDepositOnly(!g.memberDepositOnly); };
+    toggleRow.appendChild(tog);
+    panel.appendChild(toggleRow);
+  }
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'setting-row';
+  const chatBtn = document.createElement('button');
+  chatBtn.className = 'mini-btn';
+  chatBtn.textContent = 'Guild chat';
+  chatBtn.title = "Type '/g message' in the chat box";
+  chatBtn.onclick = () => {
+    const input = $('chat-input') as HTMLInputElement;
+    input.value = '/g ';
+    input.focus();
+  };
+  const leaveBtn = document.createElement('button');
+  leaveBtn.className = 'mini-btn';
+  leaveBtn.textContent = 'Leave guild';
+  leaveBtn.onclick = () => { void guildLeave().then(() => renderPanel()); };
+  btnRow.appendChild(chatBtn);
+  btnRow.appendChild(leaveBtn);
+  panel.appendChild(btnRow);
+
+  const note = document.createElement('div');
+  note.className = 'panel-hint';
+  note.textContent = 'The guild vault stands beside the Aldgate bank.';
+  panel.appendChild(note);
 }
 
 function renderSettings(panel: HTMLElement) {
@@ -693,8 +859,8 @@ function buildChatTabs() {
 
 function chatVisible(cls: string): boolean {
   if (chatFilter === 'all') return true;
-  if (chatFilter === 'public') return cls === 'player-msg';
-  return cls !== 'player-msg'; // 'game' filter: everything but public chat
+  if (chatFilter === 'public') return cls === 'player-msg' || cls === 'guild-msg';
+  return cls !== 'player-msg' && cls !== 'guild-msg'; // 'game' filter: everything but chat
 }
 
 function addChatLine(text: string, cls: string) {
@@ -726,8 +892,15 @@ function bindChat() {
   input.addEventListener('keydown', (e) => {
     e.stopPropagation();
     if (e.key === 'Enter' && input.value.trim()) {
-      const name = state.player?.name ?? 'Adventurer';
-      addChatLine(`${name}: ${input.value.trim()}`, 'player-msg');
+      const text = input.value.trim();
+      // '/g ' lines go to the guild channel; the server echoes them back to
+      // every member (including us), so skip the local public echo.
+      if (!/^\/g(\s|$)/i.test(text)) {
+        const name = state.player?.name ?? 'Adventurer';
+        addChatLine(`${name}: ${text}`, 'player-msg');
+      } else if (!guild.info) {
+        addChatLine('You are not in a guild.', 'game');
+      }
       input.value = '';
     }
   });
@@ -982,10 +1155,17 @@ function optionsAt(tx: number, ty: number): MenuOption[] {
   // other players on tile
   for (const rp of state.remotePlayers) {
     if (rp.x !== tx || rp.y !== ty || rp.dead) continue;
+    if (ENABLE_PVP) {
+      // PvP disabled: the attack option stays dormant behind the switch
+      opts.push({
+        label: 'Attack', target: rp.name,
+        lvl: rp.cb ? `(level-${rp.cb})` : undefined,
+        fn: () => attackPlayer(rp.name),
+      });
+    }
     opts.push({
-      label: 'Attack', target: rp.name,
-      lvl: rp.cb ? `(level-${rp.cb})` : undefined,
-      fn: () => attackPlayer(rp.name),
+      label: 'Trade with', target: rp.name,
+      fn: () => requestTrade(rp.name),
     });
     if (!isFriend(rp.name)) {
       opts.push({
@@ -1131,6 +1311,8 @@ function renderModals() {
   const layer = $('modal-layer');
   if (state.bankOpen) return renderBank(layer);
   if (state.shopOpen) return renderShop(layer, state.shopOpen);
+  if (tradeView) return renderTrade(layer);
+  if (vaultOpen) return renderVault(layer);
   layer.style.display = 'none';
   layer.innerHTML = '';
 }
@@ -1302,6 +1484,408 @@ function makeInvStrip(
     grid.appendChild(slot);
   });
   return grid;
+}
+
+// ---------------- Player trading ----------------
+// Two-panel OSRS-style trade window. The server owns the session state; every
+// change comes back as a trade_state message and re-renders from scratch.
+
+interface TradeStack { id: string; qty: number }
+interface TradeSideView { items: TradeStack[]; coins: number; accepted: boolean; name?: string }
+let tradeView: { with: string; screen: 1 | 2; you: TradeSideView; them: TradeSideView } | null = null;
+let tradeAcceptBusy = false;
+
+function requestTrade(name: string) {
+  if (!net.online) { msg('You are not connected to the server.'); return; }
+  if (tradeView) { msg('You are already trading.'); return; }
+  sendWs({ t: 'trade_req', to: name });
+}
+
+export function showTradeRequest(id: string, from: string) {
+  msg(`${from} wishes to trade with you.`, 'player-msg');
+  showContextMenu(window.innerWidth / 2, window.innerHeight / 2, [
+    { label: 'Trade with', target: from, fn: () => sendWs({ t: 'trade_req_accept', id }) },
+    { label: 'Decline trade', target: from, fn: () => sendWs({ t: 'trade_req_decline', id }) },
+  ]);
+}
+
+export function openTradeWindow(withName: string) {
+  tradeView = {
+    with: withName, screen: 1,
+    you: { items: [], coins: 0, accepted: false },
+    them: { items: [], coins: 0, accepted: false },
+  };
+  tradeAcceptBusy = false;
+  renderModals();
+}
+
+export function updateTradeState(m: any) {
+  if (!tradeView) return;
+  if (m.you) tradeView.you = { items: m.you.items ?? [], coins: m.you.coins ?? 0, accepted: !!m.you.accepted };
+  if (m.them) tradeView.them = { items: m.them.items ?? [], coins: m.them.coins ?? 0, accepted: !!m.them.accepted, name: m.them.name };
+  if (m.screen === 1 || m.screen === 2) {
+    if (tradeView.screen !== m.screen) tradeAcceptBusy = false;
+    tradeView.screen = m.screen;
+  }
+  renderModals();
+}
+
+export function tradeCancelled(reason: string) {
+  if (!tradeView) return;
+  tradeView = null;
+  msg(reason, 'game');
+  renderModals();
+}
+
+export function tradeComplete(m: any) {
+  tradeView = null;
+  // apply the swap to the live inventory (the server already updated the save)
+  for (const it of m?.lose?.items ?? []) removeItem(String(it.id), Number(it.qty) || 0);
+  if (m?.lose?.coins > 0) removeItem('coins', m.lose.coins);
+  for (const it of m?.gain?.items ?? []) addItem(String(it.id), Number(it.qty) || 0);
+  if (m?.gain?.coins > 0) addItem('coins', m.gain.coins);
+  msg('Trade completed.', 'game');
+  renderModals();
+  // persist so the local save mirrors the server's — delayed past the server's
+  // post-trade save fence (which rejects PUTs for a few seconds so in-flight
+  // pre-trade saves cannot overwrite the trade result)
+  setTimeout(() => { void syncSaveNow(); }, 4500);
+}
+
+function offeredCount(id: string): number {
+  if (!tradeView) return 0;
+  let n = tradeView.you.items.reduce((s, it) => s + (it.id === id ? it.qty : 0), 0);
+  if (id === 'coins') n += tradeView.you.coins;
+  return n;
+}
+
+function sendOffer(items: TradeStack[], coins: number) {
+  sendWs({ t: 'trade_set', items, coins });
+}
+
+function offerAdd(id: string, qty: number) {
+  if (!tradeView || tradeView.screen !== 1) return;
+  const held = invCount(id) - offeredCount(id);
+  const n = Math.min(qty, Math.max(0, held));
+  if (n <= 0) return;
+  if (id === 'coins') { sendOffer(tradeView.you.items, tradeView.you.coins + n); return; }
+  const items = tradeView.you.items.map((it) => ({ ...it }));
+  const cur = items.find((it) => it.id === id);
+  if (cur) cur.qty += n; else items.push({ id, qty: n });
+  sendOffer(items, tradeView.you.coins);
+}
+
+function offerRemove(id: string, qty: number) {
+  if (!tradeView || tradeView.screen !== 1) return;
+  if (id === 'coins') {
+    sendOffer(tradeView.you.items, Math.max(0, tradeView.you.coins - qty));
+    return;
+  }
+  const items: TradeStack[] = [];
+  for (const it of tradeView.you.items) {
+    if (it.id !== id) { items.push({ ...it }); continue; }
+    const left = it.qty - qty;
+    if (left > 0) items.push({ id, qty: left });
+  }
+  sendOffer(items, tradeView.you.coins);
+}
+
+function tradeOfferGrid(side: TradeSideView, mine: boolean): HTMLElement {
+  const grid = document.createElement('div');
+  grid.className = 'trade-grid';
+  const entries: TradeStack[] = [...side.items];
+  if (side.coins > 0) entries.push({ id: 'coins', qty: side.coins });
+  for (const it of entries) {
+    const def = ITEMS[it.id];
+    const slot = document.createElement('div');
+    slot.className = 'modal-slot';
+    if (def) slot.appendChild(copyCanvas(itemIcon(it.id)));
+    if (it.qty > 1 || def?.stackable) {
+      const q = document.createElement('span');
+      q.className = 'inv-qty';
+      q.textContent = fmtQty(it.qty);
+      slot.appendChild(q);
+    }
+    slot.title = `${def?.name ?? it.id} x ${it.qty.toLocaleString()}`;
+    if (mine && tradeView?.screen === 1) {
+      slot.onclick = () => offerRemove(it.id, 1);
+      slot.oncontextmenu = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const name = def?.name ?? it.id;
+        showContextMenu(e.clientX, e.clientY, [
+          { label: 'Remove-1', target: name, fn: () => offerRemove(it.id, 1) },
+          { label: 'Remove-All', target: name, fn: () => offerRemove(it.id, it.qty) },
+          { label: 'Remove-X', target: name, fn: () => { const n = promptQty('Remove how many?'); if (n) offerRemove(it.id, n); } },
+        ]);
+      };
+    }
+    grid.appendChild(slot);
+  }
+  if (entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'trade-empty';
+    empty.textContent = mine ? 'Click items below to offer them.' : 'Nothing offered yet.';
+    grid.appendChild(empty);
+  }
+  return grid;
+}
+
+function renderTrade(layer: HTMLElement) {
+  const tv = tradeView!;
+  const modal = modalShell(layer, `Trading with: ${tv.with}`, () => {
+    sendWs({ t: 'trade_decline' });
+    tradeView = null;
+    renderModals();
+  });
+  modal.classList.add('trade-modal');
+
+  if (tv.screen === 2) {
+    const warn = document.createElement('div');
+    warn.className = 'trade-confirm-title';
+    warn.textContent = 'Are you sure you want to make this trade?';
+    modal.appendChild(warn);
+  }
+
+  const cols = document.createElement('div');
+  cols.className = 'trade-cols';
+  for (const [label, side, mine] of [
+    ['Your offer', tv.you, true],
+    [`${tv.with}'s offer`, tv.them, false],
+  ] as const) {
+    const col = document.createElement('div');
+    col.className = 'trade-col';
+    const head = document.createElement('div');
+    head.className = 'trade-col-head';
+    head.textContent = label;
+    col.appendChild(head);
+    col.appendChild(tradeOfferGrid(side, mine));
+    const status = document.createElement('div');
+    status.className = 'trade-status' + (side.accepted ? ' ok' : '');
+    status.textContent = side.accepted
+      ? (mine ? 'You have accepted.' : 'Other player has accepted.')
+      : (mine ? 'Waiting for you...' : 'Waiting for other player...');
+    col.appendChild(status);
+    cols.appendChild(col);
+  }
+  modal.appendChild(cols);
+
+  const note = document.createElement('div');
+  note.className = 'modal-hint';
+  note.textContent = tv.screen === 1
+    ? 'Click inventory items to offer (right-click for amounts). Changing an offer clears both accepts.'
+    : 'Check the offers carefully — accepting here completes the trade.';
+  modal.appendChild(note);
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'trade-btn-row';
+  const accept = document.createElement('button');
+  accept.className = 'mini-btn trade-accept';
+  accept.textContent = tv.you.accepted ? 'Waiting...' : 'Accept';
+  accept.disabled = tv.you.accepted || tradeAcceptBusy;
+  accept.onclick = async () => {
+    if (!tradeView || tradeView.you.accepted || tradeAcceptBusy) return;
+    tradeAcceptBusy = true;
+    accept.disabled = true;
+    if (tradeView.screen === 2) {
+      // flush the live save first so the server validates against fresh data
+      await syncSaveNow();
+      if (!tradeView) return; // cancelled while flushing
+    }
+    sendWs({ t: 'trade_accept' });
+    tradeAcceptBusy = false;
+  };
+  const decline = document.createElement('button');
+  decline.className = 'mini-btn trade-decline';
+  decline.textContent = 'Decline';
+  decline.onclick = () => { sendWs({ t: 'trade_decline' }); tradeView = null; renderModals(); };
+  btnRow.appendChild(accept);
+  btnRow.appendChild(decline);
+  modal.appendChild(btnRow);
+
+  if (tv.screen === 1) {
+    // inventory strip with already-offered quantities masked out
+    const grid = document.createElement('div');
+    grid.className = 'modal-grid inv-strip';
+    const shownOffered = new Map<string, number>(); // consume offered qty across slots
+    state.player.inventory.forEach((it) => {
+      const slot = document.createElement('div');
+      slot.className = 'modal-slot';
+      if (it) {
+        const already = shownOffered.get(it.id) ?? 0;
+        const offered = offeredCount(it.id);
+        const hide = Math.max(0, Math.min(it.qty, offered - already));
+        shownOffered.set(it.id, already + hide);
+        const shownQty = it.qty - hide;
+        if (shownQty > 0) {
+          slot.appendChild(copyCanvas(itemIcon(it.id)));
+          if (shownQty > 1) {
+            const q = document.createElement('span');
+            q.className = 'inv-qty';
+            q.textContent = fmtQty(shownQty);
+            slot.appendChild(q);
+          }
+          slot.title = ITEMS[it.id].name;
+          slot.onclick = () => offerAdd(it.id, 1);
+          slot.oncontextmenu = (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const name = ITEMS[it.id].name;
+            showContextMenu(e.clientX, e.clientY, [
+              { label: 'Offer-1', target: name, fn: () => offerAdd(it.id, 1) },
+              { label: 'Offer-5', target: name, fn: () => offerAdd(it.id, 5) },
+              { label: 'Offer-All', target: name, fn: () => offerAdd(it.id, invCount(it.id)) },
+              { label: 'Offer-X', target: name, fn: () => { const n = promptQty('Offer how many?'); if (n) offerAdd(it.id, n); } },
+            ]);
+          };
+        }
+      }
+      grid.appendChild(slot);
+    });
+    modal.appendChild(grid);
+  }
+}
+
+// ---------------- Guild vault ----------------
+// Shared item store backed by guild_vault, reusing the bank modal pattern.
+// Deposits remove items client-side first (GE trust model); withdrawals are
+// granted (and clamped) by the server before the items appear.
+
+interface VaultData {
+  items: { item: string; qty: number }[];
+  canWithdraw: boolean;
+  memberDepositOnly: boolean;
+  rank: string;
+}
+let vaultOpen = false;
+let vaultData: VaultData | null = null;
+let vaultBusy = false;
+
+export function openGuildVault() {
+  vaultOpen = true;
+  vaultData = null;
+  renderModals();
+  refreshGuildVault();
+}
+
+export function refreshGuildVault() {
+  if (!vaultOpen) return;
+  net.api('/api/guild/vault')
+    .then((res) => {
+      if (!vaultOpen) return;
+      vaultData = {
+        items: Array.isArray(res?.items) ? res.items : [],
+        canWithdraw: !!res?.canWithdraw,
+        memberDepositOnly: !!res?.memberDepositOnly,
+        rank: String(res?.rank ?? 'member'),
+      };
+      renderModals();
+    })
+    .catch((e) => {
+      vaultOpen = false;
+      msg(String(e?.message || 'Could not open the vault.'), 'game');
+      renderModals();
+    });
+}
+
+function vaultDeposit(itemId: string, qty: number) {
+  if (vaultBusy) return;
+  const n = Math.min(qty, invCount(itemId));
+  if (n <= 0) return;
+  vaultBusy = true;
+  removeItem(itemId, n); // client-side escrow, mirrored on the GE
+  net.api('/api/guild/vault/deposit', { item: itemId, qty: n })
+    .then(() => refreshGuildVault())
+    .catch((e) => {
+      addItem(itemId, n); // refund on rejection
+      msg(String(e?.message || 'Deposit failed.'), 'game');
+    })
+    .finally(() => { vaultBusy = false; saveGame(); });
+}
+
+function vaultWithdraw(itemId: string, qty: number) {
+  if (vaultBusy) return;
+  const def = ITEMS[itemId];
+  if (!def) return;
+  const space = def.stackable
+    ? (invCount(itemId) > 0 || freeSlots() > 0 ? qty : 0)
+    : Math.min(qty, freeSlots());
+  if (space <= 0) { msg("You don't have enough inventory space."); return; }
+  vaultBusy = true;
+  net.api('/api/guild/vault/withdraw', { item: itemId, qty: space })
+    .then((res) => {
+      const granted = Number(res?.granted) || 0;
+      if (granted > 0) addItem(itemId, granted);
+      refreshGuildVault();
+    })
+    .catch((e) => msg(String(e?.message || 'Withdraw failed.'), 'game'))
+    .finally(() => { vaultBusy = false; saveGame(); });
+}
+
+function renderVault(layer: HTMLElement) {
+  const gname = guild.info ? `${guild.info.name} [${guild.info.tag}]` : 'Guild';
+  const modal = modalShell(layer, `${gname} Vault`, () => { vaultOpen = false; renderModals(); });
+  if (!vaultData) {
+    const loading = document.createElement('div');
+    loading.className = 'modal-hint';
+    loading.textContent = 'Opening the vault...';
+    modal.appendChild(loading);
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'modal-grid';
+  for (const v of vaultData.items) {
+    const def = ITEMS[v.item];
+    const slot = document.createElement('div');
+    slot.className = 'modal-slot';
+    if (def) slot.appendChild(copyCanvas(itemIcon(v.item)));
+    const q = document.createElement('span');
+    q.className = 'inv-qty';
+    q.textContent = fmtQty(v.qty);
+    slot.appendChild(q);
+    const name = def?.name ?? v.item;
+    slot.title = `${name} x ${v.qty.toLocaleString()}`
+      + (vaultData.canWithdraw ? '' : '\nYour rank may only deposit.');
+    if (vaultData.canWithdraw) {
+      slot.onclick = () => vaultWithdraw(v.item, 1);
+      slot.oncontextmenu = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        showContextMenu(e.clientX, e.clientY, [
+          { label: 'Withdraw-1', target: name, fn: () => vaultWithdraw(v.item, 1) },
+          { label: 'Withdraw-5', target: name, fn: () => vaultWithdraw(v.item, 5) },
+          { label: 'Withdraw-All', target: name, fn: () => vaultWithdraw(v.item, v.qty) },
+          { label: 'Withdraw-X', target: name, fn: () => { const n = promptQty('Withdraw how many?'); if (n) vaultWithdraw(v.item, n); } },
+        ]);
+      };
+    }
+    grid.appendChild(slot);
+  }
+  if (vaultData.items.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'modal-hint';
+    empty.textContent = 'The vault is empty.';
+    modal.appendChild(empty);
+  } else {
+    modal.appendChild(grid);
+  }
+  const hint = document.createElement('div');
+  hint.className = 'modal-hint';
+  hint.textContent = vaultData.canWithdraw
+    ? 'Click vault items to withdraw (right-click for amounts). Your items below: click to deposit.'
+    : 'Members of this guild may only deposit. Your items below: click to deposit.';
+  modal.appendChild(hint);
+  modal.appendChild(makeInvStrip(
+    (slot) => { const it = state.player.inventory[slot]; if (it) vaultDeposit(it.id, 1); },
+    (e, slot) => {
+      const it = state.player.inventory[slot];
+      if (!it) return;
+      const name = ITEMS[it.id].name;
+      showContextMenu(e.clientX, e.clientY, [
+        { label: 'Deposit-1', target: name, fn: () => vaultDeposit(it.id, 1) },
+        { label: 'Deposit-5', target: name, fn: () => vaultDeposit(it.id, 5) },
+        { label: 'Deposit-All', target: name, fn: () => vaultDeposit(it.id, invCount(it.id)) },
+        { label: 'Deposit-X', target: name, fn: () => { const n = promptQty('Deposit how many?'); if (n) vaultDeposit(it.id, n); } },
+      ]);
+    },
+  ));
 }
 
 // ---------------- Utils ----------------
