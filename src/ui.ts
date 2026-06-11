@@ -917,18 +917,30 @@ function updateXpTracker() {
 }
 
 // ---------------- Orbs ----------------
+// Threshold classes recolor both the number and the orb fill (see style.css):
+// >50% green, 25-50% yellow, <=25% red.
+function setOrbLevel(el: HTMLElement, frac: number) {
+  el.classList.toggle('orb-high', frac > 0.5);
+  el.classList.toggle('orb-mid', frac <= 0.5 && frac > 0.25);
+  el.classList.toggle('orb-low', frac <= 0.25);
+}
+
 function updateOrbs() {
   const p = state.player;
   if (!p) return;
-  const hp = $('orb-hp').querySelector('.orb-num') as HTMLElement;
+  const hpOrb = $('orb-hp');
+  const hp = hpOrb.querySelector('.orb-num') as HTMLElement;
   hp.textContent = String(Math.max(0, p.curHp));
-  hp.style.color = p.curHp <= level('Hitpoints') * 0.25 ? '#ff3030' : '#00ff00';
-  const pray = $('orb-prayer').querySelector('.orb-num') as HTMLElement;
+  setOrbLevel(hpOrb, p.curHp / Math.max(1, level('Hitpoints')));
+  const prayOrb = $('orb-prayer');
+  const pray = prayOrb.querySelector('.orb-num') as HTMLElement;
   pray.textContent = String(Math.max(0, p.prayerPoints));
-  pray.style.color = p.prayerPoints <= Math.max(1, level('Prayer') * 0.25) ? '#ff3030' : '#00ff00';
-  $('orb-prayer').classList.toggle('on', p.activePrayers.size > 0);
-  $('orb-run').querySelector('.orb-num')!.textContent = String(Math.floor(p.energy));
-  $('orb-run').classList.toggle('on', p.run);
+  setOrbLevel(prayOrb, p.prayerPoints / Math.max(1, level('Prayer')));
+  prayOrb.classList.toggle('on', p.activePrayers.size > 0);
+  const runOrb = $('orb-run');
+  runOrb.querySelector('.orb-num')!.textContent = String(Math.floor(p.energy));
+  setOrbLevel(runOrb, p.energy / 100);
+  runOrb.classList.toggle('on', p.run);
 }
 
 function bindOrbs() {
