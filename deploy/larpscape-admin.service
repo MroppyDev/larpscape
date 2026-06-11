@@ -12,7 +12,9 @@ ExecStart=/opt/larpscape/node_modules/.bin/tsx admin/server/index.ts
 Restart=always
 RestartSec=2
 Environment=NODE_ENV=production
-Environment=RESTART_CMD=sudo /usr/bin/systemctl restart larpscape
+# Quote the value: systemd splits unquoted Environment= on spaces, which would
+# truncate this to RESTART_CMD=sudo and break the admin panel's deploy-restart.
+Environment="RESTART_CMD=sudo /usr/bin/systemctl restart larpscape"
 
 [Install]
 WantedBy=multi-user.target
