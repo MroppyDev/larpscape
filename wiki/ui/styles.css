@@ -367,3 +367,32 @@ a:hover { text-decoration: underline; color: var(--wiki-link-hover); }
 /* Internal wiki links in generated HTML */
 a.wiki-link { color: var(--wiki-link); }
 a.wiki-link:visited { color: #795cb2; }
+
+/* Item sprite icons (PixIcon) */
+.pix-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+.pix-icon-canvas {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+}
+
+.infobox .pix-icon { margin-right: 0; }
+
+.search-results .pix-icon-canvas { margin-right: 6px; }
+
+/* Drop table rarity tiers (OSRS conventions) */
+.drop-always { color: #1f6db5; font-weight: bold; }
+.drop-common { color: #047b04; }
+.drop-uncommon { color: #9f7d00; }
+.drop-rare { color: #c45c10; }
+.drop-veryrare { color: #c0160f; }

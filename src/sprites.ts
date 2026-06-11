@@ -1815,6 +1815,527 @@ const MAGIC_LOGS_G: Pixmap = [
   '................',
 ];
 
+// --- Phase 7 shared grids ----------------------------------------------------
+
+// Parchment document — n/l/m/d paper ramp, t ink lines, x wax seal / mark.
+const DOC_G: Pixmap = [
+  '................',
+  '...OOOOOOOOO....',
+  '..OnnnnnnnnlO...',
+  '..OnttttnnnlO...',
+  '..OnnnnnnnnlO...',
+  '..OntttttnnlO...',
+  '..OnnnnnnnllO...',
+  '..OntttnnnllO...',
+  '..OnnnnnnnlmO...',
+  '..OnttttnllmO...',
+  '..OnnnnxxllmO...',
+  '..OnnnnxxlmmO...',
+  '..OdnnnnllmmO...',
+  '...OOOOOOOOO....',
+  '................',
+  '................',
+];
+
+// Closed tome — s spine, L/M/D cover ramp, y emblem, p page block.
+const BOOK_G: Pixmap = [
+  '................',
+  '...OOOOOOOOOO...',
+  '..OsLLLLLLLMMO..',
+  '..OsLLLLLLLMMO..',
+  '..OsLLOyyOLMMO..',
+  '..OsLLOyyOLMMO..',
+  '..OsLLLLLLLMMO..',
+  '..OsLLLLLLLMMO..',
+  '..OsLLLLLLLMMO..',
+  '..OsLLLLLLMMDO..',
+  '..OsDDDDDDDDDO..',
+  '..OsppppppppdO..',
+  '...OOOOOOOOOO...',
+  '................',
+  '................',
+  '................',
+];
+
+// Skeleton key — bow up top, shaft down, ward tooth near the foot.
+const KEY_G: Pixmap = [
+  '................',
+  '.....OOOO.......',
+  '....OLLMMO......',
+  '....OLO.OMO.....',
+  '....OLO.OMO.....',
+  '....OLLMMO......',
+  '.....OLMO.......',
+  '.....OLMO.......',
+  '.....OLMO.......',
+  '.....OLMO.......',
+  '.....OLMMO......',
+  '.....OLMOMO.....',
+  '.....OLMO.......',
+  '.....OLMMO......',
+  '......OOO.......',
+  '................',
+];
+
+// Charm on a cord — w cord loop, b binding band, tapered pendant L/M/H.
+const CHARM_G: Pixmap = [
+  '................',
+  '.....OOOOO......',
+  '....Ow...wO.....',
+  '....Ow...wO.....',
+  '....Ow...wO.....',
+  '.....Ow.wO......',
+  '.....ObbbO......',
+  '.....OLLMO......',
+  '.....OLLMO......',
+  '.....OLMMO......',
+  '......OLMO......',
+  '......OLMO......',
+  '.......OMO......',
+  '.......OMO......',
+  '........O.......',
+  '................',
+];
+
+// Single curved fang / tooth.
+const FANG_G: Pixmap = [
+  '................',
+  '................',
+  '.....OOO........',
+  '....OHLMO.......',
+  '....OLLMO.......',
+  '....OLLMMO......',
+  '.....OLLMO......',
+  '.....OLLMO......',
+  '......OLMO......',
+  '......OLMO......',
+  '.......OLMO.....',
+  '.......OMO......',
+  '........OMO.....',
+  '........OO......',
+  '................',
+];
+
+// Curved fang-dagger — broad hooked blade, y guard, d/m grip.
+const FANGBLADE_G: Pixmap = [
+  '................',
+  '.........OO.....',
+  '........OHLO....',
+  '.......OHLMO....',
+  '......OLLMO.....',
+  '......OLMMO.....',
+  '.....OLMMO......',
+  '.....OLMO.......',
+  '....OLMO........',
+  '....OOO.........',
+  '...OyO..........',
+  '..OdmO..........',
+  '..OmdO..........',
+  '.OdmO...........',
+  '..OO............',
+  '................',
+];
+
+// Hanging cloak — y clasps, i lining visible down both inner edges.
+const CLOAK_G: Pixmap = [
+  '................',
+  '....OOOOOOO.....',
+  '...OyOOOOOyO....',
+  '..OOLLLOMMMOO...',
+  '..OLLLLOMMMMO...',
+  '..OLiLLOMMiMO...',
+  '..OLiLLOMMiMO...',
+  '..OLiLLOMMiMO...',
+  '..OLiLLOMMiMO...',
+  '..OLiLLOMMiMO...',
+  '..OLiLLOMMiMO...',
+  '..ODiLLOMMiDO...',
+  '..ODDLLOMMDDO...',
+  '...OOOOOOOOO....',
+  '................',
+  '................',
+];
+
+// Looped scarf — stripe chars r/o/g/u/v, d shaded tail.
+const SCARF_G: Pixmap = [
+  '................',
+  '..OOOOOOOOOOO...',
+  '.OrrooggguuvvO..',
+  '.OrooggguuvvdO..',
+  '..OOOOOOOOOOO...',
+  '....OrroO.......',
+  '....OoggO.......',
+  '....OgguO.......',
+  '....OuvvO.......',
+  '....OrroO.......',
+  '....OoggO.......',
+  '....OguuO.......',
+  '....OvddO.......',
+  '.....OOO........',
+  '................',
+  '................',
+];
+
+// Bone club — knobbed femur swung diagonal.
+const CLUB_G: Pixmap = [
+  '................',
+  '...OOOO.........',
+  '..OBbbbO........',
+  '..ObbbbbO.......',
+  '..ObbbbbO.......',
+  '...ObbbbO.......',
+  '....ObbbO.......',
+  '.....ObbbO......',
+  '......ObbO......',
+  '......ObbO......',
+  '.......ObbO.....',
+  '.......ObbbO....',
+  '........ObbbbO..',
+  '........OBbbbO..',
+  '.........OOOO...',
+  '................',
+];
+
+// Broad cleaver on a banner-pole haft — r/R cloth scraps lashed below the head.
+const CLEAVER_G: Pixmap = [
+  '..OOOOOOOOO.....',
+  '.OLHHLLLMMMO....',
+  '.OLLLLLLMMMO....',
+  '.OLLLLLMMMMO....',
+  '.OLLLLLMMMDO....',
+  '..OOOOmOOOO.....',
+  '......OmO.......',
+  '......OmO.......',
+  '.....OROmO......',
+  '....ORrOmO......',
+  '....ORrOmO......',
+  '.....OROmO......',
+  '......OOmO......',
+  '.......OdO......',
+  '.......OdO......',
+  '........O.......',
+];
+
+// Two-hand maul — massive square head, r inlay studs, thick haft.
+const MAUL_G: Pixmap = [
+  '................',
+  '...OOOOOOOOO....',
+  '..OLHHLLLMMMO...',
+  '..OLLLLLLMMMO...',
+  '..OLLrLLMrMDO...',
+  '..OLLLLLLMMDO...',
+  '..ODLLLLMMDDO...',
+  '...OOOOmOOOO....',
+  '.......OmO......',
+  '.......OmO......',
+  '.......OmO......',
+  '.......OmO......',
+  '.......OmO......',
+  '.......OdO......',
+  '.......OdO......',
+  '........O.......',
+];
+
+// Staff — diagonal shaft, q/Q orb mounted at the tip.
+const STAFF_G: Pixmap = [
+  '................',
+  '.........OOO....',
+  '........OqQQO...',
+  '........OQqqO...',
+  '.........OqO....',
+  '........OmO.....',
+  '.......OmO......',
+  '......OmO.......',
+  '.....OmO........',
+  '....OmO.........',
+  '...OmO..........',
+  '..OmO...........',
+  '..OdO...........',
+  '.OdO............',
+  '..O.............',
+  '................',
+];
+
+// Round buckler — g/G inlaid glyph bar across the boss.
+const WARD_G: Pixmap = [
+  '................',
+  '.....OOOOO......',
+  '...OOLLLMMOO....',
+  '..OLLHLLLMMMO...',
+  '..OLLOOOOOMMO...',
+  '.OLLOgGgGgOMMO..',
+  '.OLLLOOOOOMMDO..',
+  '.OLLLLLLMMMDDO..',
+  '..OLLLLMMMDDO...',
+  '..OLLLMMMDDDO...',
+  '...OOLMMDDOO....',
+  '.....OOOOO......',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Hooded lantern — m handle, L/M frame, q/Q/W flame, D base.
+const LAMP_G: Pixmap = [
+  '................',
+  '......OOO.......',
+  '.....OmOmO......',
+  '.....OOOOO......',
+  '....OOOOOOO.....',
+  '...OLOOOOOMO....',
+  '...OLOqQQOMO....',
+  '...OLOQWQOMO....',
+  '...OLOqQqOMO....',
+  '...OLOOOOOMO....',
+  '....OOOOOOO.....',
+  '.....ODDDO......',
+  '......OOO.......',
+  '................',
+  '................',
+  '................',
+];
+
+// Spyglass — collapsing brass-ringed tube, held diagonal.
+const SPYGLASS_G: Pixmap = [
+  '................',
+  '...........OO...',
+  '..........OLLO..',
+  '.........OLMMO..',
+  '........OLMMO...',
+  '.......OyYyO....',
+  '......OLLMO.....',
+  '.....OLLMO......',
+  '....OyYyO.......',
+  '...OLLMO........',
+  '..OLMMO.........',
+  '..OLMO..........',
+  '.OLMO...........',
+  '.OOO............',
+  '................',
+  '................',
+];
+
+// Bell — m handle loop, flared skirt, b clapper.
+const BELL_G: Pixmap = [
+  '................',
+  '......OOO.......',
+  '.....OmmmO......',
+  '......OOO.......',
+  '.....OLHMO......',
+  '....OLLHMMO.....',
+  '....OLLLMMO.....',
+  '...OLLLLMMMO....',
+  '...OLLLLMMMO....',
+  '..OLLLLLMMMDO...',
+  '..ODDDDDDDDDO...',
+  '..OOOOOOOOOOO...',
+  '......ObO.......',
+  '.......O........',
+  '................',
+  '................',
+];
+
+// Tuning fork — twin tines, short grip.
+const FORK_G: Pixmap = [
+  '................',
+  '....OO..OO......',
+  '...OLLOOMMO.....',
+  '...OLO..OMO.....',
+  '...OLO..OMO.....',
+  '...OLO..OMO.....',
+  '...OLO..OMO.....',
+  '...OLLOOMMO.....',
+  '....OLMMO.......',
+  '.....OMO........',
+  '.....OMO........',
+  '.....OMO........',
+  '....ODDO........',
+  '.....OO.........',
+  '................',
+  '................',
+];
+
+// Powder horn — curved horn, y/Y brass cap and tip.
+const HORN_G: Pixmap = [
+  '................',
+  '................',
+  '....OOOO........',
+  '...OyYyLO.......',
+  '..OLLLLMO.......',
+  '..OLLLLMMO......',
+  '...OLLLMMMO.....',
+  '....OLLLMMO.....',
+  '.....OLLMMMO....',
+  '......OLLMMO....',
+  '.......OLMMO....',
+  '........OyYO....',
+  '.........OO.....',
+  '................',
+  '................',
+  '................',
+];
+
+// Crest badge / token — small shield blank with y emblem studs.
+const BADGE_G: Pixmap = [
+  '................',
+  '................',
+  '....OOOOOOO.....',
+  '...OLLHLLMMO....',
+  '...OLLLLLMMO....',
+  '...OLOyyOLMO....',
+  '...OLOyyOLMO....',
+  '...OLLLLLMMO....',
+  '....OLLLMMO.....',
+  '....OLLLMMO.....',
+  '.....OLLMO......',
+  '......OLMO......',
+  '.......OO.......',
+  '................',
+  '................',
+  '................',
+];
+
+// Hood / head wrap — x dark face opening.
+const HOOD_G: Pixmap = [
+  '................',
+  '.....OOOOO......',
+  '....OLLLMMO.....',
+  '...OLLLLLMMO....',
+  '..OLLLLLLMMMO...',
+  '..OLLOOOOOMMO...',
+  '..OLOxxxxxOMO...',
+  '..OLOxxxxxOMO...',
+  '..OLOxxxxxOMO...',
+  '..OLLOxxxOMMO...',
+  '..OLLLOOOMMMO...',
+  '..ODLLLLMMMDO...',
+  '...ODDMMMDDO....',
+  '....OOOOOOO.....',
+  '................',
+  '................',
+];
+
+// Powder keg — banded barrel, n/l/m/d staves.
+const KEG_G: Pixmap = [
+  '................',
+  '.....OOOOO......',
+  '....OnlllmO.....',
+  '...OOOOOOOOO....',
+  '..OllnlllmmdO...',
+  '..OlnllllmmdO...',
+  '..OOOOOOOOOOO...',
+  '..OllnlllmmdO...',
+  '..OllnlllmmdO...',
+  '..OOOOOOOOOOO...',
+  '..OlnllllmmdO...',
+  '...OllllmmdO....',
+  '....OOOOOOO.....',
+  '................',
+  '................',
+  '................',
+];
+
+// Blasting charge — bound bundle of R/r sticks, w cord and trailing fuse.
+const CHARGE_G: Pixmap = [
+  '................',
+  '..........ww....',
+  '.........ww.....',
+  '.........w......',
+  '...OOOOOwOOOO...',
+  '...ORrORrORrO...',
+  '...ORrORrORrO...',
+  '...OwwwwwwwwO...',
+  '...ORrORrORrO...',
+  '...ORrORrORrO...',
+  '...OwwwwwwwwO...',
+  '...ORrORrORrO...',
+  '...OOOOOOOOOO...',
+  '................',
+  '................',
+  '................',
+];
+
+// Lily — W petals, q stamen, g/G stem and leaf.
+const LILY_G: Pixmap = [
+  '................',
+  '....O...O.......',
+  '...OWO.OWO......',
+  '...OWWOWWO......',
+  '....OWWWO.......',
+  '....OqWqO.......',
+  '.....OWO........',
+  '......OgO.......',
+  '......OgO.......',
+  '.....OgO........',
+  '...OGgOgO.......',
+  '.....OgO........',
+  '.....OgO........',
+  '......O.........',
+  '................',
+  '................',
+];
+
+// Burning brand — r/R/W flame over an e ember head, m/d handle.
+const TORCH_G: Pixmap = [
+  '................',
+  '.......rr.......',
+  '......rRRr......',
+  '.....rRWRr......',
+  '.....ORRRO......',
+  '.....OeeeO......',
+  '......OmO.......',
+  '......OmO.......',
+  '......OmO.......',
+  '......OmO.......',
+  '......OmO.......',
+  '......OdO.......',
+  '......OdO.......',
+  '.......O........',
+  '................',
+  '................',
+];
+
+// Dust pile — low heap with g speckle glints.
+const DUST_G: Pixmap = [
+  '................',
+  '................',
+  '................',
+  '................',
+  '......OOO.......',
+  '....OOLLMOO.....',
+  '...OLLgLLMMO....',
+  '..OLLLLgMMMDO...',
+  '..OLgLLLMgMDO...',
+  '.OLLLLgMMMMDDO..',
+  '.OOOOOOOOOOOOO..',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................',
+];
+
+// Hanging robes — sleeves out wide, centre seam.
+const ROBE_G: Pixmap = [
+  '................',
+  '.....OOOOO......',
+  '....OLLOMMO.....',
+  '..OOLLLOMMMOO...',
+  '.OLLOLLOMMOMMO..',
+  '.OLLOLLOMMOMMO..',
+  '.ODLOLLOMMODMO..',
+  '..OOOLLOMMOOO...',
+  '....OLLOMMO.....',
+  '....OLLOMMO.....',
+  '....OLLOMMO.....',
+  '....OLLOMMO.....',
+  '...ODLLOMMDO....',
+  '...OOOOOOOOO....',
+  '................',
+  '................',
+];
+
 // ---------------------------------------------------------------------------
 // Variant palettes
 // ---------------------------------------------------------------------------
@@ -1947,6 +2468,69 @@ const JEWEL_GEMS: Record<string, Palette> = {
   ruby:     { q: '#c02440', Q: '#e87084' },
 };
 
+// --- Phase 7 variant palettes -------------------------------------------------
+
+// Parchment base for all documents; per-doc ink t and wax/mark x.
+const PARCHMENT: Palette = { O: '#241c0c', n: '#e8dcb4', l: '#cdbf92', m: '#a8966a', d: '#7c6c48', t: '#4a3c28' };
+const DOC_RAMPS: Record<string, Palette> = {
+  shim_receipt:   pal(PARCHMENT, { x: '#8a8a8a' }),
+  court_verdict:  pal(PARCHMENT, { x: '#2e8a3c' }),
+  clinic_note:    pal(PARCHMENT, { x: '#4a78c0' }),
+  mira_letter:    pal(PARCHMENT, { x: '#b03038' }),
+  wizards_writ:   pal(PARCHMENT, { x: '#5a3cb0' }),
+  mine_survey:    pal(PARCHMENT, { t: '#7c5a2e', x: '#b03030' }),
+  joint_writ:     pal(PARCHMENT, { x: '#b08a2c' }),
+  torn_score_page: pal(PARCHMENT, { t: '#26262c', x: '#26262c' }),
+  hollow_verse:   pal(PARCHMENT, { t: '#56607a', x: '#56607a' }),
+  guild_writ:     pal(PARCHMENT, { x: '#2c5a9c' }),
+  false_manifest: pal(PARCHMENT, { x: '#3a3a42' }),
+  wreck_chart:    pal(PARCHMENT, { t: '#2e6e80', x: '#b03030' }),
+  brokentooth_chant_page: pal(PARCHMENT, { n: '#cfc09a', l: '#b3a47e', t: '#70201a', x: '#a02818' }),
+};
+
+const BOOK_RAMPS: Record<string, Palette> = {
+  foreman_ledger:  { O: '#170f06', s: '#3a2410', L: '#7c5424', M: '#5e3f1a', D: '#452e12', y: '#a87f1f', p: '#e8dcb4', d: '#a8966a' },
+  ravenmoor_diary: { O: '#100a16', s: '#241636', L: '#46306a', M: '#352450', D: '#261a3a', y: '#8a8e98', p: '#d8d2e2', d: '#a49cb6' },
+  war_march_score: { O: '#1a0808', s: '#481414', L: '#8a2424', M: '#6a1a1a', D: '#4e1212', y: '#e3c050', p: '#e8dcb4', d: '#a8966a' },
+  tome_of_grudges: { O: '#120d08', s: '#2e2014', L: '#5a4024', M: '#44301a', D: '#302212', y: '#9aa2aa', p: '#d8ccaa', d: '#a09070' },
+};
+
+// Rings & signets — band y/Y/Z, gem dot q/Q on RING_G.
+const RING_RAMPS: Record<string, Palette> = {
+  rimeglass_ring:   { O: '#142632', y: '#5890ac', Y: '#8cc0d8', Z: '#c8ecf8', q: '#e8f8ff', Q: '#ffffff' },
+  marazas_signet:   { O: '#161a26', y: '#7a8eca', Y: '#a8bce4', Z: '#d8e6f8', q: '#bce8f8', Q: '#f0fbff' },
+  ravenmoor_signet: { O: '#1c1408', y: '#8a6510', Y: '#c79a1f', Z: '#e8c44e', q: '#3c2c54', Q: '#6a4e92' },
+  guardsman_signet: { O: '#14161a', y: '#5e646e', Y: '#8a919c', Z: '#b8bfca', q: '#2e54a8', Q: '#5a82d0' },
+  grave_ring:       { O: '#121410', y: '#4e5246', Y: '#6e7464', Z: '#8e9480', q: '#3a4a3a', Q: '#5a6e58' },
+  cull_band:        { O: '#101216', y: '#43464d', Y: '#6e737b', Z: '#989fa8', q: '#2e3238', Q: '#43464d' },
+};
+
+// Cord charms & talismans on CHARM_G — w cord, b band, pendant L/M/H.
+const CHARM_RAMPS: Record<string, Palette> = {
+  elder_charm:        { O: '#1c1206', w: '#b8a070', b: '#a87f1f', L: '#a87a3c', M: '#7c5424', H: '#cfa86a' },
+  wolf_fang_amulet:   { O: '#241c12', w: '#9a8a6a', b: '#6a5638', L: '#ece4cc', M: '#c8bc9c', H: '#fcf8ea' },
+  bearclaw_necklace:  { O: '#160f08', w: '#8a6a3c', b: '#5a4424', L: '#5e4630', M: '#3e2c1c', H: '#8a6c4c' },
+  rat_tail_talisman:  { O: '#1a1410', w: '#9a8a78', b: '#6a5a4c', L: '#b08a8a', M: '#8a6464', H: '#ccaaa6' },
+  ember_charm:        { O: '#1c0c06', w: '#a87f1f', b: '#e3c050', L: '#f08030', M: '#c04818', H: '#ffd060' },
+};
+
+// Loose powders on DUST_G.
+const DUST_RAMPS: Record<string, Palette> = {
+  grave_dust:  { O: '#15161a', D: '#494c54', M: '#686c76', L: '#8a8e98', g: '#b4b8c0' },
+  mote_dust:   { O: '#1a1410', D: '#564830', M: '#7a6845', L: '#9e8a5e', g: '#f0e08a' },
+  powder_grit: { O: '#0a0a0c', D: '#1e1e24', M: '#303038', L: '#44444e', g: '#5e5e6a' },
+};
+
+// Singing shards on the rune-essence crystal grid.
+const SHARD_RAMPS: Record<string, Palette> = {
+  resonant_shard:   { O: '#0a1e20', D: '#175a60', M: '#238088', L: '#4ab0b4', H: '#8ce4e4', W: '#d8fffc' },
+  dissonant_sliver: { O: '#16101c', D: '#3a2c48', M: '#544068', L: '#7a5e92', H: '#b48cc8', W: '#f0d8fa' },
+  rimeglass_shard:  { O: '#142632', D: '#3a6884', M: '#5890ac', L: '#8cc0d8', H: '#c8ecf8', W: '#ffffff' },
+};
+
+// Shardpoint crystal — bolt-on ramp for the shared arrow/tips grids.
+const SHARDPOINT: Palette = { O: '#0a1c1e', D: '#1e5a5e', M: '#2e8488', L: '#56b4b6', H: '#a0ecec' };
+
 // ---------------------------------------------------------------------------
 // itemIcon
 // ---------------------------------------------------------------------------
@@ -1981,7 +2565,7 @@ const LEATHER_RAMP: Palette = { O: '#21130a', n: '#c89a5e', l: '#a87a3c', m: '#8
 const BONE: Palette = { O: '#2b2b22', b: '#ddd6c0', B: '#f6f1de' };
 const WOOL_W: Palette = { O: '#34322c', w: '#e4e0d2', W: '#f8f6ec', d: '#b3ad98' };
 
-function itemSpec(id: string): [Pixmap, Palette] | null {
+export function itemSpec(id: string): [Pixmap, Palette] | null {
   const metal = metalSpec(id);
   if (metal) return metal;
   if (FISH_RAMPS[id]) return [id.includes('shrimp') || id === 'burnt_fish' ? SHRIMP_G : FISH_G, FISH_RAMPS[id]];
@@ -1997,6 +2581,12 @@ function itemSpec(id: string): [Pixmap, Palette] | null {
   if (VIAL_RAMPS[id]) return [VIAL_G, VIAL_RAMPS[id]];
   if (SEED_RAMPS[id]) return [POUCH_G, SEED_RAMPS[id]];
   if (BOW_RAMPS[id]) return [BOW_G, BOW_RAMPS[id]];
+  if (DOC_RAMPS[id]) return [DOC_G, DOC_RAMPS[id]];
+  if (BOOK_RAMPS[id]) return [BOOK_G, BOOK_RAMPS[id]];
+  if (RING_RAMPS[id]) return [RING_G, RING_RAMPS[id]];
+  if (CHARM_RAMPS[id]) return [CHARM_G, CHARM_RAMPS[id]];
+  if (DUST_RAMPS[id]) return [DUST_G, DUST_RAMPS[id]];
+  if (SHARD_RAMPS[id]) return [ESSENCE_G, SHARD_RAMPS[id]];
   const gem = /^(uncut_)?(sapphire|emerald|ruby)$/.exec(id);
   if (gem) return [gem[1] ? UNCUT_G : GEM_G, GEM_TONES[gem[2]]];
   const jw = /^(gold|sapphire|ruby)_(ring|amulet)$/.exec(id);
@@ -2065,6 +2655,75 @@ function itemSpec(id: string): [Pixmap, Palette] | null {
     case 'red_sash': return [SASH_G, { O: '#1c0608', r: '#8e2430', R: '#c0364a', d: '#5e1620', s: '#e06070' }];
     case 'molten_core': return [CORE_G, { O: '#160a06', D: '#3a2418', M: '#54382a', L: '#6e4c38', r: '#f06028', R: '#ffa040', W: '#ffe6b0' }];
     case 'molten_gauntlets': return [MGAUNT_G, { O: '#15100c', D: '#43342a', M: '#62503e', L: '#86705a', H: '#b09a7e', r: '#f06028', R: '#ffa040' }];
+    // --- Phase 7: boss uniques -------------------------------------------
+    case 'red_smile': return [SCIM_G, pal(WOOD, GOLD, { O: '#2a060a', D: '#7c1424', M: '#a82434', L: '#d04050', H: '#f88c94' })];
+    case 'mirefang': return [FANGBLADE_G, { O: '#0a0c06', H: '#74884c', L: '#4a5430', M: '#323a20', y: '#8aa050', d: '#241c10', m: '#3a2e1a' }];
+    case 'drakebreath_staff': return [STAFF_G, { O: '#140c08', m: '#8a7456', d: '#5e4c38', q: '#f06028', Q: '#ffa040' }];
+    case 'errata_pistol': return [PISTOL_G, { O: '#0e0e14', s: '#3c4254', L: '#555c72', M: '#454c60', H: '#d878d0', g: '#2c3040', t: '#181a22', b: '#0e0e14' }];
+    case 'cindermaul': return [MAUL_G, { O: '#0e0a08', H: '#6e5648', L: '#4e3c32', M: '#382a24', D: '#241a16', r: '#f06028', m: '#3a2e22', d: '#241c14' }];
+    case 'shardsong_bow': return [BOW_G, { O: '#0a1c20', l: '#2e8488', m: '#1e5a5e', n: '#56b4b6', s: '#c8fff4' }];
+    case 'echo_pick': return [PICK_G, { O: '#0c1a18', D: '#1e5048', M: '#2e7468', L: '#52a392', H: '#9ef0dc', m: '#2e5e58', d: '#1e423e' }];
+    case 'banner_cleaver': return [CLEAVER_G, { O: '#0e1014', H: '#aab4c0', L: '#7e8896', M: '#5a6270', D: '#3c424e', m: '#7c5424', d: '#523317', r: '#7e201a', R: '#aa3226' }];
+    case 'chantbreaker_ward': return [WARD_G, { O: '#0e1014', H: '#aab4c0', L: '#7e8896', M: '#5a6270', D: '#3c424e', g: '#d8b94a', G: '#f7e69a' }];
+    case 'stillwater_amulet': return [AMULET_G, pal(JEWEL_BASE, { q: '#aeb6c2', Q: '#e6ecf2' })];
+    case 'unstruck_bell': return [BELL_G, { O: '#140e06', m: '#4a3a20', L: '#8a6e34', H: '#e8c868', M: '#6a521f', D: '#473614', b: '#2a2010' }];
+    case 'corsairs_fang': return [SCIM_G, pal(WOOD, GOLD, { O: '#101216', D: '#2e3540', M: '#454f5e', L: '#67737f', H: '#9aa6b2' })];
+    // --- Phase 7: weapons & armour ----------------------------------------
+    case 'dirge_blade': return [SWORD_G, pal(WOOD, { O: '#0e1014', D: '#2c3240', M: '#414a5c', L: '#5e6a80', H: '#8a96ac', y: '#5a6474', Y: '#8a96a8' })];
+    case 'foam_sword': return [SWORD_G, { O: '#3a3208', D: '#c8a818', M: '#e8cc3c', L: '#f6e26a', H: '#fdf4b0', y: '#55555c', Y: '#71717a', d: '#3a3a40', m: '#55555c' }];
+    case 'boarding_cutlass': return [SCIM_G, pal(WOOD, GOLD, METAL.iron)];
+    case 'stinger_dirk': return [FANGBLADE_G, { O: '#1c1404', H: '#e8d070', L: '#c0a040', M: '#8a6e24', y: '#6a7a2c', d: '#2e2410', m: '#4a3a1c' }];
+    case 'trollbone_club': return [CLUB_G, BONE];
+    case 'dissonant_baton': return [STAFF_G, { O: '#101018', m: '#3c4254', d: '#262b3a', q: '#7a5e92', Q: '#b48cc8' }];
+    case 'tuning_hammer': return [MAUL_G, pal(METAL.iron, WOOD, { r: '#e8c868' })];
+    case 'tuned_pickaxe': return [PICK_G, pal(METAL.steel, WOOD, { H: '#8ae8d8' })];
+    case 'wrongnote_round': return [ROUND_G, { O: '#101014', b: '#6a5a30', M: '#3a3e4a', L: '#555a6a', H: '#8a90a2', d: '#0c0c10' }];
+    case 'shardpoint_arrowtips': return [TIPS_G, SHARDPOINT];
+    case 'shardpoint_arrow': return [ARROW_G, pal(SHARDPOINT, WOOD, FLETCH)];
+    case 'spidersilk_bowstring': return [BOWSTRING_G, { O: '#2a3038', w: '#cdd6e2', W: '#eef4fa' }];
+    case 'wardens_visor': return [HELM_G, { O: '#15100e', L: '#5a4a44', M: '#3e3430', H: '#7e6a60', x: '#c03020' }];
+    case 'slagplate': return [BODY_G, { O: '#170d06', D: '#4a2c18', M: '#6a3e20', L: '#8a5630', H: '#c08048' }];
+    case 'wraithcloth_robes': return [ROBE_G, { O: '#0e1216', L: '#3c4a56', M: '#2a3640', D: '#1c242c' }];
+    case 'nightscale_coif': return [HOOD_G, { O: '#06080e', L: '#293248', M: '#1a2030', D: '#10141f', x: '#05060a' }];
+    case 'bandit_black_wrap': return [HOOD_G, { O: '#0c0c0e', L: '#3a3a40', M: '#2a2a30', D: '#1e1e24', x: '#101014' }];
+    case 'drakescale_vambraces': return [LGLOVES_G, { O: '#0a0c14', n: '#4a5572', l: '#353e58', m: '#252c42', d: '#181d30' }];
+    case 'dune_kings_grips': return [LGLOVES_G, { O: '#2a1606', n: '#f2c46a', l: '#d89c3c', m: '#a86a22', d: '#7c4a16' }];
+    case 'direwolf_pelt_cloak': return [CLOAK_G, { O: '#14161a', y: '#8a8e98', L: '#7a8290', M: '#5a626e', D: '#3e444e', i: '#2c3038' }];
+    case 'larp_pride_cape': return [CLOAK_G, { O: '#0c0a10', y: '#e3c050', L: '#26222e', M: '#1a1722', D: '#120f1a', i: '#c84a9c' }];
+    case 'rainbow_scarf': return [SCARF_G, { O: '#1c1410', r: '#d03434', o: '#e8a02c', g: '#3e9a3c', u: '#3464c8', v: '#8a3cb4', d: '#a02828' }];
+    // --- Phase 7: drops, materials & curios --------------------------------
+    case 'bear_fur': return [COWHIDE_G, { O: '#1c1208', n: '#8a6034', l: '#6e4a26', m: '#54381c', d: '#3c2812', k: '#2a1c0e' }];
+    case 'spider_silk': return [BALLWOOL_G, { O: '#2c3036', w: '#d8dde6', W: '#f4f7fc', d: '#a8aebc' }];
+    case 'templesilk_wraps': return [BALLWOOL_G, { O: '#2a0a0c', w: '#c03040', W: '#e05868', d: '#8a1f2c' }];
+    case 'sarrash_temple_silk': return [LEATHER_G, { O: '#2a0a0c', n: '#e06070', l: '#c03c50', m: '#992638', d: '#701825' }];
+    case 'nightscale': return [DRAKE_SCALE_G, { O: '#06080e', D: '#10141f', M: '#1a2030', L: '#293248', H: '#425070' }];
+    case 'bog_horror_fang': return [FANG_G, { O: '#141008', L: '#c8bc96', M: '#9a8c64', H: '#e8e0c0' }];
+    case 'goblin_lucky_tooth': return [FANG_G, { O: '#2b2418', L: '#e8e0c4', M: '#c0b694', H: '#f8f4e0' }];
+    case 'drowned_pearl': return [EGG_G, { O: '#2a2e34', D: '#8a929e', M: '#aeb6c2', L: '#ccd4de', H: '#eef2f6' }];
+    case 'gilded_egg': return [EGG_G, { O: '#3a2a08', D: '#8a6510', M: '#c79a1f', L: '#e8c44e', H: '#fbe98e' }];
+    case 'quiess_feather': return [FEATHER_G, { O: '#2e3a4a', w: '#c2d4e8', W: '#e8f4fc', m: '#7a8ca0' }];
+    case 'everburn_slag': return [ORE_G, { O: '#120c08', D: '#2e2018', M: '#46322a', L: '#5e453c', H: '#7a5c50', g: '#f06028', G: '#ffb050' }];
+    case 'lucky_shim': return [UNCUT_G, { O: '#15140f', D: '#56524a', M: '#7a766c', L: '#a09c90', H: '#c8c4b6' }];
+    case 'ivory_cowbell': return [BELL_G, { O: '#2b2820', m: '#8a6a3c', L: '#ece4cc', H: '#fcf8ea', M: '#c8bc9c', D: '#9a8e6e', b: '#6a5a40' }];
+    case 'chimperton_medallion': return [AMULET_G, pal(JEWEL_BASE, { q: '#e8d44e', Q: '#f8f0a0' })];
+    case 'tick_jerky': return [MEAT_G, { O: '#1c1208', D: '#4a2e16', M: '#64401e', L: '#7e562a', H: '#a07840' }];
+    case 'fluoride_ration': return [VIAL_G, pal(GLASS, { q: '#3ec0a0', Q: '#9af0d8' })];
+    case 'sparkling_cocktail': return [VIAL_G, pal(GLASS, { q: '#e0588a', Q: '#f8a8c4' })];
+    case 'lamp_oil': return [VIAL_G, pal(GLASS, { q: '#c08a28', Q: '#ecc468' })];
+    case 'wheat': return [FLAX_G, { O: '#241c06', g: '#b08a2c', p: '#d8b045', P: '#f0d478' }];
+    case 'flour': return [POUCH_G, pal(BURLAP, { q: '#f2efe4' })];
+    case 'white_lily': return [LILY_G, { O: '#1c2410', W: '#f4f4ec', q: '#e8c84e', g: '#3e7a30', G: '#62a44c' }];
+    // --- Phase 7: quest & utility gear --------------------------------------
+    case 'cellar_key': return [KEY_G, { O: '#101114', L: '#555a64', M: '#3e424c' }];
+    case 'tuning_fork': return [FORK_G, METAL.steel];
+    case 'hollis_lamp': return [LAMP_G, { O: '#141008', m: '#6a5a3c', L: '#8a8060', M: '#5e5640', D: '#3a3424', q: '#f0a030', Q: '#ffd060', W: '#fff4c0' }];
+    case 'keepers_spyglass': return [SPYGLASS_G, { O: '#121418', L: '#5a7a8c', M: '#3e5666', y: '#a87f1f', Y: '#e3c050' }];
+    case 'guild_powder_horn': return [HORN_G, { O: '#1a1208', L: '#d8c8a4', M: '#b09a6e', y: '#a87f1f', Y: '#e3c050' }];
+    case 'guild_deputy_badge': return [BADGE_G, { O: '#2a1c08', L: '#e3c050', M: '#a87f1f', H: '#f7e69a', y: '#6a4a14' }];
+    case 'millers_token': return [BADGE_G, { O: '#1f1308', L: '#a87a3c', M: '#7c5424', H: '#cfa86a', y: '#523317' }];
+    case 'powder_keg': return [KEG_G, pal(WOOD, { O: '#15100a' })];
+    case 'blasting_charge': return [CHARGE_G, { O: '#160a06', R: '#8a2e1c', r: '#b04428', w: '#d8c89a' }];
+    case 'calder_brand': return [TORCH_G, pal(WOOD, { O: '#160c06', r: '#e86028', R: '#f8a838', W: '#ffe8b0', e: '#54341c' })];
   }
   return null;
 }

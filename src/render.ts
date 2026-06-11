@@ -1464,8 +1464,12 @@ interface HumanOpts {
   apron?: string; eyepatch?: boolean; beard?: string;
   weapon?: 'sword' | 'scimitar' | 'axe' | 'bow' | 'pistol' | 'staff'
     | 'cleaver' | 'fang' | 'drakestaff' | 'crystalbow' | 'rimeblade' | 'redscim'
-    | 'maul2h' | 'wrongpistol' | 'dirgeblade' | null; weaponCol?: string;
+    | 'maul2h' | 'wrongpistol' | 'dirgeblade'
+    | 'club' | 'cutlass' | 'foamsword' | 'hammer' | 'pick' | null; weaponCol?: string;
   shieldCol?: string | null;
+  shieldKind?: 'kite' | 'ward' | 'bell' | 'baton';
+  helmKind?: 'dome' | 'visor' | 'coif' | 'wrap';
+  bodyKind?: 'plate' | 'robes' | 'pelt' | 'slag' | 'cape';
   goblin?: boolean; scale?: number;
 }
 
@@ -1519,6 +1523,43 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     ap.scale.set(0.95, torsoH * 2.1, 0.28);
     body.add(ap);
   }
+  if (o.bodyKind === 'robes') {
+    // Wraithcloth: pale skirt falling past the hips, hem stitched with grave-light.
+    const skirt = lm(cylG(torsoW * 0.46, torsoW * 0.6, legH * 0.9, tunic, 8), 0, legH * 0.55, 0);
+    skirt.scale.z = 0.7;
+    body.add(skirt);
+    body.add(gm(cylG(torsoW * 0.6, torsoW * 0.61, 0.018, '#9ad8e8', 8), 0, legH * 0.14, 0, 0, 0, 0)); // hem glow
+    body.add(gm(boxG(0.014, torsoH * 0.8, 0.012, '#9ad8e8'), 0, torsoY, torsoD * 0.32 + 0.045)); // chest seam
+  } else if (o.bodyKind === 'pelt') {
+    // Direwolf pelt: heavy grey mantle over the shoulders, tail down the back.
+    const mantle = lm(sphG(torsoW * 0.62, '#7c6e5e'), 0, shoulderY + 0.02, -0.02);
+    mantle.scale.set(1.05, 0.5, 0.85);
+    body.add(mantle);
+    body.add(lm(tetraG(0.05, '#7c6e5e'), -torsoW * 0.5, shoulderY - 0.04, 0.04, 0, 0, 0.6)); // ragged fringe
+    body.add(lm(tetraG(0.05, '#7c6e5e'), torsoW * 0.5, shoulderY - 0.04, 0.04, 0, 0, -0.6));
+    const tail = lm(boxG(0.07, 0.3, 0.03, '#6a5c4c'), 0, torsoY - 0.02, -torsoD * 0.42 - 0.03, -0.12);
+    body.add(tail);
+    const wolfHead = lm(sphG(0.06, '#8a7c6a'), torsoW * 0.32, shoulderY + 0.06, 0.05); // head worn at the shoulder
+    wolfHead.scale.set(0.85, 0.8, 1.2);
+    body.add(wolfHead);
+  } else if (o.bodyKind === 'slag') {
+    // Slagplate: workshop-forged slab, ember seams still warm. Warm side in, please.
+    body.add(lm(boxG(torsoW * 0.84, torsoH * 0.62, 0.04, tunic), 0, torsoY + 0.02, torsoD * 0.3 + 0.015)); // chest slab
+    body.add(gm(boxG(torsoW * 0.7, 0.016, 0.012, '#ff7a20'), 0, torsoY + 0.05, torsoD * 0.3 + 0.04)); // ember seam
+    body.add(gm(boxG(0.016, torsoH * 0.45, 0.012, '#ff9434'), torsoW * 0.18, torsoY, torsoD * 0.3 + 0.04)); // run-off seam
+    body.add(gm(icoG(0.022, '#ffb028', 0), -torsoW * 0.2, torsoY - 0.06, torsoD * 0.3 + 0.045)); // stray cinder
+  } else if (o.bodyKind === 'cape') {
+    // LARP pride cape: black velvet, rainbow satin lining. Dramatic entrance guaranteed.
+    const capeG = new THREE.Group();
+    capeG.position.set(0, torsoY - 0.08, -torsoD * 0.42 - 0.03);
+    capeG.rotation.x = -0.06;
+    capeG.add(lm(boxG(torsoW * 1.05, torsoH + legH * 0.5, 0.02, '#1c1a20')));
+    const stripes = ['#e84040', '#f0a030', '#f0e040', '#48c860', '#4878e8', '#9a48d8'];
+    for (let i = 0; i < stripes.length; i++) {
+      capeG.add(gm(boxG(torsoW * 0.95, 0.022, 0.012, stripes[i]), 0, 0.2 - i * 0.075, -0.016));
+    }
+    body.add(capeG);
+  }
 
   // arms — slim capsules with sphere hands
   const armCol = o.bodyArmor ?? tunic;
@@ -1557,7 +1598,30 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     head.add(lm(tetraG(0.07, skin), -headR - 0.045, 0.04, 0, 0, 0, 1.9));
     head.add(lm(tetraG(0.07, skin), headR + 0.045, 0.04, 0, 0, 0, -1.9));
   }
-  if (o.helm) {
+  if (o.helm && o.helmKind === 'visor') {
+    // Warden's visor: slayer half-helm, slit visor lit from inside — sees trouble, charges it.
+    head.add(lm(domeG(headR + 0.035, o.helm), 0, -0.005, 0));
+    head.add(lm(cylG(headR + 0.04, headR + 0.045, 0.035, o.helm, 8), 0, -0.005, 0));
+    head.add(lm(boxG(0.14, 0.05, 0.03, o.helm), 0, 0.02, headR + 0.015)); // visor plate
+    head.add(gm(boxG(0.11, 0.014, 0.012, '#ffd24a'), 0, 0.02, headR + 0.034)); // glowing slit
+    head.add(lm(tetraG(0.035, o.helm), 0, headR + 0.02, 0, 0, 0, 0)); // crest spike
+  } else if (o.helm && o.helmKind === 'coif') {
+    // Nightscale coif: snug drake-scale hood that drapes the neck, still shedding darkness.
+    head.add(lm(domeG(headR + 0.03, o.helm), 0, -0.005, 0));
+    const drape = lm(sphG(headR * 1.05, o.helm), 0, -headR * 0.55, -headR * 0.3);
+    drape.scale.set(1, 0.85, 0.8);
+    head.add(drape);
+    head.add(lm(tetraG(0.028, o.helm), -0.05, headR * 0.7, headR * 0.45, 0.4)); // scale tufts
+    head.add(lm(tetraG(0.028, o.helm), 0.05, headR * 0.7, headR * 0.45, 0.4, 0, -0.5));
+    head.add(gm(boxG(0.016, 0.016, 0.01, '#7a48c8'), 0, headR * 0.55, headR * 0.78)); // night-glint
+  } else if (o.helm && o.helmKind === 'wrap') {
+    // Bandit's black wrap: low cloth band, knot and trailing tail — anonymous, breathable.
+    head.add(lm(cylG(headR + 0.025, headR + 0.03, 0.07, o.helm, 8), 0, 0.03, 0));
+    head.add(lm(domeG(headR + 0.018, o.helm), 0, 0.025, 0));
+    head.add(lm(sphG(0.035, o.helm), -headR * 0.85, 0.02, -headR * 0.5)); // knot
+    const tail = lm(boxG(0.04, 0.16, 0.018, o.helm), -headR * 0.9, -0.07, -headR * 0.55, 0.25, 0, 0.2);
+    head.add(tail);
+  } else if (o.helm) {
     // rounded dome helm with a rim and nose guard
     head.add(lm(domeG(headR + 0.035, o.helm), 0, -0.005, 0));
     head.add(lm(cylG(headR + 0.04, headR + 0.045, 0.035, o.helm, 8), 0, -0.005, 0));
@@ -1676,8 +1740,70 @@ function makeHumanoid(o: HumanOpts): THREE.Group {
     ra.add(lm(boxG(0.16, 0.03, 0.045, '#2a2832'), 0, handY - 0.04, 0.03)); // wide sombre guard
     ra.add(gm(boxG(0.014, 0.44, 0.012, '#9a6aff'), 0, handY - 0.27, 0.046)); // falling-minor fuller
     ra.add(gm(icoG(0.026, '#8a5aef', 0), 0, handY + 0.05, 0.03)); // tolling pommel
+  } else if (o.weapon === 'club') {
+    // Trollbone club: a femur the size of a fencepost. Subtlety sold separately.
+    ra.add(lm(cylG(0.032, 0.045, 0.4, wc, 6), 0, handY - 0.2, 0.03, 0, 0, 0.06)); // shaft, thicker toward the end
+    const knob = lm(sphG(0.085, wc), 0.025, handY - 0.42, 0.03); // knuckle end
+    knob.scale.set(1, 0.85, 1);
+    ra.add(knob);
+    ra.add(lm(sphG(0.055, wc), -0.04, handY - 0.44, 0.03)); // second condyle
+    ra.add(lm(sphG(0.05, '#c4b896'), 0, handY + 0.01, 0.03)); // grip-end knob
+    ra.add(lm(boxG(0.02, 0.05, 0.02, '#8a7a58'), 0.05, handY - 0.3, 0.05, 0, 0, 0.4)); // old chip
+  } else if (o.weapon === 'cutlass') {
+    // Boarding cutlass: broad salt-pitted blade for short arguments on narrow decks.
+    ra.add(lm(boxG(0.055, 0.34, 0.026, wc), 0.025, handY - 0.2, 0.03, 0, 0, 0.16)); // broad curved blade
+    ra.add(lm(boxG(0.04, 0.1, 0.022, wc), 0.085, handY - 0.36, 0.03, 0, 0, 0.5)); // clipped tip
+    ra.add(lm(boxG(0.12, 0.028, 0.04, '#7c6234'), 0, handY - 0.03, 0.03)); // brass guard
+    const basket = lm(boxG(0.026, 0.12, 0.06, '#7c6234'), -0.055, handY + 0.02, 0.03, 0, 0, 0.5); // basket sweep
+    ra.add(basket);
+    ra.add(lm(boxG(0.02, 0.05, 0.02, '#4c5a48'), 0.04, handY - 0.26, 0.044, 0, 0, 0.16)); // salt-pit verdigris
+  } else if (o.weapon === 'foamsword') {
+    // Accord-issue foam sword: fat, soft, faintly ridiculous. Every thwack counts.
+    const blade = lm(capG(0.045, 0.3, wc), 0, handY - 0.22, 0.03); // pool-noodle blade
+    ra.add(blade);
+    ra.add(lm(sphG(0.05, wc), 0, handY - 0.4, 0.03)); // safety-rounded tip
+    ra.add(lm(boxG(0.13, 0.035, 0.05, '#e8e0d0'), 0, handY - 0.04, 0.03)); // taped foam guard
+    ra.add(lm(cylG(0.024, 0.024, 0.09, '#3a3a42', 6), 0, handY + 0.01, 0.03)); // duct-taped grip
+    ra.add(lm(boxG(0.018, 0.1, 0.014, '#f0ead8'), -0.03, handY - 0.2, 0.052, 0, 0, 0.1)); // peeling tape stripe
+  } else if (o.weapon === 'hammer') {
+    // Tuning hammer: foreman-pattern maul re-trued against the First Chord.
+    ra.add(lm(cylG(0.024, 0.03, 0.5, '#5e4a30', 5), 0, handY - 0.14, 0.03)); // haft
+    ra.add(lm(boxG(0.09, 0.1, 0.18, wc), 0, handY - 0.38, 0.03)); // brass head
+    ra.add(lm(cylG(0.035, 0.045, 0.05, wc, 6), 0, handY - 0.38, 0.14, Math.PI / 2)); // striking face
+    ra.add(gm(boxG(0.095, 0.014, 0.012, '#9ad8e0'), 0, handY - 0.38, 0.125)); // true-fifth ring line
+    ra.add(gm(icoG(0.02, '#bfe8f0', 0), 0, handY - 0.44, 0.03)); // resonance bead under the head
+  } else if (o.weapon === 'pick') {
+    // Tuned pickaxe: the head hums a true fifth above the seam.
+    ra.add(lm(boxG(0.035, 0.44, 0.035, '#6b4a2c'), 0, handY - 0.2, 0.03)); // handle
+    ra.add(lm(boxG(0.045, 0.05, 0.34, '#8a8c94'), 0, handY - 0.4, 0.03)); // head bar
+    ra.add(lm(tetraG(0.045, '#8a8c94'), 0, handY - 0.4, 0.22, 0.5)); // fore point
+    ra.add(lm(tetraG(0.045, '#8a8c94'), 0, handY - 0.4, -0.16, -0.5, 0, 3.14)); // back point
+    ra.add(gm(boxG(0.012, 0.014, 0.3, wc), 0, handY - 0.37, 0.03)); // humming seam along the head
+    ra.add(gm(icoG(0.022, wc, 0), 0, handY - 0.4, 0.245)); // tuned tip glow
   }
-  if (o.shieldCol) {
+  if (o.shieldCol && o.shieldKind === 'ward') {
+    // Chantbreaker ward: a buckler faced with a stolen bar of the Broken-Tooth march.
+    la.add(lm(cylG(0.16, 0.17, 0.04, o.shieldCol, 8), -0.06, handY - 0.06, 0.02, 0, 0, Math.PI / 2)); // round buckler
+    la.add(lm(sphG(0.05, '#6a5a40'), -0.095, handY - 0.06, 0.02)); // boss
+    // the stolen bar of march, played back wrong: staff lines + off-beat notes
+    for (let i = -1; i <= 1; i++) la.add(gm(boxG(0.012, 0.012, 0.22, '#ffd24a'), -0.085, handY - 0.06 + i * 0.05, 0.02));
+    la.add(gm(icoG(0.018, '#ffb028', 0), -0.09, handY - 0.03, 0.1));
+    la.add(gm(icoG(0.018, '#ffb028', 0), -0.09, handY - 0.1, -0.07));
+  } else if (o.shieldCol && o.shieldKind === 'bell') {
+    // Unstruck bell: the deep's loudest word, hammered flat for a grip. Never once rung.
+    const bell = lm(coneG(0.17, 0.26, o.shieldCol, 8), -0.07, handY - 0.08, 0.02, 0, 0, Math.PI / 2);
+    bell.scale.z = 0.55; // flattened against the arm
+    la.add(bell);
+    la.add(lm(cylG(0.05, 0.06, 0.04, o.shieldCol, 8), -0.07, handY + 0.06, 0.02)); // crown grip
+    la.add(gm(torusG(0.15, 0.013, '#9ad8e0'), -0.085, handY - 0.19, 0.02, 0, 0, Math.PI / 2)); // waiting rim-note
+    la.add(gm(icoG(0.03, '#bfe8f0', 0), -0.07, handY - 0.14, 0.02)); // the unstruck clapper, glowing with held sound
+  } else if (o.shieldCol && o.shieldKind === 'baton') {
+    // Dissonant baton: slate and stretched wire, held aloft, counting you in.
+    la.add(lm(cylG(0.014, 0.02, 0.34, o.shieldCol, 5), -0.05, handY - 0.04, 0.04, 0, 0, 0.18)); // slate wand
+    la.add(lm(sphG(0.032, '#2a2832'), -0.02, handY + 0.1, 0.04)); // pommel weight
+    la.add(gm(boxG(0.008, 0.3, 0.008, '#b848e8'), -0.063, handY - 0.05, 0.055, 0, 0, 0.18)); // stretched wire
+    la.add(gm(icoG(0.02, '#d070ff', 0), -0.085, handY - 0.2, 0.04)); // the count, held at the tip
+  } else if (o.shieldCol) {
     la.add(lm(boxG(0.05, 0.34, 0.26, o.shieldCol), -0.06, handY - 0.06, 0.02));
   }
 
@@ -2334,8 +2460,33 @@ const UNIQUE_WEAPON_MODELS: Record<string, { kind: HumanOpts['weapon']; col: str
   cindermaul: { kind: 'maul2h', col: '#4a443c' },
   errata_pistol: { kind: 'wrongpistol', col: '#3a3644' },
   dirge_blade: { kind: 'dirgeblade', col: '#3c3a48' },
-  echo_pick: { kind: 'axe', col: '#9ad8e0' },              // Wat's pick, still on shift
-  corsairs_fang: { kind: 'scimitar', col: '#c8c0a8' },
+  echo_pick: { kind: 'pick', col: '#9ad8e0' },             // Wat's pick, still on shift
+  corsairs_fang: { kind: 'fang', col: '#c8c0a8' },         // salt-bleached corsair dagger
+  trollbone_club: { kind: 'club', col: '#d8d0b4' },        // femur the size of a fencepost
+  boarding_cutlass: { kind: 'cutlass', col: '#aeb6be' },   // salt-pitted deck blade
+  foam_sword: { kind: 'foamsword', col: '#e85a4a' },       // Accord-issue, gloriously soft
+  tuning_hammer: { kind: 'hammer', col: '#c8a45a' },       // foreman-pattern, back in key
+  tuned_pickaxe: { kind: 'pick', col: '#86d8e4' },         // hums a true fifth above the seam
+};
+
+// Unique offhands — same idea as UNIQUE_WEAPON_MODELS but for the shield slot.
+const UNIQUE_SHIELD_MODELS: Record<string, { kind: NonNullable<HumanOpts['shieldKind']>; col: string }> = {
+  chantbreaker_ward: { kind: 'ward', col: '#5a4a34' },     // buckler faced with a stolen march
+  unstruck_bell: { kind: 'bell', col: '#b08c4a' },         // the deep's loudest word, never rung
+  dissonant_baton: { kind: 'baton', col: '#3c3a44' },      // slate and stretched wire
+};
+
+// Unique head/body pieces — distinct tint + silhouette so wearing them visibly changes the figure.
+const UNIQUE_HEAD_MODELS: Record<string, { col: string; kind: NonNullable<HumanOpts['helmKind']> }> = {
+  wardens_visor: { col: '#566270', kind: 'visor' },        // slayer half-helm, lit slit
+  nightscale_coif: { col: '#23262e', kind: 'coif' },       // moulted drake scales, sewn dark
+  bandit_black_wrap: { col: '#221f1d', kind: 'wrap' },     // anonymous, breathable, incriminating
+};
+const UNIQUE_BODY_MODELS: Record<string, { col: string; kind: NonNullable<HumanOpts['bodyKind']> }> = {
+  wraithcloth_robes: { col: '#b6c0ca', kind: 'robes' },    // cloth that forgot it was buried
+  direwolf_pelt_cloak: { col: '#6a5a48', kind: 'pelt' },   // the forest steps aside
+  slagplate: { col: '#3c342a', kind: 'slag' },             // warm side in, please
+  larp_pride_cape: { col: '#2a2630', kind: 'cape' },       // dramatic entrance guaranteed
 };
 
 // shared player-style figure builder — used by the local player and remote players.
@@ -2353,13 +2504,19 @@ function figureFromAppearance(ids: Record<string, string | null | undefined>, tu
     else if (wepId.includes('staff')) weapon = 'staff';
     else weapon = 'sword';
   }
+  const headU = ids.head ? UNIQUE_HEAD_MODELS[ids.head] : undefined;
+  const bodyU = ids.body ? UNIQUE_BODY_MODELS[ids.body] : undefined;
+  const shieldU = ids.shield ? UNIQUE_SHIELD_MODELS[ids.shield] : undefined;
   return makeHumanoid({
     skin: '#d8a878', hair: '#5a3a1a', tunic, pants,
-    helm: metalTint(ids.head) ?? undefined,
-    bodyArmor: ids.body ? metalTint(ids.body) ?? undefined : undefined,
+    helm: headU?.col ?? metalTint(ids.head) ?? undefined,
+    helmKind: headU?.kind,
+    bodyArmor: ids.body ? bodyU?.col ?? metalTint(ids.body) ?? undefined : undefined,
+    bodyKind: bodyU?.kind,
     legArmor: ids.legs ? metalTint(ids.legs) ?? undefined : undefined,
     weapon, weaponCol: uniq?.col ?? metalTint(wepId) ?? '#c0c8d0',
-    shieldCol: ids.shield ? (metalTint(ids.shield) ?? '#7a5630') : null,
+    shieldCol: ids.shield ? (shieldU?.col ?? metalTint(ids.shield) ?? '#7a5630') : null,
+    shieldKind: shieldU?.kind,
   });
 }
 

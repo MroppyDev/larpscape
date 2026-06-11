@@ -17,6 +17,7 @@ import {
   chanceLabel, shopBuyPrice, shopSellPrice, addArticle, finalize,
 } from './wiki-helpers';
 import { NPC_LORE, REGION_LORE, addLorePages } from '../wiki/lore';
+import { itemSpec } from '../src/sprites';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(__dirname, '../wiki/ui/data/wiki-data.json');
@@ -48,6 +49,44 @@ function itemLink(id: string, text?: string): string {
   return link(`item/${id}`, text ?? name);
 }
 
+// Sprite icon placeholder — hydrated into a <canvas> by the React app's PixIcon
+// renderer. Every id passed through here gets its pixmap serialized into
+// wiki-data.json (ids without art yet fall back to a '?' tile client-side).
+const spriteIds = new Set<string>();
+function pixIcon(id: string): string {
+  spriteIds.add(id);
+  return `<span class="pix-icon" data-item="${esc(id)}"></span>`;
+}
+
+// Item table cell: sprite icon + linked name.
+function itemCell(id: string, text?: string): string {
+  return pixIcon(id) + itemLink(id, text);
+}
+
+// OSRS-style rarity label: 'Always' for chance 1, otherwise '1/N' plus a
+// colored tier word (Common / Uncommon / Rare / Very rare).
+function rarityLabel(chance: number): string {
+  if (chance >= 1) return '<span class="drop-always">Always</span>';
+  const n = Math.max(2, Math.round(1 / chance));
+  let tier: string, cls: string;
+  if (n <= 10) { tier = 'Common'; cls = 'drop-common'; }
+  else if (n <= 50) { tier = 'Uncommon'; cls = 'drop-uncommon'; }
+  else if (n <= 200) { tier = 'Rare'; cls = 'drop-rare'; }
+  else { tier = 'Very rare'; cls = 'drop-veryrare'; }
+  return `<span class="${cls}">1/${n} (${tier})</span>`;
+}
+
+function qtyLabel(qty: [number, number] | number[]): string {
+  return qty[0] === qty[1] ? String(qty[0]) : `${qty[0]}–${qty[1]}`;
+}
+
+// NPCs that live in the instanced Untuned Mine dungeon rather than the overworld.
+const UNTUNED_MINE_NPCS = [
+  'discord_mote', 'discord_wisp', 'untuned_golem', 'seam_creeper',
+  'hollow_miner', 'foreman_echo', 'crystal_heart', 'the_dissonant',
+];
+const UNTUNED_MINE_SET = new Set(UNTUNED_MINE_NPCS);
+
 function npcLink(id: string, text?: string): string {
   const name = NPCS[id]?.name ?? id;
   return link(`npc/${id}`, text ?? name);
@@ -78,6 +117,14 @@ for (const s of NPC_SPAWNS) {
 const groundItemSpawns: Record<string, { x: number; y: number }[]> = {};
 for (const s of GROUND_SPAWNS) {
   (groundItemSpawns[s.item] ??= []).push({ x: s.x, y: s.y });
+}
+
+// Reverse drop index: item id -> every NPC that drops it, with qty + chance.
+const itemDroppedBy: Record<string, { npc: string; qty: number[]; chance: number }[]> = {};
+for (const [npcId, npc] of Object.entries(NPCS)) {
+  for (const d of npc.drops ?? []) {
+    (itemDroppedBy[d.item] ??= []).push({ npc: npcId, qty: d.qty, chance: d.chance });
+  }
 }
 
 const itemUsedIn: Record<string, string[]> = {};
@@ -481,7 +528,7 @@ addCategory('lore', 'Lore', 'Lore', 'The history, cosmology, factions, and peopl
     .filter(([id]) => id !== 'coins')
     .sort((a, b) => a[1].name.localeCompare(b[1].name))
     .map(([id, it]) => [
-      itemLink(id),
+      itemCell(id),
       String(it.value),
       String(shopBuyPrice(it.value)),
       String(shopSellPrice(it.value)),
@@ -503,7 +550,7 @@ addCategory('lore', 'Lore', 'Lore', 'The history, cosmology, factions, and peopl
 // ---- Items ----
 for (const [id, it] of Object.entries(ITEMS)) {
   if (id === 'coins') continue;
-  const ibRows: [string, string][] = [['Examine', esc(it.examine)]];
+  const ibRows: [string, string][] = [['Icon', pixIcon(id)], ['Examine', esc(it.examine)]];
   ibRows.push(['Value', `${it.value} coins`]);
   ibRows.push(['Shop buy', `${shopBuyPrice(it.value)} coins`]);
   ibRows.push(['Shop sell', `${shopSellPrice(it.value)} coins`]);
@@ -549,14 +596,18 @@ for (const [id, it] of Object.entries(ITEMS)) {
     sections.push(ul([...new Set(uses)].slice(0, 20)));
   }
 
-  // Drops from NPCs
-  const droppedBy: string[] = [];
-  for (const [npcId, npc] of Object.entries(NPCS)) {
-    if (npc.drops?.some((d) => d.item === id)) droppedBy.push(npcLink(npcId));
-  }
-  if (droppedBy.length) {
+  // Reverse drop lookup — every NPC that drops this item, with rate.
+  const droppedBy = itemDroppedBy[id];
+  if (droppedBy?.length) {
+    const sorted = [...droppedBy].sort((a, b) =>
+      b.chance - a.chance || (NPCS[b.npc]?.combatLevel ?? 0) - (NPCS[a.npc]?.combatLevel ?? 0));
     sections.push(h2('Dropped by'));
-    sections.push(ul(droppedBy));
+    sections.push(table(['NPC', 'Combat level', 'Quantity', 'Rarity'], sorted.map((d) => [
+      npcLink(d.npc),
+      String(NPCS[d.npc]?.combatLevel ?? '—'),
+      qtyLabel(d.qty),
+      rarityLabel(d.chance),
+    ])));
   }
 
   addArticle(data, {
@@ -589,7 +640,11 @@ for (const [id, npc] of Object.entries(NPCS)) {
   }
 
   const locs = npcLocations[id];
-  if (locs?.length) {
+  if (UNTUNED_MINE_SET.has(id)) {
+    sections.push(h2('Locations'));
+    const extra = locs?.length ? ' Also found in the overworld at ' + locs.map((l) => `(${l.x}, ${l.y})`).join(', ') + '.' : '';
+    sections.push(p('Dwells in the <strong>Untuned Mine</strong>, the instanced dungeon entered through the mine door. See ' + link('lore/bestiary', 'Bestiary of the Offnote') + '.' + extra));
+  } else if (locs?.length) {
     sections.push(h2('Locations'));
     sections.push(ul(locs.map((l) => `(${l.x}, ${l.y})`)));
   } else if (!npc.boss) {
@@ -609,10 +664,12 @@ for (const [id, npc] of Object.entries(NPCS)) {
 
   if (npc.drops?.length) {
     sections.push(h2('Drops'));
-    sections.push(table(['Item', 'Quantity', 'Chance'], npc.drops.map((d) => [
-      itemLink(d.item),
-      d.qty[0] === d.qty[1] ? String(d.qty[0]) : `${d.qty[0]}–${d.qty[1]}`,
-      chanceLabel(d.chance),
+    // Always (chance 1) first, then most common to rarest.
+    const sorted = [...npc.drops].sort((a, b) => b.chance - a.chance);
+    sections.push(table(['Item', 'Quantity', 'Rarity'], sorted.map((d) => [
+      itemCell(d.item),
+      qtyLabel(d.qty),
+      rarityLabel(d.chance),
     ])));
   }
 
@@ -625,8 +682,8 @@ for (const [id, npc] of Object.entries(NPCS)) {
     ]]));
     if (npc.pickpocket.loot?.length) {
       sections.push(table(['Loot', 'Qty'], npc.pickpocket.loot.map((l) => [
-        itemLink(l.item),
-        `${l.qty[0]}–${l.qty[1]}`,
+        itemCell(l.item),
+        qtyLabel(l.qty),
       ])));
     }
   }
@@ -657,7 +714,7 @@ for (const [id, shop] of Object.entries(SHOPS)) {
     const it = ITEMS[s.item];
     const val = it?.value ?? 0;
     return [
-      itemLink(s.item),
+      itemCell(s.item),
       String(s.qty),
       String(shopBuyPrice(val)),
       String(shopSellPrice(val)),
@@ -874,6 +931,24 @@ for (const r of REGIONS) {
 // ---- Lore pages (world history, factions, bestiary, extra regions, rumored lands) ----
 addLorePages(data);
 
+// Link the Untuned Mine creatures from the Bestiary lore page (lore.ts is
+// read-only, so the section is injected here, just before its 'See also').
+{
+  const bestiary = data.articles['lore/bestiary'];
+  if (bestiary) {
+    const mineSection = h2('The Untuned Mine') +
+      p('Beneath the mine door waits the <strong>Untuned Mine</strong>, an instanced delve where the Offnote\'s skipped notes wear pick and lantern. Every creature below carries a full drop table on its page — retune them and they give the mine back.') +
+      ul(UNTUNED_MINE_NPCS.filter((id) => NPCS[id]).map((id) => {
+        const npc = NPCS[id];
+        const tag = npc.boss ? ' <strong>(boss)</strong>' : '';
+        return npcLink(id) + ` — combat level ${npc.combatLevel}${tag}. ${esc(npc.examine)}`;
+      }));
+    bestiary.html = bestiary.html.includes('<h2>See also</h2>')
+      ? bestiary.html.replace('<h2>See also</h2>', mineSection + '<h2>See also</h2>')
+      : bestiary.html.replace('</div>', mineSection + '</div>');
+  }
+}
+
 // ---- Objects (skill nodes) ----
 for (const [id, obj] of Object.entries(OBJS)) {
   const sk = SKILL_OBJS[id];
@@ -904,7 +979,20 @@ for (const [cat, articles] of Object.entries(data.categories)) {
   page.html = page.html.replace(`<div id="cat-list-${slug}"></div>`, `<ul class="cat-list">${list}</ul>`);
 }
 
+// ---- Item sprites (pixmap grid + palette per referenced item id) ----
+// PixIcon in the React app re-renders these onto canvases. Ids whose art is
+// not authored yet (itemSpec returns null) are omitted; PixIcon shows a '?'.
+const sprites: Record<string, { grid: string[]; palette: Record<string, string> }> = {};
+let missingArt = 0;
+for (const id of [...spriteIds].sort()) {
+  const spec = itemSpec(id);
+  if (spec) sprites[id] = { grid: spec[0], palette: spec[1] };
+  else missingArt++;
+}
+(data as WikiData & { sprites?: typeof sprites }).sprites = sprites;
+
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(data, null, 2) + '\n');
 console.log(`Wiki data written: ${OUT}`);
 console.log(`${Object.keys(data.articles).length} articles across ${Object.keys(data.categories).length} categories`);
+console.log(`${Object.keys(sprites).length} item sprites serialized (${missingArt} ids without art yet -> '?' fallback)`);

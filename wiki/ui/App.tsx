@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import type { WikiData, WikiArticle } from './types';
 import wikiData from './data/wiki-data.json';
+import PixIcon, { hydratePixIcons } from './PixIcon';
 
 const data = wikiData as WikiData;
 
@@ -127,6 +128,7 @@ function ArticleView({ article }: { article: WikiArticle }) {
   useEffect(() => {
     document.title = `${article.title} — Larpscape Wiki`;
     fetchGePrices();
+    hydratePixIcons();
   }, [article.title, article.html]);
 
   const onContentClick = useCallback((e: React.MouseEvent) => {
@@ -200,6 +202,7 @@ function SearchPage() {
       <ul className="search-results">
         {results.map((r) => (
           <li key={r.slug}>
+            {r.slug.startsWith('item/') && <PixIcon id={r.slug.slice(5)} size={20} />}
             <Link to={`/${r.slug}`}>{r.title}</Link>
             <span className="search-cat">{r.category}</span>
             <p>{r.excerpt}</p>
