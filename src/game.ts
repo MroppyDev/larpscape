@@ -76,6 +76,7 @@ export interface Player {
   // first-time obtains of collection-worthy items: itemId -> tick first obtained
   collectionLog: Record<string, number>;
   slayerTask: { npc: string; remaining: number } | null;
+  slayerPoints: number; // server-owned spendable slayer points (mirrored for the UI)
   action: PendingAction | null;
   attackCooldown: number;
   combatStyle: CombatStyle;
@@ -449,6 +450,7 @@ function freshPlayer(): Player {
     quests: {},
     collectionLog: {},
     slayerTask: null,
+    slayerPoints: 0,
     action: null, attackCooldown: 0,
     combatStyle: 'accurate',
     autocastSpell: null,
@@ -465,7 +467,7 @@ export function saveGame() {
     prayerPoints: p.prayerPoints, run: p.run, energy: p.energy,
     specEnergy: p.specEnergy,
     inventory: p.inventory, equipment: p.equipment, bank: p.bank,
-    quests: p.quests, slayerTask: p.slayerTask, combatStyle: p.combatStyle,
+    quests: p.quests, slayerTask: p.slayerTask, slayerPoints: p.slayerPoints, combatStyle: p.combatStyle,
     collectionLog: p.collectionLog,
     autocastSpell: p.autocastSpell,
     music: [...audio.unlocked],
@@ -502,6 +504,7 @@ function loadSave(p: Player, provided?: any): boolean {
     if (Array.isArray(d.bank)) p.bank = d.bank;
     p.quests = d.quests ?? {};
     p.slayerTask = d.slayerTask ?? null;
+    p.slayerPoints = typeof d.slayerPoints === 'number' ? d.slayerPoints : 0;
     p.collectionLog = (d.collectionLog && typeof d.collectionLog === 'object') ? d.collectionLog : {};
     p.combatStyle = d.combatStyle ?? 'accurate';
     p.autocastSpell = d.autocastSpell ?? null;
@@ -1565,6 +1568,11 @@ export function combatSnapshot() {
   return {
     t: 'stats',
     cb: combatLevel(),
+    // combatStyle drives which skill the SERVER awards combat xp to (Attack/
+    // Strength/Defence). Without it the server never learns a style switch —
+    // accurate<->aggressive changes nothing else in this snapshot, so no stats
+    // message would be sent and xp would stay on the stale style.
+    combatStyle: p.combatStyle,
     effDef: Math.floor(level('Defence') * prayerMult('defence')) + (p.combatStyle === 'defensive' ? 3 : 0),
     defBonus: equipBonus('def'),
     hp: p.curHp,

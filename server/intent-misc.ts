@@ -442,10 +442,15 @@ function creditSlayerKill(state: AuthState, npc: string): IntentResult {
     const completionXp = 20;
     addXp(state, 'Slayer', completionXp);
     xp.push({ skill: 'Slayer' as SkillName, amount: completionXp });
+    // Diagnostic for the "task completes but no points" report: meta.size must be
+    // >0 (a points-eligible loop task) for points to be granted. Remove once the
+    // slayer points path is confirmed healthy in production.
+    console.log(`[slayer] task complete npc=${npc} size=${meta.size} streak=${meta.streak} pointsBefore=${slayerPoints(state)}`);
     if (meta.size > 0) {
       const streak = meta.streak + 1;
       const pts = streak % 10 === 0 ? POINTS_10TH : streak % 5 === 0 ? POINTS_5TH : BASE_POINTS;
       state.slayerPoints = slayerPoints(state) + pts;
+      console.log(`[slayer] granted ${pts} points -> ${state.slayerPoints}`);
       const bonus = meta.size * 5;
       addXp(state, 'Slayer', bonus);
       xp.push({ skill: 'Slayer' as SkillName, amount: bonus });

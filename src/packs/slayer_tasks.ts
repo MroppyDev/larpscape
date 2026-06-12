@@ -71,14 +71,21 @@ function reflect(echo: IntentEcho): SlayerSnap | null {
   // echo), not client authoring — the same role applyGrant plays for inventory.
   const p = state.player;
   if (snap.task !== undefined) p.slayerTask = snap.task ?? null;
-  if (typeof snap.points === 'number') lastPoints = snap.points;
+  if (typeof snap.points === 'number') { lastPoints = snap.points; p.slayerPoints = snap.points; }
   if (typeof snap.streak === 'number') lastStreak = snap.streak;
   if (typeof snap.size === 'number') lastSize = snap.size;
   events.onStatsChange?.();
   return snap;
 }
 
-function points(): number { return lastPoints; }
+// Read the AUTHORITATIVE points from the loaded save (server-owned, persisted and
+// synced via save_reload). lastPoints is a session echo mirror that resets to 0 on
+// login and is only refreshed when a slayer echo arrives — relying on it alone made
+// Brogan show 0 points after relog even though the server held them.
+function points(): number {
+  const owned = state.player?.slayerPoints;
+  return typeof owned === 'number' ? owned : lastPoints;
+}
 
 // ---------------------------------------------------------------------------
 // Brogan: 'Assignment' — assign / reroll / skip via the server.
