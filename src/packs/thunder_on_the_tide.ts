@@ -9,12 +9,12 @@
 
 import {
   state, msg, invCount,
-  registerNpcAction, registerObjectAction, onKill,
+  registerNpcAction, registerObjectAction,
   startDialogue, showOptions,
   DialogueLine, Npc, ObjectHandler,
 } from '../game';
 import { registerQuest } from '../quests';
-import { questStage, advanceQuestStage, claimQuestReward, questbGrant, auxCount, setAuxCount, setAuxBits } from '../quest-sync';
+import { questStage, advanceQuestStage, claimQuestReward, questbGrant, auxCount, questMark } from '../quest-sync';
 
 const QUEST = 'thunder_on_the_tide';
 const CRATES = 'q9_crates';     // bitmask: bit per dockside crate searched
@@ -26,6 +26,11 @@ const CRATE_BITS: Record<string, number> = {
   '108,261': 1,
   '110,261': 2,
   '112,264': 4,
+};
+const CRATE_MARKS: Record<string, string> = {
+  '108,261': 'ttt_crate_108_261',
+  '110,261': 'ttt_crate_110_261',
+  '112,264': 'ttt_crate_112_264',
 };
 
 function stage(): number { return questStage(QUEST); }
@@ -257,17 +262,19 @@ const searchCrate: ObjectHandler = (o) => {
     return 'done';
   }
   if (s === 2) {
-    const bit = CRATE_BITS[`${o.x},${o.y}`] ?? 0;
-    if (!bit) {
+    const key = `${o.x},${o.y}`;
+    const bit = CRATE_BITS[key] ?? 0;
+    const mark = CRATE_MARKS[key];
+    if (!bit || !mark) {
       // A crate that isn't one of the three on Vex's trail (future placements).
       msg('Splinters, sand and an honest absence of eel. Not one of the crates on Vex\'s trail.');
       return 'done';
     }
-    if (bit && (crateMask() & bit)) {
+    if (crateMask() & bit) {
       msg('You\'ve already been through this one. The lies don\'t improve on a second reading.');
       return 'done';
     }
-    setAuxBits(CRATES, crateMask() | bit);
+    void questMark(mark).then((echo) => { if (!echo.ok) return; });
     const n = cratesSearched();
     if (n === 1) {
       startDialogue([
@@ -424,24 +431,6 @@ registerNpcAction('cove_fence', 'Talk-to', (_n: Npc) => {
     return 'done';
   }
   return 'done';
-});
-
-// ============================================================
-// Runner tracking — pirate kills count only during stage 4.
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player) return;
-  if (defId !== 'pirate') return;
-  if (stage() !== 4) return;
-  const k = runnersDown();
-  if (k >= RUNNERS_NEEDED) return;
-  setAuxCount(RUNNERS, k + 1);
-  if (k + 1 >= RUNNERS_NEEDED) {
-    msg('The second powder runner goes down. The night shed is out of business — Tilly will want to hear it.', 'level');
-  } else {
-    msg(`One powder runner dealt with. ${RUNNERS_NEEDED - k - 1} to go.`);
-  }
 });
 
 export {};

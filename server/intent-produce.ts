@@ -29,10 +29,14 @@ import { fileURLToPath } from 'url';
 import {
   registerIntentDomain, DomainCtx, IntentResult, stampRev,
 } from './intents';
-import { MAP_W } from './world';
+import { MAP_W, terrain, key, T } from './world';
+import { getSimTick, sim } from './sim';
+import {
+  getFarmPatch, setFarmPatch, getSnare, setSnare, getTrainCd, setTrainCd,
+} from './world-progress';
 import {
   AuthState, SkillName, isKnownItem,
-  invAdd, invRemoveItem, invHas, invCount, getCoins, removeCoins,
+  invAdd, invRemove, invRemoveItem, invHas, invCount, getCoins, removeCoins,
   addXp, skillLevel, parseInvSlot, maxHpFor, hpHeal,
 } from './state';
 
@@ -72,6 +76,25 @@ for (const o of MAP.objects) {
 }
 function objectTypeAt(x: number, y: number, type: string): boolean {
   return objTypeAt.get(y * MAP_W + x)?.has(type) ?? false;
+}
+
+function nearObject(cx: number, cy: number, type: string, maxDist = 2): boolean {
+  for (let dx = -maxDist; dx <= maxDist; dx++) {
+    for (let dy = -maxDist; dy <= maxDist; dy++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) <= maxDist && objectTypeAt(cx + dx, cy + dy, type)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function nearNpc(cx: number, cy: number, defId: string, maxDist = 2): boolean {
+  for (const n of sim.npcs) {
+    if (n.dead || n.def.id !== defId) continue;
+    if (chebyshev(cx, cy, n.x, n.y) <= maxDist) return true;
+  }
+  return false;
 }
 
 const chebyshev = (ax: number, ay: number, bx: number, by: number) =>
@@ -280,15 +303,36 @@ registerIntentDomain('port-fish', (ctx, payload) => {
 // + level on plant (consuming the seed + plant xp) and grants produce + harvest
 // xp on harvest. { seed } / { produce }
 // ===========================================================================
+registerIntentDomain('farm-rake', (ctx, payload) => {
+  if (ctx.dead) return fail('farm-rake', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
+  if (!objectTypeAt(ox, oy, 'farming_patch')) return fail('farm-rake', 'no patch here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('farm-rake', 'out of range');
+  return tx(ctx, 'farm-rake', (state) => {
+    if (!hasTool(state, 'rake')) return fail('farm-rake', 'you need a rake');
+    const patch = getFarmPatch(state, ox, oy);
+    if (patch?.stage === 'seedling' || patch?.stage === 'grown') return fail('farm-rake', 'crops growing');
+    if (patch?.stage === 'raked') return fail('farm-rake', 'already raked');
+    setFarmPatch(state, ox, oy, { stage: 'raked' });
+    return { ok: true, kind: 'farm-rake' };
+  });
+});
 registerIntentDomain('farm-plant', (ctx, payload) => {
   if (ctx.dead) return fail('farm-plant', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
   const seedId = String(payload.seed ?? '');
   const s = RECIPES.seeds.find((ss) => ss.seed === seedId);
   if (!s) return fail('farm-plant', 'not a seed');
+  if (!objectTypeAt(ox, oy, 'farming_patch')) return fail('farm-plant', 'no patch here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('farm-plant', 'out of range');
   return tx(ctx, 'farm-plant', (state) => {
+    const patch = getFarmPatch(state, ox, oy);
+    if (patch?.stage === 'seedling' || patch?.stage === 'grown') return fail('farm-plant', 'already planted');
+    if (patch?.stage !== 'raked') return fail('farm-plant', 'patch needs raking');
     if (!hasTool(state, 'seed_dibber')) return fail('farm-plant', 'you need a seed dibber');
     if (skillLevel(state, 'Farming') < s.level) return fail('farm-plant', `requires Farming level ${s.level}`);
     if (!invRemove(state, s.seed, 1)) return fail('farm-plant', 'no seed');
+    setFarmPatch(state, ox, oy, { stage: 'seedling', seed: s.seed, plantedAt: getSimTick() });
     const x = addXp(state, 'Farming', s.plantXp);
     return {
       ok: true, kind: 'farm-plant', removed: [{ id: s.seed, qty: 1 }],
@@ -299,10 +343,22 @@ registerIntentDomain('farm-plant', (ctx, payload) => {
 });
 registerIntentDomain('farm-harvest', (ctx, payload) => {
   if (ctx.dead) return fail('farm-harvest', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
   const produce = String(payload.produce ?? '');
   const s = RECIPES.seeds.find((ss) => ss.produce === produce);
   if (!s) return fail('farm-harvest', 'not a crop');
+  if (!objectTypeAt(ox, oy, 'farming_patch')) return fail('farm-harvest', 'no patch here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('farm-harvest', 'out of range');
   return tx(ctx, 'farm-harvest', (state) => {
+    let patch = getFarmPatch(state, ox, oy);
+    if (patch?.stage === 'seedling' && patch.plantedAt !== undefined && patch.seed) {
+      const seedDef = RECIPES.seeds.find((ss) => ss.seed === patch!.seed);
+      if (seedDef && getSimTick() >= patch.plantedAt + seedDef.growTicks) {
+        patch = { stage: 'grown', produce: seedDef.produce, plantedAt: patch.plantedAt, seed: patch.seed };
+        setFarmPatch(state, ox, oy, patch);
+      }
+    }
+    if (!patch || patch.stage !== 'grown' || patch.produce !== produce) return fail('farm-harvest', 'nothing to harvest');
     if (freeSlots(state) === 0 && invCount(state, produce) === 0) return fail('farm-harvest', 'inventory full');
     const n = randInt(3, 5);
     let got = 0;
@@ -311,6 +367,7 @@ registerIntentDomain('farm-harvest', (ctx, payload) => {
       if (invAdd(state, produce, 1)) got++;
     }
     if (got <= 0) return fail('farm-harvest', 'inventory full');
+    setFarmPatch(state, ox, oy, null);
     const total = s.harvestXp * got;
     const x = addXp(state, 'Farming', total);
     return {
@@ -333,8 +390,11 @@ const ALTARS: Record<string, AltarDef> = {
 };
 registerIntentDomain('runecraft', (ctx, payload) => {
   if (ctx.dead) return fail('runecraft', 'dead');
-  const a = ALTARS[String(payload.altar ?? '')];
+  const altarKey = String(payload.altar ?? '');
+  const a = ALTARS[altarKey];
   if (!a) return fail('runecraft', 'unknown altar');
+  const altarType = altarKey === 'fire' ? 'fire_altar' : 'altar';
+  if (!nearObject(ctx.x, ctx.y, altarType)) return fail('runecraft', 'not near an altar');
   return tx(ctx, 'runecraft', (state) => {
     const lvl = skillLevel(state, 'Runecraft');
     if (lvl < a.level) return fail('runecraft', `requires Runecraft level ${a.level}`);
@@ -434,29 +494,41 @@ registerIntentDomain('pick', (ctx, payload) => {
 // SNARE-LAY — consume one bird_snare to set a trap. The placed world object is
 // cosmetic the client owns; the server just removes the snare item (owned).
 // ===========================================================================
-registerIntentDomain('snare-lay', (ctx) => {
+registerIntentDomain('snare-lay', (ctx, payload) => {
   if (ctx.dead) return fail('snare-lay', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 1) return fail('snare-lay', 'out of range');
+  const t = terrain[key(ox, oy)];
+  if (t !== T.GRASS && t !== T.FLOWERS) return fail('snare-lay', 'not open grass');
   return tx(ctx, 'snare-lay', (state) => {
+    if (getSnare(state, ox, oy)) return fail('snare-lay', 'snare already here');
     if (!invRemove(state, 'bird_snare', 1)) return fail('snare-lay', 'no snare');
+    const tick = getSimTick();
+    setSnare(state, ox, oy, { laidAt: tick, catchAt: tick + randInt(15, 40) });
     return { ok: true, kind: 'snare-lay', removed: [{ id: 'bird_snare', qty: 1 }] };
   });
 });
 
 // ===========================================================================
-// SNARE-CHECK — hunter bird snare. The snare's caught-state is world cosmetic
-// the client tracks; the server grants the fixed loot when the client reports a
-// caught snare. { caught:boolean }. A caught snare returns snare + meat +
-// feathers + Hunter xp; an empty one returns just the snare.
+// SNARE-CHECK — server-owned snare timer; caught roll is server-side.
+// { x, y }
 // ===========================================================================
 registerIntentDomain('snare-check', (ctx, payload) => {
   if (ctx.dead) return fail('snare-check', 'dead');
-  const caught = payload.caught === true;
+  const ox = num(payload.x), oy = num(payload.y);
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('snare-check', 'out of range');
   return tx(ctx, 'snare-check', (state) => {
-    if (freeSlots(state) < 3) return fail('snare-check', 'inventory full');
+    const snare = getSnare(state, ox, oy);
+    if (!snare) return fail('snare-check', 'no snare here');
+    setSnare(state, ox, oy, null);
+    const tick = getSimTick();
+    const ready = tick >= snare.catchAt;
+    const caught = ready && Math.random() < 0.65;
     if (!caught) {
       invAdd(state, 'bird_snare', 1);
       return { ok: true, kind: 'snare-check', granted: [{ id: 'bird_snare', qty: 1 }] };
     }
+    if (freeSlots(state) < 3) return fail('snare-check', 'inventory full');
     invAdd(state, 'bird_snare', 1);
     invAdd(state, 'raw_bird_meat', 1);
     invAdd(state, 'feather', 2);
@@ -490,12 +562,37 @@ const AGILITY_XP: Record<string, { skill: SkillName; level: number; xp: number }
   snow_slope: { skill: 'Agility', level: 30, xp: 35 },
   frost_lap: { skill: 'Agility', level: 30, xp: 150 },
 };
+const LAP_KEYS = new Set(['agility_lap', 'frost_lap']);
+const OBSTACLE_COOLDOWN_MS = 3000;
+const LAP_COOLDOWN_MS = 15000;
+const trainLastMs = new Map<number, Record<string, number>>();
+
 registerIntentDomain('train', (ctx, payload) => {
   if (ctx.dead) return fail('train', 'dead');
-  const t = AGILITY_XP[String(payload.obstacle ?? '')];
+  const obstacle = String(payload.obstacle ?? '');
+  const t = AGILITY_XP[obstacle];
   if (!t) return fail('train', 'unknown obstacle');
+  const ox = num(payload.x), oy = num(payload.y);
+  if (!LAP_KEYS.has(obstacle)) {
+    if (!objectTypeAt(ox, oy, obstacle)) return fail('train', 'no such obstacle here');
+    if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('train', 'out of range');
+  } else if (chebyshev(ctx.x, ctx.y, ox, oy) > 4) {
+    return fail('train', 'out of range');
+  }
+  const cdKey = LAP_KEYS.has(obstacle) ? obstacle : `${obstacle}@${ox},${oy}`;
+  const need = LAP_KEYS.has(obstacle) ? LAP_COOLDOWN_MS : OBSTACLE_COOLDOWN_MS;
+  const now = Date.now();
+  const ram = trainLastMs.get(ctx.userId) ?? {};
+  const lastRam = ram[cdKey] ?? 0;
+  if (lastRam > 0 && now - lastRam < need) return fail('train', 'too soon');
   return tx(ctx, 'train', (state) => {
+    const lastSave = getTrainCd(state, cdKey);
+    if (lastSave > 0 && now - lastSave < need) return fail('train', 'too soon');
     if (skillLevel(state, t.skill) < t.level) return fail('train', `requires ${t.skill} level ${t.level}`);
+    setTrainCd(state, cdKey, now);
+    const nextRam = trainLastMs.get(ctx.userId) ?? {};
+    nextRam[cdKey] = now;
+    trainLastMs.set(ctx.userId, nextRam);
     const x = addXp(state, t.skill, t.xp);
     return {
       ok: true, kind: 'train',
@@ -591,6 +688,7 @@ registerIntentDomain('consume', (ctx, payload) => {
 // ===========================================================================
 registerIntentDomain('recharge-prayer', (ctx) => {
   if (ctx.dead) return fail('recharge-prayer', 'dead');
+  if (!nearObject(ctx.x, ctx.y, 'altar')) return fail('recharge-prayer', 'not near an altar');
   return tx(ctx, 'recharge-prayer', (state) => {
     const max = skillLevel(state, 'Prayer');
     state.prayerPoints = max;
@@ -651,6 +749,9 @@ registerIntentDomain('heal', (ctx, payload) => {
   const source = String(payload.source ?? '');
   const def = HEAL_SOURCES[source];
   if (!def) return fail('heal', 'unknown');
+  if (source === 'fountain' && !nearObject(ctx.x, ctx.y, 'fountain')) return fail('heal', 'not near a fountain');
+  if (source === 'dentist_chair' && !nearObject(ctx.x, ctx.y, 'dentist_chair')) return fail('heal', 'not near a chair');
+  if (source === 'tick_eater' && !nearNpc(ctx.x, ctx.y, 'tick_eater_glen')) return fail('heal', 'not near Glen');
   return tx(ctx, 'heal', (state) => {
     const max = maxHpFor(state);
     const cur = typeof state.curHp === 'number' ? state.curHp : max;

@@ -66,14 +66,14 @@ for (let idx = 0; idx < FROST_COURSE.length; idx++) {
     p.prevX = p.x; p.prevY = p.y;
     p.x = o.x; p.y = destY;
     p.path = [];
-    void requestIntent('train', { obstacle: ob.type });
+    void requestIntent('train', { obstacle: ob.type, x: o.x, y: o.y });
     msg(ob.done);
     // lap tracking: obstacles in order earn the summit bonus
     if (idx === frostProgress) frostProgress++;
     else frostProgress = idx === 0 ? 1 : 0;
     if (frostProgress >= FROST_COURSE.length) {
       frostProgress = 0;
-      void requestIntent('train', { obstacle: 'agility_lap' });
+      void requestIntent('train', { obstacle: 'frost_lap', x: o.x, y: o.y });
       msg('You complete a lap of the mountain course. The thin air no longer bothers you.', 'level');
     }
     return 'done';

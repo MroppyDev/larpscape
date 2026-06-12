@@ -19,6 +19,7 @@ export interface BossCtx {
   damagePlayer: (p: PlayerView, npc: SNpc, dmg: number, fx?: string) => void;
   sendFx: (to: PlayerView | null, npc: SNpc, kind: string) => void;
   markDirty: (n: SNpc) => void;
+  applyPlayerPoison: (p: PlayerView) => void;
 }
 
 const chebyshev = (ax: number, ay: number, bx: number, by: number) =>
@@ -79,8 +80,7 @@ function tickBogHorror(ctx: BossCtx, n: SNpc) {
   const target = ctx.getTargetPlayer(n);
   if (target && s.spit >= SPIT_EVERY && chebyshev(n.x, n.y, target.x, target.y) <= 3) {
     s.spit = 0;
-    // poison DoT runs client-side on the spat-at player
-    ctx.sendFx(target, n, 'bog_spit');
+    ctx.applyPlayerPoison(target);
   }
 
   // self-heal whenever no living player stands toe-to-toe with it
@@ -220,15 +220,21 @@ function tickMagmaFiend(ctx: BossCtx, n: SNpc) {
     }
   }
 
-  // eruption: client dodges it by moving off the telegraphed tile
+  // eruption: server records the tile at telegraph time; moving off dodges it
   if (s.telegraphed) {
     s.telegraphed = false;
-    ctx.damagePlayer(target, n, randInt(1, ERUPTION_MAX), 'korr_eruption');
+    const tx = s.telegraphX as number | undefined;
+    const ty = s.telegraphY as number | undefined;
+    const dodged = tx !== undefined && ty !== undefined && (target.x !== tx || target.y !== ty);
+    if (dodged) ctx.sendFx(target, n, 'korr_eruption_dodge');
+    else ctx.damagePlayer(target, n, randInt(1, ERUPTION_MAX), 'korr_eruption');
     s.ticks = 0;
     return;
   }
   s.ticks++;
   if (s.ticks >= ERUPTION_INTERVAL) {
+    s.telegraphX = target.x;
+    s.telegraphY = target.y;
     ctx.sendFx(target, n, 'korr_telegraph');
     s.telegraphed = true;
   }

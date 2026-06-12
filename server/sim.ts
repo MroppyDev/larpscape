@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { blocked } from './world';
 import { tickBosses } from './bosses';
+import { tickPlayerHazards, tickPlayerDots, applyPlayerPoison, clearPlayerDots } from './hazards';
 import { ECONOMY_FROZEN } from './econ-freeze';
 import {
   EffectDef, SpecDef, ActiveDot, HitsplatKind,
@@ -116,6 +117,8 @@ export interface SGroundItem {
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
+
+export function getSimTick(): number { return sim.tick; }
 
 export const sim = {
   tick: 0,
@@ -296,13 +299,25 @@ export function sendFx(to: PlayerView | null, npc: SNpc, kind: string, extra?: R
 // the client animate the splat (and dodge/halving visuals); but the HP that
 // matters is the server's. Prayer halving is NOT applied server-side (prayers are
 // not yet server-owned — see server/combat.ts header); the raw NPC roll lands.
-export function damagePlayer(p: PlayerView, npc: SNpc, dmg: number, fx?: string) {
+export function damagePlayer(p: PlayerView, npc: SNpc | null, dmg: number, fx?: string) {
   if (p.dead) return;
   const d = Math.max(0, Math.floor(dmg));
   p.hp = Math.max(0, p.hp - d);
-  p.send({ t: 'npcHitYou', npc: npc.id, def: npc.def.id, dmg: d, fx, hp: p.hp, maxHp: p.maxHp });
+  p.send({
+    t: 'npcHitYou',
+    npc: npc?.id ?? -1,
+    def: npc?.def.id ?? 'environment',
+    dmg: d,
+    fx,
+    hp: p.hp,
+    maxHp: p.maxHp,
+  });
   if (d > 0) onHpChanged(p, 'damage');
   if (p.hp <= 0) killPlayer(p, npc);
+}
+
+function hazardDamage(p: PlayerView, dmg: number, fx: string) {
+  damagePlayer(p, null, dmg, fx);
 }
 
 // Resolve a server-side player death exactly once. Delegates the authoritative
@@ -533,7 +548,11 @@ export function tickSim(playersNow: Map<number, PlayerView>) {
     damagePlayer,
     sendFx,
     markDirty: (n: SNpc) => { n.dirty = true; },
+    applyPlayerPoison,
   });
+
+  tickPlayerHazards(sim.tick, players, hazardDamage);
+  tickPlayerDots(sim.tick, players, hazardDamage);
 
   // extra sims (dungeon instances)
   for (const fn of simTickHooks) fn(players, sim.tick);
@@ -933,6 +952,7 @@ export function handleInteract(p: PlayerView, msg: any) {
 }
 
 export function dropPlayer(userId: number) {
+  clearPlayerDots(userId);
   nextSwingAt.delete(userId);
   lastRareNewsAt.delete(userId);
   for (const n of sim.npcs) {

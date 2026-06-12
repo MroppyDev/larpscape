@@ -551,14 +551,14 @@ for (let idx = 0; idx < AGILITY_COURSE.length; idx++) {
     p.path = [];
     // Server-authoritative: the obstacle's Agility xp is granted by the 'train'
     // intent (data-keyed by obstacle type — the client never names the amount).
-    void requestIntent('train', { obstacle: ob.type });
+    void requestIntent('train', { obstacle: ob.type, x: o.x, y: o.y });
     msg(ob.done);
     // lap tracking
     if (idx === agilityProgress) agilityProgress++;
     else agilityProgress = idx === 0 ? 1 : 0;
     if (agilityProgress >= AGILITY_COURSE.length) {
       agilityProgress = 0;
-      void requestIntent('train', { obstacle: 'agility_lap' });
+      void requestIntent('train', { obstacle: 'agility_lap', x: o.x, y: o.y });
       msg('You complete a lap of the course and feel nimbler for it.', 'level');
     }
     return 'done';
@@ -631,7 +631,7 @@ registerObjectAction('farming_patch', 'Harvest', (o) => {
   if (freeSlots() === 0 && !hasItem(produce)) { msg("You don't have enough inventory space."); return 'done'; }
   // Server-authoritative: the server rolls the yield (3-5), grants the produce +
   // Farming xp. The patch's grow/clear state is world cosmetic the client owns.
-  void requestIntent('farm-harvest', { produce }).then((echo) => {
+  void requestIntent('farm-harvest', { produce, x: o.x, y: o.y }).then((echo) => {
     if (!echo.ok) return;
     const n = echo.granted?.find((g) => g.id === produce)?.qty ?? 0;
     audio.sfx('plant');
@@ -646,9 +646,12 @@ registerItemOnObject('rake', 'farming_patch', (_slot, o) => {
   const stage = o.meta?.stage;
   if (stage === 'raked') { msg('The patch is already raked.'); return; }
   if (stage === 'seedling' || stage === 'grown') { msg('There are crops growing here; best leave the rake out of it.'); return; }
-  o.meta = { stage: 'raked' };
-  audio.sfx('plant');
-  msg('You rake the patch clear of weeds. It is ready for planting.');
+  void requestIntent('farm-rake', { x: o.x, y: o.y }).then((echo) => {
+    if (!echo.ok) return;
+    o.meta = { stage: 'raked' };
+    audio.sfx('plant');
+    msg('You rake the patch clear of weeds. It is ready for planting.');
+  });
 });
 
 for (const s of SEEDS) {
@@ -659,7 +662,7 @@ for (const s of SEEDS) {
     if (level('Farming') < s.level) { msg(`You need a Farming level of ${s.level} to plant this seed.`); return; }
     // Server-authoritative: the server consumes the seed + grants plant xp; the
     // seedling/grow state is world cosmetic the client owns.
-    void requestIntent('farm-plant', { seed: s.seed }).then((echo) => {
+    void requestIntent('farm-plant', { seed: s.seed, x: o.x, y: o.y }).then((echo) => {
       if (!echo.ok) return;
       o.meta = { stage: 'seedling', seed: s.seed, plantedAt: state.tick };
       audio.sfx('plant');
@@ -692,7 +695,7 @@ registerItemAction('bird_snare', 'Lay', () => {
   if (objectAt.has(key(p.x, p.y))) { msg("There isn't enough room to set the snare here."); return; }
   // Server-authoritative: the server consumes the snare item; the placed trap +
   // its catch timer are world cosmetic the client owns.
-  void requestIntent('snare-lay').then((echo) => {
+  void requestIntent('snare-lay', { x: p.x, y: p.y }).then((echo) => {
     if (!echo.ok) return;
     const o = addObject('snare_set', p.x, p.y);
     o.meta = { laidAt: state.tick, catchAt: state.tick + randInt(15, 40) };
@@ -714,10 +717,9 @@ registerTickHook(() => {
 
 registerObjectAction('snare_set', 'Check', (o) => {
   if (freeSlots() < 3) { msg("You don't have enough inventory space to dismantle the snare."); return 'done'; }
-  const caught = o.depletedAs === 'snare_caught';
-  // Server-authoritative: the server grants the snare (+ meat/feathers/Hunter xp
-  // when caught). The world object removal is cosmetic the client owns.
-  void requestIntent('snare-check', { caught }).then((echo) => {
+  // Server-authoritative: caught roll + loot are server-side.
+  void requestIntent('snare-check', { x: o.x, y: o.y }).then((echo) => {
+    const caught = !!(echo.granted?.some((g) => g.id === 'raw_bird_meat'));
     if (!echo.ok) return;
     if (caught) msg('You\'ve caught a bird! You retrieve the snare, the meat and a few feathers.');
     else msg('Nothing has wandered into the snare yet. You dismantle it.');

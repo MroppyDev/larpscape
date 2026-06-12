@@ -11,14 +11,14 @@
 
 import {
   state, msg, invCount, hasTool,
-  registerNpcAction, registerObjectAction, registerItemAction, onKill,
+  registerNpcAction, registerObjectAction, registerItemAction,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { WorldObject } from '../world';
 import { registerQuest } from '../quests';
 import { audio } from '../audio';
-import { questStage, advanceQuestStage, claimQuestReward, auxCount, setAuxBits, setAuxCount } from '../quest-sync';
+import { questStage, advanceQuestStage, claimQuestReward, auxCount, questMark } from '../quest-sync';
 
 const QUEST = 'cold_comfort';
 const BRAZIERS = 'q6_braziers'; // bitmask: bit 1 = west brazier, bit 2 = east brazier
@@ -29,9 +29,9 @@ const WOLVES_NEEDED = 2;
 
 // The two braziers flanking the spire door (Calder stands at 270,17; the
 // third spire brazier at 269,11 is intentionally NOT part of the reading).
-const DOOR_BRAZIERS: { x: number; y: number; bit: number }[] = [
-  { x: 268, y: 16, bit: 1 },
-  { x: 272, y: 16, bit: 2 },
+const DOOR_BRAZIERS: { x: number; y: number; bit: number; mark: string }[] = [
+  { x: 268, y: 16, bit: 1, mark: 'cc_brazier_west' },
+  { x: 272, y: 16, bit: 2, mark: 'cc_brazier_east' },
 ];
 
 function stage(): number { return questStage(QUEST); }
@@ -228,35 +228,17 @@ registerObjectAction('brazier', 'Relight', (o: WorldObject) => {
     msg('You need a tinderbox to relight the brazier — your spark, Calder insisted, not his.');
     return 'done';
   }
-  // Aux brazier bitmask is sub-stage progress (client-reflected via quest-sync;
-  // flagged follow-up to make server-owned). Lighting a brazier mints nothing.
-  setAuxBits(BRAZIERS, brazierBits() | door.bit);
-  audio.sfx('fire');
-  msg('You strike a spark and the coal catches — slow, sullen, and exactly as warm as it claims to be.');
-  if (braziersLit() >= 2) {
-    void advanceQuestStage(QUEST, 3);
-    msg('Both braziers blaze, and the doubled light glitters far up the snow. Something out there turns toward it — wolves, lean and winter-coloured. Drive off two ice wolves.', 'level');
-  } else {
-    msg('One brazier lit. Its twin across the door still sits cold.');
-  }
+  void questMark(door.mark).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('fire');
+    msg('You strike a spark and the coal catches — slow, sullen, and exactly as warm as it claims to be.');
+    if (braziersLit() >= 2) {
+      msg('Both braziers blaze, and the doubled light glitters far up the snow. Something out there turns toward it — wolves, lean and winter-coloured. Drive off two ice wolves.', 'level');
+    } else {
+      msg('One brazier lit. Its twin across the door still sits cold.');
+    }
+  });
   return 'done';
-});
-
-// ============================================================
-// Wolf tracking — the light draws what the cold sent.
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player) return;
-  if (defId !== 'ice_wolf' || stage() !== 3) return;
-  const n = wolvesDriven();
-  if (n >= WOLVES_NEEDED) return;
-  setAuxCount(WOLVES, n + 1);
-  if (n + 1 >= WOLVES_NEEDED) {
-    msg('That\'s both wolves seen off into the snow. Calder will want to know what the flames say.', 'level');
-  } else {
-    msg(`The ice wolf slinks off, out-argued. (${n + 1}/${WOLVES_NEEDED})`);
-  }
 });
 
 // ============================================================

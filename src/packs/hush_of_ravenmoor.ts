@@ -34,7 +34,7 @@ import {
 } from '../game';
 import { registerQuest } from '../quests';
 import { removeObject, objectAt, key, WorldObject } from '../world';
-import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, setAuxBits } from '../quest-sync';
+import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, questMark } from '../quest-sync';
 
 const HUSH = 'hush_of_ravenmoor';
 const CELLAR = 'q5_cellar'; // bitmask: 1 = crate searched, 2 = revenant slain, 4 = lily delivered
@@ -50,7 +50,12 @@ const CHIME = { x: 244, y: 150 };
 
 function stage(): number { return questStage(HUSH); }
 function cellarBits(): number { return auxCount(CELLAR); }
-function setBit(b: number) { setAuxBits(CELLAR, cellarBits() | b); }
+const BIT_MARKS: Record<number, string> = {
+  [BIT_CRATE]: 'hush_crate',
+  [BIT_REVENANT]: 'hush_revenant',
+  [BIT_LILY]: 'hush_lily',
+};
+function setBit(b: number) { void questMark(BIT_MARKS[b]); }
 function hasBit(b: number): boolean { return (cellarBits() & b) !== 0; }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {

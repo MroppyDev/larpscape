@@ -16,7 +16,25 @@
     "gd4_calder_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 1 },
     "gd4_vesper_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 2 },
     "gd4_vesper_signed":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 4 },
-    "gd4_calder_signed":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 8 }
+    "gd4_calder_signed":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 8 },
+
+    "cc_brazier_west":  { "parentQuest": "cold_comfort", "requireStage": 2, "subKey": "q6_braziers", "bit": 1 },
+    "cc_brazier_east":  { "parentQuest": "cold_comfort", "requireStage": 2, "subKey": "q6_braziers", "bit": 2, "completeMask": 3, "completeStage": 3 },
+
+    "hymn_bone_1": { "parentQuest": "hymn_for_the_hollow", "requireStage": 2, "subKey": "q7_buried", "bit": 1 },
+    "hymn_bone_2": { "parentQuest": "hymn_for_the_hollow", "requireStage": 2, "subKey": "q7_buried", "bit": 2 },
+    "hymn_bone_3": { "parentQuest": "hymn_for_the_hollow", "requireStage": 2, "subKey": "q7_buried", "bit": 4 },
+    "hymn_bone_4": { "parentQuest": "hymn_for_the_hollow", "requireStage": 2, "subKey": "q7_buried", "bit": 8 },
+    "hymn_bone_5": { "parentQuest": "hymn_for_the_hollow", "requireStage": 2, "subKey": "q7_buried", "bit": 16, "completeMask": 31, "completeStage": 3 },
+    "hymn_echo_heard": { "parentQuest": "hymn_for_the_hollow", "requireStage": 3, "subKey": "q7_buried", "bit": 32 },
+
+    "hush_lily":   { "parentQuest": "hush_of_ravenmoor", "requireStage": 3, "subKey": "q5_cellar", "bit": 4 },
+    "hush_crate":  { "parentQuest": "hush_of_ravenmoor", "requireStage": 4, "subKey": "q5_cellar", "bit": 1 },
+    "hush_revenant": { "parentQuest": "hush_of_ravenmoor", "requireStage": 4, "subKey": "q5_cellar", "bit": 2 },
+
+    "ttt_crate_108_261": { "parentQuest": "thunder_on_the_tide", "requireStage": 2, "subKey": "q9_crates", "bit": 1 },
+    "ttt_crate_110_261": { "parentQuest": "thunder_on_the_tide", "requireStage": 2, "subKey": "q9_crates", "bit": 2 },
+    "ttt_crate_112_264": { "parentQuest": "thunder_on_the_tide", "requireStage": 2, "subKey": "q9_crates", "bit": 4, "completeMask": 7, "completeStage": 3 }
   },
 
   "kills": {
@@ -26,7 +44,9 @@
     "gd3_hollow_miner":  { "npc": "hollow_miner",  "parentQuest": "gd3_sealed_wing",        "requireStage": 4, "subKey": "gd3_miners",        "target": 2 },
     "gd4_dissonant":     { "npc": "the_dissonant", "parentQuest": "gd4_gathering_discord",  "requireStage": 3, "subKey": "gd4_boss",          "target": 1 },
     "crown_ice_queen":   { "npc": "ice_queen",     "parentQuest": "frozen_crown",           "requireStage": 1, "subKey": "frozen_crown_kill", "target": 1 },
-    "smile_bandit_king": { "npc": "bandit_king",   "parentQuest": "red_smile",              "requireStage": 1, "subKey": "red_smile_kill",    "target": 1 }
+    "smile_bandit_king": { "npc": "bandit_king",   "parentQuest": "red_smile",              "requireStage": 1, "subKey": "red_smile_kill",    "target": 1 },
+    "cc_ice_wolf":       { "npc": "ice_wolf",      "parentQuest": "cold_comfort",           "requireStage": 3, "subKey": "q6_wolves",         "target": 2, "completeStage": 4 },
+    "ttt_pirate_runner": { "npc": "pirate",        "parentQuest": "thunder_on_the_tide",    "requireStage": 4, "subKey": "q9_runners",        "target": 2 }
   },
 
   "turnins": {

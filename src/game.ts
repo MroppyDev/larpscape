@@ -654,10 +654,11 @@ export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string; hp?: 
   if (msg.fx) {
     const mod = damageModifiers.get(msg.fx);
     if (mod) dmg = mod(dmg, n);
-    if (dmg < 0) return;
   }
+  // Server owns HP; always mirror authoritative hp when present.
   if (typeof msg.hp === 'number') p.curHp = msg.hp;
-  else p.curHp = Math.max(0, p.curHp - dmg);
+  else if (dmg > 0) p.curHp = Math.max(0, p.curHp - dmg);
+  else return;
   p.hitsplat = { dmg, until: performance.now() + 900 };
   audio.sfx(dmg > 0 ? 'hit' : 'miss');
   events.onStatsChange();

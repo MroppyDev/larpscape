@@ -137,8 +137,8 @@
     "transitions": [
       { "from": 0, "to": 1 },
       { "from": 1, "to": 2, "requiredItems": [{ "id": "coal", "qty": 5 }] },
-      { "from": 2, "to": 3 },
-      { "from": 3, "to": 4 },
+      { "from": 2, "to": 3, "requiredQuestStages": [{ "id": "q6_braziers", "stage": 3 }] },
+      { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "q6_wolves", "stage": 2 }] },
       { "from": 4, "to": 5 }
     ]
   },
@@ -168,9 +168,9 @@
     "transitions": [
       { "from": 0, "to": 1 },
       { "from": 1, "to": 2, "requiredItems": [{ "id": "powder_grit", "qty": 1 }] },
-      { "from": 2, "to": 3 },
+      { "from": 2, "to": 3, "requiredQuestStages": [{ "id": "q9_crates", "stage": 7 }] },
       { "from": 3, "to": 4 },
-      { "from": 4, "to": 5 },
+      { "from": 4, "to": 5, "requiredQuestStages": [{ "id": "q9_runners", "stage": 2 }] },
       { "from": 5, "to": 6, "requiredItems": [{ "id": "powder_keg", "qty": 1 }, { "id": "false_manifest", "qty": 1 }] }
     ]
   },
@@ -181,7 +181,7 @@
       { "from": 1, "to": 2 },
       { "from": 2, "to": 3 },
       { "from": 3, "to": 4, "requiredItems": [{ "id": "cellar_key", "qty": 1 }] },
-      { "from": 4, "to": 5 },
+      { "from": 4, "to": 5, "requiredQuestStages": [{ "id": "q5_cellar", "stage": 3 }] },
       { "from": 5, "to": 6, "requiredItems": [{ "id": "ravenmoor_diary", "qty": 1 }] }
     ]
   },
@@ -190,7 +190,7 @@
     "transitions": [
       { "from": 0, "to": 1 },
       { "from": 1, "to": 2 },
-      { "from": 2, "to": 3 },
+      { "from": 2, "to": 3, "requiredQuestStages": [{ "id": "q7_buried", "stage": 31 }] },
       { "from": 3, "to": 4 },
       { "from": 4, "to": 5, "requiredItems": [{ "id": "hollow_verse", "qty": 1 }] },
       { "from": 5, "to": 6 }

@@ -45,6 +45,7 @@ import { installQuestKillHook } from './intent-quest'; // side-effect: registers
 import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
+import { blocked } from './world';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -1636,12 +1637,27 @@ wss.on('connection', (ws, req) => {
       const now = Date.now();
       if (now - client.lastPos < 200) return; // rate limit
       client.lastPos = now;
-      if (typeof msg.x === 'number' && Number.isFinite(msg.x)) client.x = Math.round(msg.x);
-      if (typeof msg.y === 'number' && Number.isFinite(msg.y)) client.y = Math.round(msg.y);
+      const MAX_POS_STEP = 12;
+      let nx = client.x, ny = client.y;
+      if (typeof msg.x === 'number' && Number.isFinite(msg.x)) nx = Math.round(msg.x);
+      if (typeof msg.y === 'number' && Number.isFinite(msg.y)) ny = Math.round(msg.y);
+      const dx = nx - client.x, dy = ny - client.y;
+      const step = Math.max(Math.abs(dx), Math.abs(dy));
+      if (step > MAX_POS_STEP) {
+        const scale = MAX_POS_STEP / step;
+        nx = Math.round(client.x + dx * scale);
+        ny = Math.round(client.y + dy * scale);
+      }
+      if (blocked(nx, ny)) {
+        if (!blocked(client.x, client.y)) { nx = client.x; ny = client.y; }
+        else return;
+      }
+      client.x = nx;
+      client.y = ny;
       if (msg.app !== undefined) client.app = msg.app;
       view.x = client.x;
       view.y = client.y;
-      if (typeof msg.d === 'boolean') view.dead = msg.d;
+      // dead is server-only (killPlayer); never trust client d flag
     } else if (msg.t === 'stats') {
       // The client no longer reports combat NUMBERS (cb/effDef/defBonus/hp/maxHp
       // are server-derived from the cached profile — closes G1/M4). It may still
@@ -1651,7 +1667,6 @@ wss.on('connection', (ws, req) => {
       setStyleSelection(view.userId, msg.combatStyle, msg.autocastSpell);
       const entry = combatProfiles.get(view.userId);
       if (entry) applyProfileToView(view, entry);
-      if (typeof msg.d === 'boolean') view.dead = msg.d;
     } else if (msg.t === 'swing') {
       handleSwing(view, msg);
     } else if (msg.t === 'pickup') {

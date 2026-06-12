@@ -15,13 +15,14 @@ import {
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
-import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, setAuxCount } from '../quest-sync';
+import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, questMark } from '../quest-sync';
 
 const HYMN = 'hymn_for_the_hollow';
 const BURIED = 'q7_buried';        // 0-5 burials; 6 = the echo has been heard out
 const ALTAR_X = 278;
 const ALTAR_Y = 109;
 const BONES_NEEDED = 5;
+const BONE_MARKS = ['hymn_bone_1', 'hymn_bone_2', 'hymn_bone_3', 'hymn_bone_4', 'hymn_bone_5'];
 
 function stage(): number { return questStage(HYMN); }
 function buried(): number { return Math.min(auxCount(BURIED), BONES_NEEDED); }
@@ -258,20 +259,24 @@ registerItemOnObject('bones', 'altar', (_slot, o) => {
   }
   void questbGrant('hymn_bury_bone').then((echo) => {
     if (!echo.ok) return;
-    const n = auxCount(BURIED) + 1;
-    setAuxCount(BURIED, n);
-  if (n < BONES_NEEDED) {
-    msg(`${BURIAL_LINES[n - 1]} (${n}/${BONES_NEEDED})`);
-    return;
-  }
-    void advanceQuestStage(HYMN, 3).then((stageEcho) => {
-      if (!stageEcho.ok) return;
-      startDialogue([
-        ...me('*You lay the fifth beneath the altar rail and stand back.*'),
-        ...me('*By the altar, the air gathers into the shape of a chaplain — threadbare, patient, and suddenly, unmistakably, present.*'),
-        ...say(ECHO, '...full pews. Well. I shall need a longer sermon.'),
-      ], () => {
-        msg('The fifth is laid, and the chaplain\'s echo has found its voice. He seems to want a word.', 'level');
+    const n = buried() + 1;
+    const mark = BONE_MARKS[n - 1];
+    if (!mark) return;
+    void questMark(mark).then((markEcho) => {
+      if (!markEcho.ok) return;
+      if (n < BONES_NEEDED) {
+        msg(`${BURIAL_LINES[n - 1]} (${n}/${BONES_NEEDED})`);
+        return;
+      }
+      void advanceQuestStage(HYMN, 3).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        startDialogue([
+          ...me('*You lay the fifth beneath the altar rail and stand back.*'),
+          ...me('*By the altar, the air gathers into the shape of a chaplain — threadbare, patient, and suddenly, unmistakably, present.*'),
+          ...say(ECHO, '...full pews. Well. I shall need a longer sermon.'),
+        ], () => {
+          msg('The fifth is laid, and the chaplain\'s echo has found its voice. He seems to want a word.', 'level');
+        });
       });
     });
   });
@@ -311,7 +316,7 @@ registerNpcAction('chapel_echo', 'Talk-to', (_n: Npc) => {
       ...say(ECHO, 'The whisper at the tower. The Hollowell woman. Quiess\'s people keep all endings — ask her for mine.'),
       ...me('*You nod and leave on your toes, though he could not possibly be woken.*'),
     ], () => {
-      setAuxCount(BURIED, 6); // heard out; Vesper will teach the verse now
+      void questMark('hymn_echo_heard');
     });
     return 'done';
   }

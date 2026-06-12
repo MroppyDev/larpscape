@@ -31,6 +31,9 @@ export const OWNED_FIELDS = [
   'activePrayers', // string[] — toggled prayers (server drain + persist)
   'slayerTask',    // { npc, remaining } | null — slayer progress
   'slayerPoints',  // slayer reward points
+  'farmPatches',   // Record<"x,y", patch state> — server-owned farming progress
+  'snares',        // Record<"x,y", snare timer> — server-owned hunter traps
+  'trainCd',       // Record<obstacleKey, lastTick> — agility train cooldowns
 ] as const;
 
 // Fields the CLIENT owns. Cosmetic / UX only; never trusted for anything

@@ -91,6 +91,17 @@ function objectTypeAt(x: number, y: number, type: string): boolean {
   return objTypeAt.get(y * MAP_W + x)?.has(type) ?? false;
 }
 
+function nearObject(cx: number, cy: number, type: string, maxDist = 2): boolean {
+  for (let dx = -maxDist; dx <= maxDist; dx++) {
+    for (let dy = -maxDist; dy <= maxDist; dy++) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) <= maxDist && objectTypeAt(cx + dx, cy + dy, type)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 const chebyshev = (ax: number, ay: number, bx: number, by: number) =>
   Math.max(Math.abs(ax - bx), Math.abs(ay - by));
 
@@ -310,6 +321,7 @@ export function createIntents(stateStore: StateStore) {
     if (ctx.dead) return fail('cook', 'dead');
     const c = RECIPES.cookables.find((cc) => cc.raw === raw);
     if (!c) return fail('cook', 'not cookable');
+    if (!nearObject(ctx.x, ctx.y, 'range')) return fail('cook', 'not near a range');
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       const lvl = skillLevel(state, 'Cooking');
       if (lvl < c.level) return fail('cook', `requires Cooking level ${c.level}`);
@@ -355,6 +367,13 @@ export function createIntents(stateStore: StateStore) {
     if (ctx.dead) return fail('make', 'dead');
     const r = RECIPE_INDEX[recipe + '|' + output];
     if (!r) return fail('make', 'unknown recipe');
+    const stationReq = recipe === 'smelt' ? 'furnace'
+      : recipe === 'smith' ? 'anvil'
+      : recipe === 'potion' ? null
+      : null;
+    if (stationReq && !nearObject(ctx.x, ctx.y, stationReq)) {
+      return fail('make', `not near a ${stationReq}`);
+    }
     const producesItem = r.outputQty > 0 && r.output !== '';
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       if (skillLevel(state, r.skill) < r.level) return fail('make', `requires ${r.skill} level ${r.level}`);
