@@ -45,7 +45,7 @@ import { installQuestKillHook } from './intent-quest'; // side-effect: registers
 import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
-import { blocked } from './world';
+import { blocked, MAP_W, MAP_H } from './world';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8080);
@@ -730,6 +730,34 @@ setOnHpChanged((view, _reason) => {
 // the respawn point. No item/xp penalty is applied (preserves current PvE feel;
 // a softcore xp loss would slot in here via addXp with a negative-after clamp).
 const RESPAWN = { x: 22, y: 38 };
+
+// Presentation-field position: read from the save on connect, write quietly on
+// disconnect (no rev bump / save_reload — avoids fencing a reconnecting client).
+function spawnFromSave(userId: number): { x: number; y: number } {
+  const s = stateStore.loadState(userId);
+  if (!s) return RESPAWN;
+  const x = typeof s.x === 'number' ? Math.round(s.x) : RESPAWN.x;
+  const y = typeof s.y === 'number' ? Math.round(s.y) : RESPAWN.y;
+  if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H || blocked(x, y)) return RESPAWN;
+  return { x, y };
+}
+
+function persistPositionQuiet(userId: number, x: number, y: number) {
+  const nx = Math.round(x), ny = Math.round(y);
+  if (!Number.isFinite(nx) || !Number.isFinite(ny)) return;
+  if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H || blocked(nx, ny)) return;
+  const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
+    .get(userId) as { save: string } | undefined;
+  if (!row) return;
+  let state: Record<string, unknown>;
+  try { state = JSON.parse(row.save) as Record<string, unknown>; }
+  catch { return; }
+  state.x = nx;
+  state.y = ny;
+  db.prepare('UPDATE characters SET save = ?, updated_at = ? WHERE user_id = ?')
+    .run(JSON.stringify(state), Date.now(), userId);
+}
+
 setResolvePlayerDeath((view, _killerNpc) => {
   const entry = combatProfiles.get(view.userId);
   stateStore.withState(view.userId, (state) => {
@@ -738,6 +766,7 @@ setResolvePlayerDeath((view, _killerNpc) => {
     // (softcore xp penalty would be applied here, e.g. addXp(state, skill, -loss))
   });
   if (entry) { entry.hpDirty = false; entry.activePrayers = []; entry.prayerDrainAcc = 0; }
+  persistPositionQuiet(view.userId, RESPAWN.x, RESPAWN.y);
   return RESPAWN;
 });
 
@@ -1583,9 +1612,10 @@ wss.on('connection', (ws, req) => {
   // Drop any previous connection for the same account.
   for (const c of clients) if (c.userId === user.id) { c.ws.close(4002, 'replaced'); clients.delete(c); }
 
+  const spawn = spawnFromSave(user.id);
   const view: PlayerView = {
     userId: user.id, name: user.username,
-    x: 0, y: 0, dead: false,
+    x: spawn.x, y: spawn.y, dead: false,
     cb: 3, effDef: 1, defBonus: 0, hp: 10, maxHp: 10,
     send: (msg: unknown) => {
       if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
@@ -1608,7 +1638,7 @@ wss.on('connection', (ws, req) => {
   }
   const client: Client = {
     ws, userId: user.id, name: user.username,
-    x: 0, y: 0, app: null, lastPos: 0, alive: true,
+    x: spawn.x, y: spawn.y, app: null, lastPos: 0, alive: true,
     msgTokens: 60, msgRefill: Date.now(),
     view,
   };
@@ -1715,6 +1745,7 @@ wss.on('connection', (ws, req) => {
   ws.on('pong', () => { client.alive = true; });
   const onGone = () => {
     clients.delete(client);
+    persistPositionQuiet(client.userId, client.x, client.y);
     flushCombatState(client.userId, client.view); // persist live HP + spec, then drop the cache
     combatProfiles.delete(client.userId);
     dropPlayer(client.userId);

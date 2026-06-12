@@ -124,31 +124,29 @@ export async function syncSaveNow(): Promise<boolean> {
   } catch { return false; }
 }
 
+let serverSaveCache: any = null;
+
 function installServerProvider(initialSave: any) {
+  serverSaveCache = initialSave;
   setSaveProvider({
-    load: () => initialSave,
+    load: () => serverSaveCache,
     save: (data) => {
+      serverSaveCache = data;
       pendingSave = data;
       if (!saveTimer) {
         saveTimer = setTimeout(() => { saveTimer = null; flushSave(); }, 2000);
       }
     },
   });
-  window.addEventListener('beforeunload', () => {
-    if (pendingSave != null && net.online) {
-      // keepalive PUT is the reliable path; sendBeacon as a last-ditch extra (POST).
-      const data = pendingSave;
-      flushSave(true);
-      try {
-        if (navigator.sendBeacon && net.token) {
-          const blob = new Blob(
-            [JSON.stringify({ save: data, token: net.token })],
-            { type: 'application/json' },
-          );
-          navigator.sendBeacon('/api/character', blob);
-        }
-      } catch { /* ignore */ }
-    }
+  const flushOnHide = () => {
+    if (!net.online) return;
+    try { saveGame(); } catch { /* best effort */ }
+    flushSave(true);
+  };
+  window.addEventListener('beforeunload', flushOnHide);
+  window.addEventListener('pagehide', flushOnHide);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushOnHide();
   });
 }
 
@@ -353,6 +351,13 @@ export async function reloadServerOwned() {
     if (save.quests && typeof save.quests === 'object') p.quests = save.quests;
     if (save.collectionLog && typeof save.collectionLog === 'object') p.collectionLog = save.collectionLog;
     if (typeof save.slayerPoints === 'number') (p as { slayerPoints?: number }).slayerPoints = save.slayerPoints;
+    if (typeof save.x === 'number' && typeof save.y === 'number') {
+      p.x = save.x;
+      p.y = save.y;
+      p.prevX = save.x;
+      p.prevY = save.y;
+    }
+    serverSaveCache = save;
     saveGame();
     import('./game').then((g) => {
       g.events.onStatsChange?.();
