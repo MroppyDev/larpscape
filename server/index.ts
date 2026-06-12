@@ -1710,9 +1710,19 @@ wss.on('connection', (ws, req) => {
       // Validates level/inputs/tool/range vs server state, rolls, applies via
       // withState, and replies with the authoritative {t:'intent',...} echo.
       const intentRes = dispatchIntentWs(stateStore, intents, view, msg);
-      if (intentRes?.ok && Array.isArray(intentRes.activePrayers)) {
-        const pe = combatProfiles.get(view.userId);
-        if (pe) pe.activePrayers = intentRes.activePrayers;
+      if (intentRes?.ok) {
+        // Eat/heal/thieve update state.curHp in the save but combat damage reads
+        // view.hp (RAM). Without this sync the next npcHitYou snaps HP back down.
+        if (typeof intentRes.hp === 'number') {
+          const entry = combatProfiles.get(view.userId);
+          const max = entry?.profile.maxHp ?? view.maxHp;
+          view.hp = Math.max(0, Math.min(max, Math.floor(intentRes.hp)));
+          if (entry) entry.hpDirty = true;
+        }
+        if (Array.isArray(intentRes.activePrayers)) {
+          const pe = combatProfiles.get(view.userId);
+          if (pe) pe.activePrayers = intentRes.activePrayers;
+        }
       }
     } else if (msg.t === 'chat') {
       if (typeof msg.text !== 'string') return;
