@@ -546,5 +546,18 @@ export function trackForRegion(x: number, y: number): string {
     if (x >= 256 && y >= 156 && y <= 200) return 'Stonewatch Garrison'; // Stonewatch (duchy garrison)
     if (y >= 106 && y <= 156) return 'Wraithrun'; // danger corridor
   }
+  // Content-update skill towns (scripts/merge-content-update.ts). Boxes cover each
+  // town's footprint (origin .. origin+footprint) and are checked after all the
+  // legacy/expansion regions so they only claim their own clearing.
+  if (x >= 115 && x <= 143 && y >= 162 && y <= 190) return 'Cairnchime Dig'; // mining
+  if (x >= 203 && x <= 233 && y >= 176 && y <= 206) return 'Drummer\'s March'; // melee
+  if (x >= 154 && x <= 182 && y >= 1 && y <= 27) return 'Quillrook Wilds'; // ranged
+  if (x >= 188 && x <= 220 && y >= 59 && y <= 91) return 'Resonne Chord'; // magic
+  if (x >= 160 && x <= 188 && y >= 176 && y <= 204) return 'Resin Hollow'; // woodcutting
+  if (x >= 233 && x <= 263 && y >= 189 && y <= 217) return 'Saltsong Tide'; // fishing
+  if (x >= 251 && x <= 281 && y >= 15 && y <= 45) return 'Forgekeep Anvil'; // smithing
+  if (x >= 8 && x <= 38 && y >= 130 && y <= 158) return 'Verdancourt Bloom'; // herblore
+  if (x >= 264 && x <= 294 && y >= 132 && y <= 162) return 'The Knell'; // prayer
+  if (x >= 268 && x <= 298 && y >= 34 && y <= 64) return 'Quaverside'; // utility
   return 'Newbie Meadow';
 }

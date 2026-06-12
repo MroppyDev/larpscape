@@ -9,19 +9,45 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, '../data');
 const FRAG = path.join(DATA, 'fragments');
 
+// Origins re-vetted against the restored pre-update map by scripts/scan-origins.mjs.
+// Each was chosen so the FULL footprint contains no WATER/LAVA/CAVE/WALL/FLOOR
+// (no ocean/mountain-peak/cave/existing-building), <=20 sparse existing objects
+// (left in place via skip-on-collision), and sits >=18 chebyshev from every
+// existing hub. Each region paints a full DIRT/GRASS base pad before placing
+// objects (see pass 2), so any rock/snow/swamp under a footprint becomes clean
+// ground. The map's non-building clean land cannot hold all ten footprints fully
+// non-overlapping at a >=18 mutual gap (proven: 20000 randomized restarts found
+// none), so Forgekeep + Quaverside abut in the NE corner with a small overlap
+// their merged pads absorb. Footprints: melee 30x30, ranged 28x26, magic 32x32,
+// woodcutting 28x28, fishing 30x28, smithing 30x30, herblore 30x28, prayer
+// 30x30, utility(agility...) 30x30, Cairnchime(mining) 28x28.
 const ORIGINS: Record<string, [number, number]> = {
-  'melee-combat': [150, 95],
-  'ranged-gun': [210, 35],
-  'magic-runecraft': [40, 150],
-  'woodcutting-firemaking': [60, 105],
-  'fishing-cooking': [135, 235],
-  'smithing-crafting-fletching': [185, 150],
-  'herblore-farming': [150, 200],
-  'prayer-slayer': [245, 230],
-  'agility-thieving-hunter-construction': [70, 160],
+  'melee-combat': [203, 176],                          // Drummar's Hold
+  'ranged-gun': [154, 1],                               // Quillrook
+  'magic-runecraft': [188, 59],                         // Resonne
+  'woodcutting-firemaking': [160, 176],                // Resin Hollow
+  'fishing-cooking': [233, 189],                        // Saltsong Harbour (coastal)
+  'smithing-crafting-fletching': [251, 15],            // Forgekeep Concord
+  'herblore-farming': [8, 130],                         // Verdancourt
+  'prayer-slayer': [264, 132],                          // The Knell
+  'agility-thieving-hunter-construction': [268, 34],   // Quaverside
 };
 
-const DIRT = 9, PATH = 2, ROCK = 13;
+// Per-region full footprint (w,h), used to paint a clean base pad under each
+// town before its own terrainPads/objects go down.
+const FOOTPRINTS: Record<string, [number, number]> = {
+  'melee-combat': [30, 30],
+  'ranged-gun': [28, 26],
+  'magic-runecraft': [32, 32],
+  'woodcutting-firemaking': [28, 28],
+  'fishing-cooking': [30, 28],
+  'smithing-crafting-fletching': [30, 30],
+  'herblore-farming': [30, 28],
+  'prayer-slayer': [30, 30],
+  'agility-thieving-hunter-construction': [30, 30],
+};
+
+const GRASS = 0, DIRT = 9, PATH = 2, ROCK = 13;
 
 // ---------- io helpers (preserve CRLF + trailing newline style) ----------
 const rawCache: Record<string, string> = {};
@@ -48,9 +74,35 @@ const magic = readJson('magic.json'); // { spells[], prayers[], slayerTargets }
 const spawns = readJson('spawns.json'); // { npcSpawns[], groundSpawns[] }
 const map = readJson('map.json'); // { width, height, terrain(b64), objects[] }
 
-// backup map BEFORE any change
-fs.copyFileSync(path.join(DATA, 'map.json'), path.join(DATA, 'map.backup-pre-update.json'));
-console.log('Backed up map.json -> map.backup-pre-update.json');
+// ---------- double-merge guard ----------
+// This merge is NOT idempotent: it appends npcSpawns and some recipes without a
+// dedup check, and re-painting/placing on an already-merged map produces garbage.
+// It must run exactly once, on the pristine pre-update map. Detect a prior run by
+// looking for a content-update object already placed at a NEW region origin
+// (Quaverside's contract_board, dx/dy 4,4 -> origin 268,34). If found, refuse,
+// unless FORCE_MERGE=1 is set after the caller has manually restored a clean base.
+{
+  const occ0 = new Set(map.objects.map((o: any) => o.x + ',' + o.y));
+  const [qx, qy] = ORIGINS['agility-thieving-hunter-construction'];
+  const alreadyMerged = map.objects.some((o: any) => o.type === 'contract_board' && o.x >= qx && o.x <= qx + 30 && o.y >= qy && o.y <= qy + 30)
+    || (occ0.has('') === false && map.objects.length > 3300); // pre-update map is ~3201 objects
+  if (alreadyMerged && process.env.FORCE_MERGE !== '1') {
+    console.error('REFUSING: map.json looks already-merged (>3300 objects or content objects present).');
+    console.error('Restore the pristine pre-update data first (git checkout 2d3eec1 -- data/*.json; cp data/map.backup-pre-update.json data/map.json), then re-run.');
+    console.error('Set FORCE_MERGE=1 only if you are certain the base is clean.');
+    process.exit(1);
+  }
+}
+
+// backup map BEFORE any change — but never clobber an existing pristine backup
+// with an already-modified map.
+const backupPath = path.join(DATA, 'map.backup-pre-update.json');
+if (!fs.existsSync(backupPath) || map.objects.length <= 3300) {
+  fs.copyFileSync(path.join(DATA, 'map.json'), backupPath);
+  console.log('Backed up map.json -> map.backup-pre-update.json');
+} else {
+  console.log('Kept existing map.backup-pre-update.json (current map.json is not a clean base).');
+}
 
 const terrain = Buffer.from(map.terrain, 'base64'); // Uint8Array w*h
 const W = map.width, H = map.height;
@@ -106,7 +158,10 @@ const recipeKeyOf = (cls: string, r: any) => {
     case 'potions': return r.output;
     case 'seeds': return r.seed;
     case 'gemCuts': return r.uncut;
-    default: return JSON.stringify(r); // fletchables, craftables, etc.
+    // craftables keyed by output so the post-merge schema-sanitize (which nulls
+    // some .station values) can't make a re-run treat them as new (idempotency).
+    case 'craftables': return r.output;
+    default: return JSON.stringify(r); // fletchables, etc.
   }
 };
 
@@ -150,6 +205,10 @@ function placeObj(type: string, x: number, y: number, label: string) {
 
 function addNpcSpawn(id: string, x: number, y: number, label: string) {
   if (!npcs[id]) { skip(`${label}: spawn '${id}' has no npc def`); return; }
+  // idempotent: don't add an identical spawn twice (guards against double-merge)
+  if (spawns.npcSpawns.some((s: any) => s.id === id && s.x === x && s.y === y)) {
+    skip(`${label}: spawn '${id}' at (${x},${y}) already present`); return;
+  }
   spawns.npcSpawns.push({ id, x, y });
   bump('npcSpawns');
 }
@@ -186,17 +245,28 @@ for (const [name, frag] of Object.entries(frags)) {
   }
 }
 
-// ---------- pass 2: map edits (terrain pads, map objects, spawns) ----------
+// ---------- pass 2: map edits (base pad -> fragment pads -> objects -> spawns) ----------
 for (const [name, frag] of Object.entries(frags)) {
   const [ox, oy] = ORIGINS[name];
+  // 1) clean base pad of DIRT under the FULL footprint, so any rock/snow/swamp
+  //    imperfection beneath the town is covered before anything else lands.
+  const [fw, fh] = FOOTPRINTS[name] ?? [0, 0];
+  if (fw && fh) paintPad(ox, oy, { dx: 0, dy: 0, w: fw, h: fh, code: DIRT });
+  // 2) the fragment's own designed terrain (paths, floors, water features, etc.)
   for (const p of frag.terrainPads ?? []) paintPad(ox, oy, p);
+  // 3) objects (skip-on-collision) and 4) spawns
   for (const m of frag.mapObjects ?? []) placeObj(m.type, ox + m.dx, oy + m.dy, name);
   for (const s of frag.spawns ?? []) addNpcSpawn(s.id, ox + s.dx, oy + s.dy, name);
 }
 
-// ---------- pass 3: Cairnchime mining town (authored here, origin 170,60) ----------
+// ---------- pass 3: Cairnchime mining town (authored here) ----------
+// Re-vetted inland origin (scan-origins.mjs): grass clearing at 115,162, well
+// clear of ocean/cave/lava and >=18 from every hub. It brings its own ROCK pit
+// walls, so it sits on grass. 28x28 footprint (dx 0-27, dy 0-27).
 {
-  const ox = 170, oy = 60;
+  const ox = 115, oy = 162;
+  // clean base pad under the FULL 28x28 footprint first (covers any imperfection)
+  paintPad(ox, oy, { dx: 0, dy: 0, w: 28, h: 28, code: DIRT });
   // town pad: dirt 14x10 at dx 0-13, dy 0-9
   paintPad(ox, oy, { dx: 0, dy: 0, w: 14, h: 10, code: DIRT });
   // path lanes through town: one horizontal, one vertical down into the pits
@@ -248,17 +318,26 @@ for (const [name, frag] of Object.entries(frags)) {
 }
 
 // ---------- pass 4: world density pits ----------
+// Re-vetted on the restored map:
+//  * Near-spawn pit (14-20,60-64): still good empty land next to the Swamp Mine
+//    hub; the tiles are SWAMP, so we paint a small DIRT pad under them first so
+//    the rocks sit on clean ground (2 stray tiles there get skip-on-collision).
+//  * Near-Stonewatch pit: the old 276-280,190-192 spot sat ON the Stonewatch
+//    garrison WALL tiles, so it's moved to a clean grass clearing at 257-261,
+//    164-166 (~13 chebyshev from the Stonewatch hub), with a DIRT pad.
 {
   const L = 'density-pits';
-  // near spawn
+  // near spawn — DIRT pad under the 7x5 swamp pit, then the rocks
+  paintPad(14, 60, { dx: 0, dy: 0, w: 7, h: 5, code: DIRT });
   for (const [x, y] of [[14, 60], [16, 60], [14, 62], [16, 62]]) placeObj('rocks_copper', x, y, L);
   for (const [x, y] of [[18, 60], [18, 62], [20, 60]]) placeObj('rocks_tin', x, y, L);
   for (const [x, y] of [[14, 64], [16, 64]]) placeObj('rocks_iron', x, y, L);
-  // near Stonewatch
-  for (const [x, y] of [[276, 190], [278, 190]]) placeObj('rocks_iron', x, y, L);
-  for (const [x, y] of [[276, 192], [278, 192]]) placeObj('rocks_coal', x, y, L);
-  placeObj('rocks_gold', 280, 190, L);
-  placeObj('rocks_silver', 280, 192, L);
+  // near Stonewatch — DIRT pad under the relocated 5x3 pit, then the rocks
+  paintPad(257, 164, { dx: 0, dy: 0, w: 5, h: 3, code: DIRT });
+  for (const [x, y] of [[257, 164], [259, 164]]) placeObj('rocks_iron', x, y, L);
+  for (const [x, y] of [[257, 166], [259, 166]]) placeObj('rocks_coal', x, y, L);
+  placeObj('rocks_gold', 261, 164, L);
+  placeObj('rocks_silver', 261, 166, L);
 }
 
 // ---------- schema sanitize (current shared/schema.ts; sharedEdits may relax later) ----------

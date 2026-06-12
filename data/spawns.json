@@ -772,598 +772,598 @@
     },
     {
       "id": "market_crowd_thug",
-      "x": 90,
-      "y": 166
+      "x": 288,
+      "y": 40
     },
     {
       "id": "market_crowd_thug",
-      "x": 92,
-      "y": 166
+      "x": 290,
+      "y": 40
     },
     {
       "id": "market_crowd_thug",
-      "x": 94,
-      "y": 167
+      "x": 292,
+      "y": 41
     },
     {
       "id": "silk_merchant",
-      "x": 90,
-      "y": 164
+      "x": 288,
+      "y": 38
     },
     {
       "id": "guild_treasurer",
-      "x": 91,
-      "y": 169
+      "x": 289,
+      "y": 43
     },
     {
       "id": "gilded_noble",
-      "x": 93,
-      "y": 170
+      "x": 291,
+      "y": 44
     },
     {
       "id": "qv_thieving_master",
-      "x": 96,
-      "y": 163
+      "x": 294,
+      "y": 37
     },
     {
       "id": "qv_agility_master",
-      "x": 82,
-      "y": 165
+      "x": 280,
+      "y": 39
     },
     {
       "id": "qv_hunter_master",
-      "x": 76,
-      "y": 179
+      "x": 274,
+      "y": 53
     },
     {
       "id": "qv_construction_master",
-      "x": 89,
-      "y": 179
+      "x": 287,
+      "y": 53
     },
     {
       "id": "qv_general_clerk",
-      "x": 86,
-      "y": 176
+      "x": 284,
+      "y": 50
     },
     {
       "id": "qv_banker",
-      "x": 86,
-      "y": 173
+      "x": 284,
+      "y": 47
     },
     {
       "id": "harbourmaster_sella",
-      "x": 145,
-      "y": 251
-    },
-    {
-      "id": "tackle_keeper_orin",
-      "x": 140,
-      "y": 246
-    },
-    {
-      "id": "tide_token_broker_vey",
-      "x": 144,
-      "y": 250
-    },
-    {
-      "id": "galley_cook_maren",
-      "x": 151,
-      "y": 246
-    },
-    {
-      "id": "fishmonger_pell",
-      "x": 146,
-      "y": 248
-    },
-    {
-      "id": "lighthouse_keeper_brann",
-      "x": 137,
-      "y": 256
-    },
-    {
-      "id": "warden_brisa",
-      "x": 155,
-      "y": 220
-    },
-    {
-      "id": "apothecary_vell",
-      "x": 155,
-      "y": 214
-    },
-    {
-      "id": "master_sustainer_oak",
-      "x": 163,
-      "y": 210
-    },
-    {
-      "id": "keeper_thistle",
-      "x": 165,
-      "y": 204
-    },
-    {
-      "id": "blight_warden_mara",
-      "x": 176,
+      "x": 243,
       "y": 205
     },
     {
+      "id": "tackle_keeper_orin",
+      "x": 238,
+      "y": 200
+    },
+    {
+      "id": "tide_token_broker_vey",
+      "x": 242,
+      "y": 204
+    },
+    {
+      "id": "galley_cook_maren",
+      "x": 249,
+      "y": 200
+    },
+    {
+      "id": "fishmonger_pell",
+      "x": 244,
+      "y": 202
+    },
+    {
+      "id": "lighthouse_keeper_brann",
+      "x": 235,
+      "y": 210
+    },
+    {
+      "id": "warden_brisa",
+      "x": 13,
+      "y": 150
+    },
+    {
+      "id": "apothecary_vell",
+      "x": 13,
+      "y": 144
+    },
+    {
+      "id": "master_sustainer_oak",
+      "x": 21,
+      "y": 140
+    },
+    {
+      "id": "keeper_thistle",
+      "x": 23,
+      "y": 134
+    },
+    {
+      "id": "blight_warden_mara",
+      "x": 34,
+      "y": 135
+    },
+    {
       "id": "resonne_runecraft_tutor",
-      "x": 60,
-      "y": 158
+      "x": 208,
+      "y": 67
     },
     {
       "id": "resonne_archcantor",
-      "x": 66,
-      "y": 156
+      "x": 214,
+      "y": 65
     },
     {
       "id": "resonne_quartermaster",
-      "x": 68,
-      "y": 162
+      "x": 216,
+      "y": 71
     },
     {
       "id": "resonne_magic_clerk",
-      "x": 64,
-      "y": 162
+      "x": 212,
+      "y": 71
     },
     {
       "id": "resonne_mill_keeper",
-      "x": 66,
-      "y": 169
+      "x": 214,
+      "y": 78
     },
     {
       "id": "drillmaster_concord",
-      "x": 160,
-      "y": 109
+      "x": 213,
+      "y": 190
     },
     {
       "id": "hold_infirmarian",
-      "x": 167,
-      "y": 108
+      "x": 220,
+      "y": 189
     },
     {
       "id": "quartermaster_bell",
-      "x": 166,
-      "y": 121
+      "x": 219,
+      "y": 202
     },
     {
       "id": "valour_steward",
-      "x": 170,
-      "y": 121
+      "x": 223,
+      "y": 202
     },
     {
       "id": "sparring_recruit",
-      "x": 151,
-      "y": 112
+      "x": 204,
+      "y": 193
     },
     {
       "id": "sparring_recruit",
-      "x": 153,
-      "y": 112
+      "x": 206,
+      "y": 193
     },
     {
       "id": "sparring_recruit",
-      "x": 155,
-      "y": 112
+      "x": 208,
+      "y": 193
     },
     {
       "id": "sparring_recruit",
-      "x": 157,
-      "y": 112
+      "x": 210,
+      "y": 193
     },
     {
       "id": "sparring_recruit",
-      "x": 151,
-      "y": 114
+      "x": 204,
+      "y": 195
     },
     {
       "id": "sparring_recruit",
-      "x": 153,
-      "y": 114
+      "x": 206,
+      "y": 195
     },
     {
       "id": "sparring_recruit",
-      "x": 155,
-      "y": 114
+      "x": 208,
+      "y": 195
     },
     {
       "id": "sparring_recruit",
-      "x": 157,
-      "y": 114
+      "x": 210,
+      "y": 195
     },
     {
       "id": "sparring_recruit",
-      "x": 152,
-      "y": 116
+      "x": 205,
+      "y": 197
     },
     {
       "id": "sparring_recruit",
-      "x": 156,
-      "y": 116
+      "x": 209,
+      "y": 197
     },
     {
       "id": "sparring_veteran",
-      "x": 161,
-      "y": 112
+      "x": 214,
+      "y": 193
     },
     {
       "id": "sparring_veteran",
-      "x": 163,
-      "y": 112
+      "x": 216,
+      "y": 193
     },
     {
       "id": "sparring_veteran",
-      "x": 165,
-      "y": 112
+      "x": 218,
+      "y": 193
     },
     {
       "id": "sparring_veteran",
-      "x": 167,
-      "y": 112
+      "x": 220,
+      "y": 193
     },
     {
       "id": "sparring_veteran",
-      "x": 161,
-      "y": 114
+      "x": 214,
+      "y": 195
     },
     {
       "id": "sparring_veteran",
-      "x": 163,
-      "y": 114
+      "x": 216,
+      "y": 195
     },
     {
       "id": "sparring_veteran",
-      "x": 165,
-      "y": 114
+      "x": 218,
+      "y": 195
     },
     {
       "id": "sparring_veteran",
-      "x": 167,
-      "y": 114
+      "x": 220,
+      "y": 195
     },
     {
       "id": "sparring_champion",
-      "x": 172,
-      "y": 112
+      "x": 225,
+      "y": 193
     },
     {
       "id": "sparring_champion",
-      "x": 175,
-      "y": 112
+      "x": 228,
+      "y": 193
     },
     {
       "id": "sparring_champion",
-      "x": 172,
-      "y": 115
+      "x": 225,
+      "y": 196
     },
     {
       "id": "sparring_champion",
-      "x": 175,
-      "y": 115
+      "x": 228,
+      "y": 196
     },
     {
       "id": "abbot_threnody",
-      "x": 268,
-      "y": 238
+      "x": 287,
+      "y": 140
     },
     {
       "id": "sister_plainsong",
-      "x": 252,
-      "y": 234
+      "x": 271,
+      "y": 136
     },
     {
       "id": "cantor_veil",
-      "x": 262,
-      "y": 243
+      "x": 281,
+      "y": 145
     },
     {
       "id": "gravewail_hound",
-      "x": 254,
-      "y": 248
+      "x": 273,
+      "y": 150
     },
     {
       "id": "gravewail_hound",
-      "x": 255,
-      "y": 250
+      "x": 274,
+      "y": 152
     },
     {
       "id": "gravewail_hound",
-      "x": 254,
-      "y": 251
+      "x": 273,
+      "y": 153
     },
     {
       "id": "gravewail_hound",
-      "x": 256,
-      "y": 248
+      "x": 275,
+      "y": 150
     },
     {
       "id": "gravewail_hound",
-      "x": 257,
-      "y": 250
+      "x": 276,
+      "y": 152
     },
     {
       "id": "gravewail_hound",
-      "x": 256,
-      "y": 252
-    },
-    {
-      "id": "choir_ghast",
-      "x": 259,
-      "y": 248
-    },
-    {
-      "id": "choir_ghast",
-      "x": 260,
-      "y": 250
-    },
-    {
-      "id": "choir_ghast",
-      "x": 259,
-      "y": 251
-    },
-    {
-      "id": "choir_ghast",
-      "x": 261,
-      "y": 248
-    },
-    {
-      "id": "choir_ghast",
-      "x": 261,
-      "y": 251
-    },
-    {
-      "id": "choir_ghast",
-      "x": 262,
-      "y": 249
-    },
-    {
-      "id": "dirgewolf",
-      "x": 247,
-      "y": 253
-    },
-    {
-      "id": "dirgewolf",
-      "x": 248,
-      "y": 255
-    },
-    {
-      "id": "dirgewolf",
-      "x": 247,
-      "y": 257
-    },
-    {
-      "id": "dirgewolf",
-      "x": 249,
-      "y": 254
-    },
-    {
-      "id": "dirgewolf",
-      "x": 249,
-      "y": 256
-    },
-    {
-      "id": "dirgewolf",
-      "x": 248,
-      "y": 258
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 251,
-      "y": 253
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 252,
-      "y": 255
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 251,
-      "y": 257
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 253,
-      "y": 254
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 253,
-      "y": 256
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 252,
-      "y": 258
-    },
-    {
-      "id": "chordwyrm",
-      "x": 254,
-      "y": 253
-    },
-    {
-      "id": "chordwyrm",
-      "x": 255,
-      "y": 255
-    },
-    {
-      "id": "chordwyrm",
-      "x": 254,
-      "y": 257
-    },
-    {
-      "id": "chordwyrm",
-      "x": 255,
-      "y": 258
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 267,
-      "y": 253
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 269,
-      "y": 255
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 267,
-      "y": 256
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 270,
-      "y": 253
-    },
-    {
-      "id": "choir_warden",
-      "x": 271,
-      "y": 257
-    },
-    {
-      "id": "quillrook_range_master",
-      "x": 220,
-      "y": 42
-    },
-    {
-      "id": "quillrook_fletcher",
-      "x": 232,
-      "y": 45
-    },
-    {
-      "id": "quillrook_gunsmith",
-      "x": 235,
-      "y": 45
-    },
-    {
-      "id": "quillrook_quartermaster",
-      "x": 232,
-      "y": 49
-    },
-    {
-      "id": "echo_hare",
-      "x": 218,
-      "y": 54
-    },
-    {
-      "id": "echo_hare",
-      "x": 220,
-      "y": 56
-    },
-    {
-      "id": "echo_hare",
-      "x": 222,
-      "y": 54
-    },
-    {
-      "id": "echo_hare",
-      "x": 218,
-      "y": 58
-    },
-    {
-      "id": "echo_hare",
-      "x": 224,
-      "y": 54
-    },
-    {
-      "id": "echo_hare",
-      "x": 220,
-      "y": 58
-    },
-    {
-      "id": "range_rat",
-      "x": 223,
-      "y": 56
-    },
-    {
-      "id": "range_rat",
-      "x": 225,
-      "y": 58
-    },
-    {
-      "id": "range_rat",
-      "x": 226,
-      "y": 55
-    },
-    {
-      "id": "range_rat",
-      "x": 227,
-      "y": 57
-    },
-    {
-      "id": "range_rat",
-      "x": 222,
-      "y": 58
-    },
-    {
-      "id": "range_rat",
-      "x": 225,
-      "y": 54
-    },
-    {
-      "id": "smith_cantor_branna",
-      "x": 209,
-      "y": 161
-    },
-    {
-      "id": "ore_broker_halle",
-      "x": 209,
-      "y": 166
-    },
-    {
-      "id": "weaver_iseult",
-      "x": 189,
-      "y": 163
-    },
-    {
-      "id": "concord_tanner",
-      "x": 191,
-      "y": 165
-    },
-    {
-      "id": "stavewright_orlin",
-      "x": 201,
-      "y": 174
-    },
-    {
-      "id": "gemcutter_yael",
-      "x": 198,
+      "x": 275,
       "y": 154
     },
     {
+      "id": "choir_ghast",
+      "x": 278,
+      "y": 150
+    },
+    {
+      "id": "choir_ghast",
+      "x": 279,
+      "y": 152
+    },
+    {
+      "id": "choir_ghast",
+      "x": 278,
+      "y": 153
+    },
+    {
+      "id": "choir_ghast",
+      "x": 280,
+      "y": 150
+    },
+    {
+      "id": "choir_ghast",
+      "x": 280,
+      "y": 153
+    },
+    {
+      "id": "choir_ghast",
+      "x": 281,
+      "y": 151
+    },
+    {
+      "id": "dirgewolf",
+      "x": 266,
+      "y": 155
+    },
+    {
+      "id": "dirgewolf",
+      "x": 267,
+      "y": 157
+    },
+    {
+      "id": "dirgewolf",
+      "x": 266,
+      "y": 159
+    },
+    {
+      "id": "dirgewolf",
+      "x": 268,
+      "y": 156
+    },
+    {
+      "id": "dirgewolf",
+      "x": 268,
+      "y": 158
+    },
+    {
+      "id": "dirgewolf",
+      "x": 267,
+      "y": 160
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 270,
+      "y": 155
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 271,
+      "y": 157
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 270,
+      "y": 159
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 272,
+      "y": 156
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 272,
+      "y": 158
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 271,
+      "y": 160
+    },
+    {
+      "id": "chordwyrm",
+      "x": 273,
+      "y": 155
+    },
+    {
+      "id": "chordwyrm",
+      "x": 274,
+      "y": 157
+    },
+    {
+      "id": "chordwyrm",
+      "x": 273,
+      "y": 159
+    },
+    {
+      "id": "chordwyrm",
+      "x": 274,
+      "y": 160
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 286,
+      "y": 155
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 288,
+      "y": 157
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 286,
+      "y": 158
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 289,
+      "y": 155
+    },
+    {
+      "id": "choir_warden",
+      "x": 290,
+      "y": 159
+    },
+    {
+      "id": "quillrook_range_master",
+      "x": 164,
+      "y": 8
+    },
+    {
+      "id": "quillrook_fletcher",
+      "x": 176,
+      "y": 11
+    },
+    {
+      "id": "quillrook_gunsmith",
+      "x": 179,
+      "y": 11
+    },
+    {
+      "id": "quillrook_quartermaster",
+      "x": 176,
+      "y": 15
+    },
+    {
+      "id": "echo_hare",
+      "x": 162,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 164,
+      "y": 22
+    },
+    {
+      "id": "echo_hare",
+      "x": 166,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 162,
+      "y": 24
+    },
+    {
+      "id": "echo_hare",
+      "x": 168,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 164,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 167,
+      "y": 22
+    },
+    {
+      "id": "range_rat",
+      "x": 169,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 170,
+      "y": 21
+    },
+    {
+      "id": "range_rat",
+      "x": 171,
+      "y": 23
+    },
+    {
+      "id": "range_rat",
+      "x": 166,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 169,
+      "y": 20
+    },
+    {
+      "id": "smith_cantor_branna",
+      "x": 275,
+      "y": 26
+    },
+    {
+      "id": "ore_broker_halle",
+      "x": 275,
+      "y": 31
+    },
+    {
+      "id": "weaver_iseult",
+      "x": 255,
+      "y": 28
+    },
+    {
+      "id": "concord_tanner",
+      "x": 257,
+      "y": 30
+    },
+    {
+      "id": "stavewright_orlin",
+      "x": 267,
+      "y": 39
+    },
+    {
+      "id": "gemcutter_yael",
+      "x": 264,
+      "y": 19
+    },
+    {
       "id": "concord_quartermaster",
-      "x": 203,
-      "y": 170
+      "x": 269,
+      "y": 35
     },
     {
       "id": "banker",
-      "x": 200,
-      "y": 163
+      "x": 266,
+      "y": 28
     },
     {
       "id": "bole_the_feller",
-      "x": 64,
-      "y": 114
+      "x": 164,
+      "y": 185
     },
     {
       "id": "cinder_warden_ysolde",
-      "x": 68,
-      "y": 119
+      "x": 168,
+      "y": 190
     },
     {
       "id": "sawwright_tamsin",
-      "x": 62,
-      "y": 117
+      "x": 162,
+      "y": 188
     },
     {
       "id": "quill_the_coalman",
-      "x": 63,
-      "y": 123
+      "x": 163,
+      "y": 194
     },
     {
       "id": "banker",
-      "x": 178,
-      "y": 63
+      "x": 123,
+      "y": 165
     }
   ],
   "groundSpawns": [

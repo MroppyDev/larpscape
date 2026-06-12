@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "objBudget": 20,
+    "minGap": 19,
+    "maxOverlap": 143
+  },
+  "origins": {
+    "mining": [
+      115,
+      162
+    ],
+    "melee": [
+      203,
+      176
+    ],
+    "ranged": [
+      154,
+      1
+    ],
+    "magic": [
+      188,
+      59
+    ],
+    "woodcutting": [
+      160,
+      176
+    ],
+    "fishing": [
+      233,
+      189
+    ],
+    "smithing": [
+      251,
+      15
+    ],
+    "herblore": [
+      8,
+      130
+    ],
+    "prayer": [
+      264,
+      132
+    ],
+    "utility": [
+      268,
+      34
+    ]
+  },
+  "placed": {
+    "melee": {
+      "key": "melee",
+      "name": "Drummar's Hold",
+      "ox": 203,
+      "oy": 176,
+      "cx": 218,
+      "cy": 191,
+      "w": 30,
+      "h": 30,
+      "good": 1,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 0,
+      "jitter": 0.0005367507692426443
+    },
+    "smithing": {
+      "key": "smithing",
+      "name": "Forgekeep Concord",
+      "ox": 251,
+      "oy": 15,
+      "cx": 266,
+      "cy": 30,
+      "w": 30,
+      "h": 30,
+      "good": 0.6444444444444445,
+      "objs": 10,
+      "maxOv": 0,
+      "spread": 161,
+      "jitter": 0.41028202325105667
+    },
+    "magic": {
+      "key": "magic",
+      "name": "Resonne",
+      "ox": 188,
+      "oy": 59,
+      "cx": 204,
+      "cy": 75,
+      "w": 32,
+      "h": 32,
+      "good": 0,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 62,
+      "jitter": 0.2874697861261666
+    },
+    "herblore": {
+      "key": "herblore",
+      "name": "Verdancourt",
+      "ox": 8,
+      "oy": 130,
+      "cx": 23,
+      "cy": 144,
+      "w": 30,
+      "h": 28,
+      "good": 1,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 181,
+      "jitter": 0.9177077326457947
+    },
+    "fishing": {
+      "key": "fishing",
+      "name": "Saltsong Harbour",
+      "ox": 233,
+      "oy": 189,
+      "cx": 248,
+      "cy": 203,
+      "w": 30,
+      "h": 28,
+      "good": 0.9952380952380953,
+      "objs": 1,
+      "maxOv": 0,
+      "spread": 30,
+      "jitter": 0.18176713050343096
+    },
+    "prayer": {
+      "key": "prayer",
+      "name": "The Knell",
+      "ox": 264,
+      "oy": 132,
+      "cx": 279,
+      "cy": 147,
+      "w": 30,
+      "h": 30,
+      "good": 0.9933333333333333,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 56,
+      "jitter": 0.09149897540919483
+    },
+    "mining": {
+      "key": "mining",
+      "name": "Cairnchime",
+      "ox": 115,
+      "oy": 162,
+      "cx": 129,
+      "cy": 176,
+      "w": 28,
+      "h": 28,
+      "good": 1,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 89,
+      "jitter": 0.09641226544044912
+    },
+    "ranged": {
+      "key": "ranged",
+      "name": "Quillrook",
+      "ox": 154,
+      "oy": 1,
+      "cx": 168,
+      "cy": 14,
+      "w": 28,
+      "h": 26,
+      "good": 0.9162087912087912,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 61,
+      "jitter": 0.305606625508517
+    },
+    "woodcutting": {
+      "key": "woodcutting",
+      "name": "Resin Hollow",
+      "ox": 160,
+      "oy": 176,
+      "cx": 174,
+      "cy": 190,
+      "w": 28,
+      "h": 28,
+      "good": 1,
+      "objs": 20,
+      "maxOv": 0,
+      "spread": 44,
+      "jitter": 0.33487530145794153
+    },
+    "utility": {
+      "key": "utility",
+      "name": "Quaverside",
+      "ox": 268,
+      "oy": 34,
+      "cx": 283,
+      "cy": 49,
+      "w": 30,
+      "h": 30,
+      "good": 1,
+      "objs": 0,
+      "maxOv": 143,
+      "spread": 19,
+      "jitter": 0.958515833131969
+    }
+  }
+}

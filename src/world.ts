@@ -33,6 +33,18 @@ export const POIS: Poi[] = [
   { id: 'imber_spire', label: 'The Imber Spire', x: 270, y: 12 },
   { id: 'quiess_tower', label: 'The Quiess Tower', x: 288, y: 86 },
   { id: 'gullswreck_light', label: 'Gullswreck Light', x: 103, y: 246 },
+  // Content-update skill towns (scripts/merge-content-update.ts) — labels at each
+  // town centre (origin + footprint/2).
+  { id: 'cairnchime', label: 'Cairnchime', x: 129, y: 176 },
+  { id: 'drummars_hold', label: "Drummar's Hold", x: 218, y: 191 },
+  { id: 'quillrook', label: 'Quillrook', x: 168, y: 14 },
+  { id: 'resonne', label: 'Resonne', x: 204, y: 75 },
+  { id: 'resin_hollow', label: 'Resin Hollow', x: 174, y: 190 },
+  { id: 'saltsong_harbour', label: 'Saltsong Harbour', x: 248, y: 203 },
+  { id: 'forgekeep_concord', label: 'Forgekeep Concord', x: 266, y: 30 },
+  { id: 'verdancourt', label: 'Verdancourt', x: 23, y: 144 },
+  { id: 'the_knell', label: 'The Knell', x: 279, y: 147 },
+  { id: 'quaverside', label: 'Quaverside', x: 283, y: 49 },
 ];
 
 // terrain codes
