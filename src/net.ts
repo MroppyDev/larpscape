@@ -343,18 +343,23 @@ export async function reloadServerOwned() {
       }
     }
     if (Array.isArray(save.bank)) p.bank = save.bank;
-    if (typeof save.curHp === 'number') p.curHp = save.curHp;
-    if (typeof save.prayerPoints === 'number') p.prayerPoints = save.prayerPoints;
-    if (Array.isArray(save.activePrayers)) p.activePrayers = new Set(save.activePrayers);
-    if (typeof save.specEnergy === 'number') p.specEnergy = Math.max(0, Math.min(100, save.specEnergy));
+    // Live combat pools are pushed on the WS (npcHitYou/hpSync/specSync/prayerSync
+    // and intent echoes). The DB copy is only flushed periodically, so every combat
+    // swing's save_reload would snap HP/spec/prayer to a stale value mid-fight.
     if (save.slayerTask !== undefined) p.slayerTask = save.slayerTask ?? null;
     if (save.quests && typeof save.quests === 'object') p.quests = save.quests;
     if (save.collectionLog && typeof save.collectionLog === 'object') p.collectionLog = save.collectionLog;
     if (typeof save.slayerPoints === 'number') (p as { slayerPoints?: number }).slayerPoints = save.slayerPoints;
-    // Position is live client-side during a session (pos WS messages). The DB
-    // x/y is only flushed on disconnect — syncing it here would snap the player
-    // back to their login tile after every intent (thieve, gather, shop, …).
-    serverSaveCache = { ...save, x: p.x, y: p.y };
+    // Position + combat pools stay live during a session; only wealth/progress syncs.
+    serverSaveCache = {
+      ...save,
+      x: p.x,
+      y: p.y,
+      curHp: p.curHp,
+      specEnergy: p.specEnergy,
+      prayerPoints: p.prayerPoints,
+      activePrayers: [...p.activePrayers],
+    };
     saveGame();
     import('./game').then((g) => {
       g.events.onStatsChange?.();

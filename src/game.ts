@@ -645,22 +645,22 @@ export function netYouHit(msg: {
   });
 }
 
-// an NPC hit me — server owns HP; render splat from dmg, apply authoritative hp
+// an NPC hit me — server owns HP; splat shows the actual HP lost, not a client-only modifier
 export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string; hp?: number; maxHp?: number }) {
   const p = state.player;
   if (!p || p.dead) return;
   const n = npcBySid.get(msg.npc) ?? null;
-  let dmg = msg.dmg;
-  if (msg.fx) {
-    const mod = damageModifiers.get(msg.fx);
-    if (mod) dmg = mod(dmg, n);
-  }
-  // Server owns HP; always mirror authoritative hp when present.
+  const prevHp = p.curHp;
   if (typeof msg.hp === 'number') p.curHp = msg.hp;
-  else if (dmg > 0) p.curHp = Math.max(0, p.curHp - dmg);
+  else if (msg.dmg > 0) p.curHp = Math.max(0, p.curHp - msg.dmg);
   else return;
-  p.hitsplat = { dmg, until: performance.now() + 900 };
-  audio.sfx(dmg > 0 ? 'hit' : 'miss');
+  const splatDmg = Math.max(0, prevHp - p.curHp);
+  if (msg.fx && splatDmg > 0) {
+    const mod = damageModifiers.get(msg.fx);
+    if (mod) mod(splatDmg, n); // flavor messages only — HP already came from the server
+  }
+  p.hitsplat = { dmg: splatDmg, until: performance.now() + 900 };
+  audio.sfx(splatDmg > 0 ? 'hit' : 'miss');
   events.onStatsChange();
 }
 
