@@ -351,13 +351,10 @@ export async function reloadServerOwned() {
     if (save.quests && typeof save.quests === 'object') p.quests = save.quests;
     if (save.collectionLog && typeof save.collectionLog === 'object') p.collectionLog = save.collectionLog;
     if (typeof save.slayerPoints === 'number') (p as { slayerPoints?: number }).slayerPoints = save.slayerPoints;
-    if (typeof save.x === 'number' && typeof save.y === 'number') {
-      p.x = save.x;
-      p.y = save.y;
-      p.prevX = save.x;
-      p.prevY = save.y;
-    }
-    serverSaveCache = save;
+    // Position is live client-side during a session (pos WS messages). The DB
+    // x/y is only flushed on disconnect — syncing it here would snap the player
+    // back to their login tile after every intent (thieve, gather, shop, …).
+    serverSaveCache = { ...save, x: p.x, y: p.y };
     saveGame();
     import('./game').then((g) => {
       g.events.onStatsChange?.();
