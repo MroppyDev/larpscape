@@ -22,6 +22,12 @@ export const ICONS: Record<string, string> = {
     `<path d="M7 4 h10 v5 a5 5 0 0 1 -10 0 Z M7 5.5 H4.5 a3 3 0 0 0 3 4 M17 5.5 h2.5 a3 3 0 0 1 -3 4 M12 14 v3 M8.5 20.5 h7 M10 17 h4 l1 3.5 h-6 Z"
       stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
   ),
+  // speech bubble with chat dots — community / Discord
+  discord: I(
+    `<path d="M5 4 h14 a2 2 0 0 1 2 2 v8 a2 2 0 0 1 -2 2 H10 l-4 4 v-4 H5 a2 2 0 0 1 -2 -2 V6 a2 2 0 0 1 2 -2 Z"
+      stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+     <circle cx="9" cy="10" r="1.15" fill="currentColor"/><circle cx="12.5" cy="10" r="1.15" fill="currentColor"/><circle cx="16" cy="10" r="1.15" fill="currentColor"/>`
+  ),
   // open book — wiki / guide
   book: I(
     `<path d="M12 6 c-2 -1.6 -5 -2 -8 -1.6 V 19 c3 -.4 6 0 8 1.6 c2 -1.6 5 -2 8 -1.6 V 4.4 C17 4 14 4.4 12 6 Z M12 6 v14.6"
@@ -51,6 +57,13 @@ export const ICONS: Record<string, string> = {
   banner: I(
     `<path d="M6 3 v18 M6 4 h12 v8 H6 M18 4 l2.5 2 l-2.5 2"
       stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+  ),
+  // stamped coin — the Aldgate Exchange / trade (also in FEATURE_ICONS)
+  economy: I(
+    `<circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" fill="none"/>
+     <circle cx="12" cy="12" r="5.2" stroke="currentColor" stroke-width="1.2" fill="none" stroke-dasharray="2.5 2"/>
+     <path d="M12 8.8 v6.4 M9.8 10.4 c0 -1 1 -1.6 2.2 -1.6 s2.2 .6 2.2 1.5 c0 2.2 -4.4 1 -4.4 3.2 c0 1 1 1.6 2.2 1.6 s2.2 -.6 2.2 -1.6"
+      stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>`
   ),
 };
 

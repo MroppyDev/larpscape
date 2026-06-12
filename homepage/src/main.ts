@@ -39,6 +39,7 @@ const RAIL: Record<string, RailLink[]> = {
     { label: 'Forum', href: FORUM_URL, icon: 'quill', ext: true },
     { label: 'The Larpscape Wiki', href: WIKI_URL, icon: 'book', ext: true },
     { label: 'The Aldgate Exchange', href: TRADE_URL, icon: 'economy', ext: true },
+    { label: 'Join our Discord', href: '#discord', icon: 'discord' },
     { label: 'Guilds & trading', href: '#about', icon: 'banner' },
     { label: 'GitHub', href: GITHUB_URL, icon: 'code', ext: true },
   ],
@@ -53,7 +54,7 @@ for (const [listId, links] of Object.entries(RAIL)) {
   el<HTMLUListElement>(listId).innerHTML = links
     .map(
       (l) =>
-        `<li><a href="${l.href}"${l.ext ? ' class="ext"' : ''}>${ICONS[l.icon]}<span>${escapeHtml(l.label)}</span></a></li>`
+        `<li><a href="${l.href}"${l.ext ? ' class="ext"' : ''}>${ICONS[l.icon] ?? ''}<span>${escapeHtml(l.label)}</span></a></li>`
     )
     .join('');
 }

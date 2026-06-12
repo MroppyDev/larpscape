@@ -595,6 +595,33 @@ body.modal-open { overflow: hidden; }
   .modal, .modal-backdrop { animation: none; }
 }
 
+/* ------------------------------------------------------------- discord */
+.discord-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+  margin-top: 8px;
+}
+.discord-blurb { flex: 1 1 260px; min-width: 230px; }
+.discord-blurb p { font-size: 16.5px; margin: 0 0 12px; }
+.discord-note { font-style: italic; color: var(--ink-soft); font-size: 14.5px; }
+.discord-mark {
+  display: block;
+  width: 104px; height: 104px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 0 0 1px #0a0805, 0 0 0 3px var(--stone-dark), 0 0 0 4px #0a0805;
+}
+.discord-widget {
+  flex: 0 0 auto;
+  width: 350px; height: 500px;
+  max-width: 100%;
+  border-radius: 6px;
+  background: #1e2124;
+  box-shadow: 0 0 0 1px #0a0805, 0 0 0 3px var(--stone-dark), 0 0 0 4px #0a0805;
+}
+
 /* ------------------------------------------------------------- responsive */
 @media (max-width: 900px) {
   /* spec §5: single column — banner, count, CTAs, hiscores, news, nav boxes */
@@ -607,9 +634,10 @@ body.modal-open { overflow: hidden; }
   .hiscores-panel { order: 1; }
   .news-section { order: 2; }
   .features { order: 3; }
+  .discord-panel { order: 3; }
   .rail-box { order: 4; }
   .site-footer { margin-top: 30px; }
-  .cta-stack, #promo-slot, .rail-box, .welcome, .news-section, .hiscores-panel, .features { margin: 0; }
+  .cta-stack, #promo-slot, .rail-box, .welcome, .news-section, .hiscores-panel, .features, .discord-panel { margin: 0; }
   .shell { gap: 16px; }
 }
 
@@ -627,6 +655,7 @@ body.modal-open { overflow: hidden; }
   .card-band { flex: 0 0 auto; height: 72px; box-shadow: inset 0 -3px 8px rgba(0,0,0,.35); }
   .footer-cols { grid-template-columns: 1fr 1fr; }
   .banner-nav { font-size: 17px; gap: 2px 16px; }
+  .discord-widget { width: 100%; }
 }
 
 /* ------------------------------------------------------------- auth pages */
