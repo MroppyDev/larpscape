@@ -28,12 +28,20 @@
 // def id only — never coordinates — so relocation is a data move.
 
 import {
-  state, msg, addItem, addXp,
-  registerNpcAction, registerObjectAction, registerItemOnObject, onKill,
+  msg,
+  registerNpcAction, registerObjectAction, registerItemOnObject,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import {
+  questStage,
+  advanceQuestStage,
+  claimQuestReward,
+  scriptedGrant,
+  questMark,
+  auxCount,
+} from '../quest-sync';
 
 const GD4 = 'gd4_gathering_discord';
 const ACCORD = 'gd4_accord'; // bitmask, see below
@@ -52,12 +60,10 @@ const V_DEMAND = 2;
 const V_SIGNED = 4;
 const C_SIGNED = 8;
 
-function stage(): number { return state.player.quests[GD4] ?? 0; }
-function setStage(s: number) { state.player.quests[GD4] = s; }
-function accord(): number { return state.player.quests[ACCORD] ?? 0; }
-function setAccord(bits: number) { state.player.quests[ACCORD] = bits; }
-function bossSlain(): boolean { return (state.player.quests[BOSS] ?? 0) >= 1; }
-function prereqMet(): boolean { return (state.player.quests['gd3_sealed_wing'] ?? 0) >= 6; }
+function stage(): number { return questStage(GD4); }
+function accord(): number { return auxCount(ACCORD); }
+function bossSlain(): boolean { return auxCount(BOSS) >= 1; }
+function prereqMet(): boolean { return questStage('gd3_sealed_wing') >= 6; }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -122,12 +128,13 @@ registerNpcAction('slayer_master', 'Ask-about-the-breach', (_n: Npc) => {
         {
           label: 'I\'ll get you your one plan.',
           fn: () => {
-            setStage(1);
-            setAccord(0);
-            startDialogue([
-              ...say(BROGAN, 'Good. Ask them about the plan and nothing else — give either of them an opening and you\'ll be there until the next Measure.'),
-              ...say(BROGAN, 'When you\'ve got one piece of paper with two signatures and a plan somewhere on it, you go through that breach and you answer what\'s down there. Then you come back to me. Alive. It\'s in the ledger that way and I hate corrections.'),
-            ]);
+            void advanceQuestStage(GD4, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(BROGAN, 'Good. Ask them about the plan and nothing else — give either of them an opening and you\'ll be there until the next Measure.'),
+                ...say(BROGAN, 'When you\'ve got one piece of paper with two signatures and a plan somewhere on it, you go through that breach and you answer what\'s down there. Then you come back to me. Alive. It\'s in the ledger that way and I hate corrections.'),
+              ]);
+            });
           },
         },
         {
@@ -179,17 +186,17 @@ registerNpcAction('slayer_master', 'Ask-about-the-breach', (_n: Npc) => {
       ...say(BROGAN, '*Brogan takes the torn page and reads it the way a man reads a debt.* One bar. This is one bar of it. Mira looked at your fork-readings and went quiet, which Mira does not do. Flint\'s fizzle rates dropped to nothing the hour every waystone chimed — the Guild\'s instruments all agree and Flint hates that they agree.'),
       ...say(BROGAN, 'Calder wants it burned. Vesper says you can\'t burn a thing that\'s already left the room. For the first time in twenty-three years, I have no opinion to file. The slivers weren\'t waking up. They were being rehearsed.'),
     ], () => {
-      setStage(5);
-      addXp('Slayer', 1500);
-      addXp('Magic', 800);
-      addItem('coins', 1000);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(BROGAN, 'A thousand coins from the duchy, and the duchy got a bargain. Keep the page — I\'ve copied it, and I\'d rather the original was somewhere that moves.'),
-        ...say(BROGAN, '*He closes the old ledger. From the drawer he takes a new one, unbent, and writes a single line on the first page.* The Quiet Measure\'s over. Forty-two years, and it ends with a thank-you and a bow.'),
-        ...me('What\'s the name?'),
-        ...say(BROGAN, 'The only one on the list. For now.'),
-      ]);
+      void advanceQuestStage(GD4, 5).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(GD4, 5);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(BROGAN, 'A thousand coins from the duchy, and the duchy got a bargain. Keep the page — I\'ve copied it, and I\'d rather the original was somewhere that moves.'),
+          ...say(BROGAN, '*He closes the old ledger. From the drawer he takes a new one, unbent, and writes a single line on the first page.* The Quiet Measure\'s over. Forty-two years, and it ends with a thank-you and a bow.'),
+          ...me('What\'s the name?'),
+          ...say(BROGAN, 'The only one on the list. For now.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -208,22 +215,24 @@ registerNpcAction('slayer_master', 'Ask-about-the-breach', (_n: Npc) => {
 function tryHandWrit(wizard: string): boolean {
   const a = accord();
   if (!((a & V_SIGNED) && (a & C_SIGNED))) return false;
-  if (!addItem('joint_writ', 1)) {
-    startDialogue(say(wizard, 'The writ is drafted, signed, and witnessed by a kettle. It is also forty-one clauses, and you have nowhere to put it. Make room and come back.'));
-    return true;
-  }
-  setStage(2);
-  if (wizard === CALDER) {
-    startDialogue([
-      ...say(CALDER, 'There. Signed, sealed, and only slightly scorched. Forty-one clauses. Clauses one through thirty-seven establish that I was right; clause thirty-eight is the plan; the rest concern Vesper\'s handwriting.'),
-      ...say(CALDER, 'The plan, since you carried it: descend, find the thing keeping tempo, let it say its piece — ONE piece — and then end it. Tell Brogan the Spire considers the matter settled. Pre-emptively.'),
-    ]);
-  } else {
-    startDialogue([
-      ...say(VESPER, '*Vesper signs without looking, the way one signs for a delivery.* There. One plan, two signatures, forty-one clauses. Calder numbered them. Of course he numbered them.'),
-      ...say(VESPER, '*She presses the writ into your hands and her voice drops below the wind.* Go down. Let it finish its sentence. Then finish yours. And — listen on the way back up. The mine will tell you if you got it right.'),
-    ]);
-  }
+  void advanceQuestStage(GD4, 2).then((echo) => {
+    if (!echo.ok) {
+      startDialogue(say(wizard, 'The writ is drafted, signed, and witnessed by a kettle. It is also forty-one clauses, and you have nowhere to put it. Make room and come back.'));
+      return;
+    }
+    void scriptedGrant(GD4, 2);
+    if (wizard === CALDER) {
+      startDialogue([
+        ...say(CALDER, 'There. Signed, sealed, and only slightly scorched. Forty-one clauses. Clauses one through thirty-seven establish that I was right; clause thirty-eight is the plan; the rest concern Vesper\'s handwriting.'),
+        ...say(CALDER, 'The plan, since you carried it: descend, find the thing keeping tempo, let it say its piece — ONE piece — and then end it. Tell Brogan the Spire considers the matter settled. Pre-emptively.'),
+      ]);
+    } else {
+      startDialogue([
+        ...say(VESPER, '*Vesper signs without looking, the way one signs for a delivery.* There. One plan, two signatures, forty-one clauses. Calder numbered them. Of course he numbered them.'),
+        ...say(VESPER, '*She presses the writ into your hands and her voice drops below the wind.* Go down. Let it finish its sentence. Then finish yours. And — listen on the way back up. The mine will tell you if you got it right.'),
+      ]);
+    }
+  });
   return true;
 }
 
@@ -238,8 +247,8 @@ registerNpcAction('imber_wizard', 'Ask-about-the-plan', (_n: Npc) => {
     const a = accord();
     if ((a & V_DEMAND) && !(a & C_SIGNED)) {
       // Deliver Vesper's demand — Calder concedes (and states his own if he hasn't).
-      const next = a | C_SIGNED | C_DEMAND;
-      setAccord(next);
+      void questMark('gd4_calder_signed');
+      if (!(a & C_DEMAND)) void questMark('gd4_calder_demand');
       startDialogue([
         ...me('Vesper\'s condition: nothing burns until it has been heard. She wants your signature on that.'),
         ...say(CALDER, '"Heard." We are conducting a siege and she wants a recital. *He stares into the brazier for a long moment. The brazier, sensibly, says nothing.* ...And yet. The fizzle rates, the waystones, the tempo. A thing with a tempo is saying something. Fine. FINE. I concede it — in writing, before I recover my senses.'),
@@ -253,7 +262,7 @@ registerNpcAction('imber_wizard', 'Ask-about-the-plan', (_n: Npc) => {
       return 'done';
     }
     if (!(a & C_DEMAND)) {
-      setAccord(a | C_DEMAND);
+      void questMark('gd4_calder_demand');
       startDialogue([
         ...me('Brogan needs one signed plan from you and Vesper before anyone goes through the breach.'),
         ...say(CALDER, 'Then this is mercifully simple, because there is only one plan. Whatever is gathering the slivers under that mine gets destroyed. Burned, broken, and the ashes raked for sharps. Imber doctrine: a wrong note left ringing only gets louder.'),
@@ -286,8 +295,8 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-plan', (_n: Npc) => {
     const a = accord();
     if ((a & C_DEMAND) && !(a & V_SIGNED)) {
       // Deliver Calder's demand — Vesper concedes (and states her own if she hasn't).
-      const next = a | V_SIGNED | V_DEMAND;
-      setAccord(next);
+      void questMark('gd4_vesper_signed');
+      if (!(a & V_DEMAND)) void questMark('gd4_vesper_demand');
       startDialogue([
         ...me('Calder\'s condition: you concede, in writing, that the source must be destroyed.'),
         ...say(VESPER, '*A long quiet. Somewhere above, the tower\'s chimes shift without wind.* He is not wrong. That is the worst of Calder — he is so rarely wrong, only early. Whatever is gathering the slivers cannot be allowed to keep them. I will sign his clause.'),
@@ -301,7 +310,7 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-plan', (_n: Npc) => {
       return 'done';
     }
     if (!(a & V_DEMAND)) {
-      setAccord(a | V_DEMAND);
+      void questMark('gd4_vesper_demand');
       startDialogue([
         ...me('Brogan needs one signed plan from you and Calder before anyone goes through the breach.'),
         ...say(VESPER, '*She sets down her pen as if it were sleeping.* Then he will want fire, and Brogan will want signatures, and nobody will have asked the obvious question: what is it trying to finish? The slivers aren\'t waking. They are being gathered, the way a choir is gathered. Someone down there is taking attendance.'),
@@ -363,21 +372,12 @@ registerItemOnObject('tuning_fork', 'resonance_stand', (_slot, _o) => {
     ...me('Brogan\'s writ says you get heard, and then you get destroyed. You\'ve been heard.'),
     ...say(CONDUCTOR, 'A writ! With clauses! How the Measure flatters itself. No — I don\'t fight, friend. I keep time. My copyist handles... corrections.'),
   ], () => {
-    setStage(3);
-    msg('Across the gallery, something of slate and stretched wire sets down its work — and turns to you.', 'level');
-    msg('The Dissonant has noticed you. It is making corrections.');
+    void advanceQuestStage(GD4, 3).then((echo) => {
+      if (!echo.ok) return;
+      msg('Across the gallery, something of slate and stretched wire sets down its work — and turns to you.', 'level');
+      msg('The Dissonant has noticed you. It is making corrections.');
+    });
   });
-});
-
-// ============================================================
-// Kill tracking — server youKilled event (killer gets the credit).
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player || defId !== 'the_dissonant') return;
-  if (stage() !== 3 || bossSlain()) return;
-  state.player.quests[BOSS] = 1;
-  msg('The Dissonant collapses into slate and slack wire. Its last sound is, at last, a rest. The lectern by the stand is unguarded.', 'level');
 });
 
 // ============================================================
@@ -399,19 +399,21 @@ registerObjectAction('conductors_lectern', 'Search', () => {
     return 'done';
   }
   // Stage 3, boss dead.
-  if (!addItem('torn_score_page', 1)) {
-    msg('There is a single torn page on the lectern — and no room in your pack to carry history. Make space.');
-    return 'done';
-  }
   startDialogue([
     ...me('*The Conductor stands beyond the lectern, already half in shadow. He looks at the wreck of his copyist the way one looks at a broken pen.*'),
     ...say(CONDUCTOR, 'Well corrected. I shall have to write the next one a better ending — that is, after all, the whole of my work.'),
     ...say(CONDUCTOR, '*He bows — unhurried, precise, the bow of a performer who knows the hall will wait.* You\'ve an ear. We\'ll want it, when the Measure ends.'),
     ...me('*He steps back into the rock — not through a crack, not into a tunnel. Into the stone, the way one walks through a door. The stone does not remark on it.*'),
   ], () => {
-    setStage(4);
-    msg('You take the torn score page from the lectern. One bar. It is one bar of something vast.');
-    msg('Far above and all across Cantorne, every waystone chimes — once, together, perfectly in time.', 'level');
+    void advanceQuestStage(GD4, 4).then((echo) => {
+      if (!echo.ok) {
+        msg('There is a single torn page on the lectern — and no room in your pack to carry history. Make space.');
+        return;
+      }
+      void scriptedGrant(GD4, 4);
+      msg('You take the torn score page from the lectern. One bar. It is one bar of something vast.');
+      msg('Far above and all across Cantorne, every waystone chimes — once, together, perfectly in time.', 'level');
+    });
   });
   return 'done';
 });

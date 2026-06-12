@@ -5,13 +5,14 @@ import {
   state, msg, events, startDialogue, showOptions, requestMake, startAction,
   registerObjectAction, registerNpcAction, registerItemAction,
   registerItemOnObject, registerItemOnItem, registerTickHook,
-  addItem, removeItem, removeFromSlot, invCount, hasItem, hasTool, freeSlots,
-  addXp, level, openShop, openBank, rechargePrayer, sendInteract, sendIntent,
+  invCount, hasItem, hasTool, freeSlots,
+  level, openShop, openBank, rechargePrayer, sendInteract, sendIntent,
+  requestIntent,
   Npc, MakeOption,
 } from './game';
 import {
   ITEMS, NPCS, SKILL_OBJS, COOKABLES, SMELTABLES, SMITHABLES, FLETCHABLES,
-  CRAFTABLES, HERBS, POTIONS, SEEDS, SLAYER_TARGETS, CONSTRUCTION_BUILDS,
+  CRAFTABLES, HERBS, POTIONS, SEEDS, CONSTRUCTION_BUILDS,
   SkillName,
 } from './defs';
 import { objects, objectAt, key, addObject, removeObject, terrain, T, blocked, WorldObject } from './world';
@@ -272,17 +273,23 @@ registerObjectAction('anvil', 'Smith', (o) => {
     if (!id || qty <= 0) return;
     const s = SMITHABLES.find((ss) => ss.output === id)!;
     let left = qty;
+    let busy = false;
     startObjJob(o, () => {
       if (left <= 0) return false;
       if (!hasTool('hammer')) { msg('You need a hammer to work the metal with.'); return false; }
       if (level('Smithing') < s.level) { msg(`You need a Smithing level of ${s.level} to make this.`); return false; }
       if (!hasItem(s.bar, s.bars)) { msg(`You don't have enough ${lowName(s.bar)}s.`); return false; }
-      removeItem(s.bar, s.bars);
-      addItem(s.output, s.outputQty ?? 1);
-      addXp('Smithing', s.xp);
+      if (busy) return true;
+      // Server-authoritative: validates hammer + level + bars, consumes bars,
+      // grants the smithed item + Smithing xp.
+      busy = true;
       audio.sfx('smith');
-      msg(`You hammer the metal into ${aOrAnWord(lowName(s.output))} ${lowName(s.output)}.`);
       left--;
+      void requestIntent('produce', { recipe: 'smith', output: s.output }).then((echo) => {
+        busy = false;
+        if (!echo.ok) { left = 0; return; }
+        msg(`You hammer the metal into ${aOrAnWord(lowName(s.output))} ${lowName(s.output)}.`);
+      });
       return left > 0;
     });
   });
@@ -292,18 +299,21 @@ registerObjectAction('anvil', 'Smith', (o) => {
 // ============================================================================
 // FLETCHING
 // ============================================================================
-function doFletch(f: (typeof FLETCHABLES)[number], qty: number) {
+async function doFletch(f: (typeof FLETCHABLES)[number], qty: number) {
+  let made = 0;
   for (let n = 0; n < qty; n++) {
-    if (level('Fletching') < f.level) { msg(`You need a Fletching level of ${f.level} to make this.`); return; }
+    if (level('Fletching') < f.level) { msg(`You need a Fletching level of ${f.level} to make this.`); break; }
     if (!f.inputs.every((i) => hasItem(i.item, i.qty))) {
       if (n === 0) msg("You don't have the materials to make that.");
-      return;
+      break;
     }
-    for (const i of f.inputs) removeItem(i.item, i.qty);
-    addItem(f.output, f.outputQty ?? 1);
-    addXp('Fletching', f.xp);
+    // Server-authoritative: validates level + inputs, consumes them, grants the
+    // fletched output + Fletching xp.
+    const echo = await requestIntent('produce', { recipe: 'fletch', output: f.output });
+    if (!echo.ok) break;
+    made++;
   }
-  msg(`You carefully craft ${lowName(f.output)}${(f.outputQty ?? 1) > 1 ? 's' : ''}.`);
+  if (made > 0) msg(`You carefully craft ${lowName(f.output)}${(f.outputQty ?? 1) > 1 ? 's' : ''}.`);
 }
 
 // knife on logs -> arrow shafts or an unstrung shortbow
@@ -361,15 +371,21 @@ registerObjectAction('spinning_wheel', 'Spin', (o) => {
     if (!id || qty <= 0) return;
     const c = choices.find((cc) => cc.output === id)!;
     let left = qty;
+    let busy = false;
     startObjJob(o, () => {
       if (left <= 0) return false;
       if (level('Crafting') < c.level) { msg(`You need a Crafting level of ${c.level} to spin this.`); return false; }
       if (!c.inputs.every((i) => hasItem(i.item, i.qty))) { msg(`You have run out of ${lowName(c.inputs[0].item)}.`); return false; }
-      for (const i of c.inputs) removeItem(i.item, i.qty);
-      addItem(c.output);
-      addXp('Crafting', c.xp);
-      msg(`You spin the ${lowName(c.inputs[0].item)} into ${aOrAnWord(lowName(c.output))} ${lowName(c.output)}.`);
+      if (busy) return true;
+      // Server-authoritative: validates level + inputs, consumes them, grants the
+      // spun output + Crafting xp.
+      busy = true;
       left--;
+      void requestIntent('produce', { recipe: 'craft', output: c.output }).then((echo) => {
+        busy = false;
+        if (!echo.ok) { left = 0; return; }
+        msg(`You spin the ${lowName(c.inputs[0].item)} into ${aOrAnWord(lowName(c.output))} ${lowName(c.output)}.`);
+      });
       return left > 0;
     });
   });
@@ -387,13 +403,15 @@ registerNpcAction('tanner', 'Talk-to', () => {
 registerNpcAction('tanner', 'Tan-hides', () => {
   const hides = invCount('cowhide');
   if (hides === 0) { msg("You don't have any cowhides to tan."); return 'done'; }
-  const n = Math.min(hides, invCount('coins'));
-  if (n === 0) { msg('The tanner charges one coin per hide, and you have no coins.'); return 'done'; }
-  removeItem('cowhide', n);
-  removeItem('coins', n);
-  addItem('leather', n);
-  audio.sfx('coins');
-  msg(`The tanner tans ${n} cowhide${n > 1 ? 's' : ''} into leather for you.`);
+  if (invCount('coins') === 0) { msg('The tanner charges one coin per hide, and you have no coins.'); return 'done'; }
+  // Server-authoritative: the server computes the affordable batch, debits coins +
+  // hides, and grants the leather. Wealth-shaped, so it is gated by ECONOMY_FROZEN.
+  void requestIntent('tan').then((echo) => {
+    if (!echo.ok) return;
+    const n = echo.granted?.find((g) => g.id === 'leather')?.qty ?? 0;
+    audio.sfx('coins');
+    msg(`The tanner tans ${n} cowhide${n > 1 ? 's' : ''} into leather for you.`);
+  });
   return 'done';
 });
 
@@ -405,7 +423,7 @@ registerItemOnItem('needle', 'leather', () => {
     id: c.output, label: itemName(c.output), icon: c.output,
     disabled: level('Crafting') < c.level ? `Requires Crafting level ${c.level}.` : undefined,
   }));
-  requestMake(opts, (id, qty) => {
+  requestMake(opts, async (id, qty) => {
     if (!id || qty <= 0) return;
     const c = choices.find((cc) => cc.output === id)!;
     for (let n = 0; n < qty; n++) {
@@ -414,10 +432,11 @@ registerItemOnItem('needle', 'leather', () => {
         if (n === 0) msg("You don't have the materials to make that.");
         return;
       }
-      for (const i of c.inputs) removeItem(i.item, i.qty);
-      removeItem('thread', 1);
-      addItem(c.output);
-      addXp('Crafting', c.xp);
+      // Server-authoritative: the leather craft recipe (station===null) folds the
+      // thread into its inputs server-side; it consumes leather + thread, grants
+      // the stitched item + Crafting xp.
+      const echo = await requestIntent('produce', { recipe: 'craft', output: c.output });
+      if (!echo.ok) return;
       msg(`You stitch the leather into ${aOrAnWord(lowName(c.output))} ${lowName(c.output)}.`);
     }
   });
@@ -426,9 +445,12 @@ registerItemOnItem('needle', 'leather', () => {
 // Flax picking (feeds bowstring crafting)
 registerObjectAction('flax_plant', 'Pick', () => {
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
-  addItem('flax');
-  audio.sfx('plant');
-  msg('You pick some flax.');
+  // Server-authoritative single-item gather.
+  void requestIntent('pick', { what: 'flax' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('plant');
+    msg('You pick some flax.');
+  });
   return 'done';
 });
 
@@ -436,51 +458,58 @@ registerObjectAction('flax_plant', 'Pick', () => {
 // HERBLORE
 // ============================================================================
 for (const h of HERBS) {
-  registerItemAction(h.grimy, 'Clean', (slot) => {
+  registerItemAction(h.grimy, 'Clean', () => {
     if (level('Herblore') < h.level) { msg(`You need a Herblore level of ${h.level} to clean this herb.`); return; }
-    removeFromSlot(slot);
-    addItem(h.clean);
-    addXp('Herblore', h.xp);
-    msg(`You clean the dirt from the ${lowName(h.clean)}.`);
+    // Server-authoritative: the 'clean' recipe class consumes the grimy herb and
+    // grants the clean herb + Herblore xp.
+    void requestIntent('produce', { recipe: 'clean', output: h.clean }).then((echo) => {
+      if (!echo.ok) return;
+      msg(`You clean the dirt from the ${lowName(h.clean)}.`);
+    });
   });
 }
 
 for (const p of POTIONS) {
-  registerItemOnItem('vial_of_water', p.herb, (vialSlot, herbSlot) => {
+  registerItemOnItem('vial_of_water', p.herb, () => {
     if (level('Herblore') < p.level) { msg(`You need a Herblore level of ${p.level} to brew this potion.`); return; }
     if (!hasItem(p.secondary)) { msg(`You need ${aOrAnWord(lowName(p.secondary))} ${lowName(p.secondary)} to finish this potion.`); return; }
-    removeFromSlot(vialSlot);
-    removeFromSlot(herbSlot);
-    removeItem(p.secondary, 1);
-    addItem(p.output);
-    addXp('Herblore', p.xp);
-    msg(`You mix the ${lowName(p.herb)} and ${lowName(p.secondary)} into ${aOrAnWord(lowName(p.output))} ${lowName(p.output)}.`);
+    // Server-authoritative: the 'potion' recipe consumes vial + herb + secondary
+    // and grants the potion + Herblore xp.
+    void requestIntent('produce', { recipe: 'potion', output: p.output }).then((echo) => {
+      if (!echo.ok) return;
+      msg(`You mix the ${lowName(p.herb)} and ${lowName(p.secondary)} into ${aOrAnWord(lowName(p.output))} ${lowName(p.output)}.`);
+    });
   });
 }
 
-registerItemAction('attack_potion', 'Drink', (slot) => {
-  removeFromSlot(slot);
-  audio.sfx('eat');
-  msg('You drink the attack potion. You feel stronger.');
+registerItemAction('attack_potion', 'Drink', () => {
+  // Server-authoritative: the 'consume' intent removes the potion (flavor-only).
+  void requestIntent('consume', { item: 'attack_potion' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg('You drink the attack potion. You feel stronger.');
+  });
 });
-registerItemAction('defence_potion', 'Drink', (slot) => {
-  removeFromSlot(slot);
-  audio.sfx('eat');
-  msg('You drink the defence potion. Your skin feels tougher.');
+registerItemAction('defence_potion', 'Drink', () => {
+  void requestIntent('consume', { item: 'defence_potion' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg('You drink the defence potion. Your skin feels tougher.');
+  });
 });
 
 // ============================================================================
 // RUNECRAFT
 // ============================================================================
 registerObjectAction('air_altar', 'Craft-rune', () => {
-  const n = invCount('rune_essence');
-  if (n === 0) { msg('You need some rune essence to craft runes here.'); return 'done'; }
-  const mult = Math.floor(1 + level('Runecraft') / 11);
-  removeItem('rune_essence', n);
-  addItem('air_rune', n * mult);
-  addXp('Runecraft', n * 5);
-  audio.sfx('spell');
-  msg('You bind the temple\'s power into air runes.');
+  if (invCount('rune_essence') === 0) { msg('You need some rune essence to craft runes here.'); return 'done'; }
+  // Server-authoritative: the server binds ALL held essence into air runes,
+  // applying the level multiplier + Runecraft xp.
+  void requestIntent('runecraft', { altar: 'air' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('spell');
+    msg('You bind the temple\'s power into air runes.');
+  });
   return 'done';
 });
 
@@ -520,14 +549,16 @@ for (let idx = 0; idx < AGILITY_COURSE.length; idx++) {
     p.prevX = p.x; p.prevY = p.y;
     p.x = o.x; p.y = destY;
     p.path = [];
-    addXp('Agility', ob.xp);
+    // Server-authoritative: the obstacle's Agility xp is granted by the 'train'
+    // intent (data-keyed by obstacle type — the client never names the amount).
+    void requestIntent('train', { obstacle: ob.type });
     msg(ob.done);
     // lap tracking
     if (idx === agilityProgress) agilityProgress++;
     else agilityProgress = idx === 0 ? 1 : 0;
     if (agilityProgress >= AGILITY_COURSE.length) {
       agilityProgress = 0;
-      addXp('Agility', 60);
+      void requestIntent('train', { obstacle: 'agility_lap' });
       msg('You complete a lap of the course and feel nimbler for it.', 'level');
     }
     return 'done';
@@ -545,21 +576,25 @@ registerNpcAction('man', 'Pickpocket', (n: Npc) => {
   const lvl = level('Thieving');
   if (lvl < pp.level) { msg(`You need a Thieving level of ${pp.level} to pickpocket the man.`); return 'done'; }
   msg('You attempt to pick the man\'s pocket...');
-  if (successRoll(lvl, pp.level, 0.7, 0.95)) {
-    for (const loot of pp.loot) addItem(loot.item, randInt(loot.qty[0], loot.qty[1]));
-    addXp('Thieving', pp.xp);
-    audio.sfx('thieve');
-    msg('You pick the man\'s pocket.');
-  } else {
-    const p = state.player;
-    msg('You fail to pick the man\'s pocket.');
-    msg(`${n.def.name}: 'Oi! What do you think you're doing?'`);
-    p.curHp = Math.max(1, p.curHp - pp.stunDmg);
-    p.hitsplat = { dmg: pp.stunDmg, until: performance.now() + 900 };
-    audio.sfx('hit');
-    stunnedUntil = state.tick + 3;
-    events.onStatsChange();
-  }
+  // Server-authoritative: the server rolls success + loot (npc-keyed from
+  // npcs.json) and grants coins + Thieving xp. A miss returns ok with an empty
+  // grant; we play the stun cosmetic locally (the stun is not persisted state).
+  void requestIntent('thieve', { target: 'man' }).then((echo) => {
+    if (!echo.ok) return;
+    if (echo.granted && echo.granted.length > 0) {
+      audio.sfx('thieve');
+      msg('You pick the man\'s pocket.');
+    } else {
+      const p = state.player;
+      msg('You fail to pick the man\'s pocket.');
+      msg(`${n.def.name}: 'Oi! What do you think you're doing?'`);
+      p.curHp = Math.max(1, p.curHp - pp.stunDmg);
+      p.hitsplat = { dmg: pp.stunDmg, until: performance.now() + 900 };
+      audio.sfx('hit');
+      stunnedUntil = state.tick + 3;
+      events.onStatsChange();
+    }
+  });
   return 'done';
 });
 
@@ -568,11 +603,13 @@ registerObjectAction('bake_stall', 'Steal-from', (o) => {
   const lvl = level('Thieving');
   if (lvl < 5) { msg('You need a Thieving level of 5 to steal from the bake stall.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
-  const got = Math.random() < 0.1 ? 'cake' : 'bread';
-  addItem(got);
-  addXp('Thieving', 16);
-  audio.sfx('thieve');
-  msg(`You steal ${aOrAnWord(lowName(got))} ${lowName(got)} from the bake stall.`);
+  // Server-authoritative: validates stall@tile + level, rolls the loot table,
+  // grants the food + Thieving xp. The depletion cosmetic stays client-side.
+  void requestIntent('thieve', { target: 'bake_stall', x: o.x, y: o.y }).then((echo) => {
+    if (!echo.ok) return;
+    const got = echo.granted?.[0]?.id;
+    if (got) { audio.sfx('thieve'); msg(`You steal ${aOrAnWord(lowName(got))} ${lowName(got)} from the bake stall.`); }
+  });
   o.depletedUntil = state.tick + 12;
   return 'done';
 });
@@ -591,16 +628,17 @@ registerObjectAction('farming_patch', 'Inspect', (o) => {
 
 registerObjectAction('farming_patch', 'Harvest', (o) => {
   if (o.meta?.stage !== 'grown') { msg('There is nothing here to harvest yet.'); return 'done'; }
-  const seed = SEEDS.find((s) => s.produce === o.meta!.produce);
-  const n = randInt(3, 5);
-  for (let i = 0; i < n; i++) {
-    if (freeSlots() === 0 && !hasItem(o.meta!.produce)) { msg("You don't have enough inventory space."); break; }
-    addItem(o.meta!.produce);
-    addXp('Farming', seed?.harvestXp ?? 9);
-  }
-  audio.sfx('plant');
-  const pname = lowName(o.meta!.produce);
-  msg(`You harvest the patch and gather ${n} ${pname}${pname.endsWith('o') ? 'es' : 's'}.`);
+  const produce = o.meta!.produce as string;
+  if (freeSlots() === 0 && !hasItem(produce)) { msg("You don't have enough inventory space."); return 'done'; }
+  // Server-authoritative: the server rolls the yield (3-5), grants the produce +
+  // Farming xp. The patch's grow/clear state is world cosmetic the client owns.
+  void requestIntent('farm-harvest', { produce }).then((echo) => {
+    if (!echo.ok) return;
+    const n = echo.granted?.find((g) => g.id === produce)?.qty ?? 0;
+    audio.sfx('plant');
+    const pname = lowName(produce);
+    msg(`You harvest the patch and gather ${n} ${pname}${pname.endsWith('o') ? 'es' : 's'}.`);
+  });
   o.meta = {};
   return 'done';
 });
@@ -620,11 +658,14 @@ for (const s of SEEDS) {
     if (o.meta?.stage === 'seedling' || o.meta?.stage === 'grown') { msg('Something is already growing in this patch.'); return; }
     if (o.meta?.stage !== 'raked') { msg('The patch needs raking before you can plant anything.'); return; }
     if (level('Farming') < s.level) { msg(`You need a Farming level of ${s.level} to plant this seed.`); return; }
-    removeFromSlot(slot, 1);
-    o.meta = { stage: 'seedling', seed: s.seed, plantedAt: state.tick };
-    addXp('Farming', s.plantXp);
-    audio.sfx('plant');
-    msg(`You plant the ${lowName(s.seed)} in the patch.`);
+    // Server-authoritative: the server consumes the seed + grants plant xp; the
+    // seedling/grow state is world cosmetic the client owns.
+    void requestIntent('farm-plant', { seed: s.seed }).then((echo) => {
+      if (!echo.ok) return;
+      o.meta = { stage: 'seedling', seed: s.seed, plantedAt: state.tick };
+      audio.sfx('plant');
+      msg(`You plant the ${lowName(s.seed)} in the patch.`);
+    });
   });
 }
 
@@ -645,17 +686,21 @@ registerTickHook(() => {
 // ============================================================================
 // HUNTER
 // ============================================================================
-registerItemAction('bird_snare', 'Lay', (slot) => {
+registerItemAction('bird_snare', 'Lay', () => {
   const p = state.player;
   const t = terrain[key(p.x, p.y)];
   if (t !== T.GRASS && t !== T.FLOWERS) { msg('You can only set a bird snare on open grass.'); return; }
   if (objectAt.has(key(p.x, p.y))) { msg("There isn't enough room to set the snare here."); return; }
-  removeFromSlot(slot, 1);
-  const o = addObject('snare_set', p.x, p.y);
-  o.meta = { laidAt: state.tick, catchAt: state.tick + randInt(15, 40) };
-  audio.sfx('plant');
-  msg('You set the bird snare and step back to wait.');
-  stepAside();
+  // Server-authoritative: the server consumes the snare item; the placed trap +
+  // its catch timer are world cosmetic the client owns.
+  void requestIntent('snare-lay').then((echo) => {
+    if (!echo.ok) return;
+    const o = addObject('snare_set', p.x, p.y);
+    o.meta = { laidAt: state.tick, catchAt: state.tick + randInt(15, 40) };
+    audio.sfx('plant');
+    msg('You set the bird snare and step back to wait.');
+    stepAside();
+  });
 });
 
 registerTickHook(() => {
@@ -670,64 +715,19 @@ registerTickHook(() => {
 
 registerObjectAction('snare_set', 'Check', (o) => {
   if (freeSlots() < 3) { msg("You don't have enough inventory space to dismantle the snare."); return 'done'; }
-  if (o.depletedAs === 'snare_caught') {
-    removeObject(o);
-    addItem('bird_snare');
-    addItem('raw_bird_meat');
-    addItem('feather', 2);
-    addXp('Hunter', 34);
-    msg('You\'ve caught a bird! You retrieve the snare, the meat and a few feathers.');
-  } else {
-    removeObject(o);
-    addItem('bird_snare');
-    msg('Nothing has wandered into the snare yet. You dismantle it.');
-  }
+  const caught = o.depletedAs === 'snare_caught';
+  // Server-authoritative: the server grants the snare (+ meat/feathers/Hunter xp
+  // when caught). The world object removal is cosmetic the client owns.
+  void requestIntent('snare-check', { caught }).then((echo) => {
+    if (!echo.ok) return;
+    if (caught) msg('You\'ve caught a bird! You retrieve the snare, the meat and a few feathers.');
+    else msg('Nothing has wandered into the snare yet. You dismantle it.');
+  });
+  removeObject(o);
   return 'done';
 });
 
-// ============================================================================
-// SLAYER
-// ============================================================================
-registerNpcAction('slayer_master', 'Talk-to', () => {
-  startDialogue([
-    { speaker: 'Brogan', text: 'Hmph. Another fresh face. I hand out hunting assignments — beasts that need culling.' },
-  ], () => {
-    showOptions([
-      {
-        label: 'I need a task.',
-        fn: () => {
-          const p = state.player;
-          if (p.slayerTask && p.slayerTask.remaining > 0) {
-            msg(`Brogan: 'Finish your current task first: ${p.slayerTask.remaining} more ${NPCS[p.slayerTask.npc]?.name.toLowerCase()}s.'`);
-            return;
-          }
-          const lvl = level('Slayer');
-          const pool = SLAYER_TARGETS.filter((t) => t.level <= lvl);
-          const pick = pool[Math.floor(Math.random() * pool.length)] ?? SLAYER_TARGETS[0];
-          const count = randInt(8, 15);
-          p.slayerTask = { npc: pick.npc, remaining: count };
-          msg(`Brogan: 'Right then. Bring me the heads of ${count} ${NPCS[pick.npc]?.name.toLowerCase()}s. Off you go.'`);
-        },
-      },
-      {
-        label: 'What is my task?',
-        fn: () => {
-          const task = state.player.slayerTask;
-          if (task && task.remaining > 0) msg(`Brogan: 'You still owe me ${task.remaining} ${NPCS[task.npc]?.name.toLowerCase()}s.'`);
-          else msg("Brogan: 'You have no task. Ask me for one if you've got the stomach.'");
-        },
-      },
-      {
-        label: 'Cancel my task.',
-        fn: () => {
-          state.player.slayerTask = null;
-          msg("Brogan: 'Hmph. Quitter. Task cancelled.'");
-        },
-      },
-    ]);
-  });
-  return 'done';
-});
+// Slayer task loop lives in src/packs/slayer_tasks.ts (server-authoritative).
 
 // ============================================================================
 // CONSTRUCTION
@@ -746,17 +746,23 @@ registerObjectAction('workbench', 'Build', (o) => {
     if (!id || qty <= 0) return;
     const b = CONSTRUCTION_BUILDS.find((bb) => bb.name === id)!;
     let left = qty;
+    let busy = false;
     startObjJob(o, () => {
       if (left <= 0) return false;
       if (!hasTool('hammer')) { msg('You need a hammer to build anything.'); return false; }
       if (level('Construction') < b.level) { msg(`You need a Construction level of ${b.level} to build this.`); return false; }
       if (!hasItem('plank', b.planks) || !hasItem('nails', b.nails)) { msg(`You need ${b.planks} planks and ${b.nails} nails to build this.`); return false; }
-      removeItem('plank', b.planks);
-      removeItem('nails', b.nails);
-      addXp('Construction', b.xp);
-      audio.sfx('smith');
-      msg(`You build a sturdy ${b.name.toLowerCase()} and donate it to the castle.`);
+      if (busy) return true;
+      // Server-authoritative: the 'build' recipe class consumes planks + nails and
+      // grants Construction xp (no item — the build is donated).
+      busy = true;
       left--;
+      void requestIntent('produce', { recipe: 'build', output: b.name }).then((echo) => {
+        busy = false;
+        if (!echo.ok) { left = 0; return; }
+        audio.sfx('smith');
+        msg(`You build a sturdy ${b.name.toLowerCase()} and donate it to the castle.`);
+      });
       return left > 0;
     });
   });
@@ -771,16 +777,14 @@ registerNpcAction('carpenter', 'Talk-to', () => {
       {
         label: 'Buy planks (10 coins per log).',
         fn: () => {
-          let made = 0;
-          for (let i = 0; i < 5; i++) {
-            if (!hasItem('logs') || !hasItem('coins', 10)) break;
-            removeItem('logs', 1);
-            removeItem('coins', 10);
-            addItem('plank');
-            made++;
-          }
-          if (made === 0) msg('Carpenter Lenny: \'No logs or no coins? Then no planks.\'');
-          else { audio.sfx('coins'); msg(`Carpenter Lenny saws ${made} of your logs into planks.`); }
+          // Server-authoritative: the server saws up to 5 logs into planks at 10
+          // coins apiece (wealth-shaped, gated by ECONOMY_FROZEN).
+          void requestIntent('saw-planks').then((echo) => {
+            if (!echo.ok) { msg('Carpenter Lenny: \'No logs or no coins? Then no planks.\''); return; }
+            const made = echo.granted?.find((g) => g.id === 'plank')?.qty ?? 0;
+            if (made === 0) msg('Carpenter Lenny: \'No logs or no coins? Then no planks.\'');
+            else { audio.sfx('coins'); msg(`Carpenter Lenny saws ${made} of your logs into planks.`); }
+          });
         },
       },
       { label: 'Just admiring the sawdust.', fn: () => msg('Carpenter Lenny: \'Mind where you sneeze.\'') },
@@ -809,9 +813,11 @@ registerObjectAction('bank_booth', 'Bank', () => { openBank(); return 'done'; })
 
 registerNpcAction('cow', 'Milk', () => {
   if (!hasItem('bucket')) { msg('You need an empty bucket to milk the cow.'); return 'done'; }
-  removeItem('bucket', 1);
-  addItem('bucket_of_milk');
-  msg('You milk the cow.');
+  // Server-authoritative: the server swaps a bucket for a bucket_of_milk.
+  void requestIntent('pick', { what: 'milk' }).then((echo) => {
+    if (!echo.ok) return;
+    msg('You milk the cow.');
+  });
   return 'done';
 });
 

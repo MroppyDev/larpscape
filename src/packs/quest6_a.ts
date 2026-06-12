@@ -8,11 +8,12 @@
 // Imported for side effects via src/packs; registers quests + npc options.
 
 import {
-  state, msg, addItem, addXp,
-  registerNpcAction, onKill, startDialogue, showOptions,
+  msg,
+  registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, auxCount } from '../quest-sync';
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -28,9 +29,8 @@ function me(...texts: string[]): DialogueLine[] {
 const CROWN = 'frozen_crown';
 const CROWN_KILL = 'frozen_crown_kill';
 
-function crownStage(): number { return state.player.quests[CROWN] ?? 0; }
-function setCrownStage(s: number) { state.player.quests[CROWN] = s; }
-function marazaSlain(): boolean { return (state.player.quests[CROWN_KILL] ?? 0) >= 1; }
+function crownStage(): number { return questStage(CROWN); }
+function marazaSlain(): boolean { return auxCount(CROWN_KILL) >= 1; }
 
 registerQuest({
   id: CROWN,
@@ -63,12 +63,14 @@ registerNpcAction('mountain_guide', 'Ask-about-the-peak', (_n: Npc) => {
         {
           label: 'Point me at the summit. I\'ll melt that crown.',
           fn: () => {
-            setCrownStage(1);
-            startDialogue([
-              ...say(TORVALD, 'Ha! There\'s the spine I was hoping for. Take the high ledges up and bear north — her court sits on the ice near the very top.'),
-              ...say(TORVALD, 'Mind yourself: she\'s had centuries to grow cold and cruel, and the rime drinks the heat right out of a sword arm. Carry food, carry prayers, and don\'t stop moving.'),
-              ...say(TORVALD, 'Come back down alive and I\'ll see you rewarded. Come back down dead and, well, you\'ll roll most of the way anyhow.'),
-            ]);
+            void advanceQuestStage(CROWN, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(TORVALD, 'Ha! There\'s the spine I was hoping for. Take the high ledges up and bear north — her court sits on the ice near the very top.'),
+                ...say(TORVALD, 'Mind yourself: she\'s had centuries to grow cold and cruel, and the rime drinks the heat right out of a sword arm. Carry food, carry prayers, and don\'t stop moving.'),
+                ...say(TORVALD, 'Come back down alive and I\'ll see you rewarded. Come back down dead and, well, you\'ll roll most of the way anyhow.'),
+              ]);
+            });
           },
         },
         {
@@ -95,16 +97,15 @@ registerNpcAction('mountain_guide', 'Ask-about-the-peak', (_n: Npc) => {
       ...say(TORVALD, '*Torvald squints up the slope, where the clouds are pulling apart like old wool.* Well, I\'ll be hanged. Thirty years I\'ve watched that storm circle, and now it just... wanders off.'),
       ...say(TORVALD, 'You\'ve opened the high passes, friend. Every climber and trader on this mountain owes you their toes.'),
     ], () => {
-      setCrownStage(2);
-      addXp('Agility', 1200);
-      addXp('Magic', 1200);
-      addItem('coins', 2000);
-      addItem('prayer_potion', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(TORVALD, 'Here — two thousand coins from the guides\' purse, and a prayer potion I was saving for my own funeral. Won\'t be needing it as soon now.'),
-        ...say(TORVALD, 'And take what the mountain taught you: nobody climbs through a witch-storm and comes down the same. Lighter on the ledges, and something of her magic in your fingers, I\'d wager.'),
-      ]);
+      void advanceQuestStage(CROWN, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(CROWN, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(TORVALD, 'Here — two thousand coins from the guides\' purse, and a prayer potion I was saving for my own funeral. Won\'t be needing it as soon now.'),
+          ...say(TORVALD, 'And take what the mountain taught you: nobody climbs through a witch-storm and comes down the same. Lighter on the ledges, and something of her magic in your fingers, I\'d wager.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -123,9 +124,8 @@ registerNpcAction('mountain_guide', 'Ask-about-the-peak', (_n: Npc) => {
 const SMILE = 'red_smile';
 const SMILE_KILL = 'red_smile_kill';
 
-function smileStage(): number { return state.player.quests[SMILE] ?? 0; }
-function setSmileStage(s: number) { state.player.quests[SMILE] = s; }
-function saifSlain(): boolean { return (state.player.quests[SMILE_KILL] ?? 0) >= 1; }
+function smileStage(): number { return questStage(SMILE); }
+function saifSlain(): boolean { return auxCount(SMILE_KILL) >= 1; }
 
 registerQuest({
   id: SMILE,
@@ -158,12 +158,14 @@ registerNpcAction('desert_nomad', 'Ask-about-bandits', (_n: Npc) => {
         {
           label: 'Consider his smile closed. Where do I find him?',
           fn: () => {
-            setSmileStage(1);
-            startDialogue([
-              ...say(ZAHRA, 'West and south, deep in the dunes — follow the picked-clean wagon bones and you will find his camp. He keeps cutthroats around him, so come quietly or come ready.'),
-              ...say(ZAHRA, 'Do not let the grin fool you. Saif smiles widest just before the knife. Watch his hands, never his teeth.'),
-              ...say(ZAHRA, 'Return to me when it is done. The nomads pay their debts — in coin, and in things worth more than coin.'),
-            ]);
+            void advanceQuestStage(SMILE, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(ZAHRA, 'West and south, deep in the dunes — follow the picked-clean wagon bones and you will find his camp. He keeps cutthroats around him, so come quietly or come ready.'),
+                ...say(ZAHRA, 'Do not let the grin fool you. Saif smiles widest just before the knife. Watch his hands, never his teeth.'),
+                ...say(ZAHRA, 'Return to me when it is done. The nomads pay their debts — in coin, and in things worth more than coin.'),
+              ]);
+            });
           },
         },
         {
@@ -190,16 +192,15 @@ registerNpcAction('desert_nomad', 'Ask-about-bandits', (_n: Npc) => {
       ...say(ZAHRA, '*Zahra is quiet for a long moment, listening to the wind.* You hear that? Nothing. No drums from the deep sand. Just desert, the way it should sound.'),
       ...say(ZAHRA, 'His cutthroats will scatter without him — rats vote with their feet, and this time no one counts it for them. The caravans will return by the new moon.'),
     ], () => {
-      setSmileStage(2);
-      addXp('Thieving', 900);
-      addXp('Attack', 900);
-      addItem('sapphire_ring', 1);
-      addItem('coins', 1500);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(ZAHRA, 'The nomads pay their debts. Fifteen hundred coins, gathered from every tent on this road — and this sapphire ring. It crossed the desert nine times and was never once stolen. Until tonight. By me. For you.'),
-        ...say(ZAHRA, 'You walked into a den of thieves and out again — there is craft in that worth keeping, and your sword arm is the stronger for it. Go well, friend of the caravans.'),
-      ]);
+      void advanceQuestStage(SMILE, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(SMILE, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(ZAHRA, 'The nomads pay their debts. Fifteen hundred coins, gathered from every tent on this road — and this sapphire ring. It crossed the desert nine times and was never once stolen. Until tonight. By me. For you.'),
+          ...say(ZAHRA, 'You walked into a den of thieves and out again — there is craft in that worth keeping, and your sword arm is the stronger for it. Go well, friend of the caravans.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -211,18 +212,3 @@ registerNpcAction('desert_nomad', 'Ask-about-bandits', (_n: Npc) => {
   return 'done';
 });
 
-// ============================================================
-// Boss kill tracking — server youKilled events (killer gets the credit).
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player) return;
-  if (defId === 'ice_queen' && crownStage() === 1 && !marazaSlain()) {
-    state.player.quests[CROWN_KILL] = (state.player.quests[CROWN_KILL] ?? 0) + 1;
-    msg('Maraza the Rimebound shatters! The summit storm begins to break. Guide Torvald should hear of this.', 'level');
-  }
-  if (defId === 'bandit_king' && smileStage() === 1 && !saifSlain()) {
-    state.player.quests[SMILE_KILL] = (state.player.quests[SMILE_KILL] ?? 0) + 1;
-    msg('Saif the Red Smile falls, grin and all. Nomad Zahra will want to hear of this.', 'level');
-  }
-});

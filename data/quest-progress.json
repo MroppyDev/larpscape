@@ -1,0 +1,43 @@
+{
+  "_comment": "Server-authoritative quest SUB-PROGRESS config (docs/CONVERSION-CONTRACT.md §quest-graph companion). Validated by server/intent-quest.ts. These are the non-linear progress bits the generic quest-stage graph cannot express: sounding/diplomacy bitmasks (marks), kill counters/flags (kills), flexible OR/counted turn-ins (turnins), and quest-gated crafts/purchases (crafts). EVERY entry is gated by the parent quest being at the right stage, validated against SERVER state; a forged request FAILS or sets only the data-defined bit/grant. Sub-progress is stored in the owned quests map under its own key and reflected to the client via the IntentResult.questSet echo (monotonic).",
+
+  "marks": {
+    "_comment": "A 'mark' sets a bit (bitmask) on a sub-key, gated by parentQuest being exactly at requireStage. order-independent soundings + diplomacy shuttles. `complete` (optional) advances the PARENT quest to `completeStage` once the bitmask reaches `completeMask`.",
+    "gd1_altar":  { "parentQuest": "gd1_sour_notes", "requireStage": 1, "subKey": "gd1_rings", "bit": 1, "completeMask": 3, "completeStage": 2 },
+    "gd1_willow": { "parentQuest": "gd1_sour_notes", "requireStage": 1, "subKey": "gd1_rings", "bit": 2, "completeMask": 3, "completeStage": 2 },
+
+    "gd2_waystone_east":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 3, "subKey": "gd2_rings", "bit": 1, "completeMask": 7, "completeStage": 4 },
+    "gd2_waystone_corr":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 3, "subKey": "gd2_rings", "bit": 2, "completeMask": 7, "completeStage": 4 },
+    "gd2_waystone_south":  { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 3, "subKey": "gd2_rings", "bit": 4, "completeMask": 7, "completeStage": 4 },
+
+    "gd2_brazier_stoke":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 2, "subKey": "gd2_brazier", "bit": 1 },
+    "gd2_brazier_verdict": { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 2, "subKey": "gd2_brazier", "bit": 2 },
+
+    "gd4_calder_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 1 },
+    "gd4_vesper_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 2 },
+    "gd4_vesper_signed":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 4 },
+    "gd4_calder_signed":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 8 }
+  },
+
+  "kills": {
+    "_comment": "Server-driven kill credit (npcDeathHooks). When the killer's parentQuest is at requireStage and the counter sub-key is below `target`, the kill increments it. Fully authoritative: the client cannot forge a kill. The killer gets a {t:'intent', questSet} echo so the client mirrors the counter. `complete` (optional) advances the parent quest to completeStage when the counter reaches target.",
+    "gd1_giant_rat":     { "npc": "giant_rat",     "parentQuest": "gd1_sour_notes",         "requireStage": 3, "subKey": "gd1_rats",          "target": 2 },
+    "seeds_goblin":      { "npc": "goblin",        "parentQuest": "seeds_of_trouble",       "requireStage": 1, "subKey": "seeds_kills",       "target": 5 },
+    "gd3_hollow_miner":  { "npc": "hollow_miner",  "parentQuest": "gd3_sealed_wing",        "requireStage": 4, "subKey": "gd3_miners",        "target": 2 },
+    "gd4_dissonant":     { "npc": "the_dissonant", "parentQuest": "gd4_gathering_discord",  "requireStage": 3, "subKey": "gd4_boss",          "target": 1 },
+    "crown_ice_queen":   { "npc": "ice_queen",     "parentQuest": "frozen_crown",           "requireStage": 1, "subKey": "frozen_crown_kill", "target": 1 },
+    "smile_bandit_king": { "npc": "bandit_king",   "parentQuest": "red_smile",              "requireStage": 1, "subKey": "red_smile_kill",    "target": 1 }
+  },
+
+  "turnins": {
+    "_comment": "Flexible item turn-ins the AND-only graph cannot express. Advances parentQuest from requireStage to toStage, consuming `count` items drawn (in listed priority) from `anyOf`. The reward for `toStage` is then claimed separately via quest-reward.",
+    "catch_shark": { "parentQuest": "catch_of_a_lifetime", "requireStage": 1, "toStage": 2, "anyOf": ["raw_shark", "shark"], "count": 1 },
+    "gem_restock": { "parentQuest": "gem_problem",          "requireStage": 1, "toStage": 2, "anyOf": ["uncut_sapphire", "uncut_emerald", "uncut_ruby"], "count": 3 }
+  },
+
+  "crafts": {
+    "_comment": "Quest-gated crafts/purchases: consume `inputs` (coins allowed; if present the craft is wealth-shaped and gated by ECONOMY_FROZEN) and grant `output`, gated by parentQuest at requireStage. Idempotency is NOT enforced (repeatable while inputs last) — these are mid-quest fabrications, not one-shot rewards.",
+    "gd3_blasting_charge": { "parentQuest": "gd3_sealed_wing", "requireStage": 3, "inputs": [{ "id": "coal", "qty": 2 }, { "id": "ember_crystal", "qty": 1 }], "output": { "id": "blasting_charge", "qty": 1 } },
+    "gd3_buy_crystal":     { "parentQuest": "gd3_sealed_wing", "requireStage": 3, "inputs": [{ "id": "coins", "qty": 200 }], "output": { "id": "ember_crystal", "qty": 1 } }
+  }
+}

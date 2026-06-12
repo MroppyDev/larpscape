@@ -7,22 +7,22 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, hasItem, addXp,
+  state, msg, invCount, hasItem,
   registerNpcAction, registerObjectAction, registerItemOnObject,
   onKill, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, questbGrant, auxCount, setAuxCount } from '../quest-sync';
 
 const LIGHT = 'keep_the_light';
 const BRAZIER = 'q8_brazier'; // 0 = cold, 1 = logs loaded, 2 = oiled (lit = stage 3+)
 const LOGS_NEEDED = 5;
 const OIL_PRICE = 30;
 
-function stage(): number { return state.player.quests[LIGHT] ?? 0; }
-function setStage(s: number) { state.player.quests[LIGHT] = s; }
-function brazier(): number { return state.player.quests[BRAZIER] ?? 0; }
-function setBrazier(v: number) { state.player.quests[BRAZIER] = v; }
+function stage(): number { return questStage(LIGHT); }
+function brazier(): number { return auxCount(BRAZIER); }
+function setBrazier(v: number) { setAuxCount(BRAZIER, v); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -74,12 +74,14 @@ registerNpcAction('light_keeper', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll fetch the fuel. Marigold and I will get along fine.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(WICKLOW, 'That\'s what the last one said. He\'s a fisherman now. Logs you can chop anywhere a tree stands still long enough.'),
-              ...say(WICKLOW, 'The oil\'s the trick. Boatman Wick sells it off his ferry — thirty coins, and worth it. Or Port Brackwater\'s warehouses misplace a flask now and then, if your conscience rows that way.'),
-              ...say(WICKLOW, 'Don\'t mix the two errands up. Oil from a tree and logs from a whale have both been tried, and Marigold remembers.'),
-            ]);
+            void advanceQuestStage(LIGHT, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(WICKLOW, 'That\'s what the last one said. He\'s a fisherman now. Logs you can chop anywhere a tree stands still long enough.'),
+                ...say(WICKLOW, 'The oil\'s the trick. Boatman Wick sells it off his ferry — thirty coins, and worth it. Or Port Brackwater\'s warehouses misplace a flask now and then, if your conscience rows that way.'),
+                ...say(WICKLOW, 'Don\'t mix the two errands up. Oil from a tree and logs from a whale have both been tried, and Marigold remembers.'),
+              ]);
+            });
           },
         },
         {
@@ -109,7 +111,12 @@ registerNpcAction('light_keeper', 'Talk-to', (_n: Npc) => {
       ...say(WICKLOW, 'Logs in the grate first. Oil over the logs second. Tinderbox last. Do it backwards and you\'ll be the brightest thing on this coast for about four seconds.'),
       ...me('Load, oil, light. How hard can it be?'),
       ...say(WICKLOW, 'Thirty-one years, and I still flinch on step three. Up you go.'),
-    ], () => { setStage(2); setBrazier(0); });
+    ], () => {
+      void advanceQuestStage(LIGHT, 2).then((echo) => {
+        if (!echo.ok) return;
+        setBrazier(0);
+      });
+    });
     return 'done';
   }
   if (s === 2) {
@@ -141,16 +148,16 @@ registerNpcAction('light_keeper', 'Talk-to', (_n: Npc) => {
       ...say(WICKLOW, 'I\'m writing to Harbormaster Quill at Brackwater. Slowly. If I write it fast the anger goes illegible, and I want every word of this read.'),
       ...say(WICKLOW, 'As for you — Marigold and I settled on a payment, and for once we agreed.'),
     ], () => {
-      setStage(5);
-      addXp('Firemaking', 700);
-      addItem('coins', 300);
-      addItem('keepers_spyglass', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(WICKLOW, 'Three hundred coins from the keeper\'s box, and my spare spyglass. She\'s a fine glass — finds sails before they find rocks. Treat her gently; she\'s used to it.'),
-        ...say(WICKLOW, 'And take the trick of the fire with you. Anyone who can light Marigold on the first match can light anything.'),
-        ...say(WICKLOW, '*He glances up at the beacon.* Don\'t let it go to your head, dear. He had help.'),
-      ]);
+      void advanceQuestStage(LIGHT, 5).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(LIGHT, 5);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(WICKLOW, 'Three hundred coins from the keeper\'s box, and my spare spyglass. She\'s a fine glass — finds sails before they find rocks. Treat her gently; she\'s used to it.'),
+          ...say(WICKLOW, 'And take the trick of the fire with you. Anyone who can light Marigold on the first match can light anything.'),
+          ...say(WICKLOW, '*He glances up at the beacon.* Don\'t let it go to your head, dear. He had help.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -179,12 +186,13 @@ registerNpcAction('boatman', 'Buy-lamp-oil', (_n: Npc) => {
             startDialogue(say(WICK, 'That\'s a purse with more echo than coin, friend. Thirty. The whales don\'t press themselves.'));
             return;
           }
-          removeItem('coins', OIL_PRICE);
-          addItem('lamp_oil', 1);
-          startDialogue([
-            ...say(WICK, '*Wick swaps the flask for your coins with practised sympathy.* There you are. For old Wicklow\'s beacon, is it?'),
-            ...say(WICK, 'Give Marigold my regards. From a respectful distance. She and my ferry have history, and the ferry started it.'),
-          ]);
+          void questbGrant('ktl_buy_lamp_oil').then((echo) => {
+            if (!echo.ok) return;
+            startDialogue([
+              ...say(WICK, '*Wick swaps the flask for your coins with practised sympathy.* There you are. For old Wicklow\'s beacon, is it?'),
+              ...say(WICK, 'Give Marigold my regards. From a respectful distance. She and my ferry have history, and the ferry started it.'),
+            ]);
+          });
         },
       },
       {
@@ -221,11 +229,13 @@ registerItemOnObject('logs', 'beacon_brazier', () => {
   if (s < 1) { msg('The brazier is cold. Feeding someone else\'s lighthouse uninvited seems forward — the keeper below might have opinions.'); return; }
   if (s === 1) {
     if (!hasFuel()) { msg(`Marigold takes a full meal or none: ${LOGS_NEEDED} logs and a flask of lamp oil. Wicklow was firm about this.`); return; }
-    setStage(2); setBrazier(0); // fuel in hand at the brazier — Wicklow's briefing is implied; proceed to load
+    void advanceQuestStage(LIGHT, 2).then((echo) => {
+      if (!echo.ok) return;
+      setBrazier(0); // fuel in hand at the brazier — Wicklow's briefing is implied; proceed to load
+    });
   }
   if (s > 2 || (s === 2 && brazier() >= 1)) { msg('The grate is already loaded. Marigold does not care for seconds.'); return; }
   if (invCount('logs') < LOGS_NEEDED) { msg(`You need ${LOGS_NEEDED} logs to load the grate properly.`); return; }
-  removeItem('logs', LOGS_NEEDED);
   setBrazier(1);
   msg(`You stack ${LOGS_NEEDED} logs into the great grate, the way one sets a table for royalty. Now the oil.`);
 });
@@ -237,7 +247,6 @@ registerItemOnObject('lamp_oil', 'beacon_brazier', () => {
   const b = brazier();
   if (b === 0) { msg('Logs first, then oil. Marigold knows if you cheat — Wicklow was specific, and a little haunted.'); return; }
   if (b >= 2) { msg('The logs already glisten with oil. Any more and the first spark becomes a regional event.'); return; }
-  removeItem('lamp_oil', 1);
   setBrazier(2);
   msg('You pour the lamp oil slow and even over the logs. The brazier accepts this in dignified silence. Now: a light.');
 });
@@ -249,9 +258,11 @@ registerItemOnObject('tinderbox', 'beacon_brazier', () => {
   const b = brazier();
   if (b === 0) { msg('Load her, oil her, light her — in that order. The grate is still empty.'); return; }
   if (b === 1) { msg('The logs need oil before the spark, unless you enjoy coaxing damp timber until dawn.'); return; }
-  setStage(3);
-  msg('You strike the tinderbox. The oil catches, the logs roar, and Marigold blazes to life over the causeway!', 'level');
-  msg('Far below, Keeper Wicklow is applauding. You should speak with him.');
+  void advanceQuestStage(LIGHT, 3).then((echo) => {
+    if (!echo.ok) return;
+    msg('You strike the tinderbox. The oil catches, the logs roar, and Marigold blazes to life over the causeway!', 'level');
+    msg('Far below, Keeper Wicklow is applauding. You should speak with him.');
+  });
 });
 
 // ============================================================
@@ -261,8 +272,10 @@ registerItemOnObject('tinderbox', 'beacon_brazier', () => {
 onKill((defId) => {
   if (!state.player) return;
   if (defId === 'pirate' && stage() === 3) {
-    setStage(4);
-    msg('The skulker drops something long and hooked as he falls. Keeper Wicklow will want to see this.', 'level');
+    void advanceQuestStage(LIGHT, 4).then((echo) => {
+      if (!echo.ok) return;
+      msg('The skulker drops something long and hooked as he falls. Keeper Wicklow will want to see this.', 'level');
+    });
   }
 });
 

@@ -8,11 +8,12 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, questTurnin } from '../quest-sync';
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -27,8 +28,7 @@ const GEMS = 'gem_problem';
 const GEM_IDS = ['uncut_sapphire', 'uncut_emerald', 'uncut_ruby'] as const;
 const GEMS_NEEDED = 3;
 
-function gemStage(): number { return state.player.quests[GEMS] ?? 0; }
-function setGemStage(s: number) { state.player.quests[GEMS] = s; }
+function gemStage(): number { return questStage(GEMS); }
 function gemsHeld(): number {
   return GEM_IDS.reduce((sum, id) => sum + invCount(id), 0);
 }
@@ -65,11 +65,13 @@ registerNpcAction('gem_trader', 'Ask-about-rumours', (_n: Npc) => {
         {
           label: 'I\'ll get your gems back.',
           fn: () => {
-            setGemStage(1);
-            startDialogue([
-              ...say('Gem trader', 'Splendid! Try the bandits first — half my inventory is jangling in their pockets.'),
-              ...say('Gem trader', 'Or take a pick to a gem rock, if you\'ve the arm for it. An uncut stone is an uncut stone.'),
-            ]);
+            void advanceQuestStage(GEMS, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say('Gem trader', 'Splendid! Try the bandits first — half my inventory is jangling in their pockets.'),
+                ...say('Gem trader', 'Or take a pick to a gem rock, if you\'ve the arm for it. An uncut stone is an uncut stone.'),
+              ]);
+            });
           },
         },
         {
@@ -96,24 +98,15 @@ registerNpcAction('gem_trader', 'Ask-about-rumours', (_n: Npc) => {
       ...say('Gem trader', 'Oh, lovely. LOVELY. Look at the colour on this one — the bandits never knew what they had.'),
       ...say('Gem trader', 'My tray gleams again and my ledger balances. You, friend, are good for business.'),
     ], () => {
-      // Consume any 3 uncut gems, counted across all three kinds.
-      let toRemove = GEMS_NEEDED;
-      for (const id of GEM_IDS) {
-        while (toRemove > 0 && invCount(id) > 0) {
-          removeItem(id, 1);
-          toRemove--;
-        }
-      }
-      setGemStage(2);
-      addXp('Crafting', 700);
-      addXp('Mining', 700);
-      addItem('chisel', 1);
-      addItem('coins', 800);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say('Gem trader', 'Coin, as agreed — and take this chisel. A steady hand can coax a fortune out of a rough stone.'),
-        ...say('Gem trader', 'And if you ever find that quail\'s-egg ruby... my door is always open. My prices, slightly less so.'),
-      ]);
+      void questTurnin('gem_restock').then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(GEMS, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say('Gem trader', 'Coin, as agreed — and take this chisel. A steady hand can coax a fortune out of a rough stone.'),
+          ...say('Gem trader', 'And if you ever find that quail\'s-egg ruby... my door is always open. My prices, slightly less so.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -127,8 +120,7 @@ registerNpcAction('gem_trader', 'Ask-about-rumours', (_n: Npc) => {
 const FLOCK = 'lost_flock';
 const WOOL_NEEDED = 5;
 
-function flockStage(): number { return state.player.quests[FLOCK] ?? 0; }
-function setFlockStage(s: number) { state.player.quests[FLOCK] = s; }
+function flockStage(): number { return questStage(FLOCK); }
 
 registerQuest({
   id: FLOCK,
@@ -161,10 +153,12 @@ registerNpcAction('tanner', 'Ask-about-wool', (_n: Npc) => {
         {
           label: 'Consider it done. Five loads of wool.',
           fn: () => {
-            setFlockStage(1);
-            startDialogue([
-              ...say('Tanner', 'You\'re a friend to tanners everywhere. Just grab a sheep, hold steady, and shear — they grow it back faster than you\'d think.'),
-            ]);
+            void advanceQuestStage(FLOCK, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say('Tanner', 'You\'re a friend to tanners everywhere. Just grab a sheep, hold steady, and shear — they grow it back faster than you\'d think.'),
+              ]);
+            });
           },
         },
         {
@@ -191,17 +185,15 @@ registerNpcAction('tanner', 'Ask-about-wool', (_n: Npc) => {
       ...say('Tanner', 'Look at that — thick, clean, barely any grass in it. Fenwick himself never sheared better.'),
       ...say('Tanner', 'The shelf is full, the customers are happy, and I owe you, stranger.'),
     ], () => {
-      removeItem('wool', WOOL_NEEDED);
-      setFlockStage(2);
-      addXp('Crafting', 600);
-      addXp('Farming', 400);
-      addItem('coins', 500);
-      addItem('ball_of_wool', 2);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say('Tanner', 'Here\'s your coin, and a couple of balls of wool I spun while we talked. Idle hands, you know.'),
-        ...say('Tanner', 'And when Fenwick rounds up his flock, I\'ll tell him a stranger kept his name good. He\'ll be glad of it.'),
-      ]);
+      void advanceQuestStage(FLOCK, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(FLOCK, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say('Tanner', 'Here\'s your coin, and a couple of balls of wool I spun while we talked. Idle hands, you know.'),
+          ...say('Tanner', 'And when Fenwick rounds up his flock, I\'ll tell him a stranger kept his name good. He\'ll be glad of it.'),
+        ]);
+      });
     });
     return 'done';
   }

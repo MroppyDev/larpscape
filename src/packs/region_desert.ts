@@ -7,10 +7,9 @@ import {
   state, events, msg, level,
   registerNpcAction, registerObjectAction, registerFx, registerDamageModifier,
   startDialogue, openShop,
-  addItem, removeItem, invCount, freeSlots, addXp,
+  invCount, freeSlots, requestIntent,
   Npc,
 } from '../game';
-import { NPCS } from '../defs';
 import { audio } from '../audio';
 
 // ---------------- Local helpers (mirror content.ts conventions) ----------------
@@ -65,30 +64,24 @@ registerNpcAction('gem_trader', 'Talk-to', (_n: Npc) => {
   return 'done';
 });
 
-// ---------------- Desert bandit pickpocket (data-driven) ----------------
-// NPCS.desert_bandit.pickpocket: level 35, xp 65.8, stunDmg 3,
-// loot coins 20-50 + occasional uncut_sapphire.
+// ---------------- Desert bandit pickpocket (server-authoritative) ----------------
 registerNpcAction('desert_bandit', 'Pickpocket', (n: Npc) => {
-  const pp = NPCS.desert_bandit.pickpocket!;
   if (state.tick < stunnedUntil) { msg("You're still seeing stars; you can't pickpocket right now."); return 'done'; }
   const lvl = level('Thieving');
-  if (lvl < pp.level) { msg(`You need a Thieving level of ${pp.level} to pickpocket the desert bandit.`); return 'done'; }
+  if (lvl < 35) { msg('You need a Thieving level of 35 to pickpocket the desert bandit.'); return 'done'; }
   msg('You attempt to pick the desert bandit\'s pocket...');
-  if (successRoll(lvl, pp.level, 0.6, 0.95)) {
-    const coins = pp.loot.find((l) => l.item === 'coins');
-    if (coins) addItem('coins', randInt(coins.qty[0], coins.qty[1]));
-    if (Math.random() < 0.05) {
-      addItem('uncut_sapphire', 1);
-      msg('Among the coins you find an uncut sapphire!');
+  void requestIntent('thieve', { target: 'desert_bandit' }).then((echo) => {
+    if (!echo.ok) return;
+    if (echo.granted && echo.granted.length > 0) {
+      if (echo.granted.some((g) => g.id === 'uncut_sapphire')) msg('Among the coins you find an uncut sapphire!');
+      audio.sfx('thieve');
+      msg('You pick the desert bandit\'s pocket.');
+    } else {
+      msg('You fail to pick the desert bandit\'s pocket.');
+      msg(`${n.def.name}: 'Hands off, or lose them!'`);
+      stunPlayer(3, 3);
     }
-    addXp('Thieving', pp.xp);
-    audio.sfx('thieve');
-    msg('You pick the desert bandit\'s pocket.');
-  } else {
-    msg('You fail to pick the desert bandit\'s pocket.');
-    msg(`${n.def.name}: 'Hands off, or lose them!'`);
-    stunPlayer(pp.stunDmg, 3);
-  }
+  });
   return 'done';
 });
 
@@ -104,16 +97,21 @@ registerObjectAction('gem_stall', 'Steal-from', (o) => {
     stunPlayer(2, 3);
     return 'done';
   }
-  const r = Math.random();
-  let gem: string; let name: string;
-  if (r < 0.6) { gem = 'uncut_sapphire'; name = 'an uncut sapphire'; }
-  else if (r < 0.9) { gem = 'uncut_emerald'; name = 'an uncut emerald'; }
-  else { gem = 'uncut_ruby'; name = 'an uncut ruby'; }
-  addItem(gem);
-  addXp('Thieving', 40);
-  audio.sfx('thieve');
-  msg(`You palm ${name} from the gem stall.`);
-  o.depletedUntil = state.tick + 15;
+  void requestIntent('thieve', { target: 'gem_stall', x: o.x, y: o.y }).then((echo) => {
+    if (!echo.ok) return;
+    if (!echo.granted || echo.granted.length === 0) {
+      msg('You fumble — the trader catches your wrist and cuffs you smartly.');
+      stunPlayer(2, 3);
+      return;
+    }
+    const gem = echo.granted[0].id;
+    const name = gem === 'uncut_sapphire' ? 'an uncut sapphire'
+      : gem === 'uncut_emerald' ? 'an uncut emerald'
+      : 'an uncut ruby';
+    audio.sfx('thieve');
+    msg(`You palm ${name} from the gem stall.`);
+    o.depletedUntil = state.tick + 15;
+  });
   return 'done';
 });
 
@@ -123,12 +121,11 @@ registerObjectAction('fire_altar', 'Craft-rune', () => {
   if (lvl < 14) { msg('The altar\'s heat pushes you back. You need a Runecraft level of 14 to bind fire runes.'); return 'done'; }
   const n = invCount('rune_essence');
   if (n === 0) { msg('You need some rune essence to craft runes here.'); return 'done'; }
-  const mult = Math.floor(1 + lvl / 14);
-  removeItem('rune_essence', n);
-  addItem('fire_rune', n * mult);
-  addXp('Runecraft', n * 7);
-  audio.sfx('spell');
-  msg('You bind the desert\'s shimmering heat into fire runes.');
+  void requestIntent('runecraft', { altar: 'fire' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('spell');
+    msg('You bind the desert\'s shimmering heat into fire runes.');
+  });
   return 'done';
 });
 

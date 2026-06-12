@@ -12,12 +12,21 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, hasItem, addXp,
-  registerNpcAction, registerItemOnObject, onKill,
+  msg, hasItem,
+  registerNpcAction, registerItemOnObject,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import {
+  questStage,
+  advanceQuestStage,
+  claimQuestReward,
+  scriptedGrant,
+  questbGrant,
+  questMark,
+  auxCount,
+} from '../quest-sync';
 
 const QUEST = 'gd1_sour_notes';
 const RINGS = 'gd1_rings';   // bitmask: 1 = chapel altar, 2 = riverside willow
@@ -26,11 +35,9 @@ const RATS_NEEDED = 2;
 const BIT_ALTAR = 1;
 const BIT_WILLOW = 2;
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
-function rings(): number { return state.player.quests[RINGS] ?? 0; }
-function setRings(v: number) { state.player.quests[RINGS] = v; }
-function rats(): number { return state.player.quests[RATS] ?? 0; }
+function stage(): number { return questStage(QUEST); }
+function rings(): number { return auxCount(RINGS); }
+function rats(): number { return auxCount(RATS); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -83,13 +90,15 @@ registerNpcAction('magic_tutor', 'Ask-about-the-hum', (_n: Npc) => {
         {
           label: 'I\'ll sound your fork. Stone and green.',
           fn: () => {
-            setStage(1);
-            addItem('tuning_fork', 1);
-            startDialogue([
-              ...say(MIRA, 'Good. Strike it against the thing itself — altar, trunk, doesn\'t matter which order — and listen to what comes back. Don\'t hum along. You\'ll skew the reading and I\'ll have to pretend your results are useful.'),
-              ...say(MIRA, 'The chapel is in the castle, north of the courtyard. The willows trail in the river east of town, by the old bridge. Off you go.'),
-            ]);
-            msg('Mira hands you a tuning fork. It hums before you strike it.', 'level');
+            void advanceQuestStage(QUEST, 1).then((echo) => {
+              if (!echo.ok) return;
+              void scriptedGrant(QUEST, 1);
+              startDialogue([
+                ...say(MIRA, 'Good. Strike it against the thing itself — altar, trunk, doesn\'t matter which order — and listen to what comes back. Don\'t hum along. You\'ll skew the reading and I\'ll have to pretend your results are useful.'),
+                ...say(MIRA, 'The chapel is in the castle, north of the courtyard. The willows trail in the river east of town, by the old bridge. Off you go.'),
+              ]);
+              msg('Mira hands you a tuning fork. It hums before you strike it.', 'level');
+            });
           },
         },
         {
@@ -116,7 +125,11 @@ registerNpcAction('magic_tutor', 'Ask-about-the-hum', (_n: Npc) => {
         ...me('Small thing. I appear to have mislaid the fork.'),
         ...say(MIRA, 'Of course you have. Fortunately I make them in batches — ask me sometime how my evenings are going. Here. Try to let this one grow old.'),
       );
-      startDialogue(lines, () => { addItem('tuning_fork', 1); msg('Mira hands you another tuning fork.'); });
+      startDialogue(lines, () => {
+        void questbGrant('gd1_lost_tuning_fork').then((echo) => {
+          if (echo.ok) msg('Mira hands you another tuning fork.');
+        });
+      });
       return 'done';
     }
     startDialogue(lines);
@@ -129,7 +142,7 @@ registerNpcAction('magic_tutor', 'Ask-about-the-hum', (_n: Npc) => {
       ...say(MIRA, '*Mira goes very still, which from her is a shout.* The same interval in Aulden\'s stone and Syla\'s green. Two singers don\'t drift flat together. Not unless something is pulling them.'),
       ...say(MIRA, 'So it isn\'t local, and it isn\'t me, and my kettle is owed an apology. What I need now is a second instrument — something that measures the Offnote without knowing it\'s doing magic.'),
       ...say(MIRA, 'Dr. Ticksworth. The tick clinic, south district. His whole practice runs on discord-mote ticks — if the vale is souring, his intake will say so in numbers. Ask him about his motes. Try to keep a straight face about the ticks. He can tell.'),
-    ], () => { setStage(3); });
+    ], () => { void advanceQuestStage(QUEST, 3); });
     return 'done';
   }
 
@@ -149,17 +162,16 @@ registerNpcAction('magic_tutor', 'Ask-about-the-hum', (_n: Npc) => {
       ...me('In sympathy with what?'),
       ...say(MIRA, 'That is exactly the question I am not qualified to answer, and I find I dislike the feeling. So we hand it up. The Aldgate Gun Guild measures the Offnote every single day — they grind it into powder and write down how hard it misbehaves. They just call it quality control.'),
     ], () => {
-      setStage(5);
-      removeItem('clinic_note', 1);
-      addItem('mira_letter', 1);
-      addXp('Magic', 400);
-      addItem('coins', 100);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(MIRA, 'This letter is for Master Flint at the Gun Guild. It says what we found, what it means, and that the bearer is worth listening to — which is not a sentence I write often, so don\'t lose it before he\'s read it.'),
-        ...say(MIRA, 'Keep the fork. It\'s tuned now — to whatever this is. If I\'m right, you\'ll be striking it on stranger things than willows before the year is out.'),
-        ...say(MIRA, 'And here — a hundred coins for the walking, and a lesson\'s worth of songcraft for the listening. You did the second part better than most of my students. Don\'t let it go to your head; the bar is on the floor.'),
-      ]);
+        void advanceQuestStage(QUEST, 5).then((echo) => {
+          if (!echo.ok) return;
+          void claimQuestReward(QUEST, 5);
+          msg('Congratulations! Quest complete!', 'level');
+          startDialogue([
+            ...say(MIRA, 'This letter is for Master Flint at the Gun Guild. It says what we found, what it means, and that the bearer is worth listening to — which is not a sentence I write often, so don\'t lose it before he\'s read it.'),
+            ...say(MIRA, 'Keep the fork. It\'s tuned now — to whatever this is. If I\'m right, you\'ll be striking it on stranger things than willows before the year is out.'),
+            ...say(MIRA, 'And here — a hundred coins for the walking, and a lesson\'s worth of songcraft for the listening. You did the second part better than most of my students. Don\'t let it go to your head; the bar is on the floor.'),
+          ]);
+        });
     });
     return 'done';
   }
@@ -170,7 +182,11 @@ registerNpcAction('magic_tutor', 'Ask-about-the-hum', (_n: Npc) => {
       ...say(MIRA, 'Flint will be expecting you in Aldgate, if my letter survived your pockets.'),
       ...me('About pockets. The fork—'),
       ...say(MIRA, '*Mira closes her eyes for exactly one breath.* Batches. I make them in batches. Here.'),
-    ], () => { addItem('tuning_fork', 1); msg('Mira hands you another tuning fork.'); });
+    ], () => {
+      void questbGrant('gd1_lost_tuning_fork').then((echo) => {
+        if (echo.ok) msg('Mira hands you another tuning fork.');
+      });
+    });
     return 'done';
   }
   startDialogue(say(MIRA, 'The kettle is still flat, but at least now it\'s evidence. Aldgate, when you\'re ready — Master Flint, Gun Guild. Stand slightly to the right of whatever he says first.'));
@@ -193,14 +209,13 @@ function ringAt(bit: number, sourLine: string, doneLine: string) {
     msg(doneLine);
     return;
   }
-  setRings(r | bit);
-  msg(sourLine, 'level');
-  if ((rings() & (BIT_ALTAR | BIT_WILLOW)) === (BIT_ALTAR | BIT_WILLOW)) {
-    setStage(2);
-    msg('Both readings are flat by the same half-beat. Mira needs to hear this.', 'level');
-  } else {
-    msg('One reading down. One to go.');
-  }
+  const mark = bit === BIT_ALTAR ? 'gd1_altar' : 'gd1_willow';
+  void questMark(mark).then((echo) => {
+    if (!echo.ok) return;
+    msg(sourLine, 'level');
+    if (questStage(QUEST) >= 2) msg('Both readings are flat by the same half-beat. Mira needs to hear this.', 'level');
+    else msg('One reading down. One to go.');
+  });
 }
 
 registerItemOnObject('tuning_fork', 'altar', () => {
@@ -243,12 +258,14 @@ registerNpcAction('dentist_dr_tick', 'Ask-about-motes', (_n: Npc) => {
         ...say(TICK, 'Intake of discord-mote ticks: doubled this bar. Not risen. Doubled. The ticks are drinking more mote than they\'ve any right to, which means there\'s more mote to drink. I\'ve charted it. There\'s a small graph. I\'m rather proud of the graph.'),
         ...say(TICK, 'A voice from the back: "Doctor! Doubled means a bigger cracker, surely!" ...That\'s Glen. The answer is no, Glen. Standard cracker.'),
       ], () => {
-        setStage(4);
-        addItem('clinic_note', 1);
-        msg('Dr. Ticksworth hands you a signed clinic note. There is a small graph.', 'level');
-        startDialogue([
-          ...say(TICK, 'Signed, dated, and notarised by the only medical professional in this vale who counts his ticks. Tell your tutor: if Aldgate wants the raw figures, the clinic\'s door is open and the menu is seasonal.'),
-        ]);
+        void advanceQuestStage(QUEST, 4).then((echo) => {
+          if (!echo.ok) return;
+          void scriptedGrant(QUEST, 4);
+          msg('Dr. Ticksworth hands you a signed clinic note. There is a small graph.', 'level');
+          startDialogue([
+            ...say(TICK, 'Signed, dated, and notarised by the only medical professional in this vale who counts his ticks. Tell your tutor: if Aldgate wants the raw figures, the clinic\'s door is open and the menu is seasonal.'),
+          ]);
+        });
       });
       return 'done';
     }
@@ -282,21 +299,3 @@ registerNpcAction('dentist_dr_tick', 'Ask-about-motes', (_n: Npc) => {
   return 'done';
 });
 
-// ============================================================
-// Rat tracking — stage 3, counter gd1_rats via onKill.
-// At-level (lvl 3), escapable; spawns behind the clinic (Q1 fragment).
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player) return;
-  if (defId !== 'giant_rat') return;
-  if (stage() !== 3) return;
-  const k = rats();
-  if (k >= RATS_NEEDED) return;
-  state.player.quests[RATS] = k + 1;
-  if (k + 1 >= RATS_NEEDED) {
-    msg('That\'s both larder rats dealt with. Dr. Ticksworth owes you some numbers.', 'level');
-  } else {
-    msg(`Larder rat down. (${k + 1}/${RATS_NEEDED})`);
-  }
-});

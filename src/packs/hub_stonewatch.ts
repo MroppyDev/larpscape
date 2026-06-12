@@ -2,17 +2,17 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  state, msg, invCount,
   registerNpcAction, startDialogue, showOptions, openShop,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const FURS = 'furs_for_watch';
 const FUR_NEEDED = 3;
 
-function stage(): number { return state.player.quests[FURS] ?? 0; }
-function setStage(s: number) { state.player.quests[FURS] = s; }
+function stage(): number { return questStage(FURS); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -54,11 +54,13 @@ registerNpcAction('trapper', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll bring you the furs.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(HODE, 'Good. Track north into the trees — bears favour the shaded hollows.'),
-              ...say(HODE, 'Bring the pelts whole. Torn fur\'s no good to a cloak-maker.'),
-            ]);
+            void advanceQuestStage(FURS, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(HODE, 'Good. Track north into the trees — bears favour the shaded hollows.'),
+                ...say(HODE, 'Bring the pelts whole. Torn fur\'s no good to a cloak-maker.'),
+              ]);
+            });
           },
         },
         {
@@ -85,12 +87,14 @@ registerNpcAction('trapper', 'Talk-to', (_n: Npc) => {
       ...say(HODE, '*Hode runs a thumb along the nap and nods.* Prime pelts. The watch\'ll sleep warmer tonight.'),
       ...say(HODE, 'Here\'s your pay — and my thanks. Stonewatch remembers who keeps the cold at bay.'),
     ], () => {
-      removeItem('bear_fur', FUR_NEEDED);
-      setStage(2);
-      addXp('Hunter', 600);
-      addItem('coins', 500);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue(say(HODE, 'If you\'ve more furs, I\'ll buy them. Good pelts never go out of fashion at an outpost.'));
+      // Server consumes the furs on the validated 1->2 advance, then grants the
+      // data-defined reward (Hunter xp + coins). The client only reflects.
+      void advanceQuestStage(FURS, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(FURS, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue(say(HODE, 'If you\'ve more furs, I\'ll buy them. Good pelts never go out of fashion at an outpost.'));
+      });
     });
     return 'done';
   }

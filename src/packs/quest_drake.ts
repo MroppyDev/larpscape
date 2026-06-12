@@ -5,16 +5,16 @@
 // Imported for side effects by src/packs/index.ts (before initGame).
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const EMBERS = 'embers_below';
 
-function stage(): number { return state.player.quests[EMBERS] ?? 0; }
-function setStage(s: number) { state.player.quests[EMBERS] = s; }
+function stage(): number { return questStage(EMBERS); }
 
 function brogan(...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: 'Brogan', text: t }));
@@ -55,12 +55,14 @@ registerNpcAction('slayer_master', 'Ask-about-embers', (_n: Npc) => {
         {
           label: 'I\'ll slay your drake and fetch the crystal.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...brogan('Ha! Either you\'re brave or you\'re stupid. Down here, the two pay the same.'),
-              ...brogan('The cave mouth is at the south edge of the swamp mine. Follow the heat. You\'ll know the lair when the walls start to glow.'),
-              ...brogan('Come back with that crystal and I\'ll make it worth the singed eyebrows.'),
-            ]);
+            void advanceQuestStage(EMBERS, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...brogan('Ha! Either you\'re brave or you\'re stupid. Down here, the two pay the same.'),
+                ...brogan('The cave mouth is at the south edge of the swamp mine. Follow the heat. You\'ll know the lair when the walls start to glow.'),
+                ...brogan('Come back with that crystal and I\'ll make it worth the singed eyebrows.'),
+              ]);
+            });
           },
         },
         {
@@ -89,17 +91,15 @@ registerNpcAction('slayer_master', 'Ask-about-embers', (_n: Npc) => {
       ...brogan('You actually did it. I\'ve buried better-armed slayers for less.'),
       ...brogan('A deal\'s a deal. Coin, a blade I\'ve been saving, and everything I know about killing things that fly and smithing what they leave behind.'),
     ], () => {
-      removeItem('ember_crystal', 1);
-      setStage(2);
-      addXp('Slayer', 1000);
-      addXp('Smithing', 800);
-      addItem('mithril_scimitar', 1);
-      addItem('coins', 1500);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...brogan('That scimitar has a drake-slayer\'s name on it now. Yours.'),
-        ...brogan('I\'ll set the crystal above my hearth. Cheaper than firewood, and a sight better story.'),
-      ]);
+      void advanceQuestStage(EMBERS, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(EMBERS, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...brogan('That scimitar has a drake-slayer\'s name on it now. Yours.'),
+          ...brogan('I\'ll set the crystal above my hearth. Cheaper than firewood, and a sight better story.'),
+        ]);
+      });
     });
     return 'done';
   }

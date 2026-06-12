@@ -1,9 +1,57 @@
 {
-  "_comment": "Server-owned quest COMPLETION rewards, keyed by '<questId>:<stage>'. The client may request a claim but NEVER specifies the reward amount — the server grants only what is listed here, exactly once per (quest,stage) (docs/ECONOMY-AUTHORITY.md §2.1, closes M6 reward inflation). Seeded from the readable quest packs; intermediate quest item hand-outs (tuning_fork, mine_survey, etc.) are a documented follow-up and remain client-optimistic until enumerated here.",
-  "gd1_sour_notes:5": { "xp": [{ "skill": "Magic", "amount": 400 }], "coins": 100, "items": [{ "id": "mira_letter", "qty": 1 }] },
-  "gd2_quarrel_of_wizards:6": { "xp": [{ "skill": "Magic", "amount": 800 }], "coins": 400, "items": [{ "id": "guild_powder_horn", "qty": 1 }] },
-  "gd3_sealed_wing:6": { "xp": [{ "skill": "Mining", "amount": 1200 }], "coins": 600, "items": [{ "id": "hollis_lamp", "qty": 1 }] },
-  "cold_comfort:5": { "xp": [{ "skill": "Firemaking", "amount": 600 }], "coins": 300, "items": [{ "id": "calder_brand", "qty": 1 }] },
+  "_comment": "Server-owned quest COMPLETION + dialogue-handout rewards, keyed by '<questId>:<stage>'. The client may request a claim (quest-reward) or a gated dialogue handout (scripted-grant) but NEVER specifies the amount — the server grants only what is listed here, exactly once per (quest,stage) (docs/ECONOMY-AUTHORITY.md §2.1, closes M6 reward inflation). A reward is granted only once the player has legitimately REACHED the stage (questStage >= stage in server/intents.ts questClaim), so mid-quest item handouts are keyed at the stage the dialogue advances the player TO. Batch-1 (main arc + early quests) entries added by the Quests-A agent; other batches append their own keys (cold_comfort / thunder_on_the_tide are other batches').",
+
+  "empty_larder:2": { "xp": [{ "skill": "Cooking", "amount": 300 }], "items": [{ "id": "cake", "qty": 1 }] },
+  "seeds_of_trouble:2": { "xp": [{ "skill": "Farming", "amount": 500 }], "coins": 200, "items": [{ "id": "potato_seed", "qty": 2 }, { "id": "cabbage_seed", "qty": 2 }] },
+
+  "streets_of_aldgate:2": { "xp": [{ "skill": "Construction", "amount": 300 }], "coins": 150 },
+
   "warlords_banner:2": { "xp": [{ "skill": "Attack", "amount": 800 }], "coins": 500 },
-  "thunder_on_the_tide:6": { "xp": [{ "skill": "Gun", "amount": 800 }], "coins": 500, "items": [{ "id": "guild_deputy_badge", "qty": 1 }] }
+
+  "heart_of_the_bog:2": { "xp": [{ "skill": "Herblore", "amount": 600 }, { "skill": "Farming", "amount": 600 }], "items": [{ "id": "attack_potion", "qty": 2 }, { "id": "defence_potion", "qty": 2 }] },
+
+  "embers_below:2": { "xp": [{ "skill": "Slayer", "amount": 1000 }, { "skill": "Smithing", "amount": 800 }], "coins": 1500, "items": [{ "id": "mithril_scimitar", "qty": 1 }] },
+
+  "gd1_sour_notes:1": { "items": [{ "id": "tuning_fork", "qty": 1 }] },
+  "gd1_sour_notes:4": { "items": [{ "id": "clinic_note", "qty": 1 }] },
+  "gd1_sour_notes:5": { "xp": [{ "skill": "Magic", "amount": 400 }], "coins": 100, "items": [{ "id": "mira_letter", "qty": 1 }] },
+
+  "gd2_quarrel_of_wizards:5": { "items": [{ "id": "wizards_writ", "qty": 1 }] },
+  "gd2_quarrel_of_wizards:6": { "xp": [{ "skill": "Magic", "amount": 800 }], "coins": 400, "items": [{ "id": "guild_powder_horn", "qty": 1 }] },
+
+  "gd3_sealed_wing:2": { "items": [{ "id": "mine_survey", "qty": 1 }] },
+  "gd3_sealed_wing:5": { "items": [{ "id": "foreman_ledger", "qty": 1 }] },
+  "gd3_sealed_wing:6": { "xp": [{ "skill": "Mining", "amount": 1200 }], "coins": 600, "items": [{ "id": "hollis_lamp", "qty": 1 }] },
+
+  "gd4_gathering_discord:2": { "items": [{ "id": "joint_writ", "qty": 1 }] },
+  "gd4_gathering_discord:4": { "items": [{ "id": "torn_score_page", "qty": 1 }] },
+  "gd4_gathering_discord:5": { "xp": [{ "skill": "Slayer", "amount": 1500 }, { "skill": "Magic", "amount": 800 }], "coins": 1000 },
+
+  "frozen_crown:2": { "xp": [{ "skill": "Agility", "amount": 1200 }, { "skill": "Magic", "amount": 1200 }], "coins": 2000, "items": [{ "id": "prayer_potion", "qty": 1 }] },
+  "red_smile:2": { "xp": [{ "skill": "Thieving", "amount": 900 }, { "skill": "Attack", "amount": 900 }], "coins": 1500, "items": [{ "id": "sapphire_ring", "qty": 1 }] },
+
+  "catch_of_a_lifetime:2": { "xp": [{ "skill": "Fishing", "amount": 1800 }, { "skill": "Cooking", "amount": 800 }], "coins": 1000, "items": [{ "id": "harpoon", "qty": 1 }] },
+  "ash_and_ruin:2": { "xp": [{ "skill": "Slayer", "amount": 2500 }, { "skill": "Mining", "amount": 1500 }], "coins": 3000, "items": [{ "id": "molten_gauntlets", "qty": 1 }] },
+
+  "gem_problem:2": { "xp": [{ "skill": "Crafting", "amount": 700 }, { "skill": "Mining", "amount": 700 }], "coins": 800, "items": [{ "id": "chisel", "qty": 1 }] },
+  "lost_flock:2": { "xp": [{ "skill": "Crafting", "amount": 600 }, { "skill": "Farming", "amount": 400 }], "coins": 500, "items": [{ "id": "ball_of_wool", "qty": 2 }] },
+
+  "cold_comfort:5": { "xp": [{ "skill": "Firemaking", "amount": 600 }], "coins": 300, "items": [{ "id": "calder_brand", "qty": 1 }] },
+  "thunder_on_the_tide:6": { "xp": [{ "skill": "Gun", "amount": 800 }], "coins": 500, "items": [{ "id": "guild_deputy_badge", "qty": 1 }] },
+
+  "_batch2_comment": "=== Quests batch 2 (side quests + hubs). Completion rewards (quest-reward at doneStage) + scripted dialogue hand-outs (scripted-grant when the player reaches the keyed stage). Aux counters stay client-reflected via src/quest-sync.ts; repeatable quest-flow grants live in data/questb-grants.json. ===",
+  "tanglewood_toll:2": { "xp": [{ "skill": "Woodcutting", "amount": 400 }], "coins": 300, "items": [{ "id": "yew_logs", "qty": 2 }] },
+  "furs_for_watch:2": { "xp": [{ "skill": "Hunter", "amount": 600 }], "coins": 500 },
+  "wreck_of_gull:2": { "xp": [{ "skill": "Smithing", "amount": 800 }], "coins": 1000, "items": [{ "id": "boarding_cutlass", "qty": 1 }] },
+  "against_the_grain:6": { "xp": [{ "skill": "Cooking", "amount": 500 }], "coins": 150, "items": [{ "id": "bread", "qty": 3 }, { "id": "millers_token", "qty": 1 }] },
+  "keep_the_light:5": { "xp": [{ "skill": "Firemaking", "amount": 700 }], "coins": 300, "items": [{ "id": "keepers_spyglass", "qty": 1 }] },
+  "hush_of_ravenmoor:6": { "xp": [{ "skill": "Prayer", "amount": 700 }], "coins": 500, "items": [{ "id": "ravenmoor_signet", "qty": 1 }] },
+  "hymn_for_the_hollow:6": { "xp": [{ "skill": "Prayer", "amount": 800 }], "coins": 200, "items": [{ "id": "quiess_feather", "qty": 1 }] },
+
+  "thunder_on_the_tide:1": { "items": [{ "id": "powder_grit", "qty": 1 }] },
+  "thunder_on_the_tide:2": { "items": [{ "id": "guild_writ", "qty": 1 }] },
+  "thunder_on_the_tide:3": { "items": [{ "id": "false_manifest", "qty": 1 }] },
+  "thunder_on_the_tide:5": { "items": [{ "id": "powder_keg", "qty": 1 }] },
+  "hush_of_ravenmoor:2": { "items": [{ "id": "ravenmoor_diary", "qty": 1 }] },
+  "hymn_for_the_hollow:4": { "items": [{ "id": "hollow_verse", "qty": 1 }] }
 }

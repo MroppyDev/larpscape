@@ -9,17 +9,19 @@
 import {
   state, msg, events,
   registerObjectAction, registerItemAction,
-  addItem, removeFromSlot, freeSlots,
-  addXp, level, hasTool,
+  freeSlots, requestIntent,
+  level, hasTool,
 } from '../game';
-import { ITEMS, SKILL_OBJS } from '../defs';
+import { SKILL_OBJS } from '../defs';
 import { audio } from '../audio';
 
 // ---------------- helpers (mirrored from content.ts) ----------------
 
-function successRoll(lvl: number, reqLevel: number, low: number, high: number): boolean {
+// Per-tick success probability — COSMETIC only now (drives tree/rock depletion
+// animation; the server rolls the actual grant).
+function successRollChance(lvl: number, reqLevel: number, low: number, high: number): number {
   const t = Math.min(1, Math.max(0, (lvl - reqLevel) / Math.max(1, 99 - reqLevel)));
-  return Math.random() < low + (high - low) * t;
+  return low + (high - low) * t;
 }
 
 let lastMsgAction: unknown = null;
@@ -29,9 +31,6 @@ function onceMsg(text: string) {
     msg(text);
   }
 }
-
-function lowName(id: string) { return (ITEMS[id]?.name ?? id).toLowerCase(); }
-function aOrAn(s: string) { return /^[aeiou]/.test(s) ? 'an' : 'a'; }
 
 // ============================================================================
 // WOODCUTTING — maple / yew / magic tree
@@ -46,15 +45,14 @@ for (const type of ['maple', 'yew', 'magic_tree']) {
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more logs.'); return 'done'; }
     onceMsg('You swing your axe at the tree...');
     audio.sfx('chop');
-    if (successRoll(lvl, data.level, data.lowRate, data.highRate)) {
-      addItem(data.item);
-      addXp('Woodcutting', data.xp);
-      msg(`You get some ${lowName(data.item)}.`);
-      if (Math.random() < data.depleteChance) {
-        o.depletedUntil = state.tick + data.respawn;
-        o.depletedAs = 'stump';
-        return 'done';
-      }
+    // Server-authoritative gather: the server validates the tree@tile + tool +
+    // level, rolls success, and grants the logs + Woodcutting xp. The depletion
+    // below is COSMETIC only.
+    void requestIntent('gather', { obj: type, x: o.x, y: o.y });
+    if (Math.random() < data.depleteChance * successRollChance(lvl, data.level, data.lowRate, data.highRate)) {
+      o.depletedUntil = state.tick + data.respawn;
+      o.depletedAs = 'stump';
+      return 'done';
     }
     return 'continue';
   });
@@ -73,15 +71,12 @@ for (const type of ['rocks_gold', 'rocks_runite']) {
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more ore.'); return 'done'; }
     onceMsg('You swing your pick at the rock...');
     audio.sfx('mine');
-    if (successRoll(lvl, data.level, data.lowRate, data.highRate)) {
-      addItem(data.item);
-      addXp('Mining', data.xp);
-      msg(`You manage to mine some ${lowName(data.item)}.`);
-      if (data.depleteChance > 0 && Math.random() < data.depleteChance) {
-        o.depletedUntil = state.tick + data.respawn;
-        o.depletedAs = 'rocks_empty';
-        return 'done';
-      }
+    // Server-authoritative gather: server rolls + grants the ore + Mining xp.
+    void requestIntent('gather', { obj: type, x: o.x, y: o.y });
+    if (data.depleteChance > 0 && Math.random() < data.depleteChance * successRollChance(lvl, data.level, data.lowRate, data.highRate)) {
+      o.depletedUntil = state.tick + data.respawn;
+      o.depletedAs = 'rocks_empty';
+      return 'done';
     }
     return 'continue';
   });
@@ -90,21 +85,6 @@ for (const type of ['rocks_gold', 'rocks_runite']) {
 // ============================================================================
 // MINING — gem rocks (weighted random gem instead of a fixed ore)
 // ============================================================================
-const GEM_ROCK_TABLE: { item: string; weight: number }[] = [
-  { item: 'uncut_sapphire', weight: 50 },
-  { item: 'uncut_emerald', weight: 30 },
-  { item: 'uncut_ruby', weight: 20 },
-];
-
-function rollGem(): string {
-  let r = Math.random() * GEM_ROCK_TABLE.reduce((s, g) => s + g.weight, 0);
-  for (const g of GEM_ROCK_TABLE) {
-    r -= g.weight;
-    if (r < 0) return g.item;
-  }
-  return GEM_ROCK_TABLE[0].item;
-}
-
 {
   const data = SKILL_OBJS.rocks_gem;
   registerObjectAction('rocks_gem', 'Mine', (o) => {
@@ -115,16 +95,13 @@ function rollGem(): string {
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more gems.'); return 'done'; }
     onceMsg('You swing your pick at the glittering seam...');
     audio.sfx('mine');
-    if (successRoll(lvl, data.level, data.lowRate, data.highRate)) {
-      const gem = rollGem();
-      addItem(gem);
-      addXp('Mining', data.xp);
-      msg(`You chip ${aOrAn(lowName(gem))} ${lowName(gem)} out of the rock.`);
-      if (data.depleteChance > 0 && Math.random() < data.depleteChance) {
-        o.depletedUntil = state.tick + data.respawn;
-        o.depletedAs = 'rocks_empty';
-        return 'done';
-      }
+    // Server-authoritative gem mining: server validates the gem rock tile +
+    // level/tool and grants the gem + Mining xp.
+    void requestIntent('mine-gem', { x: o.x, y: o.y });
+    if (data.depleteChance > 0 && Math.random() < data.depleteChance * successRollChance(lvl, data.level, data.lowRate, data.highRate)) {
+      o.depletedUntil = state.tick + data.respawn;
+      o.depletedAs = 'rocks_empty';
+      return 'done';
     }
     return 'continue';
   });
@@ -134,21 +111,24 @@ function rollGem(): string {
 // POTIONS — Drink actions for the new brews
 // ============================================================================
 registerItemAction('prayer_potion', 'Drink', (slot) => {
-  const p = state.player;
-  const restore = ITEMS.prayer_potion.restoresPrayer ?? 25;
-  removeFromSlot(slot);
-  p.prayerPoints = Math.min(level('Prayer'), p.prayerPoints + restore);
-  audio.sfx('pray');
-  msg('You drink the prayer potion. A calm, chapel-cold feeling restores your spirit.');
-  events.onStatsChange();
+  void slot;
+  void requestIntent('consume', { item: 'prayer_potion' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('pray');
+    msg('You drink the prayer potion. A calm, chapel-cold feeling restores your spirit.');
+    events.onStatsChange();
+  });
 });
 
 // NOTE: like attack/defence potions in content.ts, this is flavor-only in v1 —
 // no real stat boost is applied yet.
 registerItemAction('super_attack', 'Drink', (slot) => {
-  removeFromSlot(slot);
-  audio.sfx('eat');
-  msg('You drink the super attack potion. Your arms feel ready for anything.');
+  void slot;
+  void requestIntent('consume', { item: 'super_attack' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg('You drink the super attack potion. Your arms feel ready for anything.');
+  });
 });
 
 export {};

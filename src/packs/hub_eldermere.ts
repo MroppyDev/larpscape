@@ -3,17 +3,17 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  state, msg, invCount,
   registerNpcAction, startDialogue, showOptions, openShop,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const TOLL = 'tanglewood_toll';
 const LOGS_NEEDED = 5;
 
-function stage(): number { return state.player.quests[TOLL] ?? 0; }
-function setStage(s: number) { state.player.quests[TOLL] = s; }
+function stage(): number { return questStage(TOLL); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -56,11 +56,13 @@ registerNpcAction('village_elder', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll fetch your logs.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(MAERYN, 'Bless you. Any honest tree will give up logs if you\'ve an axe and patience.'),
-              ...say(MAERYN, 'Mind the Tanglewood edge — the spiders there grow bold when the path is quiet.'),
-            ]);
+            void advanceQuestStage(TOLL, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(MAERYN, 'Bless you. Any honest tree will give up logs if you\'ve an axe and patience.'),
+                ...say(MAERYN, 'Mind the Tanglewood edge — the spiders there grow bold when the path is quiet.'),
+              ]);
+            });
           },
         },
         {
@@ -87,16 +89,17 @@ registerNpcAction('village_elder', 'Talk-to', (_n: Npc) => {
       ...say(MAERYN, 'Ha! These will do nicely. Hold this end — even an elder can swing a mallet when the village depends on it.'),
       ...say(MAERYN, 'There — braced, beamed, and wide enough for a cart. The Tanglewood toll is open again!'),
     ], () => {
-      removeItem('logs', LOGS_NEEDED);
-      setStage(2);
-      addXp('Woodcutting', 400);
-      addItem('coins', 300);
-      addItem('yew_logs', 2);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(MAERYN, 'Three hundred coins from the village purse, and two yew logs from the old grove — payment and promise alike.'),
-        ...say(MAERYN, 'Walk the path with care. Tanglewood remembers every footfall.'),
-      ]);
+      // Server consumes the 5 logs on the validated 1->2 advance, then grants
+      // the data-defined reward (Woodcutting xp + coins + yew logs).
+      void advanceQuestStage(TOLL, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(TOLL, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(MAERYN, 'Three hundred coins from the village purse, and two yew logs from the old grove — payment and promise alike.'),
+          ...say(MAERYN, 'Walk the path with care. Tanglewood remembers every footfall.'),
+        ]);
+      });
     });
     return 'done';
   }

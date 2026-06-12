@@ -23,8 +23,8 @@
 // Geometry must match scripts/author-dungeon.ts + server/dungeon.ts.
 
 import {
-  state, msg, addItem, addXp, level, hasTool, freeSlots,
-  invCount, removeItem, openShop,
+  state, msg, level, hasTool, freeSlots,
+  invCount, openShop, requestIntent,
   registerObjectAction, registerNpcAction, registerFx, registerDamageModifier,
   registerTickHook, onKill, startDialogue, showOptions,
   DialogueLine, Npc,
@@ -163,52 +163,24 @@ for (const type of ['mine_ladder', 'mine_rope']) {
 // Ringing veins — the dungeon's mining loop
 // ============================================================
 
-const VEIN_LEVEL = 10;
-const VEIN_XP = 40;
-const SHARD_CHANCE = 0.06;
 const DEPLETE_CHANCE = 0.5;
 const VEIN_RESPAWN = 40; // ticks (~24s — forces hops between 2-3 veins)
 
 function hasPickaxe(): boolean { return hasTool('bronze_pickaxe') || hasTool('tuned_pickaxe'); }
 
-function veinSuccess(): boolean {
-  const lvl = level('Mining');
-  let chance = 0.25 + Math.min(1, Math.max(0, (lvl - VEIN_LEVEL) / 30)) * 0.65;
-  if (hasTool('tuned_pickaxe')) chance *= 1.1; // the tuned pick finds the seam a tenth sooner
-  return Math.random() < Math.min(0.95, chance);
-}
-
-function veinOre(): string {
-  const lvl = level('Mining');
-  const r = Math.random();
-  // level-scaled mix: coal creeps in from Mining 20 even though overworld
-  // coal rocks ask for 30 — that's the wing's draw for early miners
-  if (lvl >= 20 && r < 0.3) return 'coal';
-  if (r < 0.6) return 'iron_ore';
-  if (r < 0.8) return 'copper_ore';
-  return 'tin_ore';
-}
-
 registerObjectAction('rocks_ringing', 'Mine', (o) => {
   if (o.depletedUntil > 0) { msg('The vein has rung itself empty. Give it a few bars.'); return 'done'; }
   if (!hasPickaxe()) { msg('You need a pickaxe to mine this vein.'); return 'done'; }
-  if (level('Mining') < VEIN_LEVEL) { msg(`You need a Mining level of ${VEIN_LEVEL} to work a ringing vein.`); return 'done'; }
+  if (level('Mining') < 10) { msg('You need a Mining level of 10 to work a ringing vein.'); return 'done'; }
   if (freeSlots() === 0) { msg('Your inventory is too full to hold any more ore.'); return 'done'; }
   audio.sfx('mine');
-  if (veinSuccess()) {
-    const ore = veinOre();
-    addItem(ore);
-    addXp('Mining', VEIN_XP);
-    msg('The vein answers your pick a half-beat flat. You pry the ore loose anyway.');
-    if (Math.random() < SHARD_CHANCE) {
-      addItem('resonant_shard');
-      msg('A sliver in the ore is still ringing. You pocket a resonant shard.', 'level');
-    }
-    if (Math.random() < DEPLETE_CHANCE) {
-      o.depletedUntil = state.tick + VEIN_RESPAWN;
-      o.depletedAs = 'rocks_empty';
-      return 'done';
-    }
+  // Server-authoritative vein mining: validates dungeon room + tile + tool/level
+  // and grants ore/shards/xp via echo/applyGrant.
+  void requestIntent('mine-vein', { x: o.x, y: o.y });
+  if (Math.random() < DEPLETE_CHANCE) {
+    o.depletedUntil = state.tick + VEIN_RESPAWN;
+    o.depletedAs = 'rocks_empty';
+    return 'done';
   }
   return 'continue';
 });
@@ -311,52 +283,40 @@ registerNpcAction('crystal_heart', 'Look-at', (n: Npc) => {
 // Cantor-Surveyor Brigh — shard exchange + supplies (at the breach)
 // ============================================================
 
-interface Exchange { label: string; cost: number; give: () => boolean; flavor: string }
+// Shard exchange — SERVER-AUTHORITATIVE (docs/CONVERSION-CONTRACT.md). The deal
+// table (shard cost → item/coins) is owned by server/intent-misc.ts; the client
+// only names the deal INDEX and reports the echo. `cost`/`flavor` here are for the
+// menu labels + chat flavour; the server independently validates shards + room
+// and grants exactly the data-defined output. Indices MUST match SHARD_DEALS.
+interface Exchange { label: string; cost: number; flavor: string }
 const EXCHANGES: Exchange[] = [
-  {
-    label: '2 shards — 60 coins', cost: 2,
-    give: () => addItem('coins', 60),
-    flavor: 'Evidence has a price, and the duchy pays on receipt.',
-  },
-  {
-    label: '2 shards — 3 attack potions', cost: 2,
-    give: () => addItem('attack_potion', 3),
-    flavor: 'Brewed loud on purpose. Drink before the chorus.',
-  },
-  {
-    label: '4 shards — an iron scimitar', cost: 4,
-    give: () => addItem('iron_scimitar', 1),
-    flavor: 'Guild surplus. It holds its edge and its pitch.',
-  },
-  {
-    label: '12 shards — a steel scimitar', cost: 12,
-    give: () => addItem('steel_scimitar', 1),
-    flavor: 'Steel sings a fifth higher than iron. Aim it accordingly.',
-  },
-  {
-    label: '18 shards — a steel platebody', cost: 18,
-    give: () => addItem('steel_platebody', 1),
-    flavor: 'Proofed against percussion. Most percussion.',
-  },
+  { label: '2 shards — 60 coins', cost: 2, flavor: 'Evidence has a price, and the duchy pays on receipt.' },
+  { label: '2 shards — 3 attack potions', cost: 2, flavor: 'Brewed loud on purpose. Drink before the chorus.' },
+  { label: '4 shards — an iron scimitar', cost: 4, flavor: 'Guild surplus. It holds its edge and its pitch.' },
+  { label: '12 shards — a steel scimitar', cost: 12, flavor: 'Steel sings a fifth higher than iron. Aim it accordingly.' },
+  { label: '18 shards — a steel platebody', cost: 18, flavor: 'Proofed against percussion. Most percussion.' },
 ];
 
 function openExchange() {
   const have = invCount('resonant_shard');
   showOptions([
-    ...EXCHANGES.map((ex) => ({
+    ...EXCHANGES.map((ex, idx) => ({
       label: ex.label,
       fn: () => {
         if (invCount('resonant_shard') < ex.cost) {
           startDialogue(say(BRIGH, `That costs ${ex.cost} shards and you are holding ${invCount('resonant_shard')}. The mine is generous. Go be received.`));
           return;
         }
-        if (freeSlots() === 0) {
-          startDialogue(say(BRIGH, 'Your pack is full. I log everything, including that.'));
-          return;
-        }
-        removeItem('resonant_shard', ex.cost);
-        ex.give();
-        startDialogue(say(BRIGH, ex.flavor));
+        void (async () => {
+          const echo = await requestIntent('shard-exchange', { deal: idx });
+          if (!echo.ok) {
+            startDialogue(say(BRIGH, echo.error === 'inventory full'
+              ? 'Your pack is full. I log everything, including that.'
+              : 'The slate says no. Come back with the shards.'));
+            return;
+          }
+          startDialogue(say(BRIGH, ex.flavor));
+        })();
       },
     })),
     { label: `Never mind. (you have ${have} shards)`, fn: () => { /* close */ } },

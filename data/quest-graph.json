@@ -9,7 +9,191 @@
   "seeds_of_trouble": {
     "transitions": [
       { "from": 0, "to": 1 },
-      { "from": 1, "to": 2, "requiredItems": [{ "id": "cabbage", "qty": 1 }] }
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "cabbage", "qty": 1 }], "requiredQuestStages": [{ "id": "seeds_kills", "stage": 5 }] }
+    ]
+  },
+
+  "_batch1_comment": "=== Quests batch 1 (main arc + early quests), Quests-A agent. Sub-progress counters/bitmasks (gd1_rings/gd1_rats/gd2_rings/gd2_brazier/gd3_miners/gd4_accord/gd4_boss/seeds_kills/frozen_crown_kill/red_smile_kill) are SERVER-owned, advanced via server/intent-quest.ts (quest-mark + the kill hook, configured in data/quest-progress.json) and gated into parent-quest completion here via requiredQuestStages on the sub-key. Flexible OR/counted turn-ins (catch_of_a_lifetime/gem_problem) and quest-gated crafts (gd3 blasting_charge / ember_crystal buy) are NOT graph transitions — they route through server/intent-quest.ts. Mid-quest item HAND-OUTS are data/quest-rewards.json keyed at the stage they are given.",
+
+  "streets_of_aldgate": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "logs", "qty": 3 }, { "id": "plank", "qty": 1 }] }
+    ]
+  },
+  "warlords_banner": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "warlord_banner", "qty": 1 }] }
+    ]
+  },
+  "heart_of_the_bog": {
+    "transitions": [
+      { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "seeds_of_trouble", "stage": 2 }] },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "bog_heart", "qty": 1 }] }
+    ]
+  },
+  "embers_below": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "ember_crystal", "qty": 1 }] }
+    ]
+  },
+  "gd1_sour_notes": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd1_rings", "stage": 3 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "gd1_rats", "stage": 2 }] },
+      { "from": 4, "to": 5, "requiredItems": [{ "id": "clinic_note", "qty": 1 }] }
+    ]
+  },
+  "gd2_quarrel_of_wizards": {
+    "transitions": [
+      { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "gd1_sour_notes", "stage": 5 }] },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd2_brazier", "stage": 2 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "gd2_rings", "stage": 7 }] },
+      { "from": 4, "to": 5 },
+      { "from": 5, "to": 6, "requiredItems": [{ "id": "wizards_writ", "qty": 1 }] }
+    ]
+  },
+  "gd3_sealed_wing": {
+    "transitions": [
+      { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "gd2_quarrel_of_wizards", "stage": 6 }] },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "plank", "qty": 2 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4, "requiredItems": [{ "id": "blasting_charge", "qty": 1 }] },
+      { "from": 4, "to": 5, "requiredQuestStages": [{ "id": "gd3_miners", "stage": 2 }] },
+      { "from": 5, "to": 6, "requiredItems": [{ "id": "foreman_ledger", "qty": 1 }] }
+    ]
+  },
+  "gd4_gathering_discord": {
+    "transitions": [
+      { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "gd3_sealed_wing", "stage": 6 }] },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd4_accord", "stage": 12 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "gd4_boss", "stage": 1 }] },
+      { "from": 4, "to": 5 }
+    ]
+  },
+  "frozen_crown": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "frozen_crown_kill", "stage": 1 }] }
+    ]
+  },
+  "red_smile": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "red_smile_kill", "stage": 1 }] }
+    ]
+  },
+  "ash_and_ruin": {
+    "transitions": [
+      { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "embers_below", "stage": 2 }] },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "molten_core", "qty": 1 }] }
+    ]
+  },
+  "lost_flock": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "wool", "qty": 5 }] }
+    ]
+  },
+  "catch_of_a_lifetime": {
+    "transitions": [
+      { "from": 0, "to": 1 }
+    ]
+  },
+  "gem_problem": {
+    "transitions": [
+      { "from": 0, "to": 1 }
+    ]
+  },
+
+  "_batch2_comment": "=== Quests batch 2 (side quests + hubs) below. Aux quest counters (q*_braziers/q*_wolves/q*_crates/q*_runners/q*_buried/q*_cellar/q8_brazier) are sub-stage progress trackers reflected client-side via src/quest-sync.ts (flagged follow-up to promote them to server-owned). They are NOT graph stages — only the doneStage spine is modelled here. Required items consumed at a turn-in are declared on the relevant transition; mid-quest item HAND-OUTS are data/quest-rewards.json (idempotent) or data/questb-grants.json (repeatable).",
+
+  "tanglewood_toll": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "logs", "qty": 5 }] }
+    ]
+  },
+  "furs_for_watch": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "bear_fur", "qty": 3 }] }
+    ]
+  },
+  "wreck_of_gull": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "iron_bar", "qty": 10 }] }
+    ]
+  },
+
+  "cold_comfort": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "coal", "qty": 5 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4 },
+      { "from": 4, "to": 5 }
+    ]
+  },
+
+  "against_the_grain": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2 },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4 },
+      { "from": 4, "to": 5, "requiredItems": [{ "id": "lucky_shim", "qty": 1 }, { "id": "shim_receipt", "qty": 1 }] },
+      { "from": 5, "to": 6 }
+    ]
+  },
+
+  "keep_the_light": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2 },
+      { "from": 2, "to": 3, "requiredItems": [{ "id": "logs", "qty": 5 }, { "id": "lamp_oil", "qty": 1 }] },
+      { "from": 3, "to": 4 },
+      { "from": 4, "to": 5 }
+    ]
+  },
+
+  "thunder_on_the_tide": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2, "requiredItems": [{ "id": "powder_grit", "qty": 1 }] },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4 },
+      { "from": 4, "to": 5 },
+      { "from": 5, "to": 6, "requiredItems": [{ "id": "powder_keg", "qty": 1 }, { "id": "false_manifest", "qty": 1 }] }
+    ]
+  },
+
+  "hush_of_ravenmoor": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2 },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4, "requiredItems": [{ "id": "cellar_key", "qty": 1 }] },
+      { "from": 4, "to": 5 },
+      { "from": 5, "to": 6, "requiredItems": [{ "id": "ravenmoor_diary", "qty": 1 }] }
+    ]
+  },
+
+  "hymn_for_the_hollow": {
+    "transitions": [
+      { "from": 0, "to": 1 },
+      { "from": 1, "to": 2 },
+      { "from": 2, "to": 3 },
+      { "from": 3, "to": 4 },
+      { "from": 4, "to": 5, "requiredItems": [{ "id": "hollow_verse", "qty": 1 }] },
+      { "from": 5, "to": 6 }
     ]
   }
 }

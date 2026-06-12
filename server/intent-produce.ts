@@ -428,6 +428,18 @@ registerIntentDomain('pick', (ctx, payload) => {
 });
 
 // ===========================================================================
+// SNARE-LAY — consume one bird_snare to set a trap. The placed world object is
+// cosmetic the client owns; the server just removes the snare item (owned).
+// ===========================================================================
+registerIntentDomain('snare-lay', (ctx) => {
+  if (ctx.dead) return fail('snare-lay', 'dead');
+  return tx(ctx, 'snare-lay', (state) => {
+    if (!invRemove(state, 'bird_snare', 1)) return fail('snare-lay', 'no snare');
+    return { ok: true, kind: 'snare-lay', removed: [{ id: 'bird_snare', qty: 1 }] };
+  });
+});
+
+// ===========================================================================
 // SNARE-CHECK — hunter bird snare. The snare's caught-state is world cosmetic
 // the client tracks; the server grants the fixed loot when the client reports a
 // caught snare. { caught:boolean }. A caught snare returns snare + meat +
@@ -490,9 +502,89 @@ registerIntentDomain('train', (ctx, payload) => {
   });
 });
 
+// ===========================================================================
+// CONSUME — drink a potion: validate it is held, remove ONE, and (data-driven)
+// restore prayer for prayer_potion. attack/defence/super potions are flavor-
+// only consumables in v1 (no stat boost), but the item is still owned state, so
+// the removal MUST be server-authoritative. { item }. Only a fixed allow-list of
+// drinkable potions is honoured; the restore amount comes from items.json, never
+// the client. The restored prayer arrives via the save_reload push that every
+// withState mutation triggers (the client re-syncs authoritative state).
+// ===========================================================================
+interface DrinkItem { restoresPrayer?: number; }
+const DRINK_ITEMS = loadJson<Record<string, DrinkItem>>('../data/items.json');
+const DRINKABLE = new Set(['attack_potion', 'defence_potion', 'super_attack', 'prayer_potion']);
+registerIntentDomain('consume', (ctx, payload) => {
+  if (ctx.dead) return fail('consume', 'dead');
+  const item = String(payload.item ?? '');
+  if (!DRINKABLE.has(item) || !isKnownItem(item)) return fail('consume', 'not drinkable');
+  return tx(ctx, 'consume', (state) => {
+    if (!invRemove(state, item, 1)) return fail('consume', 'you have none');
+    const restore = DRINK_ITEMS[item]?.restoresPrayer;
+    if (restore && restore > 0) {
+      const max = skillLevel(state, 'Prayer');
+      const cur = Math.max(0, Math.min(max, state.prayerPoints ?? max));
+      state.prayerPoints = Math.min(max, cur + restore);
+    }
+    return { ok: true, kind: 'consume', removed: [{ id: item, qty: 1 }] };
+  });
+});
+
+// ===========================================================================
+// MINE-VEIN — Untuned Mine ringing veins (rocks_ringing). Server rolls the
+// level-scaled ore mix + resonant_shard bonus; tuned_pickaxe grants +10% success.
+// { x, y }. Cosmetic depletion stays client-side.
+// ===========================================================================
+const VEIN_LEVEL = 10;
+const VEIN_XP = 40;
+const SHARD_CHANCE = 0.06;
+
+function veinSuccess(state: AuthState): boolean {
+  const lvl = skillLevel(state, 'Mining');
+  let chance = 0.25 + Math.min(1, Math.max(0, (lvl - VEIN_LEVEL) / 30)) * 0.65;
+  if (hasTool(state, 'tuned_pickaxe')) chance *= 1.1;
+  return Math.random() < Math.min(0.95, chance);
+}
+
+function veinOre(lvl: number): string {
+  const r = Math.random();
+  if (lvl >= 20 && r < 0.3) return 'coal';
+  if (r < 0.6) return 'iron_ore';
+  if (r < 0.8) return 'copper_ore';
+  return 'tin_ore';
+}
+
+registerIntentDomain('mine-vein', (ctx, payload) => {
+  if (ctx.dead) return fail('mine-vein', 'dead');
+  const ox = num(payload.x), oy = num(payload.y);
+  if (!objectTypeAt(ox, oy, 'rocks_ringing')) return fail('mine-vein', 'no such object here');
+  if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('mine-vein', 'out of range');
+  return tx(ctx, 'mine-vein', (state) => {
+    const lvl = skillLevel(state, 'Mining');
+    if (lvl < VEIN_LEVEL) return fail('mine-vein', `requires Mining level ${VEIN_LEVEL}`);
+    if (!hasTool(state, 'bronze_pickaxe') && !hasTool(state, 'tuned_pickaxe')) {
+      return fail('mine-vein', 'you need a pickaxe');
+    }
+    if (freeSlots(state) === 0) return fail('mine-vein', 'inventory full');
+    if (!veinSuccess(state)) {
+      return { ok: true, kind: 'mine-vein', granted: [], xp: [] };
+    }
+    const ore = veinOre(lvl);
+    const granted: { id: string; qty: number }[] = [];
+    if (!invAdd(state, ore, 1)) return fail('mine-vein', 'inventory full');
+    granted.push({ id: ore, qty: 1 });
+    const x = addXp(state, 'Mining', VEIN_XP);
+    if (Math.random() < SHARD_CHANCE && hasRoomFor(state, 'resonant_shard')) {
+      if (invAdd(state, 'resonant_shard', 1)) granted.push({ id: 'resonant_shard', qty: 1 });
+    }
+    return {
+      ok: true, kind: 'mine-vein', granted,
+      xp: [{ skill: 'Mining' as SkillName, amount: VEIN_XP }],
+      leveledUp: x.leveledUp ? [{ skill: 'Mining' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
 function num(v: unknown): number {
   return typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : -1;
 }
-
-// guard against unused-import noise if isKnownItem isn't referenced elsewhere
-void isKnownItem;

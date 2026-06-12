@@ -15,8 +15,8 @@
 import {
   state, msg, events, requestMake, startAction,
   registerObjectAction, registerItemAction, registerItemOnItem,
-  addItem, removeItem, removeFromSlot, invCount, hasItem, hasTool,
-  addXp, level, MakeOption,
+  invCount, hasItem, hasTool,
+  level, MakeOption, requestIntent,
 } from '../game';
 import { ITEMS, CRAFTABLES, FLETCHABLES, GEM_CUTS } from '../defs';
 import { addObject, objectAt, key, terrain, T, blocked, WorldObject } from '../world';
@@ -62,17 +62,21 @@ registerObjectAction('furnace', 'Craft-jewellery', (o) => {
     if (!id || qty <= 0) return;
     const c = JEWELRY.find((cc) => cc.output === id)!;
     let left = qty;
+    let busy = false;
     startObjJob(o, () => {
       if (left <= 0) return false;
       if (level('Crafting') < c.level) { msg(`You need a Crafting level of ${c.level} to make this.`); return false; }
       if (!c.inputs.every((i) => hasItem(i.item, i.qty))) { msg("You don't have the materials to make that."); return false; }
-      for (const i of c.inputs) removeItem(i.item, i.qty);
-      addItem(c.output);
-      addXp('Crafting', c.xp);
+      if (busy) return true;
+      busy = true;
       audio.sfx('smelt');
-      msg(`You pour the gold into the mould and craft ${aOrAnWord(lowName(c.output))} ${lowName(c.output)}.`);
       left--;
-      return left > 0;
+      void requestIntent('produce', { recipe: 'craft', output: c.output }).then((echo) => {
+        busy = false;
+        if (!echo.ok) { left = 0; return; }
+        msg(`You pour the gold into the mould and craft ${aOrAnWord(lowName(c.output))} ${lowName(c.output)}.`);
+      });
+      return left > 0 || busy;
     });
   });
   return 'done';
@@ -81,37 +85,37 @@ registerObjectAction('furnace', 'Craft-jewellery', (o) => {
 // ============================================================================
 // GEM CUTTING — chisel on uncut gem, plus a 'Cut' item action when chisel held
 // ============================================================================
-function cutGem(g: (typeof GEM_CUTS)[number]) {
+async function cutGem(g: (typeof GEM_CUTS)[number]) {
   if (!hasTool('chisel')) { msg('You need a chisel to cut this gem.'); return; }
   if (level('Crafting') < g.level) { msg(`You need a Crafting level of ${g.level} to cut this gem.`); return; }
   if (!hasItem(g.uncut)) return;
-  removeItem(g.uncut, 1);
-  addItem(g.cut);
-  addXp('Crafting', g.xp);
+  const echo = await requestIntent('produce', { recipe: 'gemcut', output: g.cut });
+  if (!echo.ok) return;
   audio.sfx('mine');
   msg(`You carefully chip away the rough stone, revealing ${aOrAnWord(lowName(g.cut))} ${lowName(g.cut)}.`);
 }
 
 for (const g of GEM_CUTS) {
-  registerItemOnItem('chisel', g.uncut, () => cutGem(g));
-  registerItemAction(g.uncut, 'Cut', () => cutGem(g));
+  registerItemOnItem('chisel', g.uncut, () => { void cutGem(g); });
+  registerItemAction(g.uncut, 'Cut', () => { void cutGem(g); });
 }
 
 // ============================================================================
 // FLETCHING — new tiers (content.ts only wires normal logs + oak/bronze/iron)
 // ============================================================================
-function doFletch(f: (typeof FLETCHABLES)[number], qty: number) {
+async function doFletch(f: (typeof FLETCHABLES)[number], qty: number) {
+  let made = 0;
   for (let n = 0; n < qty; n++) {
     if (level('Fletching') < f.level) { msg(`You need a Fletching level of ${f.level} to make this.`); return; }
     if (!f.inputs.every((i) => hasItem(i.item, i.qty))) {
       if (n === 0) msg("You don't have the materials to make that.");
       return;
     }
-    for (const i of f.inputs) removeItem(i.item, i.qty);
-    addItem(f.output, f.outputQty ?? 1);
-    addXp('Fletching', f.xp);
+    const echo = await requestIntent('produce', { recipe: 'fletch', output: f.output });
+    if (!echo.ok) break;
+    made++;
   }
-  msg(`You carefully craft ${lowName(f.output)}${(f.outputQty ?? 1) > 1 ? 's' : ''}.`);
+  if (made > 0) msg(`You carefully craft ${lowName(f.output)}${(f.outputQty ?? 1) > 1 ? 's' : ''}.`);
 }
 
 // knife on maple/yew/magic logs -> unstrung shortbow picker
@@ -129,7 +133,7 @@ for (const log of ['maple_logs', 'yew_logs', 'magic_logs']) {
     requestMake(opts, (id, qty) => {
       if (!id || qty <= 0) return;
       const f = choices.find((ff) => ff.output === id)!;
-      doFletch(f, qty);
+      void doFletch(f, qty);
     });
   });
 }
@@ -139,7 +143,7 @@ function fletchCombo(a: string, b: string, output: string) {
   const f = FLETCHABLES.find((ff) => ff.output === output)!;
   registerItemOnItem(a, b, () => {
     const maxQty = Math.min(...f.inputs.map((i) => Math.floor(invCount(i.item) / i.qty)));
-    doFletch(f, Math.max(1, maxQty));
+    void doFletch(f, Math.max(1, maxQty));
     audio.sfx('bow');
   });
 }
@@ -154,42 +158,46 @@ fletchCombo('headless_arrow', 'rune_arrowtips', 'rune_arrow');
 // HERBLORE — drinking the new potions (mixing/cleaning is dynamic in content.ts)
 // ============================================================================
 registerItemAction('prayer_potion', 'Drink', (slot) => {
-  const p = state.player;
-  removeFromSlot(slot);
-  audio.sfx('eat');
-  const restore = ITEMS.prayer_potion.restoresPrayer ?? 25;
-  p.prayerPoints = Math.min(level('Prayer'), p.prayerPoints + restore);
-  msg('You drink the prayer potion. A cool calm settles over you as your faith returns.');
-  events.onStatsChange();
+  void slot;
+  void requestIntent('consume', { item: 'prayer_potion' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg('You drink the prayer potion. A cool calm settles over you as your faith returns.');
+    events.onStatsChange();
+  });
 });
 
 registerItemAction('super_attack', 'Drink', (slot) => {
-  removeFromSlot(slot);
-  audio.sfx('eat');
-  msg('You drink the super attack potion. Your sword arm positively itches.');
+  void slot;
+  void requestIntent('consume', { item: 'super_attack' }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg('You drink the super attack potion. Your sword arm positively itches.');
+  });
 });
 
 // ============================================================================
 // FIREMAKING — new log tiers (content.ts registers 'Light' per log id statically)
 // ============================================================================
-const NEW_FIREMAKING: { log: string; level: number; xp: number }[] = [
-  { log: 'maple_logs', level: 45, xp: 135 },
-  { log: 'yew_logs', level: 60, xp: 202.5 },
-  { log: 'magic_logs', level: 75, xp: 303.75 },
+const NEW_FIREMAKING: { log: string; level: number }[] = [
+  { log: 'maple_logs', level: 45 },
+  { log: 'yew_logs', level: 60 },
+  { log: 'magic_logs', level: 75 },
 ];
 for (const fm of NEW_FIREMAKING) {
-  registerItemAction(fm.log, 'Light', (slot) => {
+  registerItemAction(fm.log, 'Light', async (slot) => {
     const p = state.player;
     if (!hasTool('tinderbox')) { msg('You need a tinderbox to light a fire.'); return; }
     if (level('Firemaking') < fm.level) { msg(`You need a Firemaking level of ${fm.level} to light these logs.`); return; }
     const t = terrain[key(p.x, p.y)];
     if (t === T.FLOOR || objectAt.has(key(p.x, p.y))) { msg("You can't light a fire here."); return; }
-    removeFromSlot(slot);
+    void slot;
     msg('You attempt to light the logs...');
+    const echo = await requestIntent('firemake', { log: fm.log });
+    if (!echo.ok) return;
     const fire = addObject('fire', p.x, p.y);
     fire.expiresAt = state.tick + 100;
     audio.sfx('fire');
-    addXp('Firemaking', fm.xp);
     msg('The fire catches and the logs begin to burn.');
     stepAside();
   });

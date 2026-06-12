@@ -38,6 +38,8 @@ import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-w
 import './intent-shop'; // side-effect: registers the 'shop'/'bank' WS domain handlers
 import './intent-produce'; // side-effect: registers production/gathering domain intents
 import './intent-misc'; // side-effect: registers gambling/slayer/misc-grant domain intents
+import './intent-questb'; // side-effect: registers the 'questb-grant' repeatable quest-object domain
+import { installQuestKillHook } from './intent-quest'; // side-effect: registers quest-mark/turnin/craft; kill hook installed below
 import { mergeSave } from '../shared/save-schema';
 import { initPortraits } from './portrait';
 import { initProfiles } from './profiles';
@@ -505,6 +507,11 @@ export const stateStore = createStateStore(db, (ids) => {
 // registered here; the WS skilling intents dispatch from the message handler.
 const intents = makeIntents(stateStore);
 registerIntentRoutes(app, stateStore, intents, requireAuth);
+// Quest sub-progress kill credit (server/intent-quest.ts): server-authoritative
+// kill counters for quest steps (giant_rat / hollow_miner / boss kills, …),
+// bound to the same store the intents use. Domain handlers (quest-mark/turnin/
+// craft) self-register via the import side-effect above.
+installQuestKillHook(stateStore);
 
 // Defined after the profile cache below; hoisted via function declaration so the
 // store callback above can reference it.

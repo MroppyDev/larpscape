@@ -14,12 +14,20 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
-  registerNpcAction, registerObjectAction, registerItemOnObject, onKill,
+  msg, invCount,
+  registerNpcAction, registerObjectAction, registerItemOnObject,
   startDialogue, showOptions, DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
 import { enterUntunedMine } from './untuned_mine';
+import {
+  questStage,
+  advanceQuestStage,
+  claimQuestReward,
+  scriptedGrant,
+  questCraft,
+  auxCount,
+} from '../quest-sync';
 
 const QUEST = 'gd3_sealed_wing';
 const MINERS = 'gd3_miners';       // aux: hollow miners laid to rest (0–2)
@@ -31,9 +39,8 @@ const PLANKS_NEEDED = 2;
 const COAL_NEEDED = 2;
 const CRYSTAL_PRICE = 200;
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
-function miners(): number { return state.player.quests[MINERS] ?? 0; }
+function stage(): number { return questStage(QUEST); }
+function miners(): number { return auxCount(MINERS); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -93,7 +100,7 @@ registerNpcAction('slayer_master', 'Ask-about-the-sealed-wing', (_n: Npc) => {
   const s = stage();
 
   // Prereq: the wizards' writ has to reach the duchy first (Ch2 complete).
-  if (s === 0 && (state.player.quests[PREREQ] ?? 0) < PREREQ_DONE) {
+  if (s === 0 && questStage(PREREQ) < PREREQ_DONE) {
     startDialogue([
       ...say(BROGAN, 'Sealed wing? There\'s a wall in the Swamp Mine and a reason it\'s there. That\'s the whole story until somebody brings me a reason it shouldn\'t be.'),
       ...say(BROGAN, 'In writing. With seals on it. I don\'t open old graves on rumour.'),
@@ -114,11 +121,13 @@ registerNpcAction('slayer_master', 'Ask-about-the-sealed-wing', (_n: Npc) => {
         {
           label: 'I\'ll dig the survey out of Lenny\'s workshop.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(BROGAN, 'Mind the workshop. Lenny files everything under the leg of his workbench. Everything. There\'s a marriage certificate down there that\'s caused two feuds.'),
-              ...say(BROGAN, 'Survey, then Vex, then the wall. And whatever Hollis shut in there — you don\'t turn your back on it.'),
-            ]);
+            void advanceQuestStage(QUEST, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(BROGAN, 'Mind the workshop. Lenny files everything under the leg of his workbench. Everything. There\'s a marriage certificate down there that\'s caused two feuds.'),
+                ...say(BROGAN, 'Survey, then Vex, then the wall. And whatever Hollis shut in there — you don\'t turn your back on it.'),
+              ]);
+            });
           },
         },
         {
@@ -187,19 +196,18 @@ registerNpcAction('slayer_master', 'Ask-about-the-sealed-wing', (_n: Npc) => {
 });
 
 function finishQuest() {
-  removeItem('foreman_ledger', 1);
-  setStage(6);
-  addXp('Mining', 1200);
-  addItem('coins', 600);
-  addItem('hollis_lamp', 1);
-  msg('Congratulations! Quest complete!', 'level');
-  msg('You have unlocked the Untuned Mine. The breach in the Swamp Mine\'s sealed gallery stands open.', 'level');
-  startDialogue([
-    ...say(BROGAN, 'Here\'s how it stands. The duchy license now covers the north gallery — the wing is yours to enter, and the duchy\'s six hundred coins say thank you for the privilege.'),
-    ...say(BROGAN, 'And take his lamp. Hollis trimmed it the day he went in; it was still trying when we found it. It gutters near sour notes. Trust it over your ears.'),
-    ...me('And the first name in your ledger? The one that tore the page?'),
-    ...say(BROGAN, '*Brogan opens his ledger, uncrosses nothing, and writes today\'s date next to the hole in the paper.* Knock twice going in.'),
-  ]);
+  void advanceQuestStage(QUEST, 6).then((echo) => {
+    if (!echo.ok) return;
+    void claimQuestReward(QUEST, 6);
+    msg('Congratulations! Quest complete!', 'level');
+    msg('You have unlocked the Untuned Mine. The breach in the Swamp Mine\'s sealed gallery stands open.', 'level');
+    startDialogue([
+      ...say(BROGAN, 'Here\'s how it stands. The duchy license now covers the north gallery — the wing is yours to enter, and the duchy\'s six hundred coins say thank you for the privilege.'),
+      ...say(BROGAN, 'And take his lamp. Hollis trimmed it the day he went in; it was still trying when we found it. It gutters near sour notes. Trust it over your ears.'),
+      ...me('And the first name in your ledger? The one that tore the page?'),
+      ...say(BROGAN, '*Brogan opens his ledger, uncrosses nothing, and writes today\'s date next to the hole in the paper.* Knock twice going in.'),
+    ]);
+  });
 }
 
 // ============================================================
@@ -231,13 +239,14 @@ registerNpcAction('carpenter', 'Ask-about-the-survey', (_n: Npc) => {
     ...say(LENNY, 'Already did, from here. *Lenny builds the shelf in roughly the time it takes to say so, then kneels at the workbench like a man defusing it.* Will... deed... marriage lines — ooh, that explains the feud — survey!'),
     ...say(LENNY, 'There. Six years of "about to" and it took a morning. Don\'t tell anyone, it\'d ruin me.'),
   ], () => {
-    removeItem('plank', PLANKS_NEEDED);
-    addItem('mine_survey', 1);
-    setStage(2);
-    startDialogue([
-      ...say(LENNY, 'Hold up — there\'s writing on it. North gallery, circled. "Not a cave-in. Don\'t let them dig." That\'s the foreman\'s own hand, that is.'),
-      ...say(LENNY, 'Walls I understand. Walls with opinions, that\'s Gun Guild business. Sergeant Vex, in Aldgate. Tell her the shelf\'s fixed.'),
-    ]);
+    void advanceQuestStage(QUEST, 2).then((echo) => {
+      if (!echo.ok) return;
+      void scriptedGrant(QUEST, 2);
+      startDialogue([
+        ...say(LENNY, 'Hold up — there\'s writing on it. North gallery, circled. "Not a cave-in. Don\'t let them dig." That\'s the foreman\'s own hand, that is.'),
+        ...say(LENNY, 'Walls I understand. Walls with opinions, that\'s Gun Guild business. Sergeant Vex, in Aldgate. Tell her the shelf\'s fixed.'),
+      ]);
+    });
   });
   return 'done';
 });
@@ -260,7 +269,7 @@ registerNpcAction('gun_trainer', 'Ask-about-blasting', (_n: Npc) => {
       ...say(VEX, '*Vex reads the survey once, then again with a straightedge.* "Don\'t let them dig." And the duchy\'s answer is a breaching charge. There\'s a lesson about chains of command in there somewhere.'),
       ...say(VEX, 'Right. A wall that thick wants a milled charge, and I pack those myself. Materials are on you: two coal — honest fuel, mine it or buy it, I don\'t care which — and one ember crystal for the primer.'),
       ...say(VEX, 'Crystals turn up in cinder imps and the Shadow Drake, if you like your shopping violent. Otherwise the fire wizard at the Imber Spire sells them — Brightverse. Count your change.'),
-    ], () => { setStage(3); });
+    ], () => { void advanceQuestStage(QUEST, 3); });
     return 'done';
   }
   if (s === 3) {
@@ -282,10 +291,9 @@ registerNpcAction('gun_trainer', 'Ask-about-blasting', (_n: Npc) => {
       ...say(VEX, 'Counting twice is the whole curriculum. *She mills, packs and fuses the charge with the calm of a woman who has personally met every way this can go wrong.*'),
       ...say(VEX, 'One breaching charge. Set it against the gallery masonry and let the fuse do the talking. Everything on the far side of that wall was sealed in on purpose — so reload before you light it, not after.'),
     ], () => {
-      removeItem('coal', COAL_NEEDED);
-      removeItem('ember_crystal', 1);
-      addItem('blasting_charge', 1);
-      msg('Sergeant Vex mills and packs a breaching charge.');
+      void questCraft('gd3_blasting_charge').then((echo) => {
+        if (echo.ok) msg('Sergeant Vex mills and packs a breaching charge.');
+      });
     });
     return 'done';
   }
@@ -315,11 +323,12 @@ registerNpcAction('imber_wizard', 'Buy-ember-crystal', (_n: Npc) => {
             startDialogue(say(CALDER, 'That is fewer coins than the number we discussed. Fire forgives much. Arithmetic, nothing.'));
             return;
           }
-          removeItem('coins', CRYSTAL_PRICE);
-          addItem('ember_crystal', 1);
-          startDialogue([
-            ...say(CALDER, 'A bomb! *Calder\'s eyes shine in a way that explains the eyebrows.* The finest of all the warm somewheres. Tell it Calder said burn well.'),
-          ]);
+          void questCraft('gd3_buy_crystal').then((echo) => {
+            if (!echo.ok) return;
+            startDialogue([
+              ...say(CALDER, 'A bomb! *Calder\'s eyes shine in a way that explains the eyebrows.* The finest of all the warm somewheres. Tell it Calder said burn well.'),
+            ]);
+          });
         },
       },
       {
@@ -343,14 +352,14 @@ registerItemOnObject('blasting_charge', 'untuned_mine_door', (_slot, _o) => {
     msg('Not without Brogan\'s say-so and Vex\'s instructions. Walls like this get one chance to be opened right.');
     return;
   }
-  removeItem('blasting_charge', 1);
-  setStage(4);
-  state.player.quests[MINERS] = 0;
-  msg('You set the charge against the masonry and light the fuse...', 'game');
-  msg('The blast cracks the seal! A beat later, something in the rock answers — and two shapes peel away from the stone.', 'level');
-  startDialogue([
-    ...say('The breach', '*The masonry splits along a seam no chisel made. From the scarred rock, two figures shrug free — miners in the fashion of forty years ago, the colour of ash, knocking twice on nothing.*'),
-  ]);
+  void advanceQuestStage(QUEST, 4).then((echo) => {
+    if (!echo.ok) return;
+    msg('You set the charge against the masonry and light the fuse...', 'game');
+    msg('The blast cracks the seal! A beat later, something in the rock answers — and two shapes peel away from the stone.', 'level');
+    startDialogue([
+      ...say('The breach', '*The masonry splits along a seam no chisel made. From the scarred rock, two figures shrug free — miners in the fashion of forty years ago, the colour of ash, knocking twice on nothing.*'),
+    ]);
+  });
 });
 
 // Search the seal: pre-blast flavor; stage 4 progress; stage 4-complete → ledger (stage 5).
@@ -365,14 +374,16 @@ registerObjectAction('untuned_mine_door', 'Search', () => {
       msg('The breach is open a hand\'s width — but the hollow miners still hold their shift. Put them to rest first.');
       return 'done';
     }
-    addItem('foreman_ledger', 1);
-    setStage(5);
-    msg('Through the gap, within arm\'s reach of the seal — set where a hand could find it — lies a ledger.', 'level');
-    startDialogue([
-      ...say('Foreman\'s ledger', '*The entries thin from ore counts to a single line, written over and over in a steadying hand:*'),
-      ...say('Foreman\'s ledger', '"It isn\'t a vein. It\'s a score. Someone is down here transcribing."'),
-      ...me('Brogan has to see this.'),
-    ]);
+    void advanceQuestStage(QUEST, 5).then((echo) => {
+      if (!echo.ok) return;
+      void scriptedGrant(QUEST, 5);
+      msg('Through the gap, within arm\'s reach of the seal — set where a hand could find it — lies a ledger.', 'level');
+      startDialogue([
+        ...say('Foreman\'s ledger', '*The entries thin from ore counts to a single line, written over and over in a steadying hand:*'),
+        ...say('Foreman\'s ledger', '"It isn\'t a vein. It\'s a score. Someone is down here transcribing."'),
+        ...me('Brogan has to see this.'),
+      ]);
+    });
     return 'done';
   }
   // Stage 5+: the breach stands; the ledger spot is empty.
@@ -386,7 +397,7 @@ registerObjectAction('untuned_mine_door', 'Search', () => {
 // open branch delegates to the dungeon client (src/packs/untuned_mine.ts),
 // which validates again server-side and teleports into the private run).
 registerObjectAction('untuned_mine_door', 'Enter', () => {
-  if ((state.player.quests['gd3_sealed_wing'] ?? 0) >= 6) {
+  if (questStage('gd3_sealed_wing') >= 6) {
     void enterUntunedMine();
   } else if (stage() >= 4) {
     msg('The breach is too raw to pass, and the duchy license isn\'t yours yet. Brogan first.');
@@ -398,7 +409,7 @@ registerObjectAction('untuned_mine_door', 'Enter', () => {
 
 // Open: politely redirects — this was never a door that opens.
 registerObjectAction('untuned_mine_door', 'Open', () => {
-  if ((state.player.quests['gd3_sealed_wing'] ?? 0) >= 6) {
+  if (questStage('gd3_sealed_wing') >= 6) {
     msg('There is nothing left to open. The breach stands, and it isn\'t closing again.');
   } else if (stage() >= 4) {
     msg('The blast did the opening. What\'s left is rubble, duty, and paperwork — in that order.');
@@ -408,18 +419,3 @@ registerObjectAction('untuned_mine_door', 'Open', () => {
   return 'done';
 });
 
-// ============================================================
-// Hollow miner kill tracking — server youKilled events (killer gets credit).
-// ============================================================
-
-onKill((defId) => {
-  if (!state.player || defId !== 'hollow_miner') return;
-  if (stage() !== 4 || miners() >= MINERS_NEEDED) return;
-  state.player.quests[MINERS] = miners() + 1;
-  const k = miners();
-  if (k < MINERS_NEEDED) {
-    msg(`The hollow miner comes apart like ash off an old timber. At rest, at last. (${k}/${MINERS_NEEDED})`);
-  } else {
-    msg('The last hollow miner knocks twice on the rock, and is gone. The \'88 shift is over. Search the breached seal.', 'level');
-  }
-});

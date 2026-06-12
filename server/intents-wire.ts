@@ -90,13 +90,13 @@ export function dispatchIntentWs(store: StateStore, intents: Intents, view: View
       );
       break;
     case 'quest-stage':
-      res = intents.questAdvance(ctx, String(msg.id ?? ''), num(msg.stage));
+      res = intents.questAdvance(ctx, questId(msg), num(msg.stage));
       break;
     case 'quest-reward':
-      res = intents.questClaim(ctx, String(msg.id ?? ''), num(msg.stage));
+      res = intents.questClaim(ctx, questId(msg), num(msg.stage));
       break;
     case 'scripted-grant':
-      res = intents.scriptedGrant(ctx, String(msg.id ?? ''), num(msg.stage));
+      res = intents.scriptedGrant(ctx, questId(msg), num(msg.stage));
       break;
     default: {
       // registry-dispatched domain intent (slayer/gamble/thieving/farming/…).
@@ -114,6 +114,15 @@ export function dispatchIntentWs(store: StateStore, intents: Intents, view: View
 
 function num(v: unknown): number {
   return typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : -1;
+}
+
+// Quest intents carry the quest id as `qid` on WS (see src/quest-sync.ts) so the
+// numeric correlation `id` is not clobbered. HTTP routes still use `id`.
+function questId(msg: Record<string, unknown>): string {
+  const qid = msg.qid;
+  if (typeof qid === 'string' && qid) return qid;
+  const id = msg.id;
+  return typeof id === 'string' ? id : '';
 }
 
 // Register the HTTP intent routes (shop/bank/quest). `requireAuth` is index.ts's

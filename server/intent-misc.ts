@@ -313,6 +313,20 @@ function slayer(ctx: DomainCtx, payload: Record<string, unknown>): IntentResult 
       return { ok: true, kind, xp, ...({ slayer: slayerSnapshot(state) } as Record<string, unknown>) } as IntentResult;
     }
 
+    if (op === 'read-tome') {
+      // Tome of grudges: consume one tome for a fixed Slayer XP dose. The item +
+      // xp amount are server-defined; the client may only request the read.
+      if (!invHas(state, 'tome_of_grudges', 1)) return { ok: false, kind, error: 'you have no tome of grudges' };
+      if (!invRemove(state, 'tome_of_grudges', 1)) return { ok: false, kind, error: 'you have no tome of grudges' };
+      const amount = 1500;
+      addXp(state, 'Slayer', amount);
+      return {
+        ok: true, kind,
+        removed: [{ id: 'tome_of_grudges', qty: 1 }],
+        xp: [{ skill: 'Slayer' as SkillName, amount }],
+      } as IntentResult;
+    }
+
     if (op === 'buy') {
       // Points shop. Reward + cost are server-defined; the client only names the id.
       const r = REWARDS[String(payload.item ?? '')];

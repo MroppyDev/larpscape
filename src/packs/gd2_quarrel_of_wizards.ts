@@ -18,13 +18,22 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, hasItem, addXp,
+  state, msg, hasItem,
   registerNpcAction, registerItemOnObject, registerItemAction,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { WorldObject } from '../world';
 import { registerQuest } from '../quests';
+import {
+  questStage,
+  advanceQuestStage,
+  claimQuestReward,
+  scriptedGrant,
+  questbGrant,
+  questMark,
+  auxCount,
+} from '../quest-sync';
 
 const QUEST = 'gd2_quarrel_of_wizards';
 const RINGS = 'gd2_rings';       // bitmask: 1 = Aldgate east road, 2 = corridor road, 4 = Stonewatch south road
@@ -34,11 +43,10 @@ const FLINT = 'Master Flint';
 const CALDER = 'Calder Brightverse';
 const VESPER = 'Vesper Hollowell';
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
-function rings(): number { return state.player.quests[RINGS] ?? 0; }
-function brazier(): number { return state.player.quests[BRAZIER] ?? 0; }
-function gd1Done(): boolean { return (state.player.quests['gd1_sour_notes'] ?? 0) >= 5; }
+function stage(): number { return questStage(QUEST); }
+function rings(): number { return auxCount(RINGS); }
+function brazier(): number { return auxCount(BRAZIER); }
+function gd1Done(): boolean { return questStage('gd1_sour_notes') >= 5; }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -125,11 +133,13 @@ registerNpcAction('gun_guild_master', 'Ask-about-the-fizzles', (_n: Npc) => {
         {
           label: 'I\'ll go consult your wizards.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(FLINT, 'Good. Two warnings, free of charge. Calder will demand a fee in firewood and certainty. Vesper will not raise her voice, which is worse.'),
-              ...say(FLINT, 'And whatever they tell you, do not mention the other one\'s name first. It adds a full day to the conversation.'),
-            ]);
+            void advanceQuestStage(QUEST, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(FLINT, 'Good. Two warnings, free of charge. Calder will demand a fee in firewood and certainty. Vesper will not raise her voice, which is worse.'),
+                ...say(FLINT, 'And whatever they tell you, do not mention the other one\'s name first. It adds a full day to the conversation.'),
+              ]);
+            });
           },
         },
         {
@@ -172,16 +182,15 @@ registerNpcAction('gun_guild_master', 'Ask-about-the-fizzles', (_n: Npc) => {
       ...say(FLINT, 'Forty years that mine\'s been the duchy\'s quiet little coal pocket, and the realm\'s trouble has been keeping time underneath it.'),
       ...say(FLINT, 'You realise what you\'ve done? You got Brightverse and Hollowell to agree on paper. The duchy will believe the *that* before they believe the *what*.'),
     ], () => {
-      removeItem('wizards_writ', 1);
-      setStage(6);
-      addXp('Magic', 800);
-      addItem('coins', 400);
-      addItem('guild_powder_horn', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(FLINT, 'I\'ll stamp the Guild seal on this and put it before Brogan and the Duke myself. Whatever\'s under that mine gets answered properly — with paperwork first, then with everything else.'),
-        ...say(FLINT, 'For the Guild\'s thanks: four hundred coins, and my own powder horn. Never fizzled once in twenty years. If it ever does — run west, because it means the thing under the vale is singing louder.'),
-      ]);
+      void advanceQuestStage(QUEST, 6).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(QUEST, 6);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(FLINT, 'I\'ll stamp the Guild seal on this and put it before Brogan and the Duke myself. Whatever\'s under that mine gets answered properly — with paperwork first, then with everything else.'),
+          ...say(FLINT, 'For the Guild\'s thanks: four hundred coins, and my own powder horn. Never fizzled once in twenty years. If it ever does — run west, because it means the thing under the vale is singing louder.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -219,8 +228,8 @@ registerNpcAction('imber_wizard', 'Talk-to', (_n: Npc) => {
       ...me('You\'re a fire wizard. You can\'t light your own brazier?'),
       ...say(CALDER, 'I can ignite it from here along with most of the doorframe. *Stoking* is a craft. Mind the difference and you may yet amount to something.'),
     ], () => {
-      setStage(2);
-      state.player.quests[BRAZIER] = 0;
+      void questMark('gd2_brazier_stoke');
+      void advanceQuestStage(QUEST, 2);
     });
     return 'done';
   }
@@ -240,9 +249,7 @@ registerNpcAction('imber_wizard', 'Talk-to', (_n: Npc) => {
         ...me('And the answer is?'),
         ...say(CALDER, 'Fire. Find the source and burn it out before it finishes waking. This is not doctrine, it is *hygiene*.'),
         ...say(CALDER, 'But Flint will want both opinions — the charter\'s one genuinely cruel clause. Go and see Vesper Hollowell at the Quiess Tower. She will say something soggy about listening. Endure it, and come back with whatever she scribbles.'),
-      ], () => {
-        state.player.quests[BRAZIER] = 2;
-      });
+      ], () => { void questMark('gd2_brazier_verdict'); });
       return 'done';
     }
     // brazier() === 2 — verdict heard, reminder.
@@ -268,9 +275,11 @@ registerNpcAction('imber_wizard', 'Talk-to', (_n: Npc) => {
       ...say(CALDER, 'This goes to Flint in writing, and it goes co-signed, because the duchy will not move for one wizard and I will not have them dawdle for the want of a *signature*. I have drafted. I have even left room for hers.'),
       ...say(CALDER, '*He signs, adds a postscript about coastal scrying methods, reads an imagined reply, and adds two more.* There. Deliver it to Flint. If Hollowell objects to my phrasing, tell her the fire stands by every word.'),
     ], () => {
-      addItem('wizards_writ', 1);
-      setStage(5);
-      msg('Calder co-signs the wizards\' writ. The postscripts outnumber the paragraphs.');
+      void advanceQuestStage(QUEST, 5).then((echo) => {
+        if (!echo.ok) return;
+        void scriptedGrant(QUEST, 5);
+        msg('Calder co-signs the wizards\' writ. The postscripts outnumber the paragraphs.');
+      });
     });
     return 'done';
   }
@@ -279,7 +288,7 @@ registerNpcAction('imber_wizard', 'Talk-to', (_n: Npc) => {
     if (!hasItem('wizards_writ')) {
       startDialogue([
         ...say(CALDER, 'You LOST the writ? Forty-two years of not agreeing with that woman, undone by a pocket. *Calder copies it out from memory, postscripts included, in a single furious motion.* Here. Sewn to your hand, ideally.'),
-      ], () => { addItem('wizards_writ', 1); });
+      ], () => { void questbGrant('gd2_lost_wizards_writ'); });
       return 'done';
     }
     startDialogue([
@@ -324,8 +333,7 @@ registerNpcAction('quiess_wizard', 'Talk-to', (_n: Npc) => {
       ...say(VESPER, 'We agree on one thing, this once, and you may tell him I said so quietly: triangulate. Your tuning fork against Aulden\'s waystones — the road-shrines hold true pitch, so the lag in each answer gives a bearing.'),
       ...say(VESPER, 'Three stones: on the Aldgate east road, on the corridor road past Eldermere, on the Stonewatch south road. The corridor keeps wolves and worse — you needn\'t fight anything that doesn\'t insist. Ring all three, and bring the readings to either of us. The arithmetic doesn\'t care which of us does it. We do, but it doesn\'t.'),
     ], () => {
-      setStage(3);
-      state.player.quests[RINGS] = state.player.quests[RINGS] ?? 0;
+      void advanceQuestStage(QUEST, 3);
     });
     return 'done';
   }
@@ -345,9 +353,11 @@ registerNpcAction('quiess_wizard', 'Talk-to', (_n: Npc) => {
       ...say(VESPER, 'This must reach the Guild co-signed — Calder\'s name and mine on one page, or the duchy will spend a season asking which of us to believe. *She writes the finding in a hand like falling snow, signs, and pauses over his signature line.* He will have drafted his own version. Tell him mine was shorter.'),
       ...say(VESPER, '*She adds one postscript, very small.* There. Take the writ to Master Flint. And traveller — walk softly past the mine, on your way to anywhere. Whatever conducts down there has just heard us listening.'),
     ], () => {
-      addItem('wizards_writ', 1);
-      setStage(5);
-      msg('Vesper co-signs the wizards\' writ. Her postscript is one line. It is the politest knife you have ever read.');
+      void advanceQuestStage(QUEST, 5).then((echo) => {
+        if (!echo.ok) return;
+        void scriptedGrant(QUEST, 5);
+        msg('Vesper co-signs the wizards\' writ. Her postscript is one line. It is the politest knife you have ever read.');
+      });
     });
     return 'done';
   }
@@ -356,7 +366,7 @@ registerNpcAction('quiess_wizard', 'Talk-to', (_n: Npc) => {
     if (!hasItem('wizards_writ')) {
       startDialogue([
         ...say(VESPER, 'The writ has wandered? Paper does that, near the coast. *She copies it out again without complaint, which is somehow more chastening than complaint.* To Master Flint, at the Guild. Hold it like it matters. It does.'),
-      ], () => { addItem('wizards_writ', 1); });
+      ], () => { void questbGrant('gd2_lost_wizards_writ'); });
       return 'done';
     }
     startDialogue([
@@ -383,11 +393,13 @@ registerItemOnObject('tinderbox', 'brazier', (_slot, o) => {
     return;
   }
   if (stage() === 2 && brazier() === 0) {
-    state.player.quests[BRAZIER] = 1;
-    msg('You rake the embers, feed the coals, and coax the spire brazier up to a proper roar.');
-    startDialogue([
-      ...say(CALDER, '*From the doorway:* THERE. You hear that? A fire with its chest out. Come inside — let\'s see what it sees.'),
-    ]);
+    void questMark('gd2_brazier_stoke').then((echo) => {
+      if (!echo.ok) return;
+      msg('You rake the embers, feed the coals, and coax the spire brazier up to a proper roar.');
+      startDialogue([
+        ...say(CALDER, '*From the doorway:* THERE. You hear that? A fire with its chest out. Come inside — let\'s see what it sees.'),
+      ]);
+    });
     return;
   }
   if (stage() === 2 && brazier() >= 1) {
@@ -420,18 +432,24 @@ registerItemOnObject('tuning_fork', 'waystone', (_slot, o) => {
     msg(`You already have this stone\'s reading. It answers exactly as late as before, which is the point of stones.`);
     return;
   }
-  state.player.quests[RINGS] = rings() | stone.bit;
-  const flavor: Record<number, string> = {
-    1: 'You strike the fork on the Aldgate east road stone. It answers a quarter-beat late, and the lag leans west, toward the vale.',
-    2: 'You strike the fork on the corridor road stone. The answer drags half a beat, hauling westward like a tide.',
-    4: 'You strike the fork on the Stonewatch south road stone. The reply comes late and low, bending away north and west.',
+  const markByBit: Record<number, string> = {
+    1: 'gd2_waystone_east',
+    2: 'gd2_waystone_corr',
+    4: 'gd2_waystone_south',
   };
-  const n = ringCount();
-  msg(`${flavor[stone.bit]} (${n}/3)`);
-  if (n >= 3) {
-    setStage(4);
-    msg('Three stones, three late answers — every bearing leans the same way. Either wizard can read these.', 'level');
-  }
+  void questMark(markByBit[stone.bit]).then((echo) => {
+    if (!echo.ok) return;
+    const flavor: Record<number, string> = {
+      1: 'You strike the fork on the Aldgate east road stone. It answers a quarter-beat late, and the lag leans west, toward the vale.',
+      2: 'You strike the fork on the corridor road stone. The answer drags half a beat, hauling westward like a tide.',
+      4: 'You strike the fork on the Stonewatch south road stone. The reply comes late and low, bending away north and west.',
+    };
+    const n = ringCount();
+    msg(`${flavor[stone.bit]} (${n}/3)`);
+    if (questStage(QUEST) >= 4) {
+      msg('Three stones, three late answers — every bearing leans the same way. Either wizard can read these.', 'level');
+    }
+  });
 });
 
 // ============================================================

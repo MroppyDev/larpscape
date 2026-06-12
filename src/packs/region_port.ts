@@ -7,7 +7,7 @@
 import {
   state, msg, startDialogue, openShop, level,
   registerNpcAction, registerObjectAction,
-  addItem, addXp, hasTool, freeSlots,
+  hasTool, freeSlots, requestIntent,
 } from '../game';
 import { audio } from '../audio';
 
@@ -60,40 +60,34 @@ registerNpcAction('harbormaster', 'Talk-to', (n) => {
 
 // Lobster caging: Fishing 40, requires a lobster pot. (skills_gathering does
 // NOT register these two spots — they are owned here.)
-registerObjectAction('lobster_spot', 'Cage', () => {
+registerObjectAction('lobster_spot', 'Cage', (o) => {
   if (!hasTool('lobster_pot')) { msg('You need a lobster pot to catch lobsters here.'); return 'done'; }
   const lvl = level('Fishing');
   if (lvl < 40) { msg('You need a Fishing level of 40 to cage lobsters.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space to hold the fish."); return 'done'; }
   onceMsg('You lower your lobster pot into the water...');
   audio.sfx('splash');
-  if (successRoll(lvl, 40, 0.2, 0.75)) {
-    addItem('raw_lobster');
-    addXp('Fishing', 90);
-    msg('You catch a lobster.');
-  }
+  void requestIntent('port-fish', { spot: 'lobster', x: o.x, y: o.y }).then((echo) => {
+    if (!echo.ok) return;
+    if (echo.granted && echo.granted.length > 0) msg('You catch a lobster.');
+  });
   return 'continue';
 });
 
 // Harpoon fishing: swordfish at 50; from 76+ there is a 30% roll for shark.
-registerObjectAction('harpoon_spot', 'Harpoon', () => {
+registerObjectAction('harpoon_spot', 'Harpoon', (o) => {
   if (!hasTool('harpoon')) { msg('You need a harpoon to fish here.'); return 'done'; }
   const lvl = level('Fishing');
   if (lvl < 50) { msg('You need a Fishing level of 50 to harpoon fish here.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space to hold the fish."); return 'done'; }
   onceMsg('You start harpooning fish...');
   audio.sfx('splash');
-  if (successRoll(lvl, 50, 0.15, 0.7)) {
-    if (lvl >= 76 && Math.random() < 0.3) {
-      addItem('raw_shark');
-      addXp('Fishing', 110);
-      msg('You catch a shark!');
-    } else {
-      addItem('raw_swordfish');
-      addXp('Fishing', 100);
-      msg('You catch a swordfish.');
-    }
-  }
+  void requestIntent('port-fish', { spot: 'harpoon', x: o.x, y: o.y }).then((echo) => {
+    if (!echo.ok) return;
+    const first = echo.granted?.[0]?.id;
+    if (first === 'raw_shark') msg('You catch a shark!');
+    else if (first === 'raw_swordfish') msg('You catch a swordfish.');
+  });
   return 'continue';
 });
 

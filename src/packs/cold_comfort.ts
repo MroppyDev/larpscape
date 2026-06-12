@@ -10,7 +10,7 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount, hasTool, addXp,
+  state, msg, invCount, hasTool,
   registerNpcAction, registerObjectAction, registerItemAction, onKill,
   startDialogue, showOptions,
   DialogueLine, Npc,
@@ -18,6 +18,7 @@ import {
 import { WorldObject } from '../world';
 import { registerQuest } from '../quests';
 import { audio } from '../audio';
+import { questStage, advanceQuestStage, claimQuestReward, auxCount, setAuxBits, setAuxCount } from '../quest-sync';
 
 const QUEST = 'cold_comfort';
 const BRAZIERS = 'q6_braziers'; // bitmask: bit 1 = west brazier, bit 2 = east brazier
@@ -33,14 +34,13 @@ const DOOR_BRAZIERS: { x: number; y: number; bit: number }[] = [
   { x: 272, y: 16, bit: 2 },
 ];
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
-function brazierBits(): number { return state.player.quests[BRAZIERS] ?? 0; }
+function stage(): number { return questStage(QUEST); }
+function brazierBits(): number { return auxCount(BRAZIERS); }
 function braziersLit(): number {
   const b = brazierBits();
   return (b & 1 ? 1 : 0) + (b & 2 ? 1 : 0);
 }
-function wolvesDriven(): number { return state.player.quests[WOLVES] ?? 0; }
+function wolvesDriven(): number { return auxCount(WOLVES); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -88,11 +88,13 @@ registerNpcAction('imber_wizard', 'Ask-about-the-cold', (_n: Npc) => {
         {
           label: 'I\'ll fetch your coal.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(CALDER, 'Good. The Swamp Mine gives coal to anyone with a pick and a grudge, and the Frostpeak rocks do too, if you enjoy irony. Or the Aldgate Exchange sells it to people who would rather pay than swing.'),
-              ...say(CALDER, 'Five lumps. No fewer. A four-coal reading is just a guess wearing a scarf.'),
-            ]);
+            void advanceQuestStage(QUEST, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(CALDER, 'Good. The Swamp Mine gives coal to anyone with a pick and a grudge, and the Frostpeak rocks do too, if you enjoy irony. Or the Aldgate Exchange sells it to people who would rather pay than swing.'),
+                ...say(CALDER, 'Five lumps. No fewer. A four-coal reading is just a guess wearing a scarf.'),
+              ]);
+            });
           },
         },
         {
@@ -119,12 +121,14 @@ registerNpcAction('imber_wizard', 'Ask-about-the-cold', (_n: Npc) => {
       ...me('Five lumps of coal. Honest as requested.'),
       ...say(CALDER, '*Calder weighs each lump like a jeweller.* Yes. Surly. Uncommunicative. Burns at exactly the temperature it burns at. Perfect.'),
     ], () => {
-      removeItem('coal', COAL_NEEDED);
-      setStage(2);
-      startDialogue([
-        ...say(CALDER, 'I\'ve packed the charge into the two braziers flanking my door. Now set your tinderbox to each — your spark, not mine. If I light them, the reading reads me, and I already know what I think.'),
-        ...say(CALDER, 'Light both, then stand somewhere unimportant.'),
-      ]);
+      // Server validates + consumes the 5 coal on the 1->2 advance (requiredItems).
+      void advanceQuestStage(QUEST, 2).then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(CALDER, 'I\'ve packed the charge into the two braziers flanking my door. Now set your tinderbox to each — your spark, not mine. If I light them, the reading reads me, and I already know what I think.'),
+          ...say(CALDER, 'Light both, then stand somewhere unimportant.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -152,8 +156,7 @@ registerNpcAction('imber_wizard', 'Ask-about-the-cold', (_n: Npc) => {
       ...say(CALDER, '*Both brazier-flames lean, slow and deliberate, to the north-east. Toward the summit.* There. Fire doesn\'t point, adventurer. Fire climbs. For two honest flames to bend like that, something up there is pulling the warmth out of the world.'),
       ...say(CALDER, 'Her note is slipping. The Rimebound is going to finish her Solo or die failing, and I genuinely cannot tell you which is worse.'),
     ], () => {
-      setStage(4);
-      finale();
+      void advanceQuestStage(QUEST, 4).then((echo) => { if (echo.ok) finale(); });
     });
     return 'done';
   }
@@ -177,16 +180,22 @@ function finale() {
     ...say(CALDER, 'Eventually, yes — it remains the answer to most things. But a note that size wants listening to before burning, and listening means... *he closes his eyes briefly* ...writing to Vesper Hollowell. Voluntarily. In ink.'),
     ...say(CALDER, 'If she asks, I lost a bet.'),
   ], () => {
-    addXp('Firemaking', 600);
-    addItem('coins', 300);
-    addItem('calder_brand', 1);
-    setStage(5);
-    msg('Congratulations! Quest complete!', 'level');
-    startDialogue([
-      ...say(CALDER, 'Your fee — three hundred coins, and this: my own brand. Never quite goes out, much like the argument it came from. Keep it somewhere flammable.'),
-      ...say(CALDER, 'You\'ve also absorbed a firemaking lesson, whether you wanted one or not. I can smell it. That part was free.'),
-    ]);
+    // 4->5 advance (narrative), then claim the data-defined completion reward
+    // (Firemaking xp + coins + Calder's brand) from the server.
+    void advanceQuestStage(QUEST, 5).then((echo) => {
+      if (!echo.ok) return;
+      void claimQuestReward(QUEST, 5);
+      msg('Congratulations! Quest complete!', 'level');
+      finaleEpilogue();
+    });
   });
+}
+
+function finaleEpilogue() {
+  startDialogue([
+    ...say(CALDER, 'Your fee — three hundred coins, and this: my own brand. Never quite goes out, much like the argument it came from. Keep it somewhere flammable.'),
+    ...say(CALDER, 'You\'ve also absorbed a firemaking lesson, whether you wanted one or not. I can smell it. That part was free.'),
+  ]);
 }
 
 // ============================================================
@@ -219,11 +228,13 @@ registerObjectAction('brazier', 'Relight', (o: WorldObject) => {
     msg('You need a tinderbox to relight the brazier — your spark, Calder insisted, not his.');
     return 'done';
   }
-  state.player.quests[BRAZIERS] = brazierBits() | door.bit;
+  // Aux brazier bitmask is sub-stage progress (client-reflected via quest-sync;
+  // flagged follow-up to make server-owned). Lighting a brazier mints nothing.
+  setAuxBits(BRAZIERS, brazierBits() | door.bit);
   audio.sfx('fire');
   msg('You strike a spark and the coal catches — slow, sullen, and exactly as warm as it claims to be.');
   if (braziersLit() >= 2) {
-    setStage(3);
+    void advanceQuestStage(QUEST, 3);
     msg('Both braziers blaze, and the doubled light glitters far up the snow. Something out there turns toward it — wolves, lean and winter-coloured. Drive off two ice wolves.', 'level');
   } else {
     msg('One brazier lit. Its twin across the door still sits cold.');
@@ -240,7 +251,7 @@ onKill((defId) => {
   if (defId !== 'ice_wolf' || stage() !== 3) return;
   const n = wolvesDriven();
   if (n >= WOLVES_NEEDED) return;
-  state.player.quests[WOLVES] = n + 1;
+  setAuxCount(WOLVES, n + 1);
   if (n + 1 >= WOLVES_NEEDED) {
     msg('That\'s both wolves seen off into the snow. Calder will want to know what the flames say.', 'level');
   } else {

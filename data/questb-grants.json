@@ -1,11 +1,28 @@
 {
-  "_comment": "Quests batch-2 REPEATABLE / scripted quest-object grants (server/intent-questb.ts). Unlike data/quest-rewards.json (idempotent ONCE-per-stage completion rewards), these are stage-gated quest-flow hand-outs that may legitimately repeat (pick a renewable wheat sheaf, re-issue a lost receipt, run the cursed mill demo). Each key is a server-defined grant id; the client sends only { grant:'<id>' } and the server INDEPENDENTLY validates the quest+stage gate, consumes any cost, checks room, and grants EXACTLY `out`. The client never supplies item/qty/cost. `stageMin`/`stageMax` gate on the player's SERVER quest stage (questb-grant never advances a stage); `cost` items/coins are consumed server-side; `consume` removes a held item as part of the transform (e.g. one wheat -> two wheat). `once:true` collapses to single-grant-per-(quest,stage) via the same idempotency marker as a reward claim.",
+  "_comment": "Quests batch-2 REPEATABLE / scripted quest-object grants (server/intent-questb.ts, registry kind 'questb-grant'). Unlike data/quest-rewards.json (idempotent ONCE-per-stage completion rewards & dialogue hand-outs), these are stage-gated quest-flow grants that may legitimately repeat (pick a renewable sheaf, re-issue a lost receipt, run the cursed-mill demo, buy a flask, spend coins). The client sends ONLY { grant:'<id>' }; the server INDEPENDENTLY validates the quest+stage gate, consumes any cost/consume items, checks room, and grants EXACTLY `out`. The client never supplies item/qty/cost. `stageMin`/`stageMax` gate on the player's SERVER quest stage (questb-grant NEVER advances a stage). `cost` (coins/items) is consumed first; `consume` removes a held item as part of a transform (1 wheat -> 2). `once:true` collapses to one grant per (quest,stage). `frozen:true` gates on ECONOMY_FROZEN (coin-shaped paths).",
 
-  "atg_pick_wheat": { "quest": "against_the_grain", "out": [{ "id": "wheat", "qty": 1 }] },
-  "atg_buy_wheat": { "quest": "against_the_grain", "cost": { "coins": 10 }, "out": [{ "id": "wheat", "qty": 1 }] },
-  "atg_mill_demo": { "quest": "against_the_grain", "stageMin": 1, "stageMax": 1, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "wheat", "qty": 2 }] },
-  "atg_mill_flour": { "quest": "against_the_grain", "stageMin": 5, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "flour", "qty": 1 }] },
+  "atg_pick_wheat":    { "quest": "against_the_grain", "out": [{ "id": "wheat", "qty": 1 }] },
+  "atg_buy_wheat":     { "quest": "against_the_grain", "cost": { "coins": 10 }, "out": [{ "id": "wheat", "qty": 1 }], "frozen": true },
+  "atg_mill_demo":     { "quest": "against_the_grain", "stageMin": 1, "stageMax": 1, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "wheat", "qty": 2 }] },
+  "atg_mill_flour":    { "quest": "against_the_grain", "stageMin": 5, "consume": [{ "id": "wheat", "qty": 1 }], "out": [{ "id": "flour", "qty": 1 }] },
   "atg_collect_flour": { "quest": "against_the_grain", "stageMin": 6, "out": [{ "id": "flour", "qty": 1 }] },
-  "atg_shim_receipt": { "quest": "against_the_grain", "stageMin": 2, "stageMax": 4, "out": [{ "id": "shim_receipt", "qty": 1 }] },
-  "atg_lucky_shim": { "quest": "against_the_grain", "stageMin": 3, "stageMax": 4, "out": [{ "id": "lucky_shim", "qty": 1 }] }
+  "atg_shim_receipt":  { "quest": "against_the_grain", "stageMin": 2, "stageMax": 4, "out": [{ "id": "shim_receipt", "qty": 1 }] },
+  "atg_lucky_shim":    { "quest": "against_the_grain", "stageMin": 3, "stageMax": 4, "out": [{ "id": "lucky_shim", "qty": 1 }] },
+  "atg_court_verdict": { "quest": "against_the_grain", "stageMin": 5, "out": [{ "id": "court_verdict", "qty": 1 }], "once": true },
+
+  "ktl_buy_lamp_oil":  { "quest": "keep_the_light", "stageMin": 1, "cost": { "coins": 30 }, "out": [{ "id": "lamp_oil", "qty": 1 }], "frozen": true },
+
+  "ttt_lost_grit":     { "quest": "thunder_on_the_tide", "stageMin": 1, "stageMax": 1, "out": [{ "id": "powder_grit", "qty": 1 }] },
+  "ttt_lost_writ":     { "quest": "thunder_on_the_tide", "stageMin": 2, "stageMax": 4, "out": [{ "id": "guild_writ", "qty": 1 }] },
+  "ttt_lost_manifest": { "quest": "thunder_on_the_tide", "stageMin": 3, "stageMax": 5, "out": [{ "id": "false_manifest", "qty": 1 }] },
+  "ttt_lost_keg":      { "quest": "thunder_on_the_tide", "stageMin": 5, "stageMax": 5, "out": [{ "id": "powder_keg", "qty": 1 }] },
+  "ttt_pay_tilly":     { "quest": "thunder_on_the_tide", "stageMin": 3, "stageMax": 3, "cost": { "coins": 100 }, "out": [], "frozen": true },
+
+  "hush_buy_lily":     { "quest": "hush_of_ravenmoor", "stageMin": 3, "stageMax": 3, "cost": { "coins": 50 }, "out": [{ "id": "white_lily", "qty": 1 }], "frozen": true },
+  "hush_lily_to_key":  { "quest": "hush_of_ravenmoor", "stageMin": 3, "stageMax": 3, "consume": [{ "id": "white_lily", "qty": 1 }], "out": [{ "id": "cellar_key", "qty": 1 }] },
+
+  "hymn_bury_bone":    { "quest": "hymn_for_the_hollow", "stageMin": 2, "stageMax": 2, "consume": [{ "id": "bones", "qty": 1 }], "out": [] },
+
+  "gd1_lost_tuning_fork": { "quest": "gd1_sour_notes", "stageMin": 1, "out": [{ "id": "tuning_fork", "qty": 1 }] },
+  "gd2_lost_wizards_writ": { "quest": "gd2_quarrel_of_wizards", "stageMin": 5, "stageMax": 5, "out": [{ "id": "wizards_writ", "qty": 1 }] }
 }

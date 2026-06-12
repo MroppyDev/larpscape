@@ -9,12 +9,13 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount,
-  addXp, registerNpcAction, registerObjectAction, registerItemOnObject,
+  state, msg, invCount, freeSlots,
+  registerNpcAction, registerObjectAction, registerItemOnObject,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, setAuxCount } from '../quest-sync';
 
 const HYMN = 'hymn_for_the_hollow';
 const BURIED = 'q7_buried';        // 0-5 burials; 6 = the echo has been heard out
@@ -22,10 +23,9 @@ const ALTAR_X = 278;
 const ALTAR_Y = 109;
 const BONES_NEEDED = 5;
 
-function stage(): number { return state.player.quests[HYMN] ?? 0; }
-function setStage(s: number) { state.player.quests[HYMN] = s; }
-function buried(): number { return Math.min(state.player.quests[BURIED] ?? 0, BONES_NEEDED); }
-function echoConsulted(): boolean { return (state.player.quests[BURIED] ?? 0) >= 6; }
+function stage(): number { return questStage(HYMN); }
+function buried(): number { return Math.min(auxCount(BURIED), BONES_NEEDED); }
+function echoConsulted(): boolean { return auxCount(BURIED) >= 6; }
 function isChapelAltar(o: { type: string; x: number; y: number }): boolean {
   return o.type === 'altar' && o.x === ALTAR_X && o.y === ALTAR_Y;
 }
@@ -80,11 +80,13 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-chapel', (_n: Npc) => {
         {
           label: 'I\'ll go and listen.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(VESPER, 'Thank you. Walk gently — the dead are not fragile, but they are easily interrupted.'),
-              ...say(VESPER, 'A rat has taken up residence in the nave. Ignore it. Squatters\' rights end at the altar rail.'),
-            ]);
+            void advanceQuestStage(HYMN, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(VESPER, 'Thank you. Walk gently — the dead are not fragile, but they are easily interrupted.'),
+                ...say(VESPER, 'A rat has taken up residence in the nave. Ignore it. Squatters\' rights end at the altar rail.'),
+              ]);
+            });
           },
         },
         {
@@ -130,11 +132,14 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-chapel', (_n: Npc) => {
       ...say(VESPER, 'Take it to the altar and hum it once, plainly. No flourishes. He will know his cue.'),
       ...me('*You nod, having run out of audible.*'),
     ], () => {
-      if (!addItem('hollow_verse', 1)) {
+      if (freeSlots() === 0) {
         startDialogue(say(VESPER, 'Your pack is full, and this is not a verse to fold into a pocket that already jingles. Make room and ask again.'));
         return;
       }
-      setStage(4);
+      void advanceQuestStage(HYMN, 4).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        void scriptedGrant(HYMN, 4).then((_grantEcho) => {});
+      });
     });
     return 'done';
   }
@@ -144,10 +149,11 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-chapel', (_n: Npc) => {
       startDialogue([
         ...say(VESPER, 'You have mislaid the closing verse. Fortunately, endings are the one thing I never run out of.'),
       ], () => {
-        if (!addItem('hollow_verse', 1)) {
+        if (freeSlots() === 0) {
           startDialogue(say(VESPER, 'Though your pack appears to be full of beginnings. Clear a space first.'));
           return;
         }
+        void scriptedGrant(HYMN, 4).then((_echo) => {});
         startDialogue(say(VESPER, 'There. Hum it at the chapel altar, plainly. Endings don\'t need decorating.'));
       });
       return 'done';
@@ -164,15 +170,15 @@ registerNpcAction('quiess_wizard', 'Ask-about-the-chapel', (_n: Npc) => {
       ...say(VESPER, '*Vesper smiles like a held breath let go.* I know. I heard the answer all the way up the corridor road — which, for that hymn, is shouting.'),
       ...say(VESPER, 'He called for a hundred years and you carried the response. Caller and answer. That makes you the congregation, briefly. I hope you sang in tune.'),
     ], () => {
-      setStage(6);
-      addXp('Prayer', 800);
-      addItem('coins', 200);
-      addItem('quiess_feather', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(VESPER, 'Two hundred coins from the tower\'s alms box — the dead have no use for them, and say so constantly.'),
-        ...say(VESPER, 'And this. A feather Quiess left on my windowsill the morning the Quiet Measure began. It weighs less than the silence between notes. Now, so do you. A little.'),
-      ]);
+      void advanceQuestStage(HYMN, 6).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(HYMN, 6);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(VESPER, 'Two hundred coins from the tower\'s alms box — the dead have no use for them, and say so constantly.'),
+          ...say(VESPER, 'And this. A feather Quiess left on my windowsill the morning the Quiet Measure began. It weighs less than the silence between notes. Now, so do you. A little.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -205,8 +211,10 @@ registerObjectAction('altar', 'Listen', (o) => {
       ...me('*Verse after verse, steady as footsteps — and then it stops. One line short. A breath. And it begins again.*'),
       ...me('*The silence after the last verse has a shape. An answer\'s shape.*'),
     ], () => {
-      setStage(2);
-      msg('The hymn stops one line short, over and over. Vesper was right: the silence has a shape.', 'level');
+      void advanceQuestStage(HYMN, 2).then((echo) => {
+        if (!echo.ok) return;
+        msg('The hymn stops one line short, over and over. Vesper was right: the silence has a shape.', 'level');
+      });
     });
     return 'done';
   }
@@ -248,20 +256,24 @@ registerItemOnObject('bones', 'altar', (_slot, o) => {
     msg('The congregation is all accounted for. These bones belong to some other story.');
     return;
   }
-  if (!removeItem('bones', 1)) return;
-  const n = (state.player.quests[BURIED] ?? 0) + 1;
-  state.player.quests[BURIED] = n;
+  void questbGrant('hymn_bury_bone').then((echo) => {
+    if (!echo.ok) return;
+    const n = auxCount(BURIED) + 1;
+    setAuxCount(BURIED, n);
   if (n < BONES_NEEDED) {
     msg(`${BURIAL_LINES[n - 1]} (${n}/${BONES_NEEDED})`);
     return;
   }
-  setStage(3);
-  startDialogue([
-    ...me('*You lay the fifth beneath the altar rail and stand back.*'),
-    ...me('*By the altar, the air gathers into the shape of a chaplain — threadbare, patient, and suddenly, unmistakably, present.*'),
-    ...say(ECHO, '...full pews. Well. I shall need a longer sermon.'),
-  ], () => {
-    msg('The fifth is laid, and the chaplain\'s echo has found its voice. He seems to want a word.', 'level');
+    void advanceQuestStage(HYMN, 3).then((stageEcho) => {
+      if (!stageEcho.ok) return;
+      startDialogue([
+        ...me('*You lay the fifth beneath the altar rail and stand back.*'),
+        ...me('*By the altar, the air gathers into the shape of a chaplain — threadbare, patient, and suddenly, unmistakably, present.*'),
+        ...say(ECHO, '...full pews. Well. I shall need a longer sermon.'),
+      ], () => {
+        msg('The fifth is laid, and the chaplain\'s echo has found its voice. He seems to want a word.', 'level');
+      });
+    });
   });
 });
 
@@ -299,7 +311,7 @@ registerNpcAction('chapel_echo', 'Talk-to', (_n: Npc) => {
       ...say(ECHO, 'The whisper at the tower. The Hollowell woman. Quiess\'s people keep all endings — ask her for mine.'),
       ...me('*You nod and leave on your toes, though he could not possibly be woken.*'),
     ], () => {
-      state.player.quests[BURIED] = 6; // heard out; Vesper will teach the verse now
+      setAuxCount(BURIED, 6); // heard out; Vesper will teach the verse now
     });
     return 'done';
   }
@@ -335,15 +347,16 @@ registerItemOnObject('hollow_verse', 'altar', (_slot, o) => {
     msg('Not yet. Order of service: burial first, hymn after.');
     return;
   }
-  if (!removeItem('hollow_verse', 1)) return;
-  setStage(5);
-  startDialogue([
-    ...me('*You hum the closing verse at the altar — once, plainly, the way she wrote it.*'),
-    ...say(ECHO, '*The echo straightens and takes a breath he has not needed in a century.* ...there it is. That is the line. That is the whole of it.'),
-    ...me('*And the answer comes back — not from you. From beneath the altar rail, from five quiet places at once: one line, complete. The hymn ends.*'),
-    ...me('*The chaplain does not vanish. He settles, like dust deciding to stay — a faint, content shade beside his altar.*'),
-  ], () => {
-    msg('The verse is sung and answered. The chapel is just a ruin now — the good kind. Vesper will want to know.', 'level');
+  void advanceQuestStage(HYMN, 5).then((stageEcho) => {
+    if (!stageEcho.ok) return;
+    startDialogue([
+      ...me('*You hum the closing verse at the altar — once, plainly, the way she wrote it.*'),
+      ...say(ECHO, '*The echo straightens and takes a breath he has not needed in a century.* ...there it is. That is the line. That is the whole of it.'),
+      ...me('*And the answer comes back — not from you. From beneath the altar rail, from five quiet places at once: one line, complete. The hymn ends.*'),
+      ...me('*The chaplain does not vanish. He settles, like dust deciding to stay — a faint, content shade beside his altar.*'),
+    ], () => {
+      msg('The verse is sung and answered. The chapel is just a ruin now — the good kind. Vesper will want to know.', 'level');
+    });
   });
 });
 

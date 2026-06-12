@@ -3,18 +3,18 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const ALDGATE = 'streets_of_aldgate';
 const LOGS_NEEDED = 3;
 const PLANKS_NEEDED = 1;
 
-function stage(): number { return state.player.quests[ALDGATE] ?? 0; }
-function setStage(s: number) { state.player.quests[ALDGATE] = s; }
+function stage(): number { return questStage(ALDGATE); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -62,7 +62,7 @@ registerNpcAction('innkeeper', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll fetch your timber.',
           fn: () => {
-            setStage(1);
+            void advanceQuestStage(ALDGATE, 1);
             startDialogue([
               ...say('Maro', 'You\'re a lifesaver! Any honest tree will give you logs if you\'ve an axe.'),
               ...say('Maro', 'For the plank, try a sawmill — or a market, if you\'d rather pay than sweat.'),
@@ -93,16 +93,15 @@ registerNpcAction('innkeeper', 'Talk-to', (_n: Npc) => {
       ...say('Maro', 'Ha! Good straight grain, too. Hold this end and watch a publican turn carpenter.'),
       ...say('Maro', 'There — braced, beamed, and better than before. The Kettle stands!'),
     ], () => {
-      removeItem('logs', LOGS_NEEDED);
-      removeItem('plank', PLANKS_NEEDED);
-      setStage(2);
-      addXp('Construction', 300);
-      addItem('coins', 150);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say('Maro', 'Here\'s your coin, and my thanks. First bowl of soup is on the house, forever.'),
-        ...say('Maro', 'Well. The first one. Soup isn\'t free, you know.'),
-      ]);
+      void advanceQuestStage(ALDGATE, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(ALDGATE, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say('Maro', 'Here\'s your coin, and my thanks. First bowl of soup is on the house, forever.'),
+          ...say('Maro', 'Well. The first one. Soup isn\'t free, you know.'),
+        ]);
+      });
     });
     return 'done';
   }

@@ -1,7 +1,15 @@
 // Starter-town casino — slots, blackjack, roulette (vs house) and coinflip (P2P).
+//
+// SERVER-AUTHORITATIVE (docs/CONVERSION-CONTRACT.md): every coin movement is
+// resolved by the server. The house games (slots/blackjack/roulette) send a
+// 'gamble' intent; the server rolls the outcome and settles carried coins, so a
+// forged win is impossible. The P2P coinflip is settled by social.ts server-side
+// (settleCoinflip moves the stake atomically and pushes save_reload) — the client
+// only renders the result; it authors NO coin delta. All wealth paths stay behind
+// ECONOMY_FROZEN server-side.
 import {
-  registerObjectAction, registerNpcAction, msg, removeItem, addItem, invCount,
-  state, startDialogue, showOptions,
+  registerObjectAction, registerNpcAction, msg, invCount,
+  state, startDialogue, showOptions, requestIntent,
 } from '../game';
 import { net } from '../net';
 import { audio } from '../audio';
@@ -132,26 +140,40 @@ function closeModal(onClose?: () => void) {
   onClose?.();
 }
 
-function betCoins(amount: number): boolean {
+// Validate a bet locally (UX only — the server re-validates and is authoritative).
+function validBet(amount: number): boolean {
   if (!Number.isInteger(amount) || amount < 1) { msg('Enter a valid bet.'); return false; }
   if (invCount('coins') < amount) { msg("You don't have enough coins."); return false; }
-  removeItem('coins', amount);
-  refreshCoins();
   return true;
 }
 
-function payout(amount: number) {
-  if (amount > 0) {
-    addItem('coins', amount);
-    audio.sfx('coins');
+// The server-authoritative result of a house game. `win` is the gross coins paid
+// back (0 = loss; bet = push). The server already settled coins; we only render.
+interface GambleResult {
+  ok: boolean; error?: string; win: number;
+  reels?: string[]; result?: number;
+  player?: string[]; dealer?: string[]; pv?: number; dv?: number;
+}
+
+async function play(game: string, bet: number, extra: Record<string, unknown> = {}): Promise<GambleResult | null> {
+  const echo = await requestIntent('gamble', { game, bet, ...extra });
+  const detail = (echo as unknown as { detail?: Record<string, unknown>; win?: number });
+  if (!echo.ok) {
+    msg(echo.error === 'frozen' ? 'The cashier waves you off — the house is closed.' : (echo.error ?? 'The bet is refused.'));
     refreshCoins();
+    return { ok: false, error: echo.error, win: 0 };
   }
+  const win = typeof detail.win === 'number' ? detail.win : 0;
+  if (win > 0) audio.sfx('coins');
+  refreshCoins();
+  return { ok: true, win, ...(detail.detail ?? {}) } as GambleResult;
 }
 
 // ---------------- slot machine ----------------
 
 const SLOT_SYM = ['🍒', '🔔', '▮', '7'] as const;
-const SLOT_PAY: Record<string, number> = { '🍒': 2, '🔔': 5, '▮': 10, '7': 25 };
+// Map the server's canonical reel ids to display glyphs.
+const SLOT_GLYPH: Record<string, string> = { cherry: '🍒', bell: '🔔', bar: '▮', seven: '7' };
 
 function openSlots() {
   const body = document.createElement('div');
@@ -181,31 +203,36 @@ function openSlots() {
   spin.onclick = () => {
     if (spinning) return;
     const bet = Math.floor(Number(betIn.value) || 0);
-    if (!betCoins(bet)) return;
+    if (!validBet(bet)) return;
     spinning = true;
     spin.disabled = true;
     status.textContent = 'Spinning...';
-    let ticks = 0;
-    const anim = setInterval(() => {
-      for (const r of reelEls) r.textContent = SLOT_SYM[Math.floor(Math.random() * SLOT_SYM.length)];
-      if (++ticks >= 8) {
-        clearInterval(anim);
-        const result = SLOT_SYM.map(() => SLOT_SYM[Math.floor(Math.random() * SLOT_SYM.length)]);
-        for (let i = 0; i < 3; i++) reelEls[i].textContent = result[i];
-        const mult = result[0] === result[1] && result[1] === result[2] ? (SLOT_PAY[result[0]] ?? 0) : 0;
-        if (mult > 0) {
-          const win = bet * mult;
-          payout(win);
-          status.textContent = `Jackpot! You win ${win.toLocaleString()} coins (${mult}x).`;
-          msg(`The slots pay out ${win.toLocaleString()} coins!`, 'game');
-        } else {
-          status.textContent = 'No luck this spin.';
-          msg('The reels stop cold. Your coins are gone.', 'game');
+    // Roll the result on the SERVER first; animate, then reveal the authoritative reels.
+    void (async () => {
+      const res = await play('slots', bet);
+      let ticks = 0;
+      const anim = setInterval(() => {
+        for (const r of reelEls) r.textContent = SLOT_SYM[Math.floor(Math.random() * SLOT_SYM.length)];
+        if (++ticks >= 8) {
+          clearInterval(anim);
+          if (!res || !res.ok) {
+            status.textContent = res?.error ? '' : 'The bet was refused.';
+            spinning = false; spin.disabled = false; return;
+          }
+          const reels = (res.reels ?? []).map((s) => SLOT_GLYPH[s] ?? '?');
+          for (let i = 0; i < 3; i++) reelEls[i].textContent = reels[i] ?? '?';
+          if (res.win > 0) {
+            status.textContent = `Jackpot! You win ${res.win.toLocaleString()} coins.`;
+            msg(`The slots pay out ${res.win.toLocaleString()} coins!`, 'game');
+          } else {
+            status.textContent = 'No luck this spin.';
+            msg('The reels stop cold. Your coins are gone.', 'game');
+          }
+          spinning = false;
+          spin.disabled = false;
         }
-        spinning = false;
-        spin.disabled = false;
-      }
-    }, 120);
+      }, 120);
+    })();
   };
   row.appendChild(spin);
   body.appendChild(row);
@@ -213,52 +240,28 @@ function openSlots() {
 }
 
 // ---------------- blackjack ----------------
+// Single-shot, server-resolved: the server deals both hands and hits the dealer
+// to 17 (server/intent-misc.ts gamble game:'blackjack'), then settles coins. The
+// client only renders the authoritative hands the echo returns. (Per-card
+// hit/stand would require a stateful server hand; the one-shot deal keeps the
+// outcome fully server-authoritative with no client-trusted decisions.)
 
-type Card = { rank: string; suit: string; value: number; red: boolean };
 const SUITS = ['♠', '♥', '♦', '♣'];
-const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+function suitFor(): string { return SUITS[Math.floor(Math.random() * SUITS.length)]; }
 
-function freshDeck(): Card[] {
-  const d: Card[] = [];
-  for (const s of SUITS) {
-    const red = s === '♥' || s === '♦';
-    for (const r of RANKS) {
-      let v = parseInt(r, 10);
-      if (Number.isNaN(v)) v = r === 'A' ? 11 : 10;
-      d.push({ rank: r, suit: s, value: v, red });
-    }
-  }
-  for (let i = d.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [d[i], d[j]] = [d[j], d[i]];
-  }
-  return d;
-}
-
-function handValue(cards: Card[]): number {
-  let total = cards.reduce((s, c) => s + c.value, 0);
-  let aces = cards.filter((c) => c.rank === 'A').length;
-  while (total > 21 && aces > 0) { total -= 10; aces--; }
-  return total;
-}
-
-function renderCards(container: HTMLElement, cards: Card[], hideSecond = false) {
+function renderRanks(container: HTMLElement, ranks: string[]) {
   container.innerHTML = '';
-  cards.forEach((c, i) => {
+  for (const r of ranks) {
+    const suit = suitFor();
+    const red = suit === '♥' || suit === '♦';
     const el = document.createElement('div');
-    el.className = 'gamble-card' + (c.red ? ' red' : '');
-    el.textContent = hideSecond && i === 1 ? '?' : `${c.rank}${c.suit}`;
+    el.className = 'gamble-card' + (red ? ' red' : '');
+    el.textContent = `${r}${suit}`;
     container.appendChild(el);
-  });
+  }
 }
 
 function openBlackjack() {
-  let deck = freshDeck();
-  let bet = 0;
-  let player: Card[] = [];
-  let dealer: Card[] = [];
-  let phase: 'bet' | 'play' | 'done' = 'bet';
-
   const body = document.createElement('div');
   const dealerCards = document.createElement('div');
   dealerCards.className = 'gamble-cards';
@@ -288,79 +291,40 @@ function openBlackjack() {
   dealBtn.textContent = 'Deal';
   betRow.appendChild(betIn);
   betRow.appendChild(dealBtn);
-
-  const playRow = document.createElement('div');
-  playRow.className = 'gamble-row';
-  playRow.style.display = 'none';
-  const hitBtn = document.createElement('button');
-  hitBtn.className = 'gamble-btn';
-  hitBtn.textContent = 'Hit';
-  const standBtn = document.createElement('button');
-  standBtn.className = 'gamble-btn gamble-green';
-  standBtn.textContent = 'Stand';
-  playRow.appendChild(hitBtn);
-  playRow.appendChild(standBtn);
-
   body.appendChild(betRow);
-  body.appendChild(playRow);
 
-  function deal() {
-    deck = freshDeck();
-    player = [deck.pop()!, deck.pop()!];
-    dealer = [deck.pop()!, deck.pop()!];
-    phase = 'play';
-    betRow.style.display = 'none';
-    playRow.style.display = 'flex';
-    renderCards(playerCards, player);
-    renderCards(dealerCards, dealer, true);
-    status.textContent = '';
-    if (handValue(player) === 21) finishRound(true);
-  }
-
-  function finishRound(playerStood = false) {
-    phase = 'done';
-    playRow.style.display = 'none';
-    renderCards(dealerCards, dealer);
-    while (handValue(dealer) < 17) dealer.push(deck.pop()!);
-    renderCards(dealerCards, dealer);
-    const pv = handValue(player);
-    const dv = handValue(dealer);
-    let win = 0;
-    if (pv > 21) {
-      status.textContent = `Bust! You lose ${bet.toLocaleString()} coins.`;
-      msg('The dealer collects your stake.', 'game');
-    } else if (dv > 21 || pv > dv) {
-      win = bet * 2;
-      payout(win);
-      status.textContent = `You win ${win.toLocaleString()} coins! (${pv} vs ${dv})`;
-      msg(`Blackjack pays ${win.toLocaleString()} coins.`, 'game');
-    } else if (pv === dv) {
-      payout(bet);
-      status.textContent = `Push — ${bet.toLocaleString()} coins returned.`;
-    } else {
-      status.textContent = `Dealer wins. (${dv} vs ${pv})`;
-      msg('The house takes your bet.', 'game');
-    }
-    betRow.style.display = 'flex';
-    dealBtn.textContent = 'New hand';
-    phase = 'bet';
-  }
-
+  let busy = false;
   dealBtn.onclick = () => {
-    if (phase !== 'bet') return;
-    const b = Math.floor(Number(betIn.value) || 0);
-    if (!betCoins(b)) return;
-    bet = b;
-    dealBtn.textContent = 'Deal';
-    deal();
+    if (busy) return;
+    const bet = Math.floor(Number(betIn.value) || 0);
+    if (!validBet(bet)) return;
+    busy = true;
+    dealBtn.disabled = true;
+    status.textContent = 'Dealing...';
+    void (async () => {
+      const res = await play('blackjack', bet);
+      busy = false;
+      dealBtn.disabled = false;
+      dealBtn.textContent = 'New hand';
+      if (!res || !res.ok) { status.textContent = ''; return; }
+      renderRanks(playerCards, res.player ?? []);
+      renderRanks(dealerCards, res.dealer ?? []);
+      const pv = res.pv ?? 0;
+      const dv = res.dv ?? 0;
+      if (res.win > bet) {
+        status.textContent = `You win ${res.win.toLocaleString()} coins! (${pv} vs ${dv})`;
+        msg(`Blackjack pays ${res.win.toLocaleString()} coins.`, 'game');
+      } else if (res.win === bet) {
+        status.textContent = `Push — ${bet.toLocaleString()} coins returned. (${pv} vs ${dv})`;
+      } else if (pv > 21) {
+        status.textContent = `Bust! You lose ${bet.toLocaleString()} coins.`;
+        msg('The dealer collects your stake.', 'game');
+      } else {
+        status.textContent = `Dealer wins. (${dv} vs ${pv})`;
+        msg('The house takes your bet.', 'game');
+      }
+    })();
   };
-  hitBtn.onclick = () => {
-    if (phase !== 'play') return;
-    player.push(deck.pop()!);
-    renderCards(playerCards, player);
-    if (handValue(player) > 21) finishRound();
-  };
-  standBtn.onclick = () => { if (phase === 'play') finishRound(true); };
 
   openModal('Blackjack', body);
 }
@@ -426,28 +390,33 @@ function openRoulette() {
   const spin = document.createElement('button');
   spin.className = 'gamble-btn gamble-green';
   spin.textContent = 'Spin';
+  let busy = false;
   spin.onclick = () => {
+    if (busy) return;
     if (!selectedBet) { status.textContent = 'Pick a bet first.'; return; }
     const b = Math.floor(Number(betIn.value) || 0);
-    if (!betCoins(b)) return;
-    const result = Math.floor(Math.random() * 37);
-    wheel.textContent = String(result);
-    wheel.className = 'gamble-wheel' + (result === 0 ? ' green' : ROULETTE_RED.has(result) ? ' red' : '');
-    let win = 0;
+    if (!validBet(b)) return;
     const sb = selectedBet;
-    if (sb.kind === 'number' && sb.value === result) win = b * 36;
-    else if (sb.kind === 'red' && ROULETTE_RED.has(result)) win = b * 2;
-    else if (sb.kind === 'black' && result > 0 && !ROULETTE_RED.has(result)) win = b * 2;
-    else if (sb.kind === 'odd' && result > 0 && result % 2 === 1) win = b * 2;
-    else if (sb.kind === 'even' && result > 0 && result % 2 === 0) win = b * 2;
-    if (win > 0) {
-      payout(win);
-      status.textContent = `Ball lands on ${result}! You win ${win.toLocaleString()} coins.`;
-      msg(`Roulette pays ${win.toLocaleString()} coins.`, 'game');
-    } else {
-      status.textContent = `Ball lands on ${result}. Better luck next spin.`;
-      msg('The wheel takes your stake.', 'game');
-    }
+    busy = true;
+    spin.disabled = true;
+    status.textContent = 'Spinning...';
+    // The server rolls the wheel and settles coins; we render the result it returns.
+    void (async () => {
+      const res = await play('roulette', b, { bet_kind: sb.kind, bet_value: sb.value ?? 0 });
+      busy = false;
+      spin.disabled = false;
+      if (!res || !res.ok) { status.textContent = ''; return; }
+      const result = res.result ?? 0;
+      wheel.textContent = String(result);
+      wheel.className = 'gamble-wheel' + (result === 0 ? ' green' : ROULETTE_RED.has(result) ? ' red' : '');
+      if (res.win > 0) {
+        status.textContent = `Ball lands on ${result}! You win ${res.win.toLocaleString()} coins.`;
+        msg(`Roulette pays ${res.win.toLocaleString()} coins.`, 'game');
+      } else {
+        status.textContent = `Ball lands on ${result}. Better luck next spin.`;
+        msg('The wheel takes your stake.', 'game');
+      }
+    })();
   };
   row.appendChild(betIn);
   row.appendChild(spin);
@@ -557,13 +526,14 @@ export function showCoinflipOffer(id: string, from: string, amount: number) {
 export function handleCoinflipResult(winner: string, loser: string, amount: number, flip: 'heads' | 'tails') {
   closeModal();
   pendingOffer = null;
+  // The stake was ALREADY moved server-side (social.ts settleCoinflip, which
+  // bumps rev + fences + pushes save_reload). The client only renders the result;
+  // it authors no coin delta — that would double-count against the server ledger.
   const me = net.username;
   if (me === winner) {
-    addItem('coins', amount);
     audio.sfx('coins');
     msg(`Coinflip: ${flip}! You win ${amount.toLocaleString()} coins from ${loser}.`, 'game');
   } else if (me === loser) {
-    removeItem('coins', amount);
     msg(`Coinflip: ${flip}! You lose ${amount.toLocaleString()} coins to ${winner}.`, 'game');
   }
 }

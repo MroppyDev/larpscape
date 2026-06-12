@@ -82,8 +82,11 @@ export function advanceQuest(state: AuthState, id: string, toStage: number): Adv
   const to = Math.floor(toStage);
   if (!Number.isFinite(to) || to < 0) return { ok: false, error: 'bad stage' };
   const cur = questStage(state, id);
-  if (to <= cur) {
-    // monotonic no-op: already at/past — report current without rewinding.
+  if (to < cur) {
+    // forged rewind — reject; stage stays monotonic.
+    return { ok: false, error: 'cannot rewind quest stage' };
+  }
+  if (to === cur) {
     return { ok: true, stage: cur, consumed: [] };
   }
 

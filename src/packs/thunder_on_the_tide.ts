@@ -8,12 +8,13 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  state, msg, invCount,
   registerNpcAction, registerObjectAction, onKill,
   startDialogue, showOptions,
   DialogueLine, Npc, ObjectHandler,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, questbGrant, auxCount, setAuxCount, setAuxBits } from '../quest-sync';
 
 const QUEST = 'thunder_on_the_tide';
 const CRATES = 'q9_crates';     // bitmask: bit per dockside crate searched
@@ -27,14 +28,13 @@ const CRATE_BITS: Record<string, number> = {
   '112,264': 4,
 };
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
-function crateMask(): number { return state.player.quests[CRATES] ?? 0; }
+function stage(): number { return questStage(QUEST); }
+function crateMask(): number { return auxCount(CRATES); }
 function cratesSearched(): number {
   const m = crateMask();
   return (m & 1 ? 1 : 0) + (m & 2 ? 1 : 0) + (m & 4 ? 1 : 0);
 }
-function runnersDown(): number { return state.player.quests[RUNNERS] ?? 0; }
+function runnersDown(): number { return auxCount(RUNNERS); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -89,12 +89,16 @@ registerNpcAction('harbormaster', 'Ask-about-the-crates', (_n: Npc) => {
         {
           label: 'I\'ll take it to Vex.',
           fn: () => {
-            setStage(1);
-            addItem('powder_grit', 1);
-            startDialogue([
-              ...say(QUILL, 'Good. Gun Guild, Aldgate — ask for Vex, and don\'t sneeze on the evidence.'),
-              ...say(QUILL, 'And if anyone asks, you\'re carrying eel. Miscellaneous eel. It\'s done wonders for everyone else.'),
-            ]);
+            void advanceQuestStage(QUEST, 1).then((stageEcho) => {
+              if (!stageEcho.ok) return;
+              void questbGrant('ttt_lost_grit').then((grantEcho) => {
+                if (!grantEcho.ok) return;
+                startDialogue([
+                  ...say(QUILL, 'Good. Gun Guild, Aldgate — ask for Vex, and don\'t sneeze on the evidence.'),
+                  ...say(QUILL, 'And if anyone asks, you\'re carrying eel. Miscellaneous eel. It\'s done wonders for everyone else.'),
+                ]);
+              });
+            });
           },
         },
         {
@@ -109,11 +113,13 @@ registerNpcAction('harbormaster', 'Ask-about-the-crates', (_n: Npc) => {
   }
   if (s === 1) {
     if (invCount('powder_grit') === 0) {
-      addItem('powder_grit', 1);
-      startDialogue([
-        ...say(QUILL, 'You\'ve lost the grit? Lucky for you the crate had seams to spare. *She taps out another pinch.*'),
-        ...say(QUILL, 'Sergeant Vex. Aldgate. Try to arrive holding it this time.'),
-      ]);
+      void questbGrant('ttt_lost_grit').then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(QUILL, 'You\'ve lost the grit? Lucky for you the crate had seams to spare. *She taps out another pinch.*'),
+          ...say(QUILL, 'Sergeant Vex. Aldgate. Try to arrive holding it this time.'),
+        ]);
+      });
       return 'done';
     }
     startDialogue([
@@ -167,23 +173,28 @@ registerNpcAction('gun_trainer', 'Show-powder-sample', (_n: Npc) => {
       ...say(VEX, 'I lost a watch commission proving the armoury sold powder to a bandit king. I was loud about it. Loud got me a hearing, a discharge, and a Guild contract, in that order. So no — this time I\'m calm.'),
       ...say(VEX, 'Guild powder moving through Gullswreck means somebody\'s skipping Aldgate\'s ledgers. Off the books, off the charter, onto whoever pays. I will not watch that happen twice.'),
     ], () => {
-      removeItem('powder_grit', 1);
-      setStage(2);
-      addItem('guild_writ', 1);
-      startDialogue([
-        ...say(VEX, '*She writes three lines, signs once, and stamps it hard enough to wake the desk.* That\'s a Guild writ. As of now you\'re my deputy. Congratulations; the pay is justice.'),
-        ...say(VEX, 'Take Wick\'s ferry from Brackwater to the cove. The Wreckers stack their cargo on the dockside by the landing — search the crates. All of them. Powder leaves a trail, and so does paperwork.'),
-        ...say(VEX, 'Count your rounds out there, deputy. The cove doesn\'t lend you any back.'),
-      ]);
+      void advanceQuestStage(QUEST, 2).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        void questbGrant('ttt_lost_writ').then((grantEcho) => {
+          if (!grantEcho.ok) return;
+          startDialogue([
+            ...say(VEX, '*She writes three lines, signs once, and stamps it hard enough to wake the desk.* That\'s a Guild writ. As of now you\'re my deputy. Congratulations; the pay is justice.'),
+            ...say(VEX, 'Take Wick\'s ferry from Brackwater to the cove. The Wreckers stack their cargo on the dockside by the landing — search the crates. All of them. Powder leaves a trail, and so does paperwork.'),
+            ...say(VEX, 'Count your rounds out there, deputy. The cove doesn\'t lend you any back.'),
+          ]);
+        });
+      });
     });
     return 'done';
   }
   if (s >= 2 && s <= 4) {
     if (invCount('guild_writ') === 0) {
-      addItem('guild_writ', 1);
-      startDialogue([
-        ...say(VEX, 'You lost the writ. *She writes another, slower, so you can watch each word being judged.* Deputies who lose their second writ become civilians who owe me a stamp.'),
-      ]);
+      void questbGrant('ttt_lost_writ').then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(VEX, 'You lost the writ. *She writes another, slower, so you can watch each word being judged.* Deputies who lose their second writ become civilians who owe me a stamp.'),
+        ]);
+      });
       return 'done';
     }
     startDialogue([
@@ -215,17 +226,15 @@ registerNpcAction('gun_trainer', 'Show-powder-sample', (_n: Npc) => {
       ...me('Inside the Guild? Shouldn\'t you tell Master Flint?'),
       ...say(VEX, 'I\'ll tell him what he can act on. The rest... *she folds the manifest once, precisely, and puts it inside her coat* ...the rest I\'m keeping. Last time I shouted, the rot just changed addresses. This time I\'ll be standing next to it when it turns around.'),
     ], () => {
-      removeItem('powder_keg', 1);
-      removeItem('false_manifest', 1);
-      setStage(6);
-      addXp('Gun', 800);
-      addItem('coins', 500);
-      addItem('guild_deputy_badge', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(VEX, 'Five hundred coins, drawn from the Guild\'s enforcement purse — which exists now, because I just invented it. And this.'),
-        ...say(VEX, '*She presses a deputy\'s badge into your hand.* That isn\'t a souvenir. The Guild knows your name and so does its powder. Wear it, count your rounds, and when I need a deputy again — and I will — don\'t make me write a third writ.'),
-      ]);
+      void advanceQuestStage(QUEST, 6).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(QUEST, 6);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(VEX, 'Five hundred coins, drawn from the Guild\'s enforcement purse — which exists now, because I just invented it. And this.'),
+          ...say(VEX, '*She presses a deputy\'s badge into your hand.* That isn\'t a souvenir. The Guild knows your name and so does its powder. Wear it, count your rounds, and when I need a deputy again — and I will — don\'t make me write a third writ.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -258,7 +267,7 @@ const searchCrate: ObjectHandler = (o) => {
       msg('You\'ve already been through this one. The lies don\'t improve on a second reading.');
       return 'done';
     }
-    state.player.quests[CRATES] = crateMask() | bit;
+    setAuxBits(CRATES, crateMask() | bit);
     const n = cratesSearched();
     if (n === 1) {
       startDialogue([
@@ -273,18 +282,24 @@ const searchCrate: ObjectHandler = (o) => {
       return 'done';
     }
     // Third crate: the manifest.
-    setStage(3);
-    addItem('false_manifest', 1);
-    startDialogue([
-      ...say('', '"MISC. EEL" again — the classics travel. Under a false bottom you find no eel, but paperwork: a shipping manifest written in two different hands.'),
-      ...say('', 'One hand routes Guild powder through the cove in tidy, practised lines. The other has scrawled across the bottom: "Tilly — two receipts as always."'),
-    ]);
-    msg('You found a false manifest. The fence\'s name is Tilly.', 'level');
+    void advanceQuestStage(QUEST, 3).then((stageEcho) => {
+      if (!stageEcho.ok) return;
+      void questbGrant('ttt_lost_manifest').then((grantEcho) => {
+        if (!grantEcho.ok) return;
+        startDialogue([
+          ...say('', '"MISC. EEL" again — the classics travel. Under a false bottom you find no eel, but paperwork: a shipping manifest written in two different hands.'),
+          ...say('', 'One hand routes Guild powder through the cove in tidy, practised lines. The other has scrawled across the bottom: "Tilly — two receipts as always."'),
+        ]);
+        msg('You found a false manifest. The fence\'s name is Tilly.', 'level');
+      });
+    });
     return 'done';
   }
   if (s < 6 && invCount('false_manifest') === 0) {
-    addItem('false_manifest', 1);
-    msg('Tucked beneath the false bottom is the manifest you mislaid. The smugglers file better copies than you keep.');
+    void questbGrant('ttt_lost_manifest').then((echo) => {
+      if (!echo.ok) return;
+      msg('Tucked beneath the false bottom is the manifest you mislaid. The smugglers file better copies than you keep.');
+    });
     return 'done';
   }
   msg('Sand, straw, and fictional fish. You have what the crates were hiding.');
@@ -326,12 +341,14 @@ registerNpcAction('cove_fence', 'Talk-to', (_n: Npc) => {
               ]);
               return;
             }
-            setStage(4);
-            startDialogue([
-              ...say(TILLY, '*She reads the writ at arm\'s length, the same way Quill holds eel.* Vex\'s stamp. Hm. That woman stamps like the desk owes her testimony.'),
-              ...say(TILLY, 'Here\'s the trouble with a writ: it\'s the one document I can\'t write a nicer second copy of. Fine. The truth — no charge, which means you got the discount of a lifetime.'),
-              ...say(TILLY, 'Two Wreckers run the powder. Night shed crowd, down among the camp on the south shore. I move the boxes; they move the boxes that matter. Settle them, and you and I can discuss a certain keg.'),
-            ]);
+            void advanceQuestStage(QUEST, 4).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(TILLY, '*She reads the writ at arm\'s length, the same way Quill holds eel.* Vex\'s stamp. Hm. That woman stamps like the desk owes her testimony.'),
+                ...say(TILLY, 'Here\'s the trouble with a writ: it\'s the one document I can\'t write a nicer second copy of. Fine. The truth — no charge, which means you got the discount of a lifetime.'),
+                ...say(TILLY, 'Two Wreckers run the powder. Night shed crowd, down among the camp on the south shore. I move the boxes; they move the boxes that matter. Settle them, and you and I can discuss a certain keg.'),
+              ]);
+            });
           },
         },
         {
@@ -343,13 +360,17 @@ registerNpcAction('cove_fence', 'Talk-to', (_n: Npc) => {
               ]);
               return;
             }
-            removeItem('coins', 100);
-            setStage(4);
-            startDialogue([
-              ...say(TILLY, '*The coins vanish. Two slips of paper appear: one says "INFORMATION — 100gp", the other says "DONATION TO THE FUND FOR RETIRED FISHERMEN".* You keep whichever audits better.'),
-              ...say(TILLY, 'Now. The truth, which is my best-moving product and the only one I never discount twice: two Wreckers run the powder. Night shed crowd, down in the camp on the south shore.'),
-              ...say(TILLY, 'I move boxes; they move the boxes that matter. Settle them, and you and I can discuss a certain keg.'),
-            ]);
+            void questbGrant('ttt_pay_tilly').then((payEcho) => {
+              if (!payEcho.ok) return;
+              void advanceQuestStage(QUEST, 4).then((stageEcho) => {
+                if (!stageEcho.ok) return;
+                startDialogue([
+                  ...say(TILLY, '*The coins vanish. Two slips of paper appear: one says "INFORMATION — 100gp", the other says "DONATION TO THE FUND FOR RETIRED FISHERMEN".* You keep whichever audits better.'),
+                  ...say(TILLY, 'Now. The truth, which is my best-moving product and the only one I never discount twice: two Wreckers run the powder. Night shed crowd, down in the camp on the south shore.'),
+                  ...say(TILLY, 'I move boxes; they move the boxes that matter. Settle them, and you and I can discuss a certain keg.'),
+                ]);
+              });
+            });
           },
         },
       ]);
@@ -365,23 +386,29 @@ registerNpcAction('cove_fence', 'Talk-to', (_n: Npc) => {
       ]);
       return 'done';
     }
-    setStage(5);
-    addItem('powder_keg', 1);
-    startDialogue([
-      ...me('The night shed\'s out of staff.'),
-      ...say(TILLY, '*Tilly listens to the quiet for a moment, then sighs like a closing ledger.* So I heard. Word travels fast when it\'s the only thing left moving.'),
-      ...say(TILLY, 'Right. *She drags a keg out from under the floorboards — "FRESH SHARK (DO NOT OPEN)".* Take it. I\'m surrendering this before it surrenders me.'),
-      ...say(TILLY, 'For the record — the official record, I\'ll write the other one later — I sell things. I don\'t sell bangs. Bangs are bad for repeat custom.'),
-      ...say(TILLY, 'Give Vex my regards. Better yet, don\'t. Give her the keg and forget my face; it\'s the freshest thing in this cove.'),
-    ]);
+    void advanceQuestStage(QUEST, 5).then((stageEcho) => {
+      if (!stageEcho.ok) return;
+      void questbGrant('ttt_lost_keg').then((grantEcho) => {
+        if (!grantEcho.ok) return;
+        startDialogue([
+          ...me('The night shed\'s out of staff.'),
+          ...say(TILLY, '*Tilly listens to the quiet for a moment, then sighs like a closing ledger.* So I heard. Word travels fast when it\'s the only thing left moving.'),
+          ...say(TILLY, 'Right. *She drags a keg out from under the floorboards — "FRESH SHARK (DO NOT OPEN)".* Take it. I\'m surrendering this before it surrenders me.'),
+          ...say(TILLY, 'For the record — the official record, I\'ll write the other one later — I sell things. I don\'t sell bangs. Bangs are bad for repeat custom.'),
+          ...say(TILLY, 'Give Vex my regards. Better yet, don\'t. Give her the keg and forget my face; it\'s the freshest thing in this cove.'),
+        ]);
+      });
+    });
     return 'done';
   }
   if (s === 5) {
     if (invCount('powder_keg') === 0) {
-      addItem('powder_keg', 1);
-      startDialogue([
-        ...say(TILLY, 'You lost a keg of gunpowder. A keg. Of gunpowder. *She produces another from under the floor.* Last one in stock, love, and I am NEVER restocking.'),
-      ]);
+      void questbGrant('ttt_lost_keg').then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(TILLY, 'You lost a keg of gunpowder. A keg. Of gunpowder. *She produces another from under the floor.* Last one in stock, love, and I am NEVER restocking.'),
+        ]);
+      });
       return 'done';
     }
     startDialogue([
@@ -409,7 +436,7 @@ onKill((defId) => {
   if (stage() !== 4) return;
   const k = runnersDown();
   if (k >= RUNNERS_NEEDED) return;
-  state.player.quests[RUNNERS] = k + 1;
+  setAuxCount(RUNNERS, k + 1);
   if (k + 1 >= RUNNERS_NEEDED) {
     msg('The second powder runner goes down. The night shed is out of business — Tilly will want to hear it.', 'level');
   } else {

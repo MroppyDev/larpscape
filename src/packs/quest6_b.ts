@@ -8,19 +8,19 @@
 // Imported for side effects by src/packs/index.ts (before initGame).
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, questTurnin } from '../quest-sync';
 
 const CATCH = 'catch_of_a_lifetime';
 const ASH = 'ash_and_ruin';
 const EMBERS = 'embers_below';
 
-function stage(id: string): number { return state.player.quests[id] ?? 0; }
-function setStage(id: string, s: number) { state.player.quests[id] = s; }
-function embersDone(): boolean { return (state.player.quests[EMBERS] ?? 0) >= 2; }
+function stage(id: string): number { return questStage(id); }
+function embersDone(): boolean { return questStage(EMBERS) >= 2; }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -69,12 +69,14 @@ registerNpcAction('harbormaster', 'Ask-about-work', (_n: Npc) => {
         {
           label: 'I\'ll land your shark.',
           fn: () => {
-            setStage(CATCH, 1);
-            startDialogue([
-              ...say('Quill', 'Ha! There\'s the spirit. Now listen, because sharks don\'t forgive sloppy work.'),
-              ...say('Quill', 'You\'ll need a harpoon and the arm to use it — nothing less than a level 76 angler ever pulled a shark from these waters.'),
-              ...say('Quill', 'The harpoon spots are out on our own docks, where the planks run into deep water. Watch for the big shapes gliding under the surface. That\'s them watching you back.'),
-            ]);
+            void advanceQuestStage(CATCH, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say('Quill', 'Ha! There\'s the spirit. Now listen, because sharks don\'t forgive sloppy work.'),
+                ...say('Quill', 'You\'ll need a harpoon and the arm to use it — nothing less than a level 76 angler ever pulled a shark from these waters.'),
+                ...say('Quill', 'The harpoon spots are out on our own docks, where the planks run into deep water. Watch for the big shapes gliding under the surface. That\'s them watching you back.'),
+              ]);
+            });
           },
         },
         {
@@ -103,18 +105,15 @@ registerNpcAction('harbormaster', 'Ask-about-work', (_n: Npc) => {
       ...say('Quill', 'Brackwater\'s name stays on the charts, and the whole coast will know who put it there.'),
       ...say('Quill', 'A deal\'s a deal: coin, my harpooner\'s spare — better than anything in the shops — and every trick I know about fish and fire.'),
     ], () => {
-      if (invCount('raw_shark') >= 1) removeItem('raw_shark', 1);
-      else removeItem('shark', 1);
-      setStage(CATCH, 2);
-      addXp('Fishing', 1800);
-      addXp('Cooking', 800);
-      addItem('harpoon', 1);
-      addItem('coins', 1000);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say('Quill', 'When the festival crowds ask who landed the great shark of Brackwater, I\'ll point them your way.'),
-        ...say('Quill', 'Fair warning: by the third telling it\'ll have been wrestled barehanded. Stories grow faster than fish.'),
-      ]);
+      void questTurnin('catch_shark').then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(CATCH, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say('Quill', 'When the festival crowds ask who landed the great shark of Brackwater, I\'ll point them your way.'),
+          ...say('Quill', 'Fair warning: by the third telling it\'ll have been wrestled barehanded. Stories grow faster than fish.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -177,12 +176,14 @@ registerNpcAction('slayer_master', 'Ask-about-the-depths', (_n: Npc) => {
         {
           label: 'I\'ll put out Korr\'s forge for good.',
           fn: () => {
-            setStage(ASH, 1);
-            startDialogue([
-              ...say('Brogan', 'Then you\'re the best fool I\'ve ever armed. Listen well.'),
-              ...say('Brogan', 'Follow the cavern east where it breaks into the Ashen Depths. The lava marks the road; the crawlers and ash fiends mark the toll.'),
-              ...say('Brogan', 'Korr is bigger than anything you\'ve faced and angrier than everything you\'ve faced put together. Pack food until your bag complains, and don\'t stand where it\'s standing.'),
-            ]);
+            void advanceQuestStage(ASH, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say('Brogan', 'Then you\'re the best fool I\'ve ever armed. Listen well.'),
+                ...say('Brogan', 'Follow the cavern east where it breaks into the Ashen Depths. The lava marks the road; the crawlers and ash fiends mark the toll.'),
+                ...say('Brogan', 'Korr is bigger than anything you\'ve faced and angrier than everything you\'ve faced put together. Pack food until your bag complains, and don\'t stand where it\'s standing.'),
+              ]);
+            });
           },
         },
         {
@@ -210,17 +211,15 @@ registerNpcAction('slayer_master', 'Ask-about-the-depths', (_n: Npc) => {
       ...say('Brogan', 'You walked into the bottom of the world and put out a forge that burned before this town had a name.'),
       ...say('Brogan', 'I\'ve no medal grand enough, so take this instead: coin, gauntlets quenched in the fiend\'s own fire, and every scrap I know about slaying and the stone it hides in.'),
     ], () => {
-      removeItem('molten_core', 1);
-      setStage(ASH, 2);
-      addXp('Slayer', 2500);
-      addXp('Mining', 1500);
-      addItem('molten_gauntlets', 1);
-      addItem('coins', 3000);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say('Brogan', 'First quiet night the miners will have in a season. They\'ll never know who to thank. I will.'),
-        ...say('Brogan', 'The core goes on my table, in sight of the drake\'s crystal on the hearth. I\'m building a shelf of things you\'ve killed. It\'s getting crowded.'),
-      ]);
+      void advanceQuestStage(ASH, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(ASH, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say('Brogan', 'First quiet night the miners will have in a season. They\'ll never know who to thank. I will.'),
+          ...say('Brogan', 'The core goes on my table, in sight of the drake\'s crystal on the hearth. I\'m building a shelf of things you\'ve killed. It\'s getting crowded.'),
+        ]);
+      });
     });
     return 'done';
   }

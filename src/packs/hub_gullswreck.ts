@@ -2,17 +2,17 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const WRECK = 'wreck_of_gull';
 const BARS_NEEDED = 10;
 
-function stage(): number { return state.player.quests[WRECK] ?? 0; }
-function setStage(s: number) { state.player.quests[WRECK] = s; }
+function stage(): number { return questStage(WRECK); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -52,11 +52,13 @@ registerNpcAction('boatman', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll fetch your iron bars.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(WICK, 'Good lad. Smelt ore at a furnace, or buy bars if you\'ve the purse for it.'),
-              ...say(WICK, 'Once she\'s patched, I\'ll run the cove route again. Pirates be damned — a boatman\'s got to boat.'),
-            ]);
+            void advanceQuestStage(WRECK, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(WICK, 'Good lad. Smelt ore at a furnace, or buy bars if you\'ve the purse for it.'),
+                ...say(WICK, 'Once she\'s patched, I\'ll run the cove route again. Pirates be damned — a boatman\'s got to boat.'),
+              ]);
+            });
           },
         },
         {
@@ -83,16 +85,17 @@ registerNpcAction('boatman', 'Talk-to', (_n: Npc) => {
       ...say(WICK, '*Wick hammers the last brace into place and steps back, wiping his brow.* There — she\'ll float, she\'ll row, and she might even come back.'),
       ...say(WICK, 'Gullswreck Cove\'s open again. Mind the pirates — they\'ve no love for paying passengers.'),
     ], () => {
-      removeItem('iron_bar', BARS_NEEDED);
-      setStage(2);
-      addXp('Smithing', 800);
-      addItem('boarding_cutlass', 1);
-      addItem('coins', 1000);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(WICK, 'Thousand coins from the harbour purse, and this cutlass — taken off a wrecker who tried to skip his fare.'),
-        ...say(WICK, 'Ferry\'s yours when you need her. Just don\'t mention the listing to the harbormaster.'),
-      ]);
+      // Server consumes the 10 iron bars on the validated 1->2 advance, then
+      // grants the data-defined reward (Smithing xp + cutlass + coins).
+      void advanceQuestStage(WRECK, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(WRECK, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(WICK, 'Thousand coins from the harbour purse, and this cutlass — taken off a wrecker who tried to skip his fare.'),
+          ...say(WICK, 'Ferry\'s yours when you need her. Just don\'t mention the listing to the harbormaster.'),
+        ]);
+      });
     });
     return 'done';
   }

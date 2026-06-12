@@ -27,13 +27,14 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount, hasItem, addXp,
+  state, msg, invCount, hasItem, freeSlots,
   registerNpcAction, registerObjectAction, registerItemOnObject,
   registerTickHook, onKill, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
 import { removeObject, objectAt, key, WorldObject } from '../world';
+import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbGrant, auxCount, setAuxBits } from '../quest-sync';
 
 const HUSH = 'hush_of_ravenmoor';
 const CELLAR = 'q5_cellar'; // bitmask: 1 = crate searched, 2 = revenant slain, 4 = lily delivered
@@ -47,10 +48,9 @@ const DOOR = { x: 232, y: 159 };
 const ANNEX_CRATE = { x: 233, y: 160 };
 const CHIME = { x: 244, y: 150 };
 
-function stage(): number { return state.player.quests[HUSH] ?? 0; }
-function setStage(s: number) { state.player.quests[HUSH] = s; }
-function cellarBits(): number { return state.player.quests[CELLAR] ?? 0; }
-function setBit(b: number) { state.player.quests[CELLAR] = cellarBits() | b; }
+function stage(): number { return questStage(HUSH); }
+function cellarBits(): number { return auxCount(CELLAR); }
+function setBit(b: number) { setAuxBits(CELLAR, cellarBits() | b); }
 function hasBit(b: number): boolean { return (cellarBits() & b) !== 0; }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
@@ -104,11 +104,13 @@ registerNpcAction('lady_ravenmoor', 'Talk-to', (_n: Npc) => {
         {
           label: 'Then I\'ll find it for you. All of it.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(ESELD, 'Start in the library — the northeast room. He never burned a page in his life; his last weeks live on those shelves, written down and hidden behind duller books.'),
-              ...say(ESELD, 'Search the cases. And if Mortlock asks, you are admiring the architecture.'),
-            ]);
+            void advanceQuestStage(HUSH, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(ESELD, 'Start in the library — the northeast room. He never burned a page in his life; his last weeks live on those shelves, written down and hidden behind duller books.'),
+                ...say(ESELD, 'Search the cases. And if Mortlock asks, you are admiring the architecture.'),
+              ]);
+            });
           },
         },
         {
@@ -160,16 +162,15 @@ registerNpcAction('lady_ravenmoor', 'Talk-to', (_n: Npc) => {
       ...say(ESELD, 'I asked Mortlock this morning what stopped the chimes. He looked me dead in the eye and said the timbers had finished settling. I have decided to let him have that one. He has earned one.'),
       ...say(ESELD, 'May I keep the diary? It is the last of his voice — and the first honest thing this house has held in years.'),
     ], () => {
-      removeItem('ravenmoor_diary', 1);
-      setStage(6);
-      addXp('Prayer', 700);
-      addItem('coins', 500);
-      addItem('ravenmoor_signet', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(ESELD, 'The house of Ravenmoor pays its debts. Coin from the estate — and this: my husband\'s signet. Wear it, and you will always have a roof here, and a fire, and the truth. We keep that here now.'),
-        ...say(ESELD, 'Listen. No chimes. Just the wind, when it troubles to come. An honest silence, at last.'),
-      ]);
+      void advanceQuestStage(HUSH, 6).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(HUSH, 6);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(ESELD, 'The house of Ravenmoor pays its debts. Coin from the estate — and this: my husband\'s signet. Wear it, and you will always have a roof here, and a fire, and the truth. We keep that here now.'),
+          ...say(ESELD, 'Listen. No chimes. Just the wind, when it troubles to come. An honest silence, at last.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -206,10 +207,12 @@ registerNpcAction('groundskeeper', 'Talk-to', (_n: Npc) => {
       ...say(MORTLOCK, 'And she\'ll have it. But one thing first, done properly. There\'s a grave behind this house I have tended five years with everything but the right flower. He planted white lilies for her the year they married, and the bog took the last of ours.'),
       ...say(MORTLOCK, 'Bring me one white lily for my lord\'s grave, and the key is yours.'),
     ], () => {
-      setStage(3);
-      startDialogue([
-        ...say(MORTLOCK, 'They grow where water sits quiet — the mere\'s outflow, under the Quiess Tower, away east past everything sensible. Or Old Fen in Bellmeadow sells anything that grows, if you ask him kindly and pay him promptly.'),
-      ]);
+      void advanceQuestStage(HUSH, 3).then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(MORTLOCK, 'They grow where water sits quiet — the mere\'s outflow, under the Quiess Tower, away east past everything sensible. Or Old Fen in Bellmeadow sells anything that grows, if you ask him kindly and pay him promptly.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -223,10 +226,16 @@ registerNpcAction('groundskeeper', 'Talk-to', (_n: Npc) => {
     }
     if (hasBit(BIT_LILY)) {
       // Safety: lily was delivered but the key was lost. Mortlock keeps spares of everything.
-      if (!addItem('cellar_key', 1)) { msg('You need a free inventory slot for the key.'); return 'done'; }
-      startDialogue([
-        ...say(MORTLOCK, 'Lost the key. Five years I keep it safe and you lose it in an afternoon. Here — the spare. There is always a spare. That is the whole of groundskeeping, if you write it down.'),
-      ]);
+      if (freeSlots() === 0 && !hasItem('cellar_key')) {
+        msg('You need a free inventory slot for the key.');
+        return 'done';
+      }
+      void questbGrant('hush_lily_to_key').then((echo) => {
+        if (!echo.ok) return;
+        startDialogue([
+          ...say(MORTLOCK, 'Lost the key. Five years I keep it safe and you lose it in an afternoon. Here — the spare. There is always a spare. That is the whole of groundskeeping, if you write it down.'),
+        ]);
+      });
       return 'done';
     }
     if (hasItem('white_lily')) {
@@ -236,13 +245,15 @@ registerNpcAction('groundskeeper', 'Talk-to', (_n: Npc) => {
         ...say(MORTLOCK, 'Here is the key, then, as promised. The annex is north of the house — the iron-banded door.'),
         ...say(MORTLOCK, 'Whatever rings down there kept my lord company while he died. Don\'t be gentle with it.'),
       ], () => {
-        if (!addItem('cellar_key', 1)) {
+      if (!hasItem('cellar_key') && freeSlots() === 0) {
           msg('You need a free inventory slot for the key. Mortlock holds onto it for now.');
           return;
-        }
-        removeItem('white_lily', 1);
+      }
+      void questbGrant('hush_lily_to_key').then((echo) => {
+        if (!echo.ok) return;
         setBit(BIT_LILY);
         msg('Mortlock takes the white lily and hands you a cold iron key.');
+      });
       });
       return 'done';
     }
@@ -288,12 +299,14 @@ registerNpcAction('gardener', 'Ask-about-lilies', (_n: Npc) => {
             startDialogue(say(FEN, 'Fifty is the price, and your purse says otherwise. Come back when it\'s heavier than your conscience.'));
             return;
           }
-          if (!addItem('white_lily', 1)) { msg('You need a free inventory slot.'); return; }
-          removeItem('coins', 50);
-          startDialogue([
-            ...say(FEN, 'Fifty coins, and don\'t haggle — the lily heard you ask, and it knows what it\'s worth.'),
-            ...say(FEN, 'For a grave, is it? Thought so. They always are. Carry it stem-down and walk slow; it\'ll keep.'),
-          ]);
+          if (freeSlots() === 0 && !hasItem('white_lily')) { msg('You need a free inventory slot.'); return; }
+          void questbGrant('hush_buy_lily').then((echo) => {
+            if (!echo.ok) return;
+            startDialogue([
+              ...say(FEN, 'Fifty coins, and don\'t haggle — the lily heard you ask, and it knows what it\'s worth.'),
+              ...say(FEN, 'For a grave, is it? Thought so. They always are. Carry it stem-down and walk slow; it\'ll keep.'),
+            ]);
+          });
         },
       },
       {
@@ -322,14 +335,19 @@ registerObjectAction('bookshelf', 'Search', (o) => {
   }
   const s = stage();
   if (s === 1) {
-    if (!addItem('ravenmoor_diary', 1)) { msg('You need a free inventory slot.'); return 'done'; }
+    if (freeSlots() === 0) { msg('You need a free inventory slot.'); return 'done'; }
     msg('Estate ledgers, sermon collections, forty years of almanacs... and one diary, wedged spine-in behind the rest.');
     startDialogue([
       ...say('The diary', 'Final entry, F.S. 738: "The jar again. I paid the bog-trader far too little for what it is — a note that never resolves. It helps me sleep. Eseld must not know; she would make me give it up, and I find that I cannot."'),
       ...me('That\'s the lord\'s hand. And that is no music box.'),
     ], () => {
-      setStage(2);
-      msg('You take the Ravenmoor diary. Mortlock has some settling to account for.', 'level');
+      void advanceQuestStage(HUSH, 2).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        void scriptedGrant(HUSH, 2).then((grantEcho) => {
+          if (!grantEcho.ok) return;
+          msg('You take the Ravenmoor diary. Mortlock has some settling to account for.', 'level');
+        });
+      });
     });
     return 'done';
   }
@@ -352,11 +370,12 @@ function tryUnlock(o: WorldObject): void {
     msg('Locked. The lock is clean and oiled — kept ready, all these years, by someone who never once opened it.');
     return;
   }
-  removeItem('cellar_key', 1);
-  setStage(4);
-  removeObject(o);
-  msg('The key turns like it was oiled yesterday — because it was.');
-  msg('Cold air climbs the steps to meet you. Somewhere below, a single note holds, and holds, and refuses to end.', 'level');
+  void advanceQuestStage(HUSH, 4).then((echo) => {
+    if (!echo.ok) return;
+    removeObject(o);
+    msg('The key turns like it was oiled yesterday — because it was.');
+    msg('Cold air climbs the steps to meet you. Somewhere below, a single note holds, and holds, and refuses to end.', 'level');
+  });
 }
 
 registerObjectAction('cellar_door', 'Unlock', (o) => { tryUnlock(o); return 'done'; });
@@ -366,7 +385,7 @@ registerItemOnObject('cellar_key', 'cellar_door', (_slot, o) => { tryUnlock(o); 
 // Client-local removal — see the multiplayer caveat in the header comment.
 registerTickHook(() => {
   if (!state.player) return;
-  if ((state.player.quests[HUSH] ?? 0) < 4) return;
+  if (questStage(HUSH) < 4) return;
   const o = objectAt.get(key(DOOR.x, DOOR.y));
   if (o && o.type === 'cellar_door') removeObject(o);
 });
@@ -436,8 +455,10 @@ registerItemOnObject('ravenmoor_diary', 'quiess_chime', (_slot, o) => {
       ...say('The bone chimes', '*One by one, the chimes take up the melody scrawled beside his final entry — his melody — and for the first time in five years, they finish it.*'),
       ...say('The bone chimes', '*The last note resolves. The silence afterward is only silence.*'),
     ], () => {
-      setStage(5);
-      msg('The hush over Ravenmoor is an honest one now. Lady Ravenmoor should hear it from you.', 'level');
+      void advanceQuestStage(HUSH, 5).then((echo) => {
+        if (!echo.ok) return;
+        msg('The hush over Ravenmoor is an honest one now. Lady Ravenmoor should hear it from you.', 'level');
+      });
     });
     return;
   }

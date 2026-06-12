@@ -1,36 +1,46 @@
 // Aldgate Gun Guild — trainer, shop, and round-loading recipes.
+//
+// SERVER-AUTHORITATIVE round loading (docs/CONVERSION-CONTRACT.md): using
+// gunpowder on a casing sends the 'load-rounds' intent (server/intent-misc.ts).
+// The server owns the tier table (level req + xp + casing→round map), validates
+// Gun level + holdings, batches up to 15, and grants the rounds + Gun xp. This
+// pack authors nothing — it only requests the intent and reports the echo.
 import {
   registerNpcAction, registerItemOnItem,
   startDialogue, showOptions, state, msg,
-  openShop, addItem, removeItem, invCount, addXp, level, freeSlots,
+  openShop, requestIntent,
 } from '../game';
 import { ITEMS } from '../defs';
 import { audio } from '../audio';
 
-function loadRounds(casing: string, round: string, gunLevel: number, xp: number) {
+// Map each casing to the round it loads (for the chat-log flavour only — the
+// server independently resolves the tier + amount it actually grants).
+const ROUND_OF: Record<string, string> = {
+  bronze_bullet_casing: 'bronze_round',
+  iron_bullet_casing: 'iron_round',
+  steel_bullet_casing: 'steel_round',
+  mithril_bullet_casing: 'mithril_round',
+  adamant_bullet_casing: 'adamant_round',
+  rune_bullet_casing: 'rune_round',
+};
+
+function loadRounds(casing: string) {
   registerItemOnItem('gunpowder', casing, () => {
-    if (level('Gun') < gunLevel) {
-      msg(`You need a Gun level of ${gunLevel} to load ${ITEMS[round].name}s.`);
-      return;
-    }
-    const max = Math.min(Math.floor(invCount('gunpowder')), Math.floor(invCount(casing)));
-    if (max <= 0) { msg("You don't have casings and gunpowder to load rounds."); return; }
-    const batch = Math.min(max, 15);
-    removeItem('gunpowder', batch);
-    removeItem(casing, batch);
-    addItem(round, batch);
-    addXp('Gun', (xp / 15) * batch);
-    msg(`You load ${batch} ${ITEMS[round].name}${batch > 1 ? 's' : ''}.`);
-    audio.sfx('gun');
+    void (async () => {
+      const echo = await requestIntent('load-rounds', { casing });
+      if (!echo.ok) { if (echo.error) msg(echo.error); return; }
+      const batch = (echo as unknown as { batch?: number }).batch ?? 0;
+      const round = ROUND_OF[casing];
+      const name = ITEMS[round]?.name ?? 'round';
+      if (batch > 0) {
+        msg(`You load ${batch} ${name}${batch > 1 ? 's' : ''}.`);
+        audio.sfx('gun');
+      }
+    })();
   });
 }
 
-loadRounds('bronze_bullet_casing', 'bronze_round', 1, 15);
-loadRounds('iron_bullet_casing', 'iron_round', 5, 25);
-loadRounds('steel_bullet_casing', 'steel_round', 20, 37.5);
-loadRounds('mithril_bullet_casing', 'mithril_round', 40, 50);
-loadRounds('adamant_bullet_casing', 'adamant_round', 55, 62.5);
-loadRounds('rune_bullet_casing', 'rune_round', 60, 75);
+for (const casing of Object.keys(ROUND_OF)) loadRounds(casing);
 
 registerNpcAction('gun_trainer', 'Talk-to', (n) => {
   startDialogue([

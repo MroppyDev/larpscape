@@ -7,7 +7,7 @@
 // Imported for side effects via src/packs/index.ts.
 
 import {
-  state, msg, level, addXp, startDialogue,
+  state, msg, level, startDialogue, requestIntent,
   registerNpcAction, registerObjectAction, registerFx, registerDamageModifier,
   Npc,
 } from '../game';
@@ -66,14 +66,14 @@ for (let idx = 0; idx < FROST_COURSE.length; idx++) {
     p.prevX = p.x; p.prevY = p.y;
     p.x = o.x; p.y = destY;
     p.path = [];
-    addXp('Agility', ob.xp);
+    void requestIntent('train', { obstacle: ob.type });
     msg(ob.done);
     // lap tracking: obstacles in order earn the summit bonus
     if (idx === frostProgress) frostProgress++;
     else frostProgress = idx === 0 ? 1 : 0;
     if (frostProgress >= FROST_COURSE.length) {
       frostProgress = 0;
-      addXp('Agility', LAP_BONUS);
+      void requestIntent('train', { obstacle: 'agility_lap' });
       msg('You complete a lap of the mountain course. The thin air no longer bothers you.', 'level');
     }
     return 'done';

@@ -4,18 +4,18 @@
 // Registered for side effects via src/packs/index.ts.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const BOG = 'heart_of_the_bog';
 const SEEDS = 'seeds_of_trouble';
 const SEEDS_DONE = 2;
 
-function stage(id: string): number { return state.player.quests[id] ?? 0; }
-function setStage(id: string, s: number) { state.player.quests[id] = s; }
+function stage(id: string): number { return questStage(id); }
 
 function fen(...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: 'Old Fen', text: t }));
@@ -67,11 +67,13 @@ registerNpcAction('gardener', 'Ask-about-bog', (_n: Npc) => {
         {
           label: 'I\'ll cut the rot out of your bog.',
           fn: () => {
-            setStage(BOG, 1);
-            startDialogue([
-              ...fen('You\'ve a braver spine than mine. Head south through the swamp and keep to the firm ground.'),
-              ...fen('And mind the spit — they say the thing\'s breath sours the blood. Pack a bite to eat.'),
-            ]);
+            void advanceQuestStage(BOG, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...fen('You\'ve a braver spine than mine. Head south through the swamp and keep to the firm ground.'),
+                ...fen('And mind the spit — they say the thing\'s breath sours the blood. Pack a bite to eat.'),
+              ]);
+            });
           },
         },
         {
@@ -99,14 +101,12 @@ registerNpcAction('gardener', 'Ask-about-bog', (_n: Npc) => {
       ...fen('Faugh, the smell of it! But look — root-threads all through the flesh. So that\'s how it was poisoning the soil.'),
       ...fen('You\'ve done the green world a kindness today. Take these — brewed them myself, from honest herbs.'),
     ], () => {
-      removeItem('bog_heart', 1);
-      setStage(BOG, 2);
-      addXp('Herblore', 600);
-      addXp('Farming', 600);
-      addItem('attack_potion', 2);
-      addItem('defence_potion', 2);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue(fen('Give the bog a season or two. It\'ll grow honest weeds again — and I do love an honest weed.'));
+      void advanceQuestStage(BOG, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(BOG, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue(fen('Give the bog a season or two. It\'ll grow honest weeds again — and I do love an honest weed.'));
+      });
     });
     return 'done';
   }

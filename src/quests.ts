@@ -3,10 +3,16 @@
 // Imported for side effects by main.ts; exports QUESTS for the quest journal UI.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
-  registerNpcAction, onKill, startDialogue, showOptions,
+  state, msg, invCount,
+  registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from './game';
+import {
+  questStage,
+  advanceQuestStage,
+  claimQuestReward,
+  auxCount,
+} from './quest-sync';
 
 export interface QuestDef {
   id: string;
@@ -20,10 +26,8 @@ const SEEDS = 'seeds_of_trouble';
 const SEEDS_KILLS = 'seeds_kills';
 const KILLS_NEEDED = 5;
 
-function stage(id: string): number { return state.player.quests[id] ?? 0; }
-function setStage(id: string, s: number) { state.player.quests[id] = s; }
-
-function killCount(): number { return state.player.quests[SEEDS_KILLS] ?? 0; }
+function stage(id: string): number { return questStage(id); }
+function killCount(): number { return auxCount(SEEDS_KILLS); }
 
 export const QUESTS: QuestDef[] = [
   {
@@ -86,7 +90,7 @@ registerNpcAction('cook', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll fetch your ingredients.',
           fn: () => {
-            setStage(LARDER, 1);
+            void advanceQuestStage(LARDER, 1);
             startDialogue([
               ...say('Cook Edda', 'You\'re a treasure! Eggs at the chicken farm, milk from a cow if you\'ve a bucket...'),
               ...say('Cook Edda', '...and bread from the general store, or the bake stall if you\'re feeling bold.'),
@@ -119,13 +123,13 @@ registerNpcAction('cook', 'Talk-to', (_n: Npc) => {
       ...say('Cook Edda', 'An egg, milk, and bread — all here! You wonderful thing!'),
       ...say('Cook Edda', 'Stand back. Watch a master at work.'),
     ], () => {
-      removeItem('egg', 1);
-      removeItem('bucket_of_milk', 1);
-      removeItem('bread', 1);
-      setStage(LARDER, 2);
-      addXp('Cooking', 300);
-      addItem('cake', 1);
-      msg('Congratulations! Quest complete!', 'level');
+      // Server consumes egg+milk+bread on the graph-validated 1->2 advance,
+      // then grants the data-defined reward (cake + Cooking xp) for stage 2.
+      void advanceQuestStage(LARDER, 2).then((e) => {
+        if (!e.ok) return;
+        void claimQuestReward(LARDER, 2);
+        msg('Congratulations! Quest complete!', 'level');
+      });
       startDialogue([
         ...say('Cook Edda', 'The banquet is saved! And I baked a second cake — just for you.'),
         ...say('Cook Edda', 'Don\'t eat it all at once. Or do. You\'ve earned it.'),
@@ -152,8 +156,9 @@ registerNpcAction('gardener', 'Talk-to', (_n: Npc) => {
         {
           label: 'Deal. Those goblins are done trampling.',
           fn: () => {
-            setStage(SEEDS, 1);
-            state.player.quests[SEEDS_KILLS] = state.player.quests[SEEDS_KILLS] ?? 0;
+            // The goblin kill counter (seeds_kills) is SERVER-owned now — the
+            // kill hook credits it once the quest is at stage 1.
+            void advanceQuestStage(SEEDS, 1);
             startDialogue([
               ...say('Old Fen', 'Ha! That\'s the spirit. You\'ll find them lurking east, across the bridge.'),
               ...say('Old Fen', 'And mind the cabbage — a bruised one\'s no good to anybody.'),
@@ -190,13 +195,13 @@ registerNpcAction('gardener', 'Talk-to', (_n: Npc) => {
       ...say('Old Fen', 'Well, I\'ll be. The beds are quiet and the cabbage is a beauty.'),
       ...say('Old Fen', 'Take these seeds and a bit of coin. You\'ve a gardener\'s heart, whatever they say.'),
     ], () => {
-      removeItem('cabbage', 1);
-      setStage(SEEDS, 2);
-      addXp('Farming', 500);
-      addItem('potato_seed', 2);
-      addItem('cabbage_seed', 2);
-      addItem('coins', 200);
-      msg('Congratulations! Quest complete!', 'level');
+      // Server validates 5 goblin kills (seeds_kills) + consumes the cabbage on
+      // the 1->2 advance, then grants the data-defined reward for stage 2.
+      void advanceQuestStage(SEEDS, 2).then((e) => {
+        if (!e.ok) return;
+        void claimQuestReward(SEEDS, 2);
+        msg('Congratulations! Quest complete!', 'level');
+      });
       startDialogue(say('Old Fen', 'Come back when those seeds sprout. First harvest tastes the sweetest.'));
     });
     return 'done';
@@ -206,14 +211,3 @@ registerNpcAction('gardener', 'Talk-to', (_n: Npc) => {
   return 'done';
 });
 
-// ---------------- Goblin kill tracking ----------------
-// Server-authoritative kills: only the player who landed the killing blow
-// receives the youKilled event, so quest credit goes to the killer alone.
-onKill((defId) => {
-  if (!state.player || defId !== 'goblin') return;
-  if (stage(SEEDS) !== 1 || killCount() >= KILLS_NEEDED) return;
-  state.player.quests[SEEDS_KILLS] = killCount() + 1;
-  const k = killCount();
-  if (k < KILLS_NEEDED) msg(`Goblin driven off! (${k}/${KILLS_NEEDED})`);
-  else msg(`That's all ${KILLS_NEEDED} goblins driven off. Old Fen will be pleased.`, 'level');
-});

@@ -116,3 +116,18 @@ export function setAuxCount(key: string, value: number): void {
 export function setAuxBits(key: string, bits: number): void {
   setAuxCount(key, bits);
 }
+
+// Server-owned sounding/diplomacy bitmarks (data/quest-progress.json marks).
+export async function questMark(mark: string): Promise<IntentEcho> {
+  return requestIntent('quest-mark', { mark });
+}
+
+// Flexible OR/counted item turn-in (data/quest-progress.json turnins).
+export async function questTurnin(turnin: string): Promise<IntentEcho> {
+  return requestIntent('quest-turnin', { turnin });
+}
+
+// Quest-gated craft/purchase (data/quest-progress.json crafts).
+export async function questCraft(craft: string): Promise<IntentEcho> {
+  return requestIntent('quest-craft', { craft });
+}

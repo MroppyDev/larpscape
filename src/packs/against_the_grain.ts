@@ -14,17 +14,17 @@
 // Imported for side effects via src/packs/index.ts (integrator wires it).
 
 import {
-  state, msg, addItem, removeItem, invCount, hasItem, addXp, freeSlots,
+  msg, invCount, hasItem, freeSlots,
   registerNpcAction, registerObjectAction, registerItemOnObject,
   startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward, questbGrant } from '../quest-sync';
 
 const QID = 'against_the_grain';
 
-function stage(): number { return state.player.quests[QID] ?? 0; }
-function setStage(s: number) { state.player.quests[QID] = s; }
+function stage(): number { return questStage(QID); }
 
 function say(npc: string, ...texts: string[]): DialogueLine[] {
   return texts.map((t) => ({ speaker: npc, text: t }));
@@ -81,11 +81,13 @@ registerNpcAction('miller', 'Talk-to', (_n: Npc) => {
         {
           label: 'One wheat, one mill, one witness. I\'m in.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(HOB, 'Bless you. The hopper\'s on the millstone, just inside. Use the wheat on it and stand well back.'),
-              ...say(HOB, 'Not that it\'s dangerous. It\'s just embarrassing, and embarrassment carries.'),
-            ]);
+            void advanceQuestStage(QID, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(HOB, 'Bless you. The hopper\'s on the millstone, just inside. Use the wheat on it and stand well back.'),
+                ...say(HOB, 'Not that it\'s dangerous. It\'s just embarrassing, and embarrassment carries.'),
+              ]);
+            });
           },
         },
         {
@@ -156,16 +158,15 @@ registerNpcAction('miller', 'Talk-to', (_n: Npc) => {
       ...say(HOB, '*Hob takes the flour, holds it to the light, and weeps briefly and with dignity.* That\'s good flour. That\'s GOOD flour.'),
       ...say(HOB, 'Sorrel\'s refund came by runner — counted twice, short by nothing, which for him is an apology. And the wind and I have settled out of court. We\'re not speaking, but we\'ve settled.'),
     ], () => {
-      setStage(6);
-      addXp('Cooking', 500);
-      addItem('coins', 150);
-      addItem('bread', 3);
-      addItem('millers_token', 1);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(HOB, 'Hundred and fifty coins from the refund, three loaves from the first honest batch, and this: a miller\'s token. Show it at my door any day you like and there\'s flour in it for you. ONE per visit. It\'s underlined.'),
-        ...say(HOB, 'Granddad always said a mill remembers who set it right. Mine will. So will I.'),
-      ]);
+      void advanceQuestStage(QID, 6).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(QID, 6);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(HOB, 'Hundred and fifty coins from the refund, three loaves from the first honest batch, and this: a miller\'s token. Show it at my door any day you like and there\'s flour in it for you. ONE per visit. It\'s underlined.'),
+          ...say(HOB, 'Granddad always said a mill remembers who set it right. Mine will. So will I.'),
+        ]);
+      });
     });
     return 'done';
   }
@@ -186,9 +187,11 @@ registerNpcAction('miller', 'Talk-to', (_n: Npc) => {
             startDialogue(say(HOB, 'Your pack\'s full. I\'m not dusting your pockets with it; come back with room for a proper measure.'));
             return;
           }
-          flourCollectedThisSession = true;
-          addItem('flour', 1);
-          startDialogue(say(HOB, 'Fresh off the stone, ground frontwards, as the Choir intended. Eat well.'));
+          void questbGrant('atg_collect_flour').then((echo) => {
+            if (!echo.ok) return;
+            flourCollectedThisSession = true;
+            startDialogue(say(HOB, 'Fresh off the stone, ground frontwards, as the Choir intended. Eat well.'));
+          });
         },
       },
       {
@@ -217,9 +220,10 @@ function offerSpareWheat() {
           startDialogue(say(HOB, 'Your pack\'s full. Wheat needs somewhere to sit; it\'s not proud, but it\'s not liquid either.'));
           return;
         }
-        removeItem('coins', 10);
-        addItem('wheat', 1);
-        startDialogue(say(HOB, 'Ten coins, one wheat — the first transaction on this plot in a month that\'s gone the proper direction.'));
+        void questbGrant('atg_buy_wheat').then((echo) => {
+          if (!echo.ok) return;
+          startDialogue(say(HOB, 'Ten coins, one wheat — the first transaction on this plot in a month that\'s gone the proper direction.'));
+        });
       },
     },
     {
@@ -257,13 +261,17 @@ registerNpcAction('wayfarer', 'Ask-about-the-shim', (_n: Npc) => {
       ...me('You\'re writing it right now. I\'m watching you write it.'),
       ...say(SORREL, '*Sorrel signs with a flourish and blows on the ink.* Paperwork is paperwork, friend, whenever it\'s born. Take it to whatever court will have it. Every road open, that\'s my motto — including the legal ones.'),
     ], () => {
-      if (freeSlots() === 0) {
+      if (freeSlots() === 0 && !hasItem('shim_receipt')) {
         startDialogue(say(SORREL, 'Your pack\'s full. Even free paperwork needs a pocket — come back with room and the receipt is yours.'));
         return;
       }
-      addItem('shim_receipt', 1);
-      setStage(3);
-      msg('Sorrel hands you a freshly-written, suspiciously dry receipt.');
+      void questbGrant('atg_shim_receipt').then((grantEcho) => {
+        if (!grantEcho.ok) return;
+        void advanceQuestStage(QID, 3).then((stageEcho) => {
+          if (!stageEcho.ok) return;
+          msg('Sorrel hands you a freshly-written, suspiciously dry receipt.');
+        });
+      });
     });
     return 'done';
   }
@@ -273,12 +281,14 @@ registerNpcAction('wayfarer', 'Ask-about-the-shim', (_n: Npc) => {
       ...me('I\'ve lost the receipt.'),
       ...say(SORREL, 'Tragic. Fortunately my filing system is portable. *He writes another one, even more retroactive than the first.*'),
     ], () => {
-      if (freeSlots() === 0) {
+      if (freeSlots() === 0 && !hasItem('shim_receipt')) {
         startDialogue(say(SORREL, 'No room! Honestly, the trouble I go to. Come back with a free pocket and your paperwork awaits.'));
         return;
       }
-      addItem('shim_receipt', 1);
-      msg('Sorrel issues a replacement receipt. The ink is, again, somehow still wet.');
+      void questbGrant('atg_shim_receipt').then((echo) => {
+        if (!echo.ok) return;
+        msg('Sorrel issues a replacement receipt. The ink is, again, somehow still wet.');
+      });
     });
     return 'done';
   }
@@ -330,11 +340,13 @@ registerNpcAction('danquavious_chimperton', 'Present-evidence', (_n: Npc) => {
       ...say(HERALD, 'TWO: Wayfarer Sorrel shall refund Miller Greaves in full, the phrase "in good faith" having been weighed by the court and found to contain neither. THREE: the case of Greaves versus the Wind is DISMISSED, the wind having retained no counsel and, in the court\'s judgment, having suffered enough.'),
       ...say(HERALD, 'The verdict is sealed. Court is adjourned! *quietly* That last part is usually louder, but His Majesty is napping.'),
     ], () => {
-      removeItem('lucky_shim', 1);
-      removeItem('shim_receipt', 1);
-      addItem('court_verdict', 1);
-      setStage(5);
-      msg('The shim is confiscated as crown evidence. You receive the sealed verdict of the Court of the Southern Lawn.');
+      void advanceQuestStage(QID, 5).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        void questbGrant('atg_court_verdict').then((grantEcho) => {
+          if (!grantEcho.ok) return;
+          msg('The shim is confiscated as crown evidence. You receive the sealed verdict of the Court of the Southern Lawn.');
+        });
+      });
     });
     return 'done';
   }
@@ -364,15 +376,18 @@ registerItemOnObject('wheat', 'millstone', (_slot, _o) => {
       msg('You need a free inventory slot. The mill gives back more than it takes — that\'s the problem.');
       return;
     }
-    removeItem('wheat', 1);
-    addItem('wheat', 2);
-    setStage(2);
-    startDialogue([
-      ...me('*You drop one wheat into the hopper. The stone turns — the wrong way — with a sound like a song played from the last note to the first.*'),
-      ...me('*Two wheat slide out of the flour chute.*'),
-      ...say(HOB, '*From outside, you hear a soft thump as Miller Greaves lies down in the grass.*'),
-      ...me('One in. Two out. That\'s... arithmetic now. It\'s doing arithmetic.'),
-    ]);
+    void questbGrant('atg_mill_demo').then((grantEcho) => {
+      if (!grantEcho.ok) return;
+      void advanceQuestStage(QID, 2).then((stageEcho) => {
+        if (!stageEcho.ok) return;
+        startDialogue([
+          ...me('*You drop one wheat into the hopper. The stone turns — the wrong way — with a sound like a song played from the last note to the first.*'),
+          ...me('*Two wheat slide out of the flour chute.*'),
+          ...say(HOB, '*From outside, you hear a soft thump as Miller Greaves lies down in the grass.*'),
+          ...me('One in. Two out. That\'s... arithmetic now. It\'s doing arithmetic.'),
+        ]);
+      });
+    });
     return;
   }
 
@@ -382,16 +397,18 @@ registerItemOnObject('wheat', 'millstone', (_slot, _o) => {
   }
 
   if (s === 5) {
-    removeItem('wheat', 1);
-    addItem('flour', 1);
-    msg('You feed a wheat into the hopper. The stone turns — the RIGHT way — and soft white flour pours from the chute. Miller Greaves will want to see this.');
+    void questbGrant('atg_mill_flour').then((echo) => {
+      if (!echo.ok) return;
+      msg('You feed a wheat into the hopper. The stone turns — the RIGHT way — and soft white flour pours from the chute. Miller Greaves will want to see this.');
+    });
     return;
   }
 
   // Post-quest: the mill works like a mill.
-  removeItem('wheat', 1);
-  addItem('flour', 1);
-  msg('The millstone grinds your wheat into flour, frontwards, like it never considered the alternative.');
+  void questbGrant('atg_mill_flour').then((echo) => {
+    if (!echo.ok) return;
+    msg('The millstone grinds your wheat into flour, frontwards, like it never considered the alternative.');
+  });
 });
 
 registerItemOnObject('hammer', 'millstone', (_slot, _o) => {
@@ -407,12 +424,19 @@ registerItemOnObject('hammer', 'millstone', (_slot, _o) => {
       msg('You need a free inventory slot to take the shim.');
       return;
     }
-    addItem('lucky_shim', 1);
     if (s === 3) {
-      setStage(4);
-      msg('One firm whack and the lucky shim pops loose. It is still humming — a half-beat behind itself. You don\'t like that it\'s humming.');
+      void questbGrant('atg_lucky_shim').then((grantEcho) => {
+        if (!grantEcho.ok) return;
+        void advanceQuestStage(QID, 4).then((stageEcho) => {
+          if (!stageEcho.ok) return;
+          msg('One firm whack and the lucky shim pops loose. It is still humming — a half-beat behind itself. You don\'t like that it\'s humming.');
+        });
+      });
     } else {
-      msg('You tap the housing and another splinter of the shim shakes loose from the hopper. Still humming. Still wrong.');
+      void questbGrant('atg_lucky_shim').then((echo) => {
+        if (!echo.ok) return;
+        msg('You tap the housing and another splinter of the shim shakes loose from the hopper. Still humming. Still wrong.');
+      });
     }
     return;
   }
@@ -440,8 +464,10 @@ registerObjectAction('wheat_field', 'Pick', (_o) => {
     msg("You don't have enough inventory space.");
     return 'done';
   }
-  addItem('wheat', 1);
-  msg('You pick a sheaf of wheat.');
+  void questbGrant('atg_pick_wheat').then((echo) => {
+    if (!echo.ok) return;
+    msg('You pick a sheaf of wheat.');
+  });
   return 'done';
 });
 

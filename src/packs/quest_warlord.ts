@@ -5,17 +5,17 @@
 // Imported for side effects via src/packs; registers its quest in the journal.
 
 import {
-  state, msg, addItem, removeItem, invCount, addXp,
+  msg, invCount,
   registerNpcAction, startDialogue, showOptions,
   DialogueLine, Npc,
 } from '../game';
 import { registerQuest } from '../quests';
+import { questStage, advanceQuestStage, claimQuestReward } from '../quest-sync';
 
 const QUEST = 'warlords_banner';
 const BANNER = 'warlord_banner';
 
-function stage(): number { return state.player.quests[QUEST] ?? 0; }
-function setStage(s: number) { state.player.quests[QUEST] = s; }
+function stage(): number { return questStage(QUEST); }
 function hasBanner(): boolean { return invCount(BANNER) >= 1; }
 
 registerQuest({
@@ -56,11 +56,13 @@ registerNpcAction('city_guard', 'Talk-to', (_n: Npc) => {
         {
           label: 'I\'ll bring you that banner.',
           fn: () => {
-            setStage(1);
-            startDialogue([
-              ...say(GUARD, 'Stout heart! Follow the east road past the gate and you\'ll see the palisade. The warlord holds the arena at its centre.'),
-              ...say(GUARD, 'He\'s no common goblin — twice the size and thrice the temper. Bring food, mind your guard, and watch for that blade of his when he raises it high.'),
-            ]);
+            void advanceQuestStage(QUEST, 1).then((echo) => {
+              if (!echo.ok) return;
+              startDialogue([
+                ...say(GUARD, 'Stout heart! Follow the east road past the gate and you\'ll see the palisade. The warlord holds the arena at its centre.'),
+                ...say(GUARD, 'He\'s no common goblin — twice the size and thrice the temper. Bring food, mind your guard, and watch for that blade of his when he raises it high.'),
+              ]);
+            });
           },
         },
         {
@@ -87,16 +89,15 @@ registerNpcAction('city_guard', 'Talk-to', (_n: Npc) => {
       ...say(GUARD, 'By the wall... that\'s it. That\'s the rag itself. Listen — the drums have stopped!'),
       ...say(GUARD, 'The warband will be scattered to the hills by morning. Aldgate owes you, traveller.'),
     ], () => {
-      if (!hasBanner()) return; // safety: inventory changed mid-dialogue
-      removeItem(BANNER, 1);
-      setStage(2);
-      addXp('Attack', 800);
-      addItem('coins', 500);
-      msg('Congratulations! Quest complete!', 'level');
-      startDialogue([
-        ...say(GUARD, 'The captain\'s bounty, as promised: five hundred coins, and a few hard lessons in swordwork from the drill yard.'),
-        ...say(GUARD, 'We\'ll burn this filthy banner at the gate tonight. You\'re welcome to warm your hands at the fire.'),
-      ]);
+      void advanceQuestStage(QUEST, 2).then((echo) => {
+        if (!echo.ok) return;
+        void claimQuestReward(QUEST, 2);
+        msg('Congratulations! Quest complete!', 'level');
+        startDialogue([
+          ...say(GUARD, 'The captain\'s bounty, as promised: five hundred coins, and a few hard lessons in swordwork from the drill yard.'),
+          ...say(GUARD, 'We\'ll burn this filthy banner at the gate tonight. You\'re welcome to warm your hands at the fire.'),
+        ]);
+      });
     });
     return 'done';
   }
