@@ -4,7 +4,7 @@
 // (palisade 24-36/195-205); nomad tent 10-15/176-181; gem_stall at 17,178;
 // fire_altar at 50,180. Imported for side effects via src/packs/index.ts.
 import {
-  state, events, msg, level,
+  state, msg, level,
   registerNpcAction, registerObjectAction, registerFx, registerDamageModifier,
   startDialogue, openShop,
   invCount, freeSlots, requestIntent,
@@ -12,23 +12,7 @@ import {
 } from '../game';
 import { audio } from '../audio';
 
-// ---------------- Local helpers (mirror content.ts conventions) ----------------
-function successRoll(lvl: number, reqLevel: number, low: number, high: number): boolean {
-  const t = Math.min(1, Math.max(0, (lvl - reqLevel) / 50));
-  return Math.random() < low + (high - low) * t;
-}
-function randInt(a: number, b: number) { return a + Math.floor(Math.random() * (b - a + 1)); }
-
-let stunnedUntil = 0; // shared thieving stun for this pack
-
-function stunPlayer(dmg: number, ticks: number) {
-  const p = state.player;
-  p.curHp = Math.max(1, p.curHp - dmg);
-  p.hitsplat = { dmg, until: performance.now() + 900 };
-  audio.sfx('hit');
-  stunnedUntil = state.tick + ticks;
-  events.onStatsChange();
-}
+let stunnedUntil = 0; // cosmetic thieving stun timer (damage is server-owned via thieve intent)
 
 // Spawns live in data/spawns.json (server-authoritative world).
 
@@ -79,7 +63,7 @@ registerNpcAction('desert_bandit', 'Pickpocket', (n: Npc) => {
     } else {
       msg('You fail to pick the desert bandit\'s pocket.');
       msg(`${n.def.name}: 'Hands off, or lose them!'`);
-      stunPlayer(3, 3);
+      stunnedUntil = state.tick + 3;
     }
   });
   return 'done';
@@ -92,16 +76,11 @@ registerObjectAction('gem_stall', 'Steal-from', (o) => {
   const lvl = level('Thieving');
   if (lvl < 30) { msg('You need a Thieving level of 30 to steal from the gem stall.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
-  if (!successRoll(lvl, 30, 0.55, 0.95)) {
-    msg('You fumble — the trader catches your wrist and cuffs you smartly.');
-    stunPlayer(2, 3);
-    return 'done';
-  }
   void requestIntent('thieve', { target: 'gem_stall', x: o.x, y: o.y }).then((echo) => {
     if (!echo.ok) return;
     if (!echo.granted || echo.granted.length === 0) {
       msg('You fumble — the trader catches your wrist and cuffs you smartly.');
-      stunPlayer(2, 3);
+      stunnedUntil = state.tick + 3;
       return;
     }
     const gem = echo.granted[0].id;
