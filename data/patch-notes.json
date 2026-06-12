@@ -28,5 +28,22 @@
       "New adventurers — starter kit is defined by the server. Twenty-five coins in the bank, tools in the pack, glock on the hip: the same honest morning everyone gets."
     ],
     "signoff": "The vale keeps its chalk. See you on the road. — The Larpscape team"
+  },
+  "aa9abc5": {
+    "title": "The Wardens' Second Pass",
+    "date": "F.S. 743 · 12 June 2026",
+    "intro": "The Concord audit did not end when the ledgers were reset. This week we walked every road a forger might still take — and nailed shut the ones that were only pretending to be server-side. Your client can ask; the realm decides.",
+    "section": "What the wardens fixed",
+    "items": [
+      "Death — you cannot declare yourself dead to shrug off a boss hit anymore. Only the server resolves when you fall, and only the server brings you back.",
+      "Movement — teleport claims are clamped. You cannot sprint across the map in a single heartbeat to mine, steal, or train from tiles you never reached.",
+      "Farming and snares — patch state, rake timing, and bird catches live in your save now, not in browser fiction. Harvest without planting earns nothing.",
+      "Agility courses — obstacle XP requires standing at the obstacle, with a honest cooldown between attempts. Frostpeak's summit lap finally reports to the right ledger.",
+      "Stations and shrines — cooking needs a range, smelting a furnace, smithing an anvil, prayer recharge an altar. Healing at fountains, chairs, and Glen requires you to actually be there.",
+      "The deep hazards — bog poison, lava edges, and Korr's eruption are server wounds now. Move off the telegraphed tile or eat the hit; the health bar will agree with the server.",
+      "Quest counters — Cold Comfort braziers, Hymn burials, Ravenmoor cellar bits, and Gullswreck crate searches are mark-for-mark server progress. Forged tallies no longer advance the story.",
+      "Sunscorch thieving — a failed pickpocket no longer stacks a second, client-only bruise on top of what the server already dealt."
+    ],
+    "signoff": "Thirty-four tricks tried the door. Thirty-four bounced. The wardens are satisfied — for now. — The Larpscape team"
   }
 }
