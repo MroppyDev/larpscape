@@ -143,16 +143,25 @@ registerIntentDomain('bank', (ctx: DomainCtx, payload): IntentResult => {
     if (op === 'deposit') {
       const invSlot = parseInvSlot(payload.invSlot);
       let n = 0;
-      if (invSlot >= 0) {
+      let fromSlot: number | undefined;
+      if (qty === 'all') {
+        // Deposit EVERY copy of the item across the whole inventory. A
+        // non-stackable item sits one-per-slot, so the clicked slot holds only a
+        // single item — 'all' must sweep them all, not just that one slot (this
+        // was the "deposit all doesn't work" bug). Sweep with no slot constraint.
+        n = invCount(state, itemId);
+        fromSlot = undefined;
+      } else if (invSlot >= 0) {
         const s = state.inventory?.[invSlot];
         if (!s || s.id !== itemId) return fail('bank', 'nothing to deposit');
-        n = qty === 'all' ? s.qty : Math.min(qty as number, s.qty);
+        n = Math.min(qty as number, s.qty);
+        fromSlot = invSlot;
       } else {
-        const have = invCount(state, itemId);
-        n = qty === 'all' ? have : Math.min(qty as number, have);
+        n = Math.min(qty as number, invCount(state, itemId));
+        fromSlot = undefined;
       }
       if (n <= 0) return fail('bank', 'nothing to deposit');
-      const rm = invRemoveItem(state, itemId, n, invSlot);
+      const rm = invRemoveItem(state, itemId, n, fromSlot);
       if (!rm.ok) return fail('bank', 'nothing to deposit');
       bankAdd(state, itemId, rm.qty);
       return {
