@@ -10,7 +10,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import type { Express } from 'express';
-import { StateStore, invAdd, invRemove } from './state';
+import { StateStore, invAdd, invRemoveItem } from './state';
 import { setInventoryHooks } from './sim';
 import { ECONOMY_FROZEN } from './econ-freeze';
 import {
@@ -38,7 +38,7 @@ export function makeIntents(stateStore: StateStore): Intents {
   const intents = createIntents(stateStore);
   setInventoryHooks(
     (userId, id, qty) => stateStore.withState(userId, (s) => invAdd(s, id, qty)) === true,
-    (userId, id, qty) => stateStore.withState(userId, (s) => invRemove(s, id, qty)) === true,
+    (userId, id, qty, invSlot) => stateStore.withState(userId, (s) => invRemoveItem(s, id, qty, invSlot).ok) === true,
   );
   return intents;
 }
@@ -56,8 +56,8 @@ const domainCtxOf = (store: StateStore, v: ViewLike): DomainCtx => ({
 // Built-in kinds are dispatched in the switch; any other kind is routed through
 // the DOMAIN REGISTRY (registerIntentDomain in intents.ts) so domain agents add
 // kinds in SEPARATE modules without editing this file.
-export function dispatchIntentWs(store: StateStore, intents: Intents, view: ViewLike, msg: any): boolean {
-  if (!msg || msg.t !== 'intent' || typeof msg.kind !== 'string') return false;
+export function dispatchIntentWs(store: StateStore, intents: Intents, view: ViewLike, msg: any): IntentResult | null {
+  if (!msg || msg.t !== 'intent' || typeof msg.kind !== 'string') return null;
   const ctx = ctxOf(view);
   let res: IntentResult;
   switch (msg.kind) {
@@ -87,6 +87,7 @@ export function dispatchIntentWs(store: StateStore, intents: Intents, view: View
         String(msg.slot ?? ''),
         String(msg.item ?? ''),
         msg.source === 'bank' ? 'bank' : 'inventory',
+        typeof msg.invSlot === 'number' ? msg.invSlot : undefined,
       );
       break;
     case 'quest-stage':
@@ -109,7 +110,7 @@ export function dispatchIntentWs(store: StateStore, intents: Intents, view: View
   // echo the client's correlation id so it can resolve the optimistic action
   const reqId = typeof msg.id === 'number' ? msg.id : undefined;
   view.send({ t: 'intent', ...res, ...(reqId !== undefined ? { id: reqId } : {}) });
-  return true;
+  return res;
 }
 
 function num(v: unknown): number {

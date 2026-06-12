@@ -48,6 +48,31 @@ interface RawItem {
 const ITEMS: Record<string, RawItem> = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../data/items.json'), 'utf8'),
 );
+interface RawNpcDrop { item: string; chance: number; }
+interface RawNpc { boss?: boolean; drops?: RawNpcDrop[]; }
+const NPCS: Record<string, RawNpc> = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../data/npcs.json'), 'utf8'),
+);
+const COLLECTIBLE_CHANCE = 0.05;
+const COLLECTIBLES = new Set<string>((() => {
+  const ids = new Set<string>();
+  for (const def of Object.values(NPCS)) {
+    for (const d of def.drops ?? []) {
+      if (d.chance <= COLLECTIBLE_CHANCE && Object.prototype.hasOwnProperty.call(ITEMS, d.item)) {
+        ids.add(d.item);
+      }
+    }
+  }
+  return ids;
+})());
+
+function recordCollectionLog(state: AuthState, id: string) {
+  if (!COLLECTIBLES.has(id)) return;
+  if (!state.collectionLog || typeof state.collectionLog !== 'object') state.collectionLog = {};
+  if (state.collectionLog[id] !== undefined) return;
+  state.collectionLog[id] = Math.floor(Date.now() / 600);
+}
+
 export function isKnownItem(id: string): boolean {
   return typeof id === 'string' && Object.prototype.hasOwnProperty.call(ITEMS, id);
 }
@@ -112,6 +137,7 @@ export interface AuthState {
   collectionLog?: Record<string, number>;
   curHp?: number;
   prayerPoints?: number;
+  activePrayers?: string[];
   specEnergy?: number;
   slayerTask?: { npc: string; remaining: number } | null;
   slayerPoints?: number;
@@ -131,15 +157,24 @@ export function serverStarterOwned(): AuthState {
   xp[SKILLS.indexOf('Hitpoints')] = XP_TABLE[10]; // Hitpoints starts at level 10
   const equipment: Record<string, ItemStack | null> = {};
   for (const s of EQUIP_SLOTS) equipment[s] = null;
+  const inventory: (ItemStack | null)[] = new Array(28).fill(null);
+  const starter: [string, number][] = [
+    ['bronze_sword', 1], ['wooden_shield', 1], ['bronze_axe', 1],
+    ['tinderbox', 1], ['small_net', 1], ['bronze_pickaxe', 1], ['bread', 1],
+  ];
+  for (let i = 0; i < starter.length; i++) inventory[i] = { id: starter[i][0], qty: starter[i][1] };
+  equipment.weapon = { id: 'glock_18', qty: 1 };
+  equipment.ammo = { id: 'bronze_round', qty: 50 };
   return {
     xp,
     bank: [{ id: 'coins', qty: 25 }],
-    inventory: new Array(28).fill(null),
+    inventory,
     equipment,
     quests: {},
     collectionLog: {},
     curHp: 10,
     prayerPoints: 1,
+    activePrayers: [],
     specEnergy: 100,
     slayerTask: null,
     slayerPoints: 0,
@@ -193,11 +228,13 @@ export function invAdd(state: AuthState, id: string, qty = 1): boolean {
     if (slot) {
       if (slot.qty + q > MAX_QTY) return false;
       slot.qty += q;
+      recordCollectionLog(state, id);
       return true;
     }
     const i = inv.indexOf(null);
     if (i < 0) return false;
     inv[i] = { id, qty: q };
+    recordCollectionLog(state, id);
     return true;
   }
   // non-stackable: need q empty slots
@@ -206,9 +243,49 @@ export function invAdd(state: AuthState, id: string, qty = 1): boolean {
   for (let n = 0; n < q; n++) {
     const i = inv.indexOf(null);
     inv[i] = { id, qty: 1 };
+    recordCollectionLog(state, id);
   }
   return true;
 }
+export const INV_SLOTS = 28;
+
+export function parseInvSlot(v: unknown): number {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return -1;
+  const s = Math.floor(v);
+  return s >= 0 && s < INV_SLOTS ? s : -1;
+}
+
+export function invRemoveFromSlot(state: AuthState, slot: number, qty = 1): boolean {
+  const q = clampQty(qty);
+  if (q <= 0) return false;
+  const inv = invArr(state);
+  if (slot < 0 || slot >= inv.length) return false;
+  const s = inv[slot];
+  if (!s || s.qty < q) return false;
+  s.qty -= q;
+  if (s.qty <= 0) inv[slot] = null;
+  return true;
+}
+
+/** Remove from a specific inventory slot when invSlot is valid; else first-match. */
+export function invRemoveItem(
+  state: AuthState, id: string, qty: number, invSlot?: number,
+): { ok: boolean; slot?: number; qty: number } {
+  const q = clampQty(qty);
+  if (q <= 0) return { ok: false, qty: 0 };
+  const slot = parseInvSlot(invSlot ?? -1);
+  if (slot >= 0) {
+    const inv = invArr(state);
+    const s = inv[slot];
+    if (!s || s.id !== id || s.qty < q) return { ok: false, qty: 0 };
+    s.qty -= q;
+    if (s.qty <= 0) inv[slot] = null;
+    return { ok: true, slot, qty: q };
+  }
+  if (!invRemove(state, id, q)) return { ok: false, qty: 0 };
+  return { ok: true, qty: q };
+}
+
 export function invRemove(state: AuthState, id: string, qty = 1): boolean {
   const q = clampQty(qty);
   if (q <= 0) return false;

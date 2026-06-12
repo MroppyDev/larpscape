@@ -1,9 +1,9 @@
 // Friends list — account-level social graph with online indicators.
 // Also the guild client: roster state, REST helpers, invite popups, and the
 // 'guild_vault' world-object action.
-import { net } from './net';
+import { net, reloadServerOwned } from './net';
 import {
-  msg, invCount, removeItem, addItem, startDialogue, showOptions,
+  msg, invCount, startDialogue, showOptions,
   registerObjectAction,
 } from './game';
 
@@ -106,24 +106,22 @@ export async function loadGuild(): Promise<void> {
   } catch { /* ignore */ }
 }
 
-// Creation costs 5000 coins — removed client-side first (GE escrow model),
-// refunded if the server rejects the request.
+// Creation costs 5000 coins — debited server-side; reflect only after success.
 export async function createGuild(name: string, tag: string): Promise<boolean> {
   if (!net.online) { msg('You must be logged in.'); return false; }
   if (invCount('coins') < GUILD_COST) {
     msg(`You need ${GUILD_COST.toLocaleString()} coins to found a guild.`);
     return false;
   }
-  removeItem('coins', GUILD_COST);
   try {
     const res = await net.api('/api/guild/create', { name, tag });
+    await reloadServerOwned();
     guild.info = res?.guild ?? null;
     guild.loaded = true;
     guild.onChange();
     msg(`You have founded ${name} [${guild.info?.tag ?? tag}]!`, 'level');
     return true;
   } catch (e: any) {
-    addItem('coins', GUILD_COST); // refund
     msg(String(e?.message || 'Could not create guild.'), 'game');
     return false;
   }

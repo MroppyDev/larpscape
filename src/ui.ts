@@ -13,7 +13,7 @@ import {
   useItemOnObject, useItemOnItem,
   itemActions, objectActions, npcActions,
   advanceDialogue, chooseOption, togglePrayer, currentAttackMode,
-  saveGame, resetSave, invCount, equipBonus, addItem, removeItem, freeSlots,
+  saveGame, resetSave, invCount, equipBonus, freeSlots,
   sendWs, ENABLE_PVP, toggleSpecAttack, specItem,
   Npc, CombatStyle, MakeOption, EQUIP_SLOTS,
   COLLECTIBLES, COLLECTION_CATEGORIES,
@@ -30,7 +30,7 @@ import {
   guild, loadGuild, createGuild, guildInvite, guildLeave, guildKick, guildPromote,
   guildSetDepositOnly, GUILD_COST, GuildMember,
 } from './friends';
-import { net, syncSaveNow } from './net';
+import { net, syncSaveNow, reloadServerOwned } from './net';
 import { openCoinflip } from './packs/gambling';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -1761,19 +1761,11 @@ export function tradeCancelled(reason: string) {
   renderModals();
 }
 
-export function tradeComplete(m: any) {
+export function tradeComplete(_m: any) {
   tradeView = null;
-  // apply the swap to the live inventory (the server already updated the save)
-  for (const it of m?.lose?.items ?? []) removeItem(String(it.id), Number(it.qty) || 0);
-  if (m?.lose?.coins > 0) removeItem('coins', m.lose.coins);
-  for (const it of m?.gain?.items ?? []) addItem(String(it.id), Number(it.qty) || 0);
-  if (m?.gain?.coins > 0) addItem('coins', m.gain.coins);
   msg('Trade completed.', 'game');
   renderModals();
-  // persist so the local save mirrors the server's — delayed past the server's
-  // post-trade save fence (which rejects PUTs for a few seconds so in-flight
-  // pre-trade saves cannot overwrite the trade result)
-  setTimeout(() => { void syncSaveNow(); }, 4500);
+  setTimeout(() => { void reloadServerOwned(); }, 4500);
 }
 
 function offeredCount(id: string): number {
@@ -2015,14 +2007,10 @@ function vaultDeposit(itemId: string, qty: number) {
   const n = Math.min(qty, invCount(itemId));
   if (n <= 0) return;
   vaultBusy = true;
-  removeItem(itemId, n); // client-side escrow, mirrored on the GE
   net.api('/api/guild/vault/deposit', { item: itemId, qty: n })
-    .then(() => refreshGuildVault())
-    .catch((e) => {
-      addItem(itemId, n); // refund on rejection
-      msg(String(e?.message || 'Deposit failed.'), 'game');
-    })
-    .finally(() => { vaultBusy = false; saveGame(); });
+    .then(async () => { await reloadServerOwned(); return refreshGuildVault(); })
+    .catch((e) => msg(String(e?.message || 'Deposit failed.'), 'game'))
+    .finally(() => { vaultBusy = false; });
 }
 
 function vaultWithdraw(itemId: string, qty: number) {
@@ -2035,13 +2023,9 @@ function vaultWithdraw(itemId: string, qty: number) {
   if (space <= 0) { msg("You don't have enough inventory space."); return; }
   vaultBusy = true;
   net.api('/api/guild/vault/withdraw', { item: itemId, qty: space })
-    .then((res) => {
-      const granted = Number(res?.granted) || 0;
-      if (granted > 0) addItem(itemId, granted);
-      refreshGuildVault();
-    })
+    .then(async () => { await reloadServerOwned(); return refreshGuildVault(); })
     .catch((e) => msg(String(e?.message || 'Withdraw failed.'), 'game'))
-    .finally(() => { vaultBusy = false; saveGame(); });
+    .finally(() => { vaultBusy = false; });
 }
 
 function renderVault(layer: HTMLElement) {

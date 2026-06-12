@@ -18,7 +18,7 @@
 
 import {
   state, msg, requestIntent,
-  registerNpcAction, registerItemAction, startDialogue, showOptions, onKill, events,
+  registerNpcAction, registerItemAction, startDialogue, showOptions, events,
   DialogueLine, Npc, IntentEcho,
 } from '../game';
 import { NPCS, ITEMS } from '../defs';
@@ -247,34 +247,23 @@ registerItemAction('tome_of_grudges', 'Read', (_slot: number) => {
 });
 
 // ---------------------------------------------------------------------------
-// Completion / per-kill: each kill of an assigned mob is credited SERVER-side.
-// The server validates the killed mob matches its authoritative task, decrements
-// its own count, awards Slayer XP per kill and the completion bonus on the final
-// kill. We only request the intent and reflect; the engine's optimistic local
-// decrement in game.ts netYouKilled is reconciled by this authoritative echo.
+// Slayer kill credit is server-pushed on the killing blow (installSlayerKillHook).
+// Reflect the authoritative snapshot + surface completion flavour lines.
 // ---------------------------------------------------------------------------
-onKill((defId: string) => {
-  // game.ts netYouKilled optimistically decremented task.remaining before firing
-  // kill listeners, so by here remaining already reflects this kill locally. We
-  // still ask the server to credit it; the server validates against its OWN task
-  // and its echo (reflected below) is the authority.
-  const task = state.player.slayerTask;
-  if (!task || task.npc !== defId) return;
-  void (async () => {
-    const echo = await requestIntent('slayer', { op: 'kill', npc: defId });
-    if (!echo.ok) return;
-    const snap = reflect(echo);
-    const t = snap?.task ?? state.player.slayerTask;
-    if (!t || t.remaining <= 0) {
-      const streak = snap?.streak ?? lastStreak;
-      msg(
-        streak > 0 && streak % 5 === 0
-          ? `Milestone! Task #${streak} complete: slayer points awarded (${points()} total). Brogan has another waiting.`
-          : `Task complete: slayer points awarded (${points()} total). Brogan has another waiting.`,
-        'level',
-      );
-    }
-  })();
-});
+export function onSlayerEcho(echo: IntentEcho) {
+  if (!echo.ok || echo.kind !== 'slayer') return;
+  const snap = reflect(echo);
+  if (!snap) return;
+  const t = snap.task ?? state.player.slayerTask;
+  if (!t || t.remaining <= 0) {
+    const streak = snap.streak ?? lastStreak;
+    msg(
+      streak > 0 && streak % 5 === 0
+        ? `Milestone! Task #${streak} complete: slayer points awarded (${points()} total). Brogan has another waiting.`
+        : `Task complete: slayer points awarded (${points()} total). Brogan has another waiting.`,
+      'level',
+    );
+  }
+}
 
 export {};

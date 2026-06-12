@@ -39,6 +39,8 @@ const TARGETS = [
   'src/content.ts',
   'src/quests.ts',
   'src/packs', // recursed
+  'src/tutorial.ts',
+  'src/friends.ts',
 ];
 
 // Forbidden bare identifiers (owned-state mutators). Matched on word boundaries.

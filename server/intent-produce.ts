@@ -32,8 +32,8 @@ import {
 import { MAP_W } from './world';
 import {
   AuthState, SkillName, isKnownItem,
-  invAdd, invRemove, invHas, invCount, getCoins, removeCoins,
-  addXp, skillLevel,
+  invAdd, invRemoveItem, invHas, invCount, getCoins, removeCoins,
+  addXp, skillLevel, parseInvSlot, maxHpFor, hpHeal,
 } from './state';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -212,8 +212,11 @@ registerIntentDomain('thieve', (ctx, payload) => {
       return fail('thieve', 'inventory full');
     }
     if (!successRoll(lvl, pp.level, 0.7, 0.95)) {
-      // miss: ok with an empty grant — the client plays the stun cosmetic.
-      return { ok: true, kind: 'thieve', granted: [], xp: [] };
+      const max = skillLevel(state, 'Hitpoints');
+      const cur = Math.max(0, Math.min(max, state.curHp ?? max));
+      const dmg = Math.max(1, Math.floor(pp.stunDmg));
+      state.curHp = Math.max(1, cur - dmg);
+      return { ok: true, kind: 'thieve', granted: [], xp: [], hp: state.curHp };
     }
     const granted: { id: string; qty: number }[] = [];
     for (const loot of pp.loot) {
@@ -511,13 +514,15 @@ registerIntentDomain('bury', (ctx, payload) => {
   const item = String(payload.item ?? '');
   const buryXp = ITEMS[item]?.buryXp;
   if (!buryXp || buryXp <= 0 || !isKnownItem(item)) return fail('bury', 'not buryable');
+  const invSlot = parseInvSlot(payload.invSlot);
   return tx(ctx, 'bury', (state) => {
-    if (!invRemove(state, item, 1)) return fail('bury', 'you have none');
+    const rm = invRemoveItem(state, item, 1, invSlot);
+    if (!rm.ok) return fail('bury', 'you have none');
     const amount = buryXp;
     const x = addXp(state, 'Prayer', amount);
     return {
       ok: true, kind: 'bury',
-      removed: [{ id: item, qty: 1 }],
+      removed: [{ id: item, qty: 1, ...(rm.slot !== undefined ? { slot: rm.slot } : {}) }],
       xp: [{ skill: 'Prayer' as SkillName, amount }],
       leveledUp: x.leveledUp ? [{ skill: 'Prayer' as SkillName, level: x.newLevel }] : [],
     };
@@ -532,12 +537,18 @@ registerIntentDomain('eat', (ctx, payload) => {
   const item = String(payload.item ?? '');
   const heals = ITEMS[item]?.edible?.heals;
   if (!heals || heals <= 0 || !isKnownItem(item)) return fail('eat', 'not edible');
+  const invSlot = parseInvSlot(payload.invSlot);
   return tx(ctx, 'eat', (state) => {
-    if (!invRemove(state, item, 1)) return fail('eat', 'you have none');
+    const rm = invRemoveItem(state, item, 1, invSlot);
+    if (!rm.ok) return fail('eat', 'you have none');
     const max = skillLevel(state, 'Hitpoints');
     const cur = Math.max(0, Math.min(max, state.curHp ?? max));
     state.curHp = Math.min(max, cur + heals);
-    return { ok: true, kind: 'eat', removed: [{ id: item, qty: 1 }], hp: state.curHp };
+    return {
+      ok: true, kind: 'eat',
+      removed: [{ id: item, qty: 1, ...(rm.slot !== undefined ? { slot: rm.slot } : {}) }],
+      hp: state.curHp,
+    };
   });
 });
 
@@ -557,15 +568,98 @@ registerIntentDomain('consume', (ctx, payload) => {
   if (ctx.dead) return fail('consume', 'dead');
   const item = String(payload.item ?? '');
   if (!DRINKABLE.has(item) || !isKnownItem(item)) return fail('consume', 'not drinkable');
+  const invSlot = parseInvSlot(payload.invSlot);
   return tx(ctx, 'consume', (state) => {
-    if (!invRemove(state, item, 1)) return fail('consume', 'you have none');
+    const rm = invRemoveItem(state, item, 1, invSlot);
+    if (!rm.ok) return fail('consume', 'you have none');
     const restore = DRINK_ITEMS[item]?.restoresPrayer;
     if (restore && restore > 0) {
       const max = skillLevel(state, 'Prayer');
       const cur = Math.max(0, Math.min(max, state.prayerPoints ?? max));
       state.prayerPoints = Math.min(max, cur + restore);
     }
-    return { ok: true, kind: 'consume', removed: [{ id: item, qty: 1 }] };
+    return {
+      ok: true, kind: 'consume',
+      removed: [{ id: item, qty: 1, ...(rm.slot !== undefined ? { slot: rm.slot } : {}) }],
+      ...(restore && restore > 0 ? { prayerPoints: state.prayerPoints } : {}),
+    };
+  });
+});
+
+// ===========================================================================
+// RECHARGE-PRAYER — restore prayer points to max (altar / recharge action).
+// ===========================================================================
+registerIntentDomain('recharge-prayer', (ctx) => {
+  if (ctx.dead) return fail('recharge-prayer', 'dead');
+  return tx(ctx, 'recharge-prayer', (state) => {
+    const max = skillLevel(state, 'Prayer');
+    state.prayerPoints = max;
+    return { ok: true, kind: 'recharge-prayer', prayerPoints: max };
+  });
+});
+
+// ===========================================================================
+// PRAY-TOGGLE — activate/deactivate a prayer (server-owned activePrayers).
+// ===========================================================================
+interface PrayerDef { id: string; level: number; drain: number; boost: string; }
+const PRAYERS: PrayerDef[] = (loadJson<{ prayers?: PrayerDef[] }>('../data/magic.json').prayers ?? []);
+
+function activePrayerList(state: AuthState): string[] {
+  const ap = state.activePrayers;
+  return Array.isArray(ap) ? ap.filter((id): id is string => typeof id === 'string') : [];
+}
+
+registerIntentDomain('pray-toggle', (ctx, payload) => {
+  if (ctx.dead) return fail('pray-toggle', 'dead');
+  const id = String(payload.id ?? '');
+  const def = PRAYERS.find((p) => p.id === id);
+  if (!def) return fail('pray-toggle', 'unknown');
+  return tx(ctx, 'pray-toggle', (state) => {
+    const active = new Set(activePrayerList(state));
+    if (active.has(id)) {
+      active.delete(id);
+    } else {
+      if (skillLevel(state, 'Prayer') < def.level) return fail('pray-toggle', 'level');
+      const pp = Math.max(0, state.prayerPoints ?? 0);
+      if (pp <= 0) return fail('pray-toggle', 'empty');
+      for (const other of PRAYERS) {
+        if (other.boost === def.boost && other.id !== id) active.delete(other.id);
+      }
+      active.add(id);
+    }
+    state.activePrayers = [...active];
+    return {
+      ok: true, kind: 'pray-toggle',
+      prayerPoints: state.prayerPoints ?? 0,
+      activePrayers: state.activePrayers,
+    };
+  });
+});
+
+// ===========================================================================
+// HEAL — server-owned HP bumps (fountain, clinic chair, tick eater).
+// { source: 'fountain' | 'dentist_chair' | 'tick_eater' }
+// ===========================================================================
+const HEAL_SOURCES: Record<string, { amount: number; chance?: number }> = {
+  fountain: { amount: 1 },
+  dentist_chair: { amount: 2, chance: 0.35 },
+  tick_eater: { amount: 1, chance: 0.4 },
+};
+
+registerIntentDomain('heal', (ctx, payload) => {
+  if (ctx.dead) return fail('heal', 'dead');
+  const source = String(payload.source ?? '');
+  const def = HEAL_SOURCES[source];
+  if (!def) return fail('heal', 'unknown');
+  return tx(ctx, 'heal', (state) => {
+    const max = maxHpFor(state);
+    const cur = typeof state.curHp === 'number' ? state.curHp : max;
+    if (cur >= max) return { ok: true, kind: 'heal', hp: cur, healed: false };
+    if (def.chance !== undefined && Math.random() >= def.chance) {
+      return { ok: true, kind: 'heal', hp: cur, healed: false };
+    }
+    const hp = hpHeal(state, def.amount);
+    return { ok: true, kind: 'heal', hp, healed: true };
   });
 });
 

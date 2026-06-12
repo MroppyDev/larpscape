@@ -26,8 +26,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {
   AuthState, isKnownItem,
-  invAdd, invRemove, invCount, getCoins, addCoins, removeCoins,
-  bankAdd, bankRemove, bankCount,
+  invAdd, invRemoveItem, invCount, getCoins, addCoins, removeCoins,
+  bankAdd, bankRemove, bankCount, parseInvSlot,
 } from './state';
 import {
   registerIntentDomain, DomainCtx, IntentResult, stampRev,
@@ -93,19 +93,28 @@ registerIntentDomain('shop', (ctx: DomainCtx, payload): IntentResult => {
         coins: getCoins(state),
       };
     }
-    // sell
+    // sell — debit the clicked inventory slot when invSlot is supplied.
     if (itemId === 'coins') return fail('shop', 'cannot sell coins');
+    const invSlot = parseInvSlot(payload.invSlot);
     const stackable = isStackable(itemId);
-    const have = invCount(state, itemId);
-    if (have <= 0) return fail('shop', 'you have none');
-    const qty = stackable ? have : 1;
+    let qty = 1;
+    if (invSlot >= 0) {
+      const s = state.inventory?.[invSlot];
+      if (!s || s.id !== itemId) return fail('shop', 'you have none');
+      qty = stackable ? s.qty : 1;
+    } else {
+      const have = invCount(state, itemId);
+      if (have <= 0) return fail('shop', 'you have none');
+      qty = stackable ? have : 1;
+    }
     // mirror the legacy client: a stackable stack sells for a single unit price.
     const proceeds = Math.max(1, Math.floor(itemValue(itemId) * 0.4));
-    if (!invRemove(state, itemId, qty)) return fail('shop', 'you have none');
+    const rm = invRemoveItem(state, itemId, qty, invSlot);
+    if (!rm.ok) return fail('shop', 'you have none');
     addCoins(state, proceeds);
     return {
       ok: true, kind: 'shop',
-      removed: [{ id: itemId, qty }],
+      removed: [{ id: itemId, qty: rm.qty, ...(rm.slot !== undefined ? { slot: rm.slot } : {}) }],
       granted: [{ id: 'coins', qty: proceeds }],
       coins: getCoins(state),
     };
@@ -132,12 +141,24 @@ registerIntentDomain('bank', (ctx: DomainCtx, payload): IntentResult => {
 
   const res = ctx.store.withState<IntentResult>(ctx.userId, (state) => {
     if (op === 'deposit') {
-      const have = invCount(state, itemId);
-      const n = qty === 'all' ? have : Math.min(qty as number, have);
+      const invSlot = parseInvSlot(payload.invSlot);
+      let n = 0;
+      if (invSlot >= 0) {
+        const s = state.inventory?.[invSlot];
+        if (!s || s.id !== itemId) return fail('bank', 'nothing to deposit');
+        n = qty === 'all' ? s.qty : Math.min(qty as number, s.qty);
+      } else {
+        const have = invCount(state, itemId);
+        n = qty === 'all' ? have : Math.min(qty as number, have);
+      }
       if (n <= 0) return fail('bank', 'nothing to deposit');
-      if (!invRemove(state, itemId, n)) return fail('bank', 'nothing to deposit');
-      bankAdd(state, itemId, n);
-      return { ok: true, kind: 'bank', removed: [{ id: itemId, qty: n }] };
+      const rm = invRemoveItem(state, itemId, n, invSlot);
+      if (!rm.ok) return fail('bank', 'nothing to deposit');
+      bankAdd(state, itemId, rm.qty);
+      return {
+        ok: true, kind: 'bank',
+        removed: [{ id: itemId, qty: rm.qty, ...(rm.slot !== undefined ? { slot: rm.slot } : {}) }],
+      };
     }
     // withdraw
     const have = bankCount(state, itemId);

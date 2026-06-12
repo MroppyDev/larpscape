@@ -173,6 +173,25 @@ export function setResolvePlayerDeath(fn: (p: PlayerView, killerNpc: SNpc | null
 let combatProfileFor: (userId: number) => SwingProfile | null = () => null;
 export function setCombatProfileFor(fn: (userId: number) => SwingProfile | null) { combatProfileFor = fn; }
 
+// Swing owned-state hooks (combat XP, rune/ammo debits), injected by index.ts.
+export interface SwingEchoExtras {
+  xp?: { skill: string; amount: number }[];
+  removed?: { id: string; qty: number }[];
+  equip?: Record<string, { id: string; qty: number } | null>;
+}
+let prepareSwing: (userId: number, mode: string) => { ok: boolean } & SwingEchoExtras = () => ({ ok: true });
+let grantHitXp: (userId: number, dmg: number, mode: string) => { skill: string; amount: number }[] = () => [];
+let swingEchoMeta: (userId: number) => { spec?: number } = () => ({});
+export function setSwingStateHooks(
+  prepare: typeof prepareSwing,
+  grantXp: typeof grantHitXp,
+  echoMeta?: typeof swingEchoMeta,
+) {
+  prepareSwing = prepare;
+  grantHitXp = grantXp;
+  if (echoMeta) swingEchoMeta = echoMeta;
+}
+
 // Authoritative owned-inventory hooks, injected by index.ts (Phase 2,
 // docs/ECONOMY-AUTHORITY.md §2.1/§4.4). Pickup and the drop debit go through
 // these (state.ts withState) so item gain/loss is server-owned instead of
@@ -181,10 +200,10 @@ export function setCombatProfileFor(fn: (userId: number) => SwingProfile | null)
 //   grantItem(userId,id,qty) -> true if it fit in the player's inventory
 //   debitItem(userId,id,qty) -> true if the debit succeeded (drop authority)
 let grantItem: (userId: number, id: string, qty: number) => boolean = () => false;
-let debitItem: (userId: number, id: string, qty: number) => boolean = () => false;
+let debitItem: (userId: number, id: string, qty: number, invSlot?: number) => boolean = () => false;
 export function setInventoryHooks(
   grant: (userId: number, id: string, qty: number) => boolean,
-  debit: (userId: number, id: string, qty: number) => boolean,
+  debit: (userId: number, id: string, qty: number, invSlot?: number) => boolean,
 ) { grantItem = grant; debitItem = debit; }
 
 // The subset of CombatProfile handleSwing consumes (kept structural to avoid a
@@ -680,6 +699,12 @@ export function handleSwing(p: PlayerView, msg: any) {
   const speed = prof.attackSpeed;
   nextSwingAt.set(p.userId, now + speed * 600 - 150);
 
+  const prep = prepareSwing(p.userId, mode);
+  if (!prep.ok) {
+    p.send({ t: 'deny', what: 'swing' });
+    return;
+  }
+
   // eff / bonus / maxHit by mode, all server-derived.
   let eff: number, bonus: number, maxHit: number;
   if (mode === 'ranged') { ({ eff, bonus, maxHit } = prof.ranged); }
@@ -812,8 +837,28 @@ export function handleSwing(p: PlayerView, msg: any) {
   for (const e of effects) {
     if (e.type === 'lifesteal') heal += Math.floor(totalDmg * clampNum(e.pct, 0, 1, 0));
   }
+  if (heal > 0) {
+    p.hp = Math.min(p.maxHp, p.hp + heal);
+    onHpChanged(p, 'heal');
+  }
 
-  p.send({ t: 'youHit', npc: n.id, def: n.def.id, dmg: totalDmg, mode, ...(heal > 0 ? { heal } : {}), ...(spec ? { spec: true } : {}) });
+  const hitXp = totalDmg > 0 ? grantHitXp(p.userId, totalDmg, mode) : [];
+  const xp = [...(prep.xp ?? []), ...hitXp];
+
+  const meta = swingEchoMeta(p.userId);
+  p.send({
+    t: 'youHit',
+    npc: n.id,
+    def: n.def.id,
+    dmg: totalDmg,
+    mode,
+    ...(xp.length ? { xp } : {}),
+    ...(prep.removed?.length ? { removed: prep.removed } : {}),
+    ...(prep.equip ? { equip: prep.equip } : {}),
+    ...(heal > 0 ? { heal, hp: p.hp } : {}),
+    ...(typeof meta.spec === 'number' ? { spec: meta.spec } : {}),
+    ...(spec ? { specUsed: true } : {}),
+  });
   n.target = p.userId;
   for (const d of hits) if (!n.dead) applyDamageToNpc(n, d, p, splatKind);
 }
@@ -847,18 +892,23 @@ export function handleDrop(p: PlayerView, msg: any) {
   const item = String(msg.item ?? '');
   if (!ITEM_RE.test(item)) return;
   const qty = clamp(msg.qty, 1, 2_000_000_000, 1);
+  const invSlot = typeof msg.invSlot === 'number' && Number.isFinite(msg.invSlot)
+    ? Math.floor(msg.invSlot) : -1;
   // AUTHORITATIVE drop (docs/ECONOMY-AUTHORITY.md §4.4, closes G3 item injection):
   // debit the player's SERVER inventory FIRST; only spawn the ground item if the
   // debit succeeds. A dropped id the player does not own spawns nothing. This is
   // safe whether ECONOMY_FROZEN is on or off because the value really left the
   // player's authoritative inventory, so it is not a mint/transfer primitive.
-  if (!debitItem(p.userId, item, qty)) {
+  if (!debitItem(p.userId, item, qty, invSlot >= 0 ? invSlot : undefined)) {
     p.send({ t: 'deny', what: 'drop' });
     return;
   }
   // drops made inside an instance stay private to that instance's owner
   addGroundItem(item, qty, p.x, p.y, sim.tick + 200, groundOwnerFor(p));
-  p.send({ t: 'granted', source: 'drop', removed: [{ id: item, qty }] });
+  p.send({
+    t: 'granted', source: 'drop',
+    removed: [{ id: item, qty, ...(invSlot >= 0 ? { slot: invSlot } : {}) }],
+  });
   flushGroundNow();
 }
 
@@ -871,8 +921,13 @@ export function handleInteract(p: PlayerView, msg: any) {
       p.send({ t: 'deny', what: 'shear', npc: n.id });
       return;
     }
+    if (!grantItem(p.userId, 'wool', 1)) {
+      p.send({ t: 'deny', what: 'shear' });
+      return;
+    }
     n.shearedUntil = sim.tick + 50;
     n.dirty = true;
+    p.send({ t: 'granted', source: 'shear', items: [{ id: 'wool', qty: 1 }] });
     p.send({ t: 'shorn', npc: n.id });
   }
 }

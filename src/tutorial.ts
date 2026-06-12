@@ -5,7 +5,8 @@
 // Veterans (any other quest progress, or total level > 40) never see it.
 // Imported for side effects by main.ts.
 
-import { state, msg, addItem, totalLevel, skillIdx } from './game';
+import { state, msg, totalLevel, skillIdx, requestIntent } from './game';
+import { advanceQuestStage, questStage } from './quest-sync';
 import { registerQuest } from './quests';
 
 const QID = 'getting_started';
@@ -25,8 +26,7 @@ const STEPS: TutStep[] = [
   { label: 'Talk to any NPC', journal: 'have a chat with one of the locals' },
 ];
 
-function stage(): number { return state.player?.quests?.[QID] ?? 0; }
-function setStage(s: number) { state.player.quests[QID] = s; }
+function stage(): number { return questStage(QID); }
 
 registerQuest({
   id: QID,
@@ -200,11 +200,12 @@ function stepDone(i: number): boolean {
 
 function complete() {
   finished = true;
-  setStage(DONE_STAGE);
-  addItem('bread', 3);
-  addItem('coins', 50);
-  msg('Congratulations! You\'ve learned the basics. Here\'s some bread and coin for the road.', 'level');
   retireDom();
+  void (async () => {
+    await advanceQuestStage(QID, DONE_STAGE);
+    await requestIntent('quest-reward', { qid: QID, stage: DONE_STAGE });
+    msg('Congratulations! You\'ve learned the basics. Here\'s some bread and coin for the road.', 'level');
+  })();
 }
 
 // ---------------- eligibility + poll loop ----------------
@@ -223,7 +224,7 @@ function decide() {
   const hasOtherProgress = Object.keys(q).some((k) => k !== QID && (q[k] ?? 0) > 0);
   if (hasOtherProgress || totalLevel() > 40) { enabled = false; return; }
   enabled = totalLevel() === 32;
-  if (enabled) setStage(0);
+  if (enabled) void advanceQuestStage(QID, 0);
 }
 
 setInterval(() => {
@@ -242,7 +243,7 @@ setInterval(() => {
   let s = stage();
   while (s < DONE_STAGE && stepDone(s)) {
     s++;
-    setStage(s);
+    void advanceQuestStage(QID, s);
     if (s < DONE_STAGE) msg(`Guide: step ${s} of ${DONE_STAGE} done. Next: ${STEPS[s].label.toLowerCase()}`);
   }
 

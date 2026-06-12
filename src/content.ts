@@ -482,16 +482,16 @@ for (const p of POTIONS) {
   });
 }
 
-registerItemAction('attack_potion', 'Drink', () => {
+registerItemAction('attack_potion', 'Drink', (slot) => {
   // Server-authoritative: the 'consume' intent removes the potion (flavor-only).
-  void requestIntent('consume', { item: 'attack_potion' }).then((echo) => {
+  void requestIntent('consume', { item: 'attack_potion', invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('eat');
     msg('You drink the attack potion. You feel stronger.');
   });
 });
-registerItemAction('defence_potion', 'Drink', () => {
-  void requestIntent('consume', { item: 'defence_potion' }).then((echo) => {
+registerItemAction('defence_potion', 'Drink', (slot) => {
+  void requestIntent('consume', { item: 'defence_potion', invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('eat');
     msg('You drink the defence potion. Your skin feels tougher.');
@@ -585,10 +585,9 @@ registerNpcAction('man', 'Pickpocket', (n: Npc) => {
       audio.sfx('thieve');
       msg('You pick the man\'s pocket.');
     } else {
-      const p = state.player;
       msg('You fail to pick the man\'s pocket.');
       msg(`${n.def.name}: 'Oi! What do you think you're doing?'`);
-      p.curHp = Math.max(1, p.curHp - pp.stunDmg);
+      const p = state.player;
       p.hitsplat = { dmg: pp.stunDmg, until: performance.now() + 900 };
       audio.sfx('hit');
       stunnedUntil = state.tick + 3;

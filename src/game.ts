@@ -495,6 +495,7 @@ function loadSave(p: Player, provided?: any): boolean {
     }
     p.curHp = d.curHp ?? p.curHp;
     p.prayerPoints = d.prayerPoints ?? p.prayerPoints;
+    if (Array.isArray(d.activePrayers)) p.activePrayers = new Set(d.activePrayers);
     p.run = d.run ?? false; p.energy = d.energy ?? 100;
     p.specEnergy = typeof d.specEnergy === 'number' ? Math.max(0, Math.min(100, d.specEnergy)) : 100;
     if (Array.isArray(d.inventory)) p.inventory = d.inventory;
@@ -518,18 +519,6 @@ export function initGame(savedData?: any) {
   buildWorld();
   state.player = freshPlayer();
   const loaded = loadSave(state.player, savedData);
-  if (!loaded) {
-    addItem('bronze_sword'); addItem('wooden_shield'); addItem('bronze_axe');
-    addItem('tinderbox'); addItem('small_net'); addItem('bronze_pickaxe');
-    addItem('bread'); addItem('coins', 25);
-    addItem('glock_18'); addItem('bronze_round', 50);
-    const p = state.player;
-    const gSlot = p.inventory.findIndex((s) => s?.id === 'glock_18');
-    const aSlot = p.inventory.findIndex((s) => s?.id === 'bronze_round');
-    if (gSlot >= 0) { p.equipment.weapon = { id: 'glock_18', qty: 1 }; p.inventory[gSlot] = null; }
-    if (aSlot >= 0) { p.equipment.ammo = { id: 'bronze_round', qty: 50 }; p.inventory[aSlot] = null; }
-    events.onInvChange();
-  }
   // Rescue saves from removed map regions (the old generated 500×500 zones)
   // or otherwise-invalid tiles by snapping to spawn.
   if (
@@ -629,32 +618,35 @@ export function netHit(msg: { npc: number; dmg: number; hp: number; by: string; 
   if (msg.by === state.player?.name) audio.sfx(msg.dmg > 0 ? 'hit' : 'miss');
 }
 
-// my swing landed — grant xp (mode comes back from the server)
-export function netYouHit(msg: { npc: number; dmg: number; mode: 'melee' | 'ranged' | 'gun' | 'magic'; heal?: number }) {
+// my swing landed — server grants xp/runes/ammo; reflect the authoritative echo
+export function netYouHit(msg: {
+  npc: number; dmg: number; mode: 'melee' | 'ranged' | 'gun' | 'magic';
+  heal?: number; hp?: number; spec?: number;
+  xp?: { skill: SkillName; amount: number }[];
+  removed?: { id: string; qty: number; slot?: number }[];
+  equip?: Record<string, { id: string; qty: number } | null>;
+}) {
   const p = state.player;
   if (!p) return;
-  // lifesteal effects come back as a heal rider on the hit confirmation
-  if (msg.heal && msg.heal > 0 && !p.dead) {
-    p.curHp = Math.min(level('Hitpoints'), p.curHp + msg.heal);
-    events.onStatsChange();
+  if (typeof msg.spec === 'number') {
+    p.specEnergy = Math.max(0, Math.min(100, Math.floor(msg.spec)));
   }
-  if (msg.dmg <= 0) return;
-  if (msg.mode === 'melee') {
-    if (p.combatStyle === 'accurate') addXp('Attack', msg.dmg * 4);
-    else if (p.combatStyle === 'aggressive') addXp('Strength', msg.dmg * 4);
-    else addXp('Defence', msg.dmg * 4);
-  } else if (msg.mode === 'ranged') {
-    addXp('Ranged', msg.dmg * 4);
-  } else if (msg.mode === 'gun') {
-    addXp('Gun', msg.dmg * 4);
-  } else {
-    addXp('Magic', msg.dmg * 2);
-  }
-  addXp('Hitpoints', msg.dmg * 1.33);
+  applyGrant({
+    ok: true,
+    kind: 'youHit',
+    xp: msg.xp,
+    removed: msg.removed,
+    equip: msg.equip,
+    hp: typeof msg.hp === 'number' ? msg.hp : (
+      msg.heal && msg.heal > 0 && !p.dead
+        ? Math.min(level('Hitpoints'), p.curHp + msg.heal)
+        : undefined
+    ),
+  });
 }
 
-// an NPC hit me — apply fx-specific modifiers, then the damage
-export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string }) {
+// an NPC hit me — server owns HP; render splat from dmg, apply authoritative hp
+export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string; hp?: number; maxHp?: number }) {
   const p = state.player;
   if (!p || p.dead) return;
   const n = npcBySid.get(msg.npc) ?? null;
@@ -662,37 +654,54 @@ export function netNpcHitYou(msg: { npc: number; dmg: number; fx?: string }) {
   if (msg.fx) {
     const mod = damageModifiers.get(msg.fx);
     if (mod) dmg = mod(dmg, n);
-    if (dmg < 0) return; // modifier fully dodged the hit (incl. the splat)
+    if (dmg < 0) return;
   }
-  p.curHp -= dmg;
+  if (typeof msg.hp === 'number') p.curHp = msg.hp;
+  else p.curHp = Math.max(0, p.curHp - dmg);
   p.hitsplat = { dmg, until: performance.now() + 900 };
   audio.sfx(dmg > 0 ? 'hit' : 'miss');
   events.onStatsChange();
-  if (p.curHp <= 0) playerDeath();
 }
 
-// I got the killing blow — slayer credit + quest kill listeners
-export function netYouKilled(m: { npc: number; def: string }) {
+// Server-authoritative death + respawn (sim.ts killPlayer).
+export function netDeath(m: { hp: number; maxHp?: number; x: number; y: number }) {
   const p = state.player;
   if (!p) return;
-  const task = p.slayerTask;
-  const def = NPCS[m.def];
-  if (task && task.npc === m.def && task.remaining > 0 && def) {
-    task.remaining--;
-    addXp('Slayer', def.hitpoints);
-    if (task.remaining === 0) {
-      msg("You've completed your slayer task; return to Brogan for another.", 'level');
-      addXp('Slayer', 20);
-    }
-  }
-  for (const fn of killListeners) fn(m.def);
+  p.activePrayers.clear();
+  msg('Oh dear, you are dead!');
+  p.dead = true;
+  p.curHp = 0;
+  p.hitsplat = null;
+  events.onStatsChange();
+  window.setTimeout(() => {
+    p.x = m.x; p.y = m.y; p.prevX = m.x; p.prevY = m.y;
+    p.path = []; p.action = null;
+    p.curHp = m.hp;
+    p.dead = false;
+    p.energy = 100;
+    for (const n of state.npcs) if (n.target === 'player') n.target = null;
+    events.onStatsChange();
+  }, 2000);
 }
 
-// picked-up ground item arrives
-export function netGot(m: { item: string; qty: number }) {
-  if (addItem(m.item, m.qty)) {
-    if (m.item === 'coins') audio.sfx('coins');
-  } else msg("You don't have enough inventory space.");
+export function netHpSync(msg: { hp: number; maxHp?: number }) {
+  const p = state.player;
+  if (!p || p.dead) return;
+  p.curHp = Math.max(0, Math.floor(msg.hp));
+  events.onStatsChange();
+}
+
+export function netSpecSync(msg: { spec: number }) {
+  const p = state.player;
+  if (!p) return;
+  p.specEnergy = Math.max(0, Math.min(100, Math.floor(msg.spec)));
+  events.onStatsChange();
+}
+
+// I got the killing blow — slayer credit is server-owned; quest kill listeners only
+export function netYouKilled(m: { npc: number; def: string }) {
+  if (!state.player) return;
+  for (const fn of killListeners) fn(m.def);
 }
 
 // ---------------- Server-authoritative progression intents ----------------
@@ -709,7 +718,7 @@ export interface IntentEcho {
   error?: string;
   id?: number;            // correlation id echoed back for requestIntent()
   granted?: { id: string; qty: number }[];
-  removed?: { id: string; qty: number }[];
+  removed?: { id: string; qty: number; slot?: number }[];
   xp?: { skill: SkillName; amount: number }[];
   coins?: number;         // authoritative carried-coin balance after the mutation
   stage?: number;         // quest advance: resulting monotonic stage
@@ -721,6 +730,9 @@ export interface IntentEcho {
   burned?: boolean;
   source?: string;
   hp?: number;            // authoritative curHp after eat/heal
+  healed?: boolean;       // heal intent: whether HP actually changed
+  prayerPoints?: number;  // authoritative prayer points after recharge/consume
+  activePrayers?: string[]; // toggled prayers after pray-toggle / drain
 }
 
 // ---- requestIntent: the ONE entry point content code uses to change owned ----
@@ -768,7 +780,10 @@ export function sendIntent(kind: string, payload: Record<string, unknown>): bool
 // This is the only place outside game.ts's combat-echo handlers that mutates
 // owned state, and it does so exclusively from server-authoritative data.
 export function applyGrant(m: IntentEcho) {
-  if (m.removed) for (const r of m.removed) _applyRemove(r.id, r.qty);
+  if (m.removed) for (const r of m.removed) {
+    if (typeof r.slot === 'number') _applyRemoveFromSlot(r.slot, r.qty);
+    else _applyRemove(r.id, r.qty);
+  }
   if (m.granted) for (const g of m.granted) {
     _applyItem(g.id, g.qty);
     if (g.id === 'coins') audio.sfx('coins');
@@ -795,6 +810,14 @@ export function applyGrant(m: IntentEcho) {
   }
   if (typeof m.hp === 'number' && state.player) {
     state.player.curHp = Math.max(0, Math.floor(m.hp));
+    events.onStatsChange();
+  }
+  if (typeof m.prayerPoints === 'number' && state.player) {
+    state.player.prayerPoints = Math.max(0, Math.floor(m.prayerPoints));
+    events.onStatsChange();
+  }
+  if (Array.isArray(m.activePrayers) && state.player) {
+    state.player.activePrayers = new Set(m.activePrayers);
     events.onStatsChange();
   }
   if (m.questSet && state.player) {
@@ -832,15 +855,18 @@ export function netIntent(m: IntentEcho) {
     return;
   }
   applyGrant(m);
+  if (m.kind === 'slayer') {
+    void import('./packs/slayer_tasks').then((s) => s.onSlayerEcho?.(m));
+  }
 }
 
 // pickup/drop authoritative echo ({t:'granted'} from sim.ts).
-export function netGranted(m: { source?: string; items?: { id: string; qty: number }[]; removed?: { id: string; qty: number }[] }) {
-  // Route the pickup grant through the single apply sink. `items` is the
-  // pickup/drop wire field; map it onto `granted`. 'drop' removals are already
-  // reflected locally (dropItem clears the slot optimistically); the echo is
-  // confirmation, so we do NOT re-apply m.removed here (would double-debit).
+export function netGranted(m: { source?: string; items?: { id: string; qty: number }[]; removed?: { id: string; qty: number; slot?: number }[] }) {
   if (m.items) applyGrant({ ok: true, kind: 'granted', granted: m.items });
+  if (m.removed?.length && m.source === 'drop') {
+    applyGrant({ ok: true, kind: 'granted', removed: m.removed });
+  }
+  if (m.source === 'shear' && m.items) netShorn();
 }
 
 function serverError(e: string): string {
@@ -862,12 +888,12 @@ export function sendInteract(npc: Npc, option: string): boolean {
 }
 
 export function netShorn() {
-  addItem('wool');
   msg('You get some wool.');
 }
 
 export function netDeny(m: { what: string }) {
   if (m.what === 'shear') msg('This sheep has already been sheared. Give the wool a moment to grow back.');
+  else if (m.what === 'swing') msg("You can't attack right now.");
 }
 
 export function netPvpHitYou(m: { from: string; dmg: number; hp: number; maxHp?: number }) {
@@ -880,17 +906,8 @@ export function netPvpHitYou(m: { from: string; dmg: number; hp: number; maxHp?:
   if (p.curHp <= 0) playerDeath();
 }
 
-export function netPvpYouHit(m: { target: string; dmg: number; mode: AttackMode }) {
-  const p = state.player;
-  if (!p || m.dmg <= 0) return;
-  if (m.mode === 'melee') {
-    if (p.combatStyle === 'accurate') addXp('Attack', m.dmg * 4);
-    else if (p.combatStyle === 'aggressive') addXp('Strength', m.dmg * 4);
-    else addXp('Defence', m.dmg * 4);
-  } else if (m.mode === 'ranged') addXp('Ranged', m.dmg * 4);
-  else if (m.mode === 'gun') addXp('Gun', m.dmg * 4);
-  else addXp('Magic', m.dmg * 2);
-  addXp('Hitpoints', m.dmg * 1.33);
+export function netPvpYouHit(_m: { target: string; dmg: number; mode: AttackMode }) {
+  // PvP XP is not yet server-owned; PvP is disabled server-side.
 }
 
 export function netPvpHit(m: { from: string; target: string; dmg: number; hp: number; maxHp?: number }) {
@@ -1013,12 +1030,7 @@ export function gameTick() {
 
   if (state.tick % 2 === 0 && p.energy < 100 && p.path.length === 0) p.energy = Math.min(100, p.energy + 1);
   // special attack energy: +10 every 30s (50 ticks)
-  if (state.tick % 50 === 0 && p.specEnergy < 100) {
-    p.specEnergy = Math.min(100, p.specEnergy + 10);
-    events.onStatsChange();
-  }
-  if (state.tick % 100 === 0 && p.curHp < level('Hitpoints')) { p.curHp++; events.onStatsChange(); }
-  tickPrayerDrain();
+  // HP + spec + prayer regen/drain are server-owned (hpSync/specSync/prayerSync).
 
   movePlayer();
   performAction();
@@ -1115,32 +1127,24 @@ function performAction() {
 
 // ---------------- Prayer ----------------
 export function togglePrayer(id: string) {
-  const p = state.player;
   const def = PRAYERS.find((pr) => pr.id === id);
   if (!def) return;
   if (level('Prayer') < def.level) { msg(`You need a Prayer level of ${def.level} to use ${def.name}.`); return; }
-  if (p.activePrayers.has(id)) p.activePrayers.delete(id);
-  else {
-    if (p.prayerPoints <= 0) { msg('You have run out of prayer points; you can recharge at an altar.'); return; }
-    // only one prayer per boost type
-    for (const other of PRAYERS) if (other.boost === def.boost && other.id !== id) p.activePrayers.delete(other.id);
-    p.activePrayers.add(id);
-    audio.sfx('pray');
-  }
-  events.onStatsChange();
+  const wasOn = state.player.activePrayers.has(id);
+  void requestIntent('pray-toggle', { id }).then((echo) => {
+    if (!echo.ok) {
+      if (echo.error === 'empty') msg('You have run out of prayer points; you can recharge at an altar.');
+      return;
+    }
+    if (!wasOn && echo.activePrayers?.includes(id)) audio.sfx('pray');
+  });
 }
 
-let prayerDrainAcc = 0;
-function tickPrayerDrain() {
+export function netPrayerSync(m: { prayerPoints: number; activePrayers?: string[] }) {
   const p = state.player;
-  if (p.activePrayers.size === 0) return;
-  let drain = 0;
-  for (const id of p.activePrayers) drain += PRAYERS.find((pr) => pr.id === id)?.drain ?? 0;
-  prayerDrainAcc += drain;
-  while (prayerDrainAcc >= 100) {
-    prayerDrainAcc -= 100;
-    p.prayerPoints = Math.max(0, p.prayerPoints - 1);
-  }
+  if (!p) return;
+  p.prayerPoints = Math.max(0, Math.floor(m.prayerPoints));
+  if (Array.isArray(m.activePrayers)) p.activePrayers = new Set(m.activePrayers);
   if (p.prayerPoints <= 0 && p.activePrayers.size) {
     p.activePrayers.clear();
     msg('You have run out of prayer points; you can recharge at an altar.');
@@ -1157,11 +1161,11 @@ function prayerMult(boost: 'attack' | 'strength' | 'defence'): number {
 }
 
 export function rechargePrayer() {
-  const p = state.player;
-  p.prayerPoints = level('Prayer');
-  audio.sfx('pray');
-  msg('You recharge your prayer points.');
-  events.onStatsChange();
+  void requestIntent('recharge-prayer').then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('pray');
+    msg('You recharge your prayer points.');
+  });
 }
 
 // ---------------- Items: generic behaviors ----------------
@@ -1171,7 +1175,7 @@ export function eatFood(slot: number) {
   if (!it) return;
   const def = ITEMS[it.id];
   if (!def.edible) return;
-  void requestIntent('eat', { item: it.id }).then((echo) => {
+  void requestIntent('eat', { item: it.id, invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('eat');
     msg(`You eat the ${def.name.toLowerCase()}. It heals some health.`);
@@ -1183,7 +1187,7 @@ export function buryBones(slot: number) {
   const it = p.inventory[slot];
   if (!it || !ITEMS[it.id].buryXp) return;
   msg('You dig a hole in the ground...');
-  void requestIntent('bury', { item: it.id }).then((echo) => {
+  void requestIntent('bury', { item: it.id, invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('bury');
     msg('You bury the bones.');
@@ -1209,7 +1213,7 @@ export function equipItem(slot: number) {
     }
   }
   const verb = def.equipSlot === 'weapon' ? 'wield' : 'wear';
-  void requestIntent('equip', { op: 'equip', slot: def.equipSlot, item: it.id, source: 'inventory' })
+  void requestIntent('equip', { op: 'equip', slot: def.equipSlot, item: it.id, source: 'inventory', invSlot: slot })
     .then((echo) => {
       if (echo.ok) msg(`You ${verb} the ${def.name}.`);
       else if (echo.error && echo.error !== 'inventory full') msg(echo.error);
@@ -1235,12 +1239,10 @@ export function dropItem(slot: number) {
   const it = p.inventory[slot];
   if (!it) return;
   // server owns ground items: only drop while connected, or the item is lost
-  if (!netSend({ t: 'drop', item: it.id, qty: it.qty })) {
+  if (!netSend({ t: 'drop', item: it.id, qty: it.qty, invSlot: slot })) {
     msg('You cannot drop items while disconnected.');
     return;
   }
-  p.inventory[slot] = null;
-  events.onInvChange();
 }
 
 // ---------------- Combat ----------------
@@ -1308,7 +1310,6 @@ function consumeSpec(): string | null {
   p.specArmed = false;
   const s = specItem();
   if (!s || p.specEnergy < s.spec.energy) { events.onStatsChange(); return null; }
-  p.specEnergy -= s.spec.energy;
   msg(`You unleash ${s.spec.name}!`, 'level');
   events.onStatsChange();
   return s.itemId;
@@ -1428,14 +1429,12 @@ function castOnPlayer(targetName: string, rp: RemotePlayer) {
   if (!spell.runes.every((r) => invCount(r.item) >= r.qty)) { msg("You don't have enough runes to cast this spell."); p.autocastSpell = null; p.action = null; return; }
   if (level('Magic') < spell.level) { msg(`You need a Magic level of ${spell.level} to cast ${spell.name}.`); p.autocastSpell = null; p.action = null; return; }
   p.attackCooldown = 5;
-  for (const r of spell.runes) removeItem(r.item, r.qty);
   audio.sfx('spell');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: rp.x, toY: rp.y, startMs: performance.now(), durMs: 400, kind: 'spell' });
   netSend({
     t: 'swing', target: targetName, mode: 'magic',
     eff: level('Magic'), bonus: 0, maxHit: spell.maxHit, speed: 5,
   });
-  addXp('Magic', spell.xp);
 }
 
 function tickPlayerCombat(npc: Npc) {
@@ -1477,9 +1476,6 @@ function shootNpc(npc: Npc) {
   if (!ammo || !ammo.id.endsWith('_arrow')) { msg('You have no arrows equipped.'); p.action = null; return; }
   p.attackCooldown = weaponSpeed();
   const ammoId = ammo.id;
-  ammo.qty--;
-  if (ammo.qty <= 0) p.equipment.ammo = null;
-  events.onInvChange();
   audio.sfx('bow');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 300, kind: 'arrow' });
   const specId = consumeSpec();
@@ -1496,9 +1492,6 @@ function shootGun(npc: Npc) {
   if (!ammo || !ammo.id.endsWith('_round')) { msg('You have no rounds equipped.'); p.action = null; return; }
   p.attackCooldown = weaponSpeed();
   const ammoId = ammo.id;
-  ammo.qty--;
-  if (ammo.qty <= 0) p.equipment.ammo = null;
-  events.onInvChange();
   audio.sfx('gun');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 180, kind: 'bullet' });
   const specId = consumeSpec();
@@ -1516,7 +1509,6 @@ function castOnNpc(npc: Npc) {
   if (!spell.runes.every((r) => invCount(r.item) >= r.qty)) { msg("You don't have enough runes to cast this spell."); p.autocastSpell = null; p.action = null; return; }
   if (level('Magic') < spell.level) { msg(`You need a Magic level of ${spell.level} to cast ${spell.name}.`); p.autocastSpell = null; p.action = null; return; }
   p.attackCooldown = 5;
-  for (const r of spell.runes) removeItem(r.item, r.qty);
   audio.sfx('spell');
   state.projectiles.push({ fromX: p.x, fromY: p.y, toX: npc.x, toY: npc.y, startMs: performance.now(), durMs: 400, kind: 'spell' });
   netSend({
@@ -1524,7 +1516,6 @@ function castOnNpc(npc: Npc) {
     eff: level('Magic'), bonus: 0, maxHit: spell.maxHit, speed: 5,
     gear: effectGear(), // gear effects (lifesteal etc.) apply; specs are melee/ranged/gun only
   });
-  addXp('Magic', spell.xp); // base cast xp; dmg*2 lands with youHit
 }
 
 export function playerDeath() {
@@ -1573,7 +1564,7 @@ export function combatSnapshot() {
 export function bankDeposit(slot: number, qty: number | 'all') {
   const it = state.player.inventory[slot];
   if (!it) return;
-  void requestIntent('bank', { op: 'deposit', item: it.id, qty });
+  void requestIntent('bank', { op: 'deposit', item: it.id, qty, invSlot: slot });
 }
 
 export function bankWithdraw(bankIdx: number, qty: number | 'all') {
@@ -1617,7 +1608,7 @@ export function shopSell(shopId: string, slot: number) {
   // Server validates possession and computes the proceeds; applyGrant credits the
   // coins and removes the item. Only the presentation stock counter is bumped
   // locally, on success.
-  void requestIntent('shop', { op: 'sell', shop: shopId, item: itemId })
+  void requestIntent('shop', { op: 'sell', shop: shopId, item: itemId, invSlot: slot })
     .then((echo) => {
       if (echo.ok) {
         const entry = stock.find((s) => s.item === itemId);

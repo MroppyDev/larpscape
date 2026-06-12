@@ -16,13 +16,14 @@ import { WebSocketServer, WebSocket } from 'ws';
 import {
   initSim, tickSim, fullSnapshot, dropPlayer,
   handleSwing, handlePickup, handleDrop, handleInteract,
-  setCombatProfileFor, setOnHpChanged, setResolvePlayerDeath,
-  type PlayerView, type SwingProfile, type SNpc,
+  setCombatProfileFor, setSwingStateHooks, setOnHpChanged, setResolvePlayerDeath,
+  type PlayerView, type SwingProfile, type SNpc, type SwingEchoExtras,
 } from './sim';
-import { deriveCombatProfile, isValidStyle, type CombatProfile, type CombatStyle } from './combat';
+import { deriveCombatProfile, getSpell, isValidStyle, type AttackMode, type CombatProfile, type CombatStyle } from './combat';
 import {
-  SKILLS, levelForXp,
-  getCoins, removeCoins, addCoins, invAdd, invRemove, invCount,
+  SKILLS, levelForXp, SkillName,
+  getCoins, removeCoins, addCoins, invAdd, invRemove, invCount, invHas,
+  addXp, skillLevel,
 } from './state';
 import { initSocial } from './social';
 import {
@@ -38,6 +39,7 @@ import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-w
 import './intent-shop'; // side-effect: registers the 'shop'/'bank' WS domain handlers
 import './intent-produce'; // side-effect: registers production/gathering domain intents
 import './intent-misc'; // side-effect: registers gambling/slayer/misc-grant domain intents
+import { installSlayerKillHook } from './intent-misc';
 import './intent-questb'; // side-effect: registers the 'questb-grant' repeatable quest-object domain
 import { installQuestKillHook } from './intent-quest'; // side-effect: registers quest-mark/turnin/craft; kill hook installed below
 import { mergeSave } from '../shared/save-schema';
@@ -467,7 +469,7 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/character', requireAuth, (req: AuthedRequest, res) => {
   const row = db.prepare('SELECT save FROM characters WHERE user_id = ?')
     .get(req.userId) as { save: string } | undefined;
-  if (!row) { res.json({ save: null }); return; }
+  if (!row) { res.json({ save: serverStarterOwned() }); return; }
   try { res.json({ save: JSON.parse(row.save) }); }
   catch { res.json({ save: null }); }
 });
@@ -512,6 +514,7 @@ registerIntentRoutes(app, stateStore, intents, requireAuth);
 // bound to the same store the intents use. Domain handlers (quest-mark/turnin/
 // craft) self-register via the import side-effect above.
 installQuestKillHook(stateStore);
+installSlayerKillHook(stateStore);
 
 // Defined after the profile cache below; hoisted via function declaration so the
 // store callback above can reference it.
@@ -538,6 +541,8 @@ interface ProfileEntry {
   autocastSpell: string | null;
   specEnergy: number; // live, 0..100 (authoritative; the wire no longer reports it)
   hpDirty: boolean;   // live HP diverged from the persisted curHp → flush due
+  activePrayers: string[]; // live mirror of save.activePrayers (server drain)
+  prayerDrainAcc: number;  // accumulates drain units; -1 pp per 100
 }
 const combatProfiles = new Map<number, ProfileEntry>();
 
@@ -554,9 +559,13 @@ function rebuildProfile(userId: number): ProfileEntry | null {
   const profile = deriveCombatProfile(state, style, autocast);
   const specEnergy = prev ? prev.specEnergy
     : (typeof state.specEnergy === 'number' ? Math.max(0, Math.min(100, state.specEnergy)) : 100);
+  const savedPrayers = Array.isArray(state.activePrayers)
+    ? state.activePrayers.filter((id): id is string => typeof id === 'string') : [];
   const entry: ProfileEntry = {
     profile, style, autocastSpell: autocast, specEnergy,
     hpDirty: prev?.hpDirty ?? false,
+    activePrayers: prev?.activePrayers ?? savedPrayers,
+    prayerDrainAcc: prev?.prayerDrainAcc ?? 0,
   };
   combatProfiles.set(userId, entry);
   return entry;
@@ -614,6 +623,17 @@ const SPEC_ENERGY_COST: Map<string, number> = (() => {
   return m;
 })();
 
+const PRAYER_DRAIN: Map<string, number> = (() => {
+  const m = new Map<string, number>();
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/magic.json'), 'utf8'));
+    for (const p of raw.prayers ?? []) {
+      if (typeof p?.id === 'string' && typeof p?.drain === 'number') m.set(p.id, p.drain);
+    }
+  } catch { /* empty */ }
+  return m;
+})();
+
 // Sync a player's view combat fields from the cached profile (server-derived).
 function applyProfileToView(view: PlayerView, entry: ProfileEntry, opts: { resetHp?: boolean } = {}) {
   const p = entry.profile;
@@ -625,6 +645,75 @@ function applyProfileToView(view: PlayerView, entry: ProfileEntry, opts: { reset
 }
 
 setCombatProfileFor(swingProfileFor);
+
+function combatXpForHit(userId: number, dmg: number, mode: AttackMode): { skill: SkillName; amount: number }[] {
+  const entry = combatProfiles.get(userId);
+  const style: CombatStyle = entry?.style ?? 'accurate';
+  const xp: { skill: SkillName; amount: number }[] = [];
+  const push = (skill: SkillName, mult: number) => {
+    const amount = Math.floor(dmg * mult);
+    if (amount > 0) xp.push({ skill, amount });
+  };
+  if (mode === 'melee') {
+    if (style === 'accurate') push('Attack', 4);
+    else if (style === 'aggressive') push('Strength', 4);
+    else push('Defence', 4);
+  } else if (mode === 'ranged') push('Ranged', 4);
+  else if (mode === 'gun') push('Gun', 4);
+  else push('Magic', 2);
+  push('Hitpoints', 1.33);
+  return xp;
+}
+
+// Combat XP + swing consumables (runes/ammo) are server-owned: debited/granted
+// inside withState so they persist across refresh (client PUT cannot author xp).
+setSwingStateHooks(
+  (userId, mode) => {
+    const extras: { ok: boolean } & SwingEchoExtras = { ok: true };
+    const entry = combatProfiles.get(userId);
+    const autocast = entry?.autocastSpell ?? null;
+    const ok = stateStore.withState(userId, (state) => {
+      if (mode === 'magic') {
+        if (!autocast) return false;
+        const sp = getSpell(autocast);
+        if (!sp || skillLevel(state, 'Magic') < sp.level) return false;
+        for (const r of sp.runes) if (!invHas(state, r.item, r.qty)) return false;
+        const removed: { id: string; qty: number }[] = [];
+        for (const r of sp.runes) {
+          invRemove(state, r.item, r.qty);
+          removed.push({ id: r.item, qty: r.qty });
+        }
+        const castXp = Math.floor(sp.xp);
+        if (castXp > 0) addXp(state, 'Magic', castXp);
+        extras.removed = removed;
+        extras.xp = castXp > 0 ? [{ skill: 'Magic', amount: castXp }] : [];
+        return true;
+      }
+      if (mode === 'ranged' || mode === 'gun') {
+        const suffix = mode === 'ranged' ? '_arrow' : '_round';
+        const ammo = state.equipment?.ammo;
+        if (!ammo || !ammo.id.endsWith(suffix) || ammo.qty <= 0) return false;
+        ammo.qty -= 1;
+        if (ammo.qty <= 0) state.equipment!.ammo = null;
+        extras.equip = { ammo: state.equipment?.ammo ?? null };
+        return true;
+      }
+      return true;
+    });
+    return { ok: ok === true, ...extras };
+  },
+  (userId, dmg, mode) => {
+    const planned = combatXpForHit(userId, dmg, mode as AttackMode);
+    stateStore.withState(userId, (state) => {
+      for (const x of planned) addXp(state, x.skill, x.amount);
+    });
+    return planned;
+  },
+  (userId) => {
+    const e = combatProfiles.get(userId);
+    return e ? { spec: e.specEnergy } : {};
+  },
+);
 
 // HP changed (server-authoritative). Persist lazily — mark dirty; the tick
 // flush below writes curHp + specEnergy to the save. We push the authoritative
@@ -644,9 +733,10 @@ setResolvePlayerDeath((view, _killerNpc) => {
   const entry = combatProfiles.get(view.userId);
   stateStore.withState(view.userId, (state) => {
     state.curHp = entry ? entry.profile.maxHp : (typeof state.curHp === 'number' ? state.curHp : 10);
+    state.activePrayers = [];
     // (softcore xp penalty would be applied here, e.g. addXp(state, skill, -loss))
   });
-  if (entry) entry.hpDirty = false;
+  if (entry) { entry.hpDirty = false; entry.activePrayers = []; entry.prayerDrainAcc = 0; }
   return RESPAWN;
 });
 
@@ -1574,7 +1664,11 @@ wss.on('connection', (ws, req) => {
       // Server-authoritative skilling intents (gather/fish/cook/firemake/make).
       // Validates level/inputs/tool/range vs server state, rolls, applies via
       // withState, and replies with the authoritative {t:'intent',...} echo.
-      dispatchIntentWs(stateStore, intents, view, msg);
+      const intentRes = dispatchIntentWs(stateStore, intents, view, msg);
+      if (intentRes?.ok && Array.isArray(intentRes.activePrayers)) {
+        const pe = combatProfiles.get(view.userId);
+        if (pe) pe.activePrayers = intentRes.activePrayers;
+      }
     } else if (msg.t === 'chat') {
       if (typeof msg.text !== 'string') return;
       const text = msg.text.slice(0, 80).replace(/[\x00-\x1f]/g, '').trim();
@@ -1626,6 +1720,7 @@ function flushCombatState(userId: number, view: PlayerView) {
   stateStore.withState(userId, (state) => {
     state.curHp = Math.max(0, Math.min(entry.profile.maxHp, Math.round(view.hp)));
     state.specEnergy = Math.max(0, Math.min(100, Math.round(entry.specEnergy)));
+    state.activePrayers = [...entry.activePrayers];
   });
   entry.hpDirty = false;
 }
@@ -1661,6 +1756,34 @@ setInterval(() => {
       c.view.send({ t: 'specSync', spec: entry.specEnergy });
     }
     if (serverTick % 50 === 0) flushCombatState(c.userId, c.view);
+    // Server-authoritative prayer drain (same cadence as client TICK_MS).
+    if (entry.activePrayers.length > 0) {
+      let drain = 0;
+      for (const id of entry.activePrayers) drain += PRAYER_DRAIN.get(id) ?? 0;
+      if (drain > 0) {
+        entry.prayerDrainAcc += drain;
+        if (entry.prayerDrainAcc >= 100) {
+          const pointsLost = Math.floor(entry.prayerDrainAcc / 100);
+          entry.prayerDrainAcc %= 100;
+          const sync = stateStore.withState(c.userId, (state) => {
+            const cur = Math.max(0, state.prayerPoints ?? 0);
+            state.prayerPoints = Math.max(0, cur - pointsLost);
+            if (state.prayerPoints <= 0) {
+              state.activePrayers = [];
+              entry.activePrayers = [];
+            }
+            return {
+              prayerPoints: state.prayerPoints,
+              activePrayers: entry.activePrayers,
+            };
+          });
+          if (sync) {
+            entry.hpDirty = true;
+            c.view.send({ t: 'prayerSync', ...sync });
+          }
+        }
+      }
+    }
   }
 
   if (clients.size === 0) return;

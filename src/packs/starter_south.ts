@@ -2,7 +2,7 @@
 // Districts: x22-30 / x34-42 at y54-57, just south of the castle & general store.
 import {
   registerNpcAction, registerObjectAction,
-  startDialogue, showOptions, msg, state, events, openShop, level,
+  startDialogue, showOptions, msg, state, openShop, requestIntent,
 } from '../game';
 
 // ── Danquavious Chimperton III update ───────────────────────────────────────
@@ -121,32 +121,25 @@ registerNpcAction('tick_eater_glen', 'Talk-to', (n) => {
 });
 
 registerNpcAction('tick_eater_glen', 'Eat-tick', () => {
-  const p = state.player;
-  const maxHp = level('Hitpoints');
-  if (Math.random() < 0.4) {
-    msg('Glen offers you a tick on a tiny cracker. You eat it. Your soul files a complaint.');
-    if (p.curHp < maxHp) {
-      p.curHp = Math.min(maxHp, p.curHp + 1);
-      events.onStatsChange();
+  void requestIntent('heal', { source: 'tick_eater' }).then((echo) => {
+    if (!echo.ok) return;
+    if (echo.healed) {
+      msg('Glen offers you a tick on a tiny cracker. You eat it. Your soul files a complaint.');
       msg('Oddly, you feel a little stronger. Protein? Placebo? Who can say.');
+    } else {
+      msg('Glen eats the tick himself and gives you a thumbs-up. No thank-you required.');
     }
-  } else {
-    msg('Glen eats the tick himself and gives you a thumbs-up. No thank-you required.');
-  }
+  });
   return 'done';
 });
 
 registerObjectAction('dentist_chair', 'Get-checked', () => {
-  const p = state.player;
-  const maxHp = level('Hitpoints');
   msg('Dr. Ticksworth leans in with a mirror and a tiny pick. "Say aaah."');
-  if (p.curHp < maxHp && Math.random() < 0.35) {
-    p.curHp = Math.min(maxHp, p.curHp + 2);
-    events.onStatsChange();
-    msg('Your teeth sparkle. You feel slightly better.');
-  } else {
-    msg('No cavities today. The tick in the aquarium waves a leg at you.');
-  }
+  void requestIntent('heal', { source: 'dentist_chair' }).then((echo) => {
+    if (!echo.ok) return;
+    if (echo.healed) msg('Your teeth sparkle. You feel slightly better.');
+    else msg('No cavities today. The tick in the aquarium waves a leg at you.');
+  });
   return 'done';
 });
 

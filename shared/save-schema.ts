@@ -28,6 +28,7 @@ export const OWNED_FIELDS = [
   'specEnergy',    // 0..100 special-attack energy (combat, G1)
   'curHp',         // authoritative live HP (combat/death authority, §3)
   'prayerPoints',  // authoritative prayer pool (combat, §3)
+  'activePrayers', // string[] — toggled prayers (server drain + persist)
   'slayerTask',    // { npc, remaining } | null — slayer progress
   'slayerPoints',  // slayer reward points
 ] as const;

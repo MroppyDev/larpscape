@@ -1,6 +1,8 @@
 {
   "_comment": "Server-owned quest COMPLETION + dialogue-handout rewards, keyed by '<questId>:<stage>'. The client may request a claim (quest-reward) or a gated dialogue handout (scripted-grant) but NEVER specifies the amount — the server grants only what is listed here, exactly once per (quest,stage) (docs/ECONOMY-AUTHORITY.md §2.1, closes M6 reward inflation). A reward is granted only once the player has legitimately REACHED the stage (questStage >= stage in server/intents.ts questClaim), so mid-quest item handouts are keyed at the stage the dialogue advances the player TO. Batch-1 (main arc + early quests) entries added by the Quests-A agent; other batches append their own keys (cold_comfort / thunder_on_the_tide are other batches').",
 
+  "getting_started:6": { "items": [{ "id": "bread", "qty": 3 }], "coins": 50 },
+
   "empty_larder:2": { "xp": [{ "skill": "Cooking", "amount": 300 }], "items": [{ "id": "cake", "qty": 1 }] },
   "seeds_of_trouble:2": { "xp": [{ "skill": "Farming", "amount": 500 }], "coins": 200, "items": [{ "id": "potato_seed", "qty": 2 }, { "id": "cabbage_seed", "qty": 2 }] },
 

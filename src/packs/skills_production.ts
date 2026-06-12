@@ -158,8 +158,7 @@ fletchCombo('headless_arrow', 'rune_arrowtips', 'rune_arrow');
 // HERBLORE — drinking the new potions (mixing/cleaning is dynamic in content.ts)
 // ============================================================================
 registerItemAction('prayer_potion', 'Drink', (slot) => {
-  void slot;
-  void requestIntent('consume', { item: 'prayer_potion' }).then((echo) => {
+  void requestIntent('consume', { item: 'prayer_potion', invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('eat');
     msg('You drink the prayer potion. A cool calm settles over you as your faith returns.');
@@ -168,8 +167,7 @@ registerItemAction('prayer_potion', 'Drink', (slot) => {
 });
 
 registerItemAction('super_attack', 'Drink', (slot) => {
-  void slot;
-  void requestIntent('consume', { item: 'super_attack' }).then((echo) => {
+  void requestIntent('consume', { item: 'super_attack', invSlot: slot }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('eat');
     msg('You drink the super attack potion. Your sword arm positively itches.');

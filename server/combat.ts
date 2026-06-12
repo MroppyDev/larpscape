@@ -10,7 +10,8 @@
 // playerMaxHit, rangedMaxHit, gunMaxHit, weaponSpeed, combatLevel, combatSnapshot)
 // so a legit player's PvE numbers are byte-identical to before — the only change
 // is WHO computes them. The one fidelity gap: offensive/defensive PRAYER boosts
-// (prayerMult) are NOT yet server-owned (activePrayers is transient client state,
+// (prayerMult) still uses the client's activePrayers mirror for hit rolls;
+// activePrayers + prayerPoints drain are server-owned (intent-produce + tick).
 // not persisted in the save), so the server derives from BASE levels + combat
 // style + equipment. Prayer-boosted accuracy/maxHit are therefore not honoured by
 // the server roll until prayers become authoritative; defensive prayer halving of
@@ -45,7 +46,7 @@ const ITEMS: Record<string, CItemDef> = JSON.parse(
 
 // Autocast spells: maxHit per spell id, validated server-side (the client used
 // to send spell.maxHit on the wire — now ignored, looked up here by id).
-interface SpellDef { id: string; level: number; maxHit: number; runes: { item: string; qty: number }[] }
+interface SpellDef { id: string; level: number; xp: number; maxHit: number; runes: { item: string; qty: number }[] }
 const MAGIC: { spells: SpellDef[] } = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../data/magic.json'), 'utf8'),
 );
@@ -248,4 +249,8 @@ export function deriveCombatLevel(state: AuthState): number {
 
 export function isValidStyle(s: unknown): s is CombatStyle {
   return s === 'accurate' || s === 'aggressive' || s === 'defensive' || s === 'controlled';
+}
+
+export function getSpell(id: string): SpellDef | undefined {
+  return SPELLS.get(id);
 }

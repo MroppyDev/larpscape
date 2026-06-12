@@ -4,7 +4,7 @@
 // the architect reconciles any collisions with world.ts at integration.
 import {
   registerNpcAction, registerObjectAction,
-  startDialogue, msg, state, events, openShop, level,
+  startDialogue, msg, state, openShop, requestIntent,
 } from '../game';
 
 // NPC definitions + spawns live in data/npcs.json and data/spawns.json
@@ -59,13 +59,8 @@ registerNpcAction('city_guard', 'Ask-directions', (n) => {
 
 // Fountain ambience: a questionable drink that heals 1.
 registerObjectAction('fountain', 'Drink', () => {
-  const p = state.player;
-  const maxHp = level('Hitpoints');
   msg('You scoop up a mouthful of fountain water. Cold, coppery, strangely invigorating.');
-  if (p.curHp < maxHp) {
-    p.curHp = Math.min(maxHp, p.curHp + 1);
-    events.onStatsChange();
-  }
+  void requestIntent('heal', { source: 'fountain' });
   return 'done';
 });
 

@@ -3,11 +3,11 @@
 
 import {
   registerObjectAction, registerNpcAction, msg,
-  addItem, removeItem, invCount, freeSlots, state,
+  invCount, freeSlots, state,
 } from './game';
 import { ITEMS } from './defs';
 import { itemIcon } from './sprites';
-import { net } from './net';
+import { net, reloadServerOwned } from './net';
 
 interface GeOffer {
   id: number;
@@ -161,18 +161,15 @@ async function doCollect(o: GeOffer) {
   }
   try {
     const r = await net.api('/api/ge/collect', { id: o.id });
-    let got = false;
+    const granted: { id: string; qty: number }[] = [];
     for (const it of (r.items ?? []) as { id: string; qty: number }[]) {
-      if (it.qty > 0) {
-        if (addItem(it.id, it.qty)) got = true;
-        else msg('Your pack is too full for the ' + itemName(it.id) + '!');
-      }
+      if (it.qty > 0) granted.push({ id: it.id, qty: it.qty });
     }
-    if ((r.coins ?? 0) > 0) {
-      if (addItem('coins', r.coins)) got = true;
-      else msg('Your pack is too full for the coins!');
+    if ((r.coins ?? 0) > 0) granted.push({ id: 'coins', qty: r.coins });
+    if (granted.length) {
+      await reloadServerOwned();
+      msg('You collect from the Aldgate Exchange.');
     }
-    if (got) msg('You collect from the Aldgate Exchange.');
   } catch (e: any) {
     msg('Collection failed: ' + (e?.message ?? 'unknown error') + '.');
   }
@@ -195,14 +192,13 @@ async function submitBuy() {
   if (qty < 1 || price < 1) { msg('Quantity and price must be at least 1.'); return; }
   const total = qty * price;
   if (invCount('coins') < total) { msg("You don't have enough coins for that offer."); return; }
-  if (!removeItem('coins', total)) { msg("You don't have enough coins for that offer."); return; }
   try {
     await net.api('/api/ge/offer', { kind: 'buy', item: buyItem, qty, price });
+    await reloadServerOwned();
     msg('Buy offer placed: ' + qty + ' x ' + itemName(buyItem) + ' at ' + price + ' gp each.');
     buyItem = null; buyFilter = ''; buyQty = 1; buyPrice = 1; lastPrice = null;
     view = 'offers';
   } catch (e: any) {
-    addItem('coins', total); // refund — the offer never reached the books
     msg('Offer failed: ' + (e?.message ?? 'unknown error') + '.');
   }
   await fetchOffers();
@@ -215,14 +211,13 @@ async function submitSell() {
   const price = Math.floor(sellPrice);
   if (qty < 1 || price < 1) { msg('Quantity and price must be at least 1.'); return; }
   const id = sellItem;
-  if (!removeItem(id, qty)) { msg("You don't have that many."); return; }
   try {
     await net.api('/api/ge/offer', { kind: 'sell', item: id, qty, price });
+    await reloadServerOwned();
     msg('Sell offer placed: ' + qty + ' x ' + itemName(id) + ' at ' + price + ' gp each.');
     sellItem = null; sellQty = 1; sellPrice = 1; lastPrice = null;
     view = 'offers';
   } catch (e: any) {
-    addItem(id, qty); // refund — the offer never reached the books
     msg('Offer failed: ' + (e?.message ?? 'unknown error') + '.');
   }
   await fetchOffers();

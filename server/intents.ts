@@ -28,8 +28,8 @@ import { ECONOMY_FROZEN } from './econ-freeze';
 import { MAP_W } from './world';
 import {
   StateStore, AuthState, SkillName, SKILLS, isKnownItem,
-  invAdd, invRemove, invCount, invHas, getCoins, addCoins, removeCoins,
-  bankAdd, bankRemove, bankCount, addXp, skillLevel, setEquip,
+  invAdd, invRemove, invRemoveItem, invCount, invHas, getCoins, addCoins, removeCoins,
+  bankAdd, bankRemove, bankCount, addXp, skillLevel, setEquip, parseInvSlot,
   questStage, setQuestStage,
 } from './state';
 import { advanceQuest } from './quests-graph';
@@ -120,7 +120,7 @@ export interface IntentResult {
   error?: string;
   message?: string;       // flavour line for the chat log (server-authored)
   granted?: { id: string; qty: number }[];
-  removed?: { id: string; qty: number }[];
+  removed?: { id: string; qty: number; slot?: number }[];
   xp?: { skill: SkillName; amount: number }[];
   coins?: number;
   rev?: number;
@@ -133,6 +133,9 @@ export interface IntentResult {
                           // (kill counters / sounding bitmasks; reflected monotonically)
   equip?: Record<string, { id: string; qty: number } | null>; // equip/unequip: changed slots
   hp?: number;            // authoritative curHp after eat/heal intents
+  healed?: boolean;       // heal intent: whether HP actually changed
+  prayerPoints?: number;  // authoritative prayer points after recharge/consume
+  activePrayers?: string[]; // toggled prayers after pray-toggle / drain
 }
 
 // ---------------------------------------------------------------------------
@@ -479,7 +482,7 @@ export function createIntents(stateStore: StateStore) {
   // item out of the chosen source and the previously-worn item back to the
   // inventory, all in ONE withState tx. Not wealth cross-account movement, so
   // it is SAFE while frozen, but owned-state so it MUST be server-authoritative.
-  function equip(ctx: IntentCtx, op: 'equip' | 'unequip', slot: string, itemId: string, source: 'inventory' | 'bank'): IntentResult {
+  function equip(ctx: IntentCtx, op: 'equip' | 'unequip', slot: string, itemId: string, source: 'inventory' | 'bank', invSlot?: number): IntentResult {
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       if (!state.equipment || typeof state.equipment !== 'object') state.equipment = {};
       if (op === 'unequip') {
@@ -495,16 +498,30 @@ export function createIntents(stateStore: StateStore) {
       }
       // equip: pull from source, validate, swap.
       if (!isKnownItem(itemId)) return fail('equip', 'unknown item');
-      const have = source === 'bank' ? bankCount(state, itemId) : invCount(state, itemId);
-      if (have <= 0) return fail('equip', 'you do not have that item');
       const def = ITEMS[itemId];
       const targetSlot = def?.equipSlot;
       if (!targetSlot) return fail('equip', 'that item cannot be equipped');
-      // qty: stackables (ammo) equip the whole owned amount; else 1.
-      const qty = isStackable(itemId) ? have : 1;
-      // remove from source first
-      const removed = source === 'bank' ? bankRemove(state, itemId, qty) : invRemove(state, itemId, qty);
-      if (!removed) return fail('equip', 'you do not have that item');
+      const parsedSlot = source === 'inventory' ? parseInvSlot(invSlot) : -1;
+      let qty = 1;
+      let removedSlot: number | undefined;
+      if (source === 'bank') {
+        const have = bankCount(state, itemId);
+        if (have <= 0) return fail('equip', 'you do not have that item');
+        qty = isStackable(itemId) ? have : 1;
+        if (!bankRemove(state, itemId, qty)) return fail('equip', 'you do not have that item');
+      } else if (parsedSlot >= 0) {
+        const s = state.inventory?.[parsedSlot];
+        if (!s || s.id !== itemId) return fail('equip', 'you do not have that item');
+        qty = isStackable(itemId) ? s.qty : 1;
+        const rm = invRemoveItem(state, itemId, qty, parsedSlot);
+        if (!rm.ok) return fail('equip', 'you do not have that item');
+        removedSlot = rm.slot;
+      } else {
+        const have = invCount(state, itemId);
+        if (have <= 0) return fail('equip', 'you do not have that item');
+        qty = isStackable(itemId) ? have : 1;
+        if (!invRemove(state, itemId, qty)) return fail('equip', 'you do not have that item');
+      }
       const prev = state.equipment[targetSlot] ?? null;
       const err = setEquip(state, targetSlot, itemId);
       if (err) {
@@ -519,7 +536,11 @@ export function createIntents(stateStore: StateStore) {
       if (prev) {
         if (!invAdd(state, prev.id, prev.qty)) bankAdd(state, prev.id, prev.qty);
       }
-      return { ok: true, kind: 'equip', removed: [{ id: itemId, qty }], equip: changed };
+      return {
+        ok: true, kind: 'equip',
+        removed: [{ id: itemId, qty, ...(removedSlot !== undefined ? { slot: removedSlot } : {}) }],
+        equip: changed,
+      };
     });
     if (!res) return fail('equip', 'no character');
     if (res.ok) res.rev = revOf(ctx.userId);

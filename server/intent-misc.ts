@@ -23,12 +23,13 @@ import {
   registerIntentDomain, DomainCtx, IntentResult, stampRev,
 } from './intents';
 import {
-  AuthState, SkillName, isKnownItem,
+  AuthState, SkillName, isKnownItem, StateStore,
   invAdd, invRemove, invCount, invHas,
   getCoins, addCoins, removeCoins,
   bankAdd, addXp, skillLevel,
 } from './state';
 import { deriveCombatLevel } from './combat';
+import { npcDeathHooks, SNpc, PlayerView } from './sim';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -279,38 +280,8 @@ function slayer(ctx: DomainCtx, payload: Record<string, unknown>): IntentResult 
     }
 
     if (op === 'kill') {
-      // Per-kill credit, validated against the SERVER task. The client reports
-      // which mob it killed; the server only credits if that mob matches its own
-      // authoritative assigned task and there is remaining count. Awards per-kill
-      // Slayer xp; on reaching 0 pays the completion bonus exactly once.
       const npc = String(payload.npc ?? '');
-      if (!task || task.npc !== npc || task.remaining <= 0) {
-        return { ok: true, kind, xp: [], ...({ slayer: slayerSnapshot(state) } as Record<string, unknown>) } as IntentResult;
-      }
-      const hp = Math.max(1, Math.floor(NPCS[npc]?.hitpoints ?? 1));
-      const xp: { skill: SkillName; amount: number }[] = [];
-      task.remaining -= 1;
-      state.slayerTask = task;
-      addXp(state, 'Slayer', hp); xp.push({ skill: 'Slayer' as SkillName, amount: hp });
-
-      if (task.remaining === 0) {
-        // completion
-        const completionXp = 20;
-        addXp(state, 'Slayer', completionXp);
-        xp.push({ skill: 'Slayer' as SkillName, amount: completionXp });
-        if (meta.size > 0) {
-          // points-eligible loop task: streak + points + size-scaled bonus xp.
-          const streak = meta.streak + 1;
-          const pts = streak % 10 === 0 ? POINTS_10TH : streak % 5 === 0 ? POINTS_5TH : BASE_POINTS;
-          state.slayerPoints = slayerPoints(state) + pts;
-          const bonus = meta.size * 5;
-          addXp(state, 'Slayer', bonus);
-          xp.push({ skill: 'Slayer' as SkillName, amount: bonus });
-          setSlayerMeta(state, { streak, size: 0, npc: '' });
-        }
-        state.slayerTask = null;
-      }
-      return { ok: true, kind, xp, ...({ slayer: slayerSnapshot(state) } as Record<string, unknown>) } as IntentResult;
+      return creditSlayerKill(state, npc);
     }
 
     if (op === 'read-tome') {
@@ -449,6 +420,47 @@ function loadRounds(ctx: DomainCtx, payload: Record<string, unknown>): IntentRes
   });
   if (!res) return { ok: false, kind, error: 'no character' };
   return stampRev(ctx.store, ctx, res);
+}
+
+function creditSlayerKill(state: AuthState, npc: string): IntentResult {
+  const kind = 'slayer';
+  const task = state.slayerTask ?? null;
+  const meta = slayerMeta(state);
+  if (!task || task.npc !== npc || task.remaining <= 0) {
+    return { ok: true, kind, xp: [], ...({ slayer: slayerSnapshot(state) } as Record<string, unknown>) } as IntentResult;
+  }
+  const hp = Math.max(1, Math.floor(NPCS[npc]?.hitpoints ?? 1));
+  const xp: { skill: SkillName; amount: number }[] = [];
+  task.remaining -= 1;
+  state.slayerTask = task;
+  addXp(state, 'Slayer', hp); xp.push({ skill: 'Slayer' as SkillName, amount: hp });
+
+  if (task.remaining === 0) {
+    const completionXp = 20;
+    addXp(state, 'Slayer', completionXp);
+    xp.push({ skill: 'Slayer' as SkillName, amount: completionXp });
+    if (meta.size > 0) {
+      const streak = meta.streak + 1;
+      const pts = streak % 10 === 0 ? POINTS_10TH : streak % 5 === 0 ? POINTS_5TH : BASE_POINTS;
+      state.slayerPoints = slayerPoints(state) + pts;
+      const bonus = meta.size * 5;
+      addXp(state, 'Slayer', bonus);
+      xp.push({ skill: 'Slayer' as SkillName, amount: bonus });
+      setSlayerMeta(state, { streak, size: 0, npc: '' });
+    }
+    state.slayerTask = null;
+  }
+  return { ok: true, kind, xp, ...({ slayer: slayerSnapshot(state) } as Record<string, unknown>) } as IntentResult;
+}
+
+// Server credits slayer kills on the killing blow (no client round-trip).
+export function installSlayerKillHook(store: StateStore): void {
+  npcDeathHooks.push((n: SNpc, by: PlayerView) => {
+    const res = store.withState(by.userId, (state) => creditSlayerKill(state, n.def.id));
+    if (!res || !res.ok) return;
+    if ((res.xp?.length ?? 0) === 0 && !res.slayer) return;
+    by.send({ t: 'intent', ok: true, kind: 'slayer', xp: res.xp, slayer: (res as Record<string, unknown>).slayer });
+  });
 }
 
 registerIntentDomain('gamble', gamble);

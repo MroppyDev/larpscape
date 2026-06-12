@@ -8,9 +8,10 @@
 import {
   state, msg, setSaveProvider, netLink, combatSnapshot, saveGame,
   netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
-  netYouKilled, netGot, netFx, netShorn, netDeny,
+  netYouKilled, netFx, netShorn, netDeny,
   netIntent, netGranted,
   netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
+  netDeath, netHpSync, netSpecSync, netPrayerSync,
 } from './game';
 import type { RemotePlayer } from './game';
 import { loadFriends, loadGuild, setFriendOnline } from './friends';
@@ -239,10 +240,16 @@ function handleWsMessage(raw: string) {
     netYouHit(m);
   } else if (m.t === 'npcHitYou') {
     netNpcHitYou(m);
+  } else if (m.t === 'death') {
+    netDeath(m);
+  } else if (m.t === 'hpSync') {
+    netHpSync(m);
+  } else if (m.t === 'specSync') {
+    netSpecSync(m);
+  } else if (m.t === 'prayerSync') {
+    netPrayerSync(m);
   } else if (m.t === 'youKilled') {
     netYouKilled(m);
-  } else if (m.t === 'got') {
-    netGot(m);
   } else if (m.t === 'intent') {
     netIntent(m); // server-authoritative skilling echo (gather/cook/make/...)
   } else if (m.t === 'granted') {
@@ -290,7 +297,7 @@ function handleWsMessage(raw: string) {
     // Pull the authoritative bank and drop any stale pending PUT, otherwise
     // our retry loop would eventually outlast the fence and clobber the
     // market mutation (the dupe the economy audit flagged).
-    void reloadServerBank();
+    void reloadServerOwned();
   } else if (m.t === 'system' && typeof m.text === 'string') {
     msg('[Server] ' + m.text.slice(0, 200), 'server-msg');
   } else if (m.t === 'hello' && typeof m.name === 'string') {
@@ -319,23 +326,38 @@ function handleWsMessage(raw: string) {
   }
 }
 
-// Re-sync the bank from the server's authoritative save after a server-side
-// mutation (market list/buy/cancel/collect). The market only ever touches
-// save.bank, so swapping the bank in place is safe mid-game. Stale pending
-// saves are dropped first; a fresh snapshot is queued after so the next PUT
-// carries the merged state instead of re-introducing the pre-mutation bank.
-async function reloadServerBank() {
+// Re-sync owned fields from the server's authoritative save after a server-side
+// mutation (combat xp, market, intents, GE, …). Stale pending PUTs are dropped
+// so the client cannot clobber fresh server state on retry.
+export async function reloadServerOwned() {
   try {
     const data = await api('/api/character');
-    const serverBank = data?.save?.bank;
-    if (!Array.isArray(serverBank) || !state.player) return;
+    const save = data?.save;
+    const p = state.player;
+    if (!save || !p) return;
     pendingSave = null;
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-    state.player.bank = serverBank;
-    saveGame(); // snapshot the merged state so future PUTs are coherent
-    if (state.bankOpen) {
-      import('./game').then((g) => g.events.onBankShopChange?.());
+    if (Array.isArray(save.xp)) p.xp = save.xp;
+    if (Array.isArray(save.inventory)) p.inventory = save.inventory;
+    if (save.equipment && typeof save.equipment === 'object') {
+      for (const slot of Object.keys(save.equipment)) {
+        if (slot in p.equipment) p.equipment[slot as keyof typeof p.equipment] = save.equipment[slot] ?? null;
+      }
     }
+    if (Array.isArray(save.bank)) p.bank = save.bank;
+    if (typeof save.curHp === 'number') p.curHp = save.curHp;
+    if (typeof save.prayerPoints === 'number') p.prayerPoints = save.prayerPoints;
+    if (Array.isArray(save.activePrayers)) p.activePrayers = new Set(save.activePrayers);
+    if (typeof save.specEnergy === 'number') p.specEnergy = Math.max(0, Math.min(100, save.specEnergy));
+    if (save.slayerTask !== undefined) p.slayerTask = save.slayerTask ?? null;
+    if (save.quests && typeof save.quests === 'object') p.quests = save.quests;
+    if (save.collectionLog && typeof save.collectionLog === 'object') p.collectionLog = save.collectionLog;
+    if (typeof save.slayerPoints === 'number') (p as { slayerPoints?: number }).slayerPoints = save.slayerPoints;
+    saveGame();
+    import('./game').then((g) => {
+      g.events.onStatsChange?.();
+      if (state.bankOpen) g.events.onBankShopChange?.();
+    });
   } catch { /* next save_reload or relog will reconcile */ }
 }
 
