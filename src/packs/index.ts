@@ -44,3 +44,13 @@ import './against_the_grain';       // Q10
 import './untuned_mine';            // solo dungeon (gated by Q3)
 import './slayer_tasks';            // slayer assignment loop + points shop (Brogan)
 import './market_clerk';            // Concord of Weights desk (trade.larpscape.net face)
+// Massive content update — new expansion hubs
+import './drummars_hold';           // Drummar's Hold — melee combat hub (Cadence)
+import './quillrook';               // Quillrook, the Tinnitus Range (ranged/gun training hub)
+import './resonne';                 // Resonne, the Singing City — Magic/Runecraft hub
+import './resin_hollow';            // Resin Hollow — Chordwood grove + Emberyard (woodcutting/firemaking hub)
+import './saltsong';                // Saltsong Harbour fishing & cooking expansion
+import './forgekeep';               // Forgekeep Concord — artisan quarter (smithing/crafting/fletching expansion)
+import './verdancourt';             // Verdancourt — herblore/farming hub
+import './the_knell';               // The Knell temple + Sundered Choir dungeon (prayer hub, Cantor Veil, bone offering)
+import './quaverside';              // Quaverside District — agility/thieving/hunter/construction hub

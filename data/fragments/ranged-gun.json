@@ -1,0 +1,550 @@
+{
+  "items": {
+    "steel_arrowtips": {
+      "id": "steel_arrowtips",
+      "name": "Steel arrowtips",
+      "examine": "Pointed caps of steel. A whole semitone sharper than iron.",
+      "stackable": true,
+      "value": 3
+    },
+    "steel_arrow": {
+      "id": "steel_arrow",
+      "name": "Steel arrow",
+      "examine": "Steel-tipped arrows. They arrive on the downbeat.",
+      "stackable": true,
+      "value": 6,
+      "equipSlot": "ammo",
+      "rangedBonus": 14,
+      "levelReq": [{ "skill": "Ranged", "level": 30 }]
+    },
+    "reedwood_logs": {
+      "id": "reedwood_logs",
+      "name": "Reedwood logs",
+      "examine": "Echo-stone-aged reedwood from Quillrook. It whistled while you cut it, which felt judgmental.",
+      "value": 40
+    },
+    "composite_shortbow_u": {
+      "id": "composite_shortbow_u",
+      "name": "Composite shortbow (u)",
+      "examine": "A reedwood stave laminated over a steel core. Needs a string before it needs an opinion.",
+      "value": 350
+    },
+    "composite_shortbow": {
+      "id": "composite_shortbow",
+      "name": "Composite shortbow",
+      "examine": "Reedwood over steel. The cliffs of Quillrook approve of every shot, audibly.",
+      "value": 2600,
+      "equipSlot": "weapon",
+      "rangedBonus": 78,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Ranged", "level": 70 }]
+    },
+    "chimewood_logs": {
+      "id": "chimewood_logs",
+      "name": "Chimewood logs",
+      "examine": "Top-grade wood from Quillrook's echo-grove. It rings when you so much as look at it firmly.",
+      "value": 300
+    },
+    "chime_longbow_u": {
+      "id": "chime_longbow_u",
+      "name": "Chime longbow (u)",
+      "examine": "An unstrung chimewood stave. It hums the note it intends to fire.",
+      "value": 2000
+    },
+    "chime_longbow": {
+      "id": "chime_longbow",
+      "name": "Chime longbow",
+      "examine": "Strung with spidersilk across chimewood. Fires every arrow a quarter-tone sharp, on purpose.",
+      "value": 9000,
+      "equipSlot": "weapon",
+      "rangedBonus": 90,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Ranged", "level": 85 }]
+    },
+    "dragon_arrowtips": {
+      "id": "dragon_arrowtips",
+      "name": "Dragon arrowtips",
+      "examine": "Rune stock quenched in echo-stone dust until it forgets how to miss.",
+      "stackable": true,
+      "value": 40
+    },
+    "dragon_arrow": {
+      "id": "dragon_arrow",
+      "name": "Dragon arrow",
+      "examine": "The finest standard arrow money or smithing can produce. The apology arrives by post.",
+      "stackable": true,
+      "value": 120,
+      "equipSlot": "ammo",
+      "rangedBonus": 60,
+      "levelReq": [{ "skill": "Ranged", "level": 80 }]
+    },
+    "resonant_arrow": {
+      "id": "resonant_arrow",
+      "name": "Resonant arrow",
+      "examine": "Tipped with echo-stone. The wound keeps ringing after the arrow stops.",
+      "stackable": true,
+      "value": 90,
+      "equipSlot": "ammo",
+      "rangedBonus": 55,
+      "levelReq": [{ "skill": "Ranged", "level": 75 }],
+      "effects": [{ "type": "bleed", "chance": 0.1, "dmg": 1, "hits": 3, "every": 2 }]
+    },
+    "bronze_rifle": {
+      "id": "bronze_rifle",
+      "name": "Bronze rifle",
+      "examine": "A long bronze barrel from Brace & Bore. Slow to speak, hard to ignore.",
+      "value": 600,
+      "equipSlot": "weapon",
+      "gunBonus": 12,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Gun", "level": 10 }]
+    },
+    "iron_rifle": {
+      "id": "iron_rifle",
+      "name": "Iron rifle",
+      "examine": "An iron long-arm. It reaches the back wall of an argument.",
+      "value": 1400,
+      "equipSlot": "weapon",
+      "gunBonus": 20,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Gun", "level": 25 }]
+    },
+    "steel_rifle": {
+      "id": "steel_rifle",
+      "name": "Steel rifle",
+      "examine": "Steel-barrelled and patient. Pistols talk fast; this one gets the last word.",
+      "value": 4000,
+      "equipSlot": "weapon",
+      "gunBonus": 30,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Gun", "level": 40 }]
+    },
+    "mithril_rifle": {
+      "id": "mithril_rifle",
+      "name": "Mithril rifle",
+      "examine": "Light enough to hold steady through a whole verse. The chorus is loud.",
+      "value": 9000,
+      "equipSlot": "weapon",
+      "gunBonus": 42,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Gun", "level": 50 }]
+    },
+    "rune_rifle": {
+      "id": "rune_rifle",
+      "name": "Rune rifle",
+      "examine": "Storm-grey rune steel, a yard of it. Trades the pistol's patter for one well-placed remark.",
+      "value": 28000,
+      "equipSlot": "weapon",
+      "gunBonus": 58,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Gun", "level": 70 }]
+    },
+    "longshot_round": {
+      "id": "longshot_round",
+      "name": "Longshot round",
+      "examine": "Long-brass rounds milled for rifles. They commit to the journey.",
+      "stackable": true,
+      "value": 140,
+      "equipSlot": "ammo",
+      "gunBonus": 50,
+      "levelReq": [{ "skill": "Gun", "level": 60 }]
+    },
+    "longshot_bullet_casing": {
+      "id": "longshot_bullet_casing",
+      "name": "Longshot bullet casing",
+      "examine": "Longer brass for longer opinions. Smithed from rune stock.",
+      "stackable": true,
+      "value": 80
+    },
+    "resonant_round": {
+      "id": "resonant_round",
+      "name": "Resonant round",
+      "examine": "Thunder-shale packed with echo-stone grit. The target hears the shot twice; only the first one is the bullet.",
+      "stackable": true,
+      "value": 110,
+      "equipSlot": "ammo",
+      "gunBonus": 53,
+      "levelReq": [{ "skill": "Gun", "level": 75 }],
+      "effects": [{ "type": "bleed", "chance": 0.1, "dmg": 1, "hits": 3, "every": 2 }]
+    },
+    "quillrook_quiver": {
+      "id": "quillrook_quiver",
+      "name": "Quillrook quiver",
+      "examine": "An echo-stone-ribbed quiver. Sometimes the cliff hands the shot back, good as new.",
+      "value": 15000,
+      "equipSlot": "neck",
+      "rangedBonus": 1,
+      "gunBonus": 1,
+      "levelReq": [{ "skill": "Ranged", "level": 60 }]
+    },
+    "marksmans_earmuffs": {
+      "id": "marksmans_earmuffs",
+      "name": "Marksman's earmuffs",
+      "examine": "Standard issue on the Tinnitus Range. The ringing stops; the scores improve; the nickname stays.",
+      "value": 8000,
+      "equipSlot": "head",
+      "rangedBonus": 4,
+      "gunBonus": 4
+    },
+    "resonance_gloves": {
+      "id": "resonance_gloves",
+      "name": "Resonance gloves",
+      "examine": "Echo-stone dust worked into the fingertips. You can feel the note the shot will ring before you loose it.",
+      "value": 8000,
+      "equipSlot": "gloves",
+      "rangedBonus": 3,
+      "gunBonus": 3
+    },
+    "echo_tokens": {
+      "id": "echo_tokens",
+      "name": "Echo token",
+      "examine": "A slate chit stamped with a quaver. Range-Master Cole counts every echo, and these are the receipts.",
+      "stackable": true,
+      "value": 1
+    },
+    "echo_stone_shard": {
+      "id": "echo_stone_shard",
+      "name": "Echo-stone shard",
+      "examine": "A sliver of the cliff that answers back. It is faintly repeating everything you say.",
+      "stackable": true,
+      "value": 25
+    }
+  },
+  "objs": {
+    "echo_target_novice": {
+      "id": "echo_target_novice",
+      "name": "Echo target (novice)",
+      "examine": "A straw boss against the echo-stone. The cliff rings even your worst shots back politely.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_keen": {
+      "id": "echo_target_keen",
+      "name": "Echo target (keen)",
+      "examine": "A banded target on a tighter note. The cliff has started keeping score honestly.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_master": {
+      "id": "echo_target_master",
+      "name": "Echo target (master)",
+      "examine": "A slate ring barely wider than the arrow. The echo only answers a perfect pitch.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_perfect": {
+      "id": "echo_target_perfect",
+      "name": "Echo target (perfect)",
+      "examine": "The Choir's old tuning mark. Hit the note and the whole valley applauds — in your own voice.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "reedwood_stand": {
+      "id": "reedwood_stand",
+      "name": "Reedwood reeds",
+      "examine": "Echo-stone-aged reedwood. It whistles in the wind, and louder when cut.",
+      "action": "Cut",
+      "blocks": true
+    },
+    "chimewood_stand": {
+      "id": "chimewood_stand",
+      "name": "Chimewood",
+      "examine": "A grove tree that holds every note ever struck near it. The axe is a percussion instrument now.",
+      "action": "Cut",
+      "blocks": true
+    },
+    "fletch_bench": {
+      "id": "fletch_bench",
+      "name": "Fletching bench",
+      "examine": "Wren's bench: clamps, knives, feathers, and a sign reading NO HUMMING NEAR THE STAVES.",
+      "action": "Fletch",
+      "blocks": true
+    }
+  },
+  "skillObjs": {
+    "reedwood_stand": {
+      "level": 35,
+      "xp": 25,
+      "item": "reedwood_logs",
+      "depleteChance": 0.08,
+      "respawn": 10,
+      "lowRate": 0.2,
+      "highRate": 0.85
+    },
+    "chimewood_stand": {
+      "level": 70,
+      "xp": 85,
+      "item": "chimewood_logs",
+      "depleteChance": 0.15,
+      "respawn": 20,
+      "lowRate": 0.1,
+      "highRate": 0.7
+    }
+  },
+  "recipes": {
+    "smithables": [
+      { "output": "steel_arrowtips", "outputQty": 15, "bar": "steel_bar", "bars": 1, "level": 30, "xp": 37.5 },
+      { "output": "longshot_bullet_casing", "outputQty": 10, "bar": "rune_bar", "bars": 1, "level": 75, "xp": 90 },
+      { "output": "dragon_arrowtips", "outputQty": 15, "bar": "rune_bar", "bars": 1, "level": 90, "xp": 125 }
+    ],
+    "fletchables": [
+      { "output": "steel_arrow", "outputQty": 15, "level": 30, "xp": 75, "inputs": [{ "item": "headless_arrow", "qty": 15 }, { "item": "steel_arrowtips", "qty": 15 }] },
+      { "output": "composite_shortbow_u", "outputQty": 1, "level": 70, "xp": 80, "inputs": [{ "item": "reedwood_logs", "qty": 1 }, { "item": "steel_bar", "qty": 1 }] },
+      { "output": "composite_shortbow", "outputQty": 1, "level": 70, "xp": 80, "inputs": [{ "item": "composite_shortbow_u", "qty": 1 }, { "item": "bowstring", "qty": 1 }] },
+      { "output": "resonant_arrow", "outputQty": 15, "level": 75, "xp": 150, "inputs": [{ "item": "headless_arrow", "qty": 15 }, { "item": "echo_stone_shard", "qty": 5 }] },
+      { "output": "chime_longbow_u", "outputQty": 1, "level": 85, "xp": 100, "inputs": [{ "item": "chimewood_logs", "qty": 1 }] },
+      { "output": "chime_longbow", "outputQty": 1, "level": 85, "xp": 100, "inputs": [{ "item": "chime_longbow_u", "qty": 1 }, { "item": "spidersilk_bowstring", "qty": 1 }] },
+      { "output": "dragon_arrow", "outputQty": 15, "level": 85, "xp": 225, "inputs": [{ "item": "headless_arrow", "qty": 15 }, { "item": "dragon_arrowtips", "qty": 15 }] }
+    ]
+  },
+  "npcs": {
+    "quillrook_fletcher": {
+      "id": "quillrook_fletcher",
+      "name": "Fletcher Wren",
+      "examine": "She splits echo-stone-aged reedwood by ear. Claims a true shaft whistles in thirds.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#7a9a4a",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "quillrook_gunsmith": {
+      "id": "quillrook_gunsmith",
+      "name": "Gunsmith Ada Brace",
+      "examine": "Aldgate Gun Guild, Quillrook outpost. Mills the wrongnote-tinged seam into rounds that answer back.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#4a5a68",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "quillrook_range_master": {
+      "id": "quillrook_range_master",
+      "name": "Range-Master Cole",
+      "examine": "Runs the firing line. Scores your shot by the note the cliff rings back. Hears everything twice.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#b08a4a",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "quillrook_quartermaster": {
+      "id": "quillrook_quartermaster",
+      "name": "Quartermaster Sable",
+      "examine": "Keeps the reward ledger. Pays out in gear for tokens, and in silence for free.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#3a3a42",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "echo_hare": {
+      "id": "echo_hare",
+      "name": "Echo hare",
+      "examine": "It zigzags a half-beat after its own footsteps. The cliff finds this hilarious.",
+      "family": "beastkind",
+      "combatLevel": 9,
+      "hitpoints": 12,
+      "attack": 5,
+      "strength": 4,
+      "defence": 4,
+      "attackSpeed": 6,
+      "respawnTicks": 16,
+      "color": "#cfc3a8",
+      "size": 0.6,
+      "attackable": true,
+      "drops": [
+        { "item": "bones", "qty": [1, 1], "chance": 1 },
+        { "item": "echo_tokens", "qty": [1, 2], "chance": 0.3 },
+        { "item": "echo_stone_shard", "qty": [1, 1], "chance": 0.06 },
+        { "item": "coins", "qty": [2, 12], "chance": 0.4 }
+      ]
+    },
+    "range_rat": {
+      "id": "range_rat",
+      "name": "Range rat",
+      "examine": "Grown fat on dropped rounds and lost arrows. Technically part of the ammo economy.",
+      "family": "beastkind",
+      "combatLevel": 16,
+      "hitpoints": 24,
+      "attack": 11,
+      "strength": 9,
+      "defence": 8,
+      "attackSpeed": 6,
+      "respawnTicks": 16,
+      "color": "#6a5a6e",
+      "size": 0.8,
+      "attackable": true,
+      "drops": [
+        { "item": "bones", "qty": [1, 1], "chance": 1 },
+        { "item": "echo_tokens", "qty": [1, 3], "chance": 0.35 },
+        { "item": "echo_stone_shard", "qty": [1, 1], "chance": 0.09 },
+        { "item": "coins", "qty": [5, 30], "chance": 0.5 },
+        { "item": "steel_arrow", "qty": [5, 15], "chance": 0.1 },
+        { "item": "steel_round", "qty": [5, 15], "chance": 0.1 }
+      ]
+    }
+  },
+  "shops": {
+    "quillrook_fletcher": {
+      "name": "Wren's Fletchery",
+      "stock": [
+        { "item": "knife", "qty": 10 },
+        { "item": "feather", "qty": 1000 },
+        { "item": "arrow_shaft", "qty": 1000 },
+        { "item": "headless_arrow", "qty": 500 },
+        { "item": "bowstring", "qty": 100 },
+        { "item": "spidersilk_bowstring", "qty": 8 },
+        { "item": "steel_arrowtips", "qty": 300 },
+        { "item": "dragon_arrowtips", "qty": 45 },
+        { "item": "steel_arrow", "qty": 200 },
+        { "item": "reedwood_logs", "qty": 25 },
+        { "item": "bronze_axe", "qty": 10 }
+      ]
+    },
+    "quillrook_gunsmith": {
+      "name": "Brace & Bore",
+      "stock": [
+        { "item": "bronze_rifle", "qty": 4 },
+        { "item": "iron_rifle", "qty": 3 },
+        { "item": "steel_rifle", "qty": 2 },
+        { "item": "mithril_rifle", "qty": 1 },
+        { "item": "rune_rifle", "qty": 1 },
+        { "item": "gunpowder", "qty": 500 },
+        { "item": "longshot_bullet_casing", "qty": 60 },
+        { "item": "longshot_round", "qty": 30 },
+        { "item": "steel_round", "qty": 300 },
+        { "item": "mithril_round", "qty": 200 },
+        { "item": "adamant_round", "qty": 100 },
+        { "item": "rune_round", "qty": 50 }
+      ]
+    }
+  },
+  "spawns": [
+    { "id": "quillrook_range_master", "dx": 10, "dy": 7 },
+    { "id": "quillrook_fletcher", "dx": 22, "dy": 10 },
+    { "id": "quillrook_gunsmith", "dx": 25, "dy": 10 },
+    { "id": "quillrook_quartermaster", "dx": 22, "dy": 14 },
+    { "id": "echo_hare", "dx": 8, "dy": 19 },
+    { "id": "echo_hare", "dx": 10, "dy": 21 },
+    { "id": "echo_hare", "dx": 12, "dy": 19 },
+    { "id": "echo_hare", "dx": 8, "dy": 23 },
+    { "id": "echo_hare", "dx": 14, "dy": 19 },
+    { "id": "echo_hare", "dx": 10, "dy": 23 },
+    { "id": "range_rat", "dx": 13, "dy": 21 },
+    { "id": "range_rat", "dx": 15, "dy": 23 },
+    { "id": "range_rat", "dx": 16, "dy": 20 },
+    { "id": "range_rat", "dx": 17, "dy": 22 },
+    { "id": "range_rat", "dx": 12, "dy": 23 },
+    { "id": "range_rat", "dx": 15, "dy": 19 }
+  ],
+  "mapObjects": [
+    { "type": "echo_target_novice", "dx": 4, "dy": 4 },
+    { "type": "echo_target_novice", "dx": 5, "dy": 4 },
+    { "type": "echo_target_novice", "dx": 6, "dy": 4 },
+    { "type": "echo_target_novice", "dx": 7, "dy": 4 },
+    { "type": "echo_target_keen", "dx": 8, "dy": 4 },
+    { "type": "echo_target_keen", "dx": 9, "dy": 4 },
+    { "type": "echo_target_keen", "dx": 10, "dy": 4 },
+    { "type": "echo_target_keen", "dx": 11, "dy": 4 },
+    { "type": "echo_target_master", "dx": 12, "dy": 4 },
+    { "type": "echo_target_master", "dx": 13, "dy": 4 },
+    { "type": "echo_target_master", "dx": 14, "dy": 4 },
+    { "type": "echo_target_master", "dx": 15, "dy": 4 },
+    { "type": "echo_target_perfect", "dx": 16, "dy": 4 },
+    { "type": "echo_target_perfect", "dx": 17, "dy": 4 },
+    { "type": "echo_target_perfect", "dx": 18, "dy": 4 },
+    { "type": "echo_target_perfect", "dx": 19, "dy": 4 },
+    { "type": "bank_booth", "dx": 2, "dy": 5 },
+    { "type": "fletch_bench", "dx": 21, "dy": 5 },
+    { "type": "bank_booth", "dx": 24, "dy": 9 },
+    { "type": "anvil", "dx": 26, "dy": 12 },
+    { "type": "furnace", "dx": 26, "dy": 14 },
+    { "type": "reedwood_stand", "dx": 1, "dy": 9 },
+    { "type": "reedwood_stand", "dx": 3, "dy": 9 },
+    { "type": "reedwood_stand", "dx": 5, "dy": 9 },
+    { "type": "reedwood_stand", "dx": 1, "dy": 11 },
+    { "type": "reedwood_stand", "dx": 3, "dy": 11 },
+    { "type": "reedwood_stand", "dx": 5, "dy": 11 },
+    { "type": "reedwood_stand", "dx": 1, "dy": 13 },
+    { "type": "reedwood_stand", "dx": 3, "dy": 13 },
+    { "type": "chimewood_stand", "dx": 5, "dy": 13 },
+    { "type": "chimewood_stand", "dx": 1, "dy": 15 },
+    { "type": "chimewood_stand", "dx": 3, "dy": 15 },
+    { "type": "chimewood_stand", "dx": 5, "dy": 15 }
+  ],
+  "terrainPads": [
+    { "dx": 0, "dy": 0, "w": 28, "h": 26, "code": 0 },
+    { "dx": 0, "dy": 0, "w": 28, "h": 2, "code": 13 },
+    { "dx": 2, "dy": 5, "w": 20, "h": 1, "code": 2 },
+    { "dx": 11, "dy": 6, "w": 1, "h": 12, "code": 2 },
+    { "dx": 22, "dy": 6, "w": 1, "h": 2, "code": 2 },
+    { "dx": 20, "dy": 8, "w": 8, "h": 8, "code": 3 },
+    { "dx": 6, "dy": 18, "w": 13, "h": 1, "code": 4 },
+    { "dx": 6, "dy": 24, "w": 13, "h": 1, "code": 4 },
+    { "dx": 6, "dy": 19, "w": 1, "h": 5, "code": 4 },
+    { "dx": 18, "dy": 19, "w": 1, "h": 5, "code": 4 },
+    { "dx": 11, "dy": 18, "w": 1, "h": 1, "code": 2 }
+  ],
+  "sharedEdits": [
+    {
+      "file": "server/combat.ts",
+      "what": "weaponMode() (~lines 148-151) hardcodes id substrings; without this edit every rifle resolves to MELEE (gunBonus ignored, no _round ammo) and chime_longbow resolves to MELEE. Add rifle + longbow branches.",
+      "snippet": "  const w = weaponDef(state);\n  if (w) {\n    if (w.id.includes('pistol') || w.id.includes('rifle') || w.id === 'glock_18') return 'gun';\n    if (w.id.includes('shortbow') || w.id.includes('longbow') || w.id === 'shortbow') return 'ranged';\n  }\n  return 'melee';"
+    },
+    {
+      "file": "src/game.ts",
+      "what": "currentAttackMode() mirrors the same hardcoded substrings client-side (~line 54292 offset; search `currentAttackMode`). Apply the identical rifle + longbow branches so the client HUD/attack style agrees with the server.",
+      "snippet": "  if (w && (w.id.includes('pistol') || w.id.includes('rifle') || w.id === 'glock_18')) return 'gun';\n  if (w && (w.id.includes('shortbow') || w.id.includes('longbow') || w.id === 'shortbow')) return 'ranged';"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Register the new intent domain file (side-effect import, next to the existing `import './intent-misc';` line).",
+      "snippet": "import './intent-ranged'; // side-effect: registers range-shot / quill-load / quill-rewards domain intents"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Load the Quillrook content pack (append to the import list).",
+      "snippet": "import './quillrook';            // Quillrook, the Tinnitus Range (ranged/gun training hub)"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Quillrook quiver passive (chance to NOT consume ammo) in the combat ammo-consumption block (~line 702, `const suffix = mode === 'ranged' ? '_arrow' : '_round';`). Insert the quiver check between the ammo validation and `ammo.qty -= 1;`.",
+      "snippet": "      if (mode === 'ranged' || mode === 'gun') {\n        const suffix = mode === 'ranged' ? '_arrow' : '_round';\n        const ammo = state.equipment?.ammo;\n        if (!ammo || !ammo.id.endsWith(suffix) || ammo.qty <= 0) return false;\n        // Quillrook quiver passive: 20% chance the shot is not consumed.\n        if (state.equipment?.neck?.id === 'quillrook_quiver' && Math.random() < 0.2) return true;\n        ammo.qty -= 1;\n        if (ammo.qty <= 0) state.equipment!.ammo = null;\n        extras.equip = { ammo: state.equipment?.ammo ?? null };\n        return true;\n      }"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "GATHER_REQS table (search `const GATHER_REQS`): the gather handler dereferences GATHER_REQS[type].skill, so without these two entries cutting a reedwood/chimewood stand throws server-side. Add alongside the existing Woodcutting rows (skillObjs data ships in this fragment).",
+      "snippet": "  reedwood_stand: { skill: 'Woodcutting', tool: 'bronze_axe' },\n  chimewood_stand: { skill: 'Woodcutting', tool: 'bronze_axe' },"
+    },
+    {
+      "file": "src/render.ts",
+      "what": "OPTIONAL polish: new object types (echo_target_*, reedwood_stand, chimewood_stand, fletch_bench) render as the default 'humble marker crate'. If desired, add cases to the object-mesh switch and a minimap color (e.g. echo_target_* -> '#d05050', reedwood/chimewood stands -> '#1e4012'). Game is fully functional without this.",
+      "snippet": "else if (o.type.startsWith('echo_target')) col = '#d05050';\nelse if (o.type === 'reedwood_stand' || o.type === 'chimewood_stand') col = '#1e4012';"
+    }
+  ]
+}

@@ -1,0 +1,414 @@
+{
+  "group": "woodcutting-firemaking",
+  "areaName": "Resin Hollow",
+  "origin": { "x": 60, "y": 105 },
+  "items": [
+    {
+      "id": "iron_axe",
+      "name": "Iron axe",
+      "examine": "Heavier than bronze. The trees have started taking it personally.",
+      "value": 140,
+      "equipSlot": "weapon",
+      "attBonus": 3,
+      "strBonus": 2,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 1 }]
+    },
+    {
+      "id": "steel_axe",
+      "name": "Steel axe",
+      "examine": "A proper feller's axe. It finishes the chord a beat sooner.",
+      "value": 500,
+      "equipSlot": "weapon",
+      "attBonus": 5,
+      "strBonus": 3,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 5 }]
+    },
+    {
+      "id": "mithril_axe",
+      "name": "Mithril axe",
+      "examine": "Pale blue and light in the hand. The swing whistles a clean third.",
+      "value": 1300,
+      "equipSlot": "weapon",
+      "attBonus": 7,
+      "strBonus": 5,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 20 }]
+    },
+    {
+      "id": "adamant_axe",
+      "name": "Adamant axe",
+      "examine": "Green-flecked and unsentimental. Timber falls just to get it over with.",
+      "value": 4000,
+      "equipSlot": "weapon",
+      "attBonus": 9,
+      "strBonus": 7,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 30 }]
+    },
+    {
+      "id": "rune_axe",
+      "name": "Rune axe",
+      "examine": "Storm-grey and certain. Bole sells these the way other men sell heirlooms.",
+      "value": 16000,
+      "equipSlot": "weapon",
+      "attBonus": 12,
+      "strBonus": 9,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 40 }]
+    },
+    {
+      "id": "resonant_axe",
+      "name": "Resonant axe",
+      "examine": "The head is tuned to the Chordwood's key. Each cut ends on a small, satisfied chime.",
+      "value": 1600,
+      "equipSlot": "weapon",
+      "attBonus": 6,
+      "strBonus": 5,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 1 }, { "skill": "Woodcutting", "level": 61 }]
+    },
+    {
+      "id": "charcoal",
+      "name": "Charcoal",
+      "examine": "A log that has been talked out of being a log. The note is gone; the heat stayed.",
+      "value": 12
+    },
+    {
+      "id": "sapglass_lantern",
+      "name": "Sap-glass lantern",
+      "examine": "Chordwood sap, fired to glass around a wick. It hums very faintly in B-flat.",
+      "value": 3000,
+      "equipSlot": "shield",
+      "defBonus": 1,
+      "levelReq": [{ "skill": "Firemaking", "level": 40 }]
+    },
+    {
+      "id": "hollow_forester_top",
+      "name": "Forester's jerkin",
+      "examine": "Sawdust-gold leather. The pockets are full of pockets, which are full of sawdust.",
+      "value": 2400,
+      "equipSlot": "body",
+      "defBonus": 3,
+      "levelReq": [{ "skill": "Woodcutting", "level": 40 }]
+    },
+    {
+      "id": "hollow_forester_legs",
+      "name": "Forester's breeches",
+      "examine": "Reinforced at the knee for kneeling beside stumps and apologising.",
+      "value": 2400,
+      "equipSlot": "legs",
+      "defBonus": 2,
+      "levelReq": [{ "skill": "Woodcutting", "level": 40 }]
+    },
+    {
+      "id": "hollow_forester_hat",
+      "name": "Forester's cap",
+      "examine": "Keeps the sun off and the resin out. Mostly the resin.",
+      "value": 2400,
+      "equipSlot": "head",
+      "defBonus": 1,
+      "levelReq": [{ "skill": "Woodcutting", "level": 40 }]
+    },
+    {
+      "id": "ashen_brand_top",
+      "name": "Ashen tabard",
+      "examine": "Sap-singed at every seam, and the seams glow when the bonfire does.",
+      "value": 2400,
+      "equipSlot": "body",
+      "defBonus": 3,
+      "levelReq": [{ "skill": "Firemaking", "level": 40 }]
+    },
+    {
+      "id": "ashen_brand_hood",
+      "name": "Ashen hood",
+      "examine": "Smells of woodsmoke no matter how it is washed. Ysolde calls this a feature.",
+      "value": 2400,
+      "equipSlot": "head",
+      "defBonus": 1,
+      "levelReq": [{ "skill": "Firemaking", "level": 40 }]
+    },
+    {
+      "id": "chordwood_logs",
+      "name": "Chordwood logs",
+      "examine": "The grain rings when tapped. Somewhere inside, a note is waiting for a fire.",
+      "value": 300
+    },
+    {
+      "id": "chorale_token",
+      "name": "Chorale token",
+      "examine": "A sap-amber disc stamped with one bar of music. Ysolde redeems them; nobody else can read them.",
+      "value": 0,
+      "stackable": true
+    }
+  ],
+  "objs": [
+    {
+      "id": "chordwood",
+      "name": "Chordwood tree",
+      "examine": "Resonant timber. It has been holding the same chord since Syla sang it up; it would like to be excused.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    {
+      "id": "bonfire",
+      "name": "Emberyard bonfire",
+      "examine": "A pooled chord of burning logs, decades deep. Warm enough to cook on, loud enough to pay you for the privilege.",
+      "action": "Add-logs",
+      "blocks": true
+    },
+    {
+      "id": "charcoal_pit",
+      "name": "Charcoal pit",
+      "examine": "Quill's earth-banked smoulder. Logs go in singing and come out quiet, black, and useful.",
+      "action": "Make-charcoal",
+      "blocks": true
+    }
+  ],
+  "skillObjs": [
+    {
+      "id": "chordwood",
+      "level": 70,
+      "xp": 210,
+      "item": "chordwood_logs",
+      "depleteChance": 0.125,
+      "respawn": 35,
+      "lowRate": 0.07,
+      "highRate": 0.55
+    }
+  ],
+  "recipes": {
+    "smithables": [
+      { "output": "iron_axe", "bar": "iron_bar", "bars": 1, "level": 16, "xp": 25 },
+      { "output": "steel_axe", "bar": "steel_bar", "bars": 1, "level": 30, "xp": 37.5 },
+      { "output": "mithril_axe", "bar": "mithril_bar", "bars": 1, "level": 50, "xp": 50 },
+      { "output": "adamant_axe", "bar": "adamantite_bar", "bars": 1, "level": 70, "xp": 62.5 },
+      { "output": "rune_axe", "bar": "rune_bar", "bars": 1, "level": 85, "xp": 100 }
+    ]
+  },
+  "npcs": [
+    {
+      "id": "bole_the_feller",
+      "name": "Bole the Feller",
+      "examine": "Sells axes in every metal. Names each one, then sells it anyway.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#8a5a2c",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "cinder_warden_ysolde",
+      "name": "Cinder-Warden Ysolde",
+      "examine": "Keeps the great bonfire lit and the chorale tokens honest. Smells permanently of warm resin.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#c45a20",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "sawwright_tamsin",
+      "name": "Sawwright Tamsin",
+      "examine": "Runs the waterwheel sawmill. Claims it keeps better time than the temple metronome.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#a08040",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "quill_the_coalman",
+      "name": "Old Quill the Coalman",
+      "examine": "Minds the charcoal pit. Black to the elbows, philosophical to the brim.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#3c3a38",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    }
+  ],
+  "shops": [
+    {
+      "id": "bole_axes",
+      "name": "Bole's Felling Supplies",
+      "stock": [
+        { "item": "bronze_axe", "qty": 10 },
+        { "item": "iron_axe", "qty": 8 },
+        { "item": "steel_axe", "qty": 6 },
+        { "item": "mithril_axe", "qty": 4 },
+        { "item": "adamant_axe", "qty": 3 },
+        { "item": "rune_axe", "qty": 2 },
+        { "item": "tinderbox", "qty": 10 }
+      ]
+    },
+    {
+      "id": "sawmill_stores",
+      "name": "The Metronome Sawmill",
+      "stock": [
+        { "item": "logs", "qty": 50 },
+        { "item": "oak_logs", "qty": 20 },
+        { "item": "willow_logs", "qty": 10 },
+        { "item": "knife", "qty": 10 }
+      ]
+    },
+    {
+      "id": "emberyard_coal",
+      "name": "Quill's Coal Scuttle",
+      "stock": [
+        { "item": "charcoal", "qty": 30 },
+        { "item": "tinderbox", "qty": 10 }
+      ]
+    }
+  ],
+  "spawns": [
+    { "id": "bole_the_feller", "dx": 4, "dy": 9 },
+    { "id": "cinder_warden_ysolde", "dx": 8, "dy": 14 },
+    { "id": "sawwright_tamsin", "dx": 2, "dy": 12 },
+    { "id": "quill_the_coalman", "dx": 3, "dy": 18 }
+  ],
+  "terrainPads": [
+    { "dx": 2, "dy": 9, "w": 9, "h": 11, "code": 2 },
+    { "dx": 3, "dy": 11, "w": 6, "h": 1, "code": 9 },
+    { "dx": 11, "dy": 2, "w": 17, "h": 25, "code": 0 }
+  ],
+  "mapObjects": [
+    { "type": "bonfire", "dx": 7, "dy": 14 },
+    { "type": "charcoal_pit", "dx": 4, "dy": 18 },
+
+    { "type": "tree", "dx": 12, "dy": 4 },
+    { "type": "tree", "dx": 14, "dy": 4 },
+    { "type": "tree", "dx": 16, "dy": 4 },
+    { "type": "tree", "dx": 18, "dy": 4 },
+    { "type": "tree", "dx": 12, "dy": 6 },
+    { "type": "tree", "dx": 14, "dy": 6 },
+    { "type": "tree", "dx": 16, "dy": 6 },
+    { "type": "tree", "dx": 12, "dy": 8 },
+    { "type": "tree", "dx": 14, "dy": 8 },
+    { "type": "tree", "dx": 16, "dy": 8 },
+
+    { "type": "oak", "dx": 12, "dy": 12 },
+    { "type": "oak", "dx": 14, "dy": 12 },
+    { "type": "oak", "dx": 16, "dy": 12 },
+    { "type": "oak", "dx": 18, "dy": 12 },
+    { "type": "oak", "dx": 12, "dy": 14 },
+    { "type": "oak", "dx": 14, "dy": 14 },
+    { "type": "oak", "dx": 16, "dy": 14 },
+    { "type": "oak", "dx": 18, "dy": 14 },
+
+    { "type": "willow", "dx": 12, "dy": 18 },
+    { "type": "willow", "dx": 14, "dy": 18 },
+    { "type": "willow", "dx": 16, "dy": 18 },
+    { "type": "willow", "dx": 18, "dy": 18 },
+    { "type": "willow", "dx": 12, "dy": 20 },
+    { "type": "willow", "dx": 14, "dy": 20 },
+    { "type": "willow", "dx": 16, "dy": 20 },
+    { "type": "willow", "dx": 18, "dy": 20 },
+
+    { "type": "maple", "dx": 20, "dy": 6 },
+    { "type": "maple", "dx": 22, "dy": 6 },
+    { "type": "maple", "dx": 20, "dy": 8 },
+    { "type": "maple", "dx": 22, "dy": 8 },
+    { "type": "maple", "dx": 20, "dy": 10 },
+    { "type": "maple", "dx": 22, "dy": 12 },
+
+    { "type": "yew", "dx": 20, "dy": 14 },
+    { "type": "yew", "dx": 22, "dy": 14 },
+    { "type": "yew", "dx": 20, "dy": 16 },
+    { "type": "yew", "dx": 22, "dy": 16 },
+    { "type": "yew", "dx": 20, "dy": 18 },
+    { "type": "yew", "dx": 22, "dy": 18 },
+
+    { "type": "magic_tree", "dx": 24, "dy": 10 },
+    { "type": "magic_tree", "dx": 26, "dy": 10 },
+    { "type": "magic_tree", "dx": 24, "dy": 12 },
+    { "type": "magic_tree", "dx": 26, "dy": 12 },
+
+    { "type": "chordwood", "dx": 24, "dy": 16 },
+    { "type": "chordwood", "dx": 26, "dy": 16 },
+    { "type": "chordwood", "dx": 24, "dy": 18 },
+    { "type": "chordwood", "dx": 26, "dy": 18 }
+  ],
+  "sharedEdits": [
+    {
+      "file": "server/intents.ts",
+      "what": "GATHER_REQS (~line 694): add the four missing/new Woodcutting keys so the generic gather handler resolves maple/yew/magic_tree (already in skillObjs) and the new chordwood. tool stays 'bronze_axe' as the legacy floor; the Woodcutting branch added below (AXES sharedEdit) supersedes the named-tool check.",
+      "snippet": "  maple: { skill: 'Woodcutting', tool: 'bronze_axe' },\n  yew: { skill: 'Woodcutting', tool: 'bronze_axe' },\n  magic_tree: { skill: 'Woodcutting', tool: 'bronze_axe' },\n  chordwood: { skill: 'Woodcutting', tool: 'bronze_axe' },"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "FIREMAKING array (~line 710): append the missing tiers so every cut log is burnable. Values follow the existing chop->burn ratio; chordwood inserts at FM 65 by design (reward log).",
+      "snippet": "  { log: 'maple_logs', level: 45, xp: 135 },\n  { log: 'yew_logs', level: 60, xp: 202.5 },\n  { log: 'chordwood_logs', level: 65, xp: 240 },\n  { log: 'magic_logs', level: 75, xp: 303.75 },"
+    },
+    {
+      "file": "src/content.ts",
+      "what": "FIREMAKING array (~line 144): append the SAME four rows as the server table (the two arrays are separate hardcoded copies and must stay 1:1).",
+      "snippet": "  { log: 'maple_logs', level: 45, xp: 135 },\n  { log: 'yew_logs', level: 60, xp: 202.5 },\n  { log: 'chordwood_logs', level: 65, xp: 240 },\n  { log: 'magic_logs', level: 75, xp: 303.75 },"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "AXE tier ladder: add an AXES table + axeBonus() directly below PICKAXES/pickaxeBonus (~line 268), modelled exactly on the pickaxe ladder (any axe lets you chop; the best one you qualify for adds a flat success bonus).",
+      "snippet": "// Axe ladder. ANY axe lets you chop; the best one you own AND have the\n// Woodcutting level to use adds a flat boost to the per-swing success chance.\nconst AXES: { id: string; useLevel: number; bonus: number }[] = [\n  { id: 'bronze_axe', useLevel: 1, bonus: 0 },\n  { id: 'iron_axe', useLevel: 1, bonus: 0.04 },\n  { id: 'steel_axe', useLevel: 6, bonus: 0.08 },\n  { id: 'mithril_axe', useLevel: 21, bonus: 0.13 },\n  { id: 'adamant_axe', useLevel: 31, bonus: 0.18 },\n  { id: 'rune_axe', useLevel: 41, bonus: 0.24 },\n  { id: 'resonant_axe', useLevel: 61, bonus: 0.30 },\n];\nfunction axeBonus(state: AuthState, wcLvl: number): number | null {\n  let owns = false;\n  let best = 0;\n  for (const a of AXES) {\n    if (hasTool(state, a.id)) { owns = true; if (wcLvl >= a.useLevel && a.bonus > best) best = a.bonus; }\n  }\n  return owns ? best : null;\n}"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "gather() tool branch (~line 303): wire axeBonus the same way pickaxeBonus is wired — insert a Woodcutting branch between the Mining branch and the generic reqs.tool fallback.",
+      "snippet": "      } else if (skill === 'Woodcutting') {\n        const ab = axeBonus(state, lvl);\n        if (ab === null) return fail('gather', 'you need an axe');\n        bonus = ab;\n      } else if (reqs.tool && !hasTool(state, reqs.tool)) {"
+    },
+    {
+      "file": "src/content.ts",
+      "what": "Woodcutting loop (~line 65): the client gate hardcodes hasTool('bronze_axe'); higher axes must satisfy it. Add the axe list + helper above the loop and replace the bronze_axe check inside the tree/oak/willow handler.",
+      "snippet": "const AXE_IDS = ['bronze_axe', 'iron_axe', 'steel_axe', 'mithril_axe', 'adamant_axe', 'rune_axe', 'resonant_axe'];\nconst hasAxe = () => AXE_IDS.some((id) => hasTool(id));\n// ...in the handler, replace:  if (!hasTool('bronze_axe'))  with:  if (!hasAxe())"
+    },
+    {
+      "file": "src/packs/skills_gathering.ts",
+      "what": "maple/yew/magic_tree loop (~line 42): same client-side fix — replace hasTool('bronze_axe') with a hasAxe() helper over the seven axe ids (or import hasAnyAxe from src/packs/resin_hollow.ts, which exports it).",
+      "snippet": "import { hasAnyAxe } from './resin_hollow';\n// ...in the handler, replace:  if (!hasTool('bronze_axe'))  with:  if (!hasAnyAxe())"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "cook() station guard (~line 376): accept a fire or the Emberyard bonfire as a cook station, not just a range. NOTE: personal fires are client-cosmetic objects, so only map-baked 'fire'/'bonfire' objects pass the server index — the Emberyard bonfire is baked and works; this keeps the OR future-proof for baked fires.",
+      "snippet": "    if (!nearObject(ctx.x, ctx.y, 'range') && !nearObject(ctx.x, ctx.y, 'fire') && !nearObject(ctx.x, ctx.y, 'bonfire')) {\n      return fail('cook', 'not near a range or fire');\n    }"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Register the Resin Hollow client pack (import for side effects).",
+      "snippet": "import './resin_hollow';        // Resin Hollow — Chordwood grove + Emberyard (woodcutting/firemaking hub)"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Register the forestry intent domain beside the other intent-domain imports (~line 41).",
+      "snippet": "import './intent-forestry'; // side-effect: registers bonfire/quench/forestry-buy domain intents"
+    },
+    {
+      "file": "src/render.ts",
+      "what": "buildObjectTemplate (~line 749): cases for the three new object types so they don't render as the fallback crate, plus add 'chordwood' to NATURAL_RE (~line 1386) and TREE_FALL_RE (~line 2861).",
+      "snippet": "    case 'chordwood': {\n      // a yew-bodied tree with sap-amber glints — reuse the tree builder, tint via fx\n      const t = buildTree('yew');\n      t.add(gm(sphG(0.07, '#e8b054'), 0.3, 1.5, 0.1));\n      t.add(gm(sphG(0.05, '#e8b054'), -0.25, 1.2, -0.15));\n      return t;\n    }\n    case 'bonfire': {\n      for (let i = 0; i < 5; i++) {\n        const a = (i / 5) * Math.PI * 2;\n        g.add(lm(cylG(0.06, 0.07, 0.6, '#5e4023', 5), Math.cos(a) * 0.2, 0.1, Math.sin(a) * 0.2, 0, a, Math.PI / 2.4));\n      }\n      buildFlameInto(g, 0, 0.15, 0, 1.6);\n      buildSmokeInto(g, 0, 0.9, 0, 1.4);\n      return g;\n    }\n    case 'charcoal_pit': {\n      g.add(lm(cylG(0.42, 0.5, 0.22, '#46423c', 8), 0, 0.11, 0));\n      g.add(lm(cylG(0.3, 0.34, 0.1, '#262422', 8), 0, 0.26, 0));\n      const glow = gm(boxG(0.2, 0.04, 0.2, '#ff6a18', 0.06), 0, 0.3, 0);\n      glow.name = 'fxflame';\n      g.add(glow);\n      buildSmokeInto(g, 0, 0.5, 0, 0.7);\n      return g;\n    }"
+    }
+  ]
+}

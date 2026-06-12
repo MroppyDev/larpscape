@@ -1,0 +1,587 @@
+{
+  "items": {
+    "pure_essence": {
+      "id": "pure_essence",
+      "name": "Pure essence",
+      "examine": "A blank stone with perfect pitch. It is waiting for a longer syllable.",
+      "value": 6
+    },
+    "body_talisman": {
+      "id": "body_talisman",
+      "name": "Body talisman",
+      "examine": "It hums a low, steady note, like a pulse that belongs to nobody.",
+      "value": 600
+    },
+    "cosmic_talisman": {
+      "id": "cosmic_talisman",
+      "name": "Cosmic talisman",
+      "examine": "It points at the sky and insists the sky points back.",
+      "value": 900
+    },
+    "chord_talisman": {
+      "id": "chord_talisman",
+      "name": "Chord talisman",
+      "examine": "Three notes at once, held forever. The Conservatory calls this 'nature'.",
+      "value": 2000
+    },
+    "law_talisman": {
+      "id": "law_talisman",
+      "name": "Law talisman",
+      "examine": "It rings precisely on the beat, every beat, and judges you for missing yours.",
+      "value": 3000
+    },
+    "death_talisman": {
+      "id": "death_talisman",
+      "name": "Death talisman",
+      "examine": "The rest at the end of the stave. Every song has one.",
+      "value": 4500
+    },
+    "blood_talisman": {
+      "id": "blood_talisman",
+      "name": "Blood talisman",
+      "examine": "Warm to the touch. It keeps time with you, which is worse than you'd think.",
+      "value": 6500
+    },
+    "soul_talisman": {
+      "id": "soul_talisman",
+      "name": "Soul talisman",
+      "examine": "It sings the part of the Chord that is shaped exactly like you.",
+      "value": 9000
+    },
+    "discord_talisman": {
+      "id": "discord_talisman",
+      "name": "Discord talisman",
+      "examine": "It is a perfectly ordinary talisman, played a half-step flat, on purpose, at you.",
+      "value": 7000
+    },
+    "chant_tiara": {
+      "id": "chant_tiara",
+      "name": "Chant tiara",
+      "examine": "A blank silver tiara. It will hold one note hands-free, once an altar teaches it which.",
+      "value": 250,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "body_tiara": {
+      "id": "body_tiara",
+      "name": "Body tiara",
+      "examine": "Wearing it, you can hear your own pulse in four-four. The Body altar accepts you on sight.",
+      "value": 700,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "cosmic_tiara": {
+      "id": "cosmic_tiara",
+      "name": "Cosmic tiara",
+      "examine": "Slightly heavier than the sky it hums about. Keys the Cosmic altar, hands-free.",
+      "value": 1000,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "chord_tiara": {
+      "id": "chord_tiara",
+      "name": "Chord tiara",
+      "examine": "Holds the held note so you don't have to. Keys the Chord altar while worn.",
+      "value": 2200,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "law_tiara": {
+      "id": "law_tiara",
+      "name": "Law tiara",
+      "examine": "It arrives at the Law altar exactly when it means to, and so do you.",
+      "value": 3200,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "death_tiara": {
+      "id": "death_tiara",
+      "name": "Death tiara",
+      "examine": "Cold, quiet, punctual. The Death altar treats the wearer as family.",
+      "value": 4700,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "blood_tiara": {
+      "id": "blood_tiara",
+      "name": "Blood tiara",
+      "examine": "It beats. You have stopped asking with what. Keys the Blood altar while worn.",
+      "value": 6700,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "soul_tiara": {
+      "id": "soul_tiara",
+      "name": "Soul tiara",
+      "examine": "Wearing your own part of the First Chord on your head. Keys the Soul altar.",
+      "value": 9200,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "discord_tiara": {
+      "id": "discord_tiara",
+      "name": "Discord tiara",
+      "examine": "It sits a half-step off your head. The Discord altar finds this hilarious, and lets you in.",
+      "value": 7200,
+      "equipSlot": "head",
+      "defBonus": 1
+    },
+    "body_rune": {
+      "id": "body_rune",
+      "name": "Body rune",
+      "examine": "A frozen syllable of pulse and posture. Curses are just rude harmonies.",
+      "stackable": true,
+      "value": 5
+    },
+    "cosmic_rune": {
+      "id": "cosmic_rune",
+      "name": "Cosmic rune",
+      "examine": "A syllable from very far up the stave. Enchanters swear by it; gems swear back.",
+      "stackable": true,
+      "value": 12
+    },
+    "chord_rune": {
+      "id": "chord_rune",
+      "name": "Chord rune",
+      "examine": "The held note. Cantorne's answer to nature: three makers singing at once, indefinitely.",
+      "stackable": true,
+      "value": 120
+    },
+    "law_rune": {
+      "id": "law_rune",
+      "name": "Law rune",
+      "examine": "A bar line made solid. Things on the wrong side of it get moved.",
+      "stackable": true,
+      "value": 140
+    },
+    "death_rune": {
+      "id": "death_rune",
+      "name": "Death rune",
+      "examine": "The rest at the end of the phrase, bottled. Blast spells borrow its silence.",
+      "stackable": true,
+      "value": 160
+    },
+    "blood_rune": {
+      "id": "blood_rune",
+      "name": "Blood rune",
+      "examine": "A downbeat that used to belong to something with a heart. Powers the wave tier.",
+      "stackable": true,
+      "value": 230
+    },
+    "soul_rune": {
+      "id": "soul_rune",
+      "name": "Soul rune",
+      "examine": "One whole part of the First Chord, scored for a single voice. Yours, if you can sing it.",
+      "stackable": true,
+      "value": 260
+    },
+    "discord_rune": {
+      "id": "discord_rune",
+      "name": "Discord rune",
+      "examine": "The wrong note, bound before it could spread. It buzzes faintly against its neighbours.",
+      "stackable": true,
+      "value": 200
+    },
+    "rune_dust": {
+      "id": "rune_dust",
+      "name": "Rune dust",
+      "examine": "Ground-down surplus syllables. The Conservatory pays in robes for enough of it.",
+      "stackable": true,
+      "value": 3
+    },
+    "wizard_robe_resonne": {
+      "id": "wizard_robe_resonne",
+      "name": "Conservatory robe top",
+      "examine": "Cut for singing in. The embroidery is the first four bars of the First Chord, abridged.",
+      "value": 2200,
+      "equipSlot": "body",
+      "defBonus": 3,
+      "levelReq": [{ "skill": "Magic", "level": 20 }]
+    },
+    "wizard_skirt_resonne": {
+      "id": "wizard_skirt_resonne",
+      "name": "Conservatory robe skirt",
+      "examine": "Hemmed to clear altar steps at a brisk runecrafting pace. The Conservatory thinks of everything.",
+      "value": 2000,
+      "equipSlot": "legs",
+      "defBonus": 2,
+      "levelReq": [{ "skill": "Magic", "level": 20 }]
+    },
+    "diapason_hat": {
+      "id": "diapason_hat",
+      "name": "Diapason hat",
+      "examine": "Shaped like the amphitheatre, which is shaped like an ear. Hats within hats.",
+      "value": 2600,
+      "equipSlot": "head",
+      "defBonus": 2,
+      "levelReq": [{ "skill": "Magic", "level": 30 }]
+    },
+    "resonant_staff": {
+      "id": "resonant_staff",
+      "name": "Resonant staff",
+      "examine": "Cored with resonant shards. It hums Quiess's part constantly, so you never run out of air.",
+      "value": 4500,
+      "equipSlot": "weapon",
+      "attBonus": 3,
+      "strBonus": 2,
+      "defBonus": 1,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Magic", "level": 25 }]
+    },
+    "chord_staff": {
+      "id": "chord_staff",
+      "name": "Chord staff",
+      "examine": "A resonant staff retuned to Imber's verse. It supplies its own fire, like most arguments.",
+      "value": 12000,
+      "equipSlot": "weapon",
+      "attBonus": 5,
+      "strBonus": 3,
+      "defBonus": 2,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Magic", "level": 50 }]
+    }
+  },
+  "objs": {
+    "rocks_pure": {
+      "id": "rocks_pure",
+      "name": "Pure essence rocks",
+      "examine": "A vein of blank stone that holds its tuning under pressure. It never runs dry, only out of patience.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "mind_altar": {
+      "id": "mind_altar",
+      "name": "Mind altar",
+      "examine": "A standing stone that hums whatever you were just thinking. Slightly off, to be polite.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "water_altar": {
+      "id": "water_altar",
+      "name": "Water altar",
+      "examine": "Brell's verse, dripping in stone. The puddle around it has never once evaporated.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "earth_altar": {
+      "id": "earth_altar",
+      "name": "Earth altar",
+      "examine": "Aulden's bass line surfaces here. Stand close and your boots hum along.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "body_altar": {
+      "id": "body_altar",
+      "name": "Body altar",
+      "examine": "It keeps a pulse older than anything that ever had one.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "cosmic_altar": {
+      "id": "cosmic_altar",
+      "name": "Cosmic altar",
+      "examine": "A stone singing an interval so wide that one end of it is somewhere else.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "chord_altar": {
+      "id": "chord_altar",
+      "name": "Chord altar",
+      "examine": "Three makers' parts held in one stone. The moss on it grows in perfect fifths.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "law_altar": {
+      "id": "law_altar",
+      "name": "Law altar",
+      "examine": "The strictest stone in the ring. It has never once come in early.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "death_altar": {
+      "id": "death_altar",
+      "name": "Death altar",
+      "examine": "It sings the rest between verses. The birds skip this terrace.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "blood_altar": {
+      "id": "blood_altar",
+      "name": "Blood altar",
+      "examine": "Warm stone with a downbeat. The Conservatory insists this is fine.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "soul_altar": {
+      "id": "soul_altar",
+      "name": "Soul altar",
+      "examine": "The longest interval the ring can hold. It knows your part better than you do.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "discord_altar": {
+      "id": "discord_altar",
+      "name": "Discord altar",
+      "examine": "The deepest stone in the Hollow, singing the wrong note with total confidence. Power, borrowed from the thing that's stirring.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "rune_mill": {
+      "id": "rune_mill",
+      "name": "Rune mill",
+      "examine": "Grinds surplus syllables back into dust. Keeper Dross calls it 'editing'.",
+      "action": "Grind",
+      "blocks": true
+    }
+  },
+  "skillObjs": {
+    "rocks_pure": {
+      "level": 20,
+      "xp": 8,
+      "item": "pure_essence",
+      "depleteChance": 0,
+      "respawn": 0,
+      "lowRate": 0.5,
+      "highRate": 0.98
+    }
+  },
+  "recipes": {
+    "craftables": [
+      {
+        "output": "chant_tiara",
+        "level": 23,
+        "xp": 52,
+        "inputs": [{ "item": "silver_bar", "qty": 1 }],
+        "station": "furnace"
+      }
+    ]
+  },
+  "npcs": {
+    "resonne_archcantor": {
+      "id": "resonne_archcantor",
+      "name": "Archcantor Veyl",
+      "examine": "Master of the Conservatory. Speaks in cadences and ends conversations on the tonic.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#7a5cc8",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "resonne_quartermaster": {
+      "id": "resonne_quartermaster",
+      "name": "Quartermaster Sella",
+      "examine": "Runs the reward stores. Accepts rune dust, resonant shards, and absolutely no excuses.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#4a6cc0",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "resonne_runecraft_tutor": {
+      "id": "resonne_runecraft_tutor",
+      "name": "Tutor Brae",
+      "examine": "Teaches the altar loop to anyone who stands still long enough. Few do twice.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#5c9cc8",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "resonne_magic_clerk": {
+      "id": "resonne_magic_clerk",
+      "name": "Clerk Ompin",
+      "examine": "Keeps the spell ledgers and sells low runes in bulk. Hums while he counts. Counts while he hums.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#6060b0",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "resonne_mill_keeper": {
+      "id": "resonne_mill_keeper",
+      "name": "Keeper Dross",
+      "examine": "Operates the rune mill. Permanently dusted in other people's surplus magic.",
+      "combatLevel": 0,
+      "hitpoints": 10,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#9a8a6a",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    }
+  },
+  "shops": {
+    "resonne_runes": {
+      "name": "Ompin's Bulk Ledger",
+      "stock": [
+        { "item": "air_rune", "qty": 1000 },
+        { "item": "mind_rune", "qty": 1000 },
+        { "item": "water_rune", "qty": 600 },
+        { "item": "earth_rune", "qty": 600 },
+        { "item": "fire_rune", "qty": 600 },
+        { "item": "chaos_rune", "qty": 250 }
+      ]
+    },
+    "resonne_supplies": {
+      "name": "Brae's First Lessons",
+      "stock": [
+        { "item": "rune_essence", "qty": 1000 },
+        { "item": "chant_tiara", "qty": 10 },
+        { "item": "bronze_pickaxe", "qty": 10 }
+      ]
+    }
+  },
+  "spawns": [
+    { "id": "resonne_runecraft_tutor", "dx": 20, "dy": 8 },
+    { "id": "resonne_archcantor", "dx": 26, "dy": 6 },
+    { "id": "resonne_quartermaster", "dx": 28, "dy": 12 },
+    { "id": "resonne_magic_clerk", "dx": 24, "dy": 12 },
+    { "id": "resonne_mill_keeper", "dx": 26, "dy": 19 }
+  ],
+  "mapObjects": [
+    { "type": "bank_booth", "dx": 8, "dy": 10 },
+    { "type": "bank_booth", "dx": 13, "dy": 11 },
+    { "type": "rocks_essence", "dx": 9, "dy": 8 },
+    { "type": "rocks_essence", "dx": 10, "dy": 8 },
+    { "type": "rocks_essence", "dx": 11, "dy": 8 },
+    { "type": "rocks_essence", "dx": 12, "dy": 8 },
+    { "type": "rocks_essence", "dx": 9, "dy": 9 },
+    { "type": "rocks_essence", "dx": 12, "dy": 9 },
+    { "type": "rocks_pure", "dx": 9, "dy": 12 },
+    { "type": "rocks_pure", "dx": 12, "dy": 12 },
+    { "type": "rocks_pure", "dx": 9, "dy": 13 },
+    { "type": "rocks_pure", "dx": 10, "dy": 13 },
+    { "type": "rocks_pure", "dx": 11, "dy": 13 },
+    { "type": "rocks_pure", "dx": 12, "dy": 13 },
+    { "type": "air_altar", "dx": 5, "dy": 6 },
+    { "type": "mind_altar", "dx": 10, "dy": 5 },
+    { "type": "water_altar", "dx": 16, "dy": 6 },
+    { "type": "earth_altar", "dx": 5, "dy": 15 },
+    { "type": "fire_altar", "dx": 16, "dy": 15 },
+    { "type": "body_altar", "dx": 3, "dy": 3 },
+    { "type": "rocks_pure", "dx": 2, "dy": 3 },
+    { "type": "rocks_pure", "dx": 3, "dy": 2 },
+    { "type": "cosmic_altar", "dx": 18, "dy": 3 },
+    { "type": "rocks_pure", "dx": 19, "dy": 3 },
+    { "type": "rocks_pure", "dx": 18, "dy": 2 },
+    { "type": "chord_altar", "dx": 2, "dy": 9 },
+    { "type": "rocks_pure", "dx": 2, "dy": 8 },
+    { "type": "rocks_pure", "dx": 2, "dy": 10 },
+    { "type": "law_altar", "dx": 18, "dy": 8 },
+    { "type": "rocks_pure", "dx": 19, "dy": 8 },
+    { "type": "rocks_pure", "dx": 18, "dy": 7 },
+    { "type": "soul_altar", "dx": 3, "dy": 18 },
+    { "type": "rocks_pure", "dx": 2, "dy": 18 },
+    { "type": "rocks_pure", "dx": 3, "dy": 19 },
+    { "type": "blood_altar", "dx": 7, "dy": 19 },
+    { "type": "rocks_pure", "dx": 6, "dy": 19 },
+    { "type": "rocks_pure", "dx": 8, "dy": 19 },
+    { "type": "death_altar", "dx": 18, "dy": 18 },
+    { "type": "rocks_pure", "dx": 19, "dy": 18 },
+    { "type": "rocks_pure", "dx": 18, "dy": 19 },
+    { "type": "furnace", "dx": 24, "dy": 18 },
+    { "type": "rune_mill", "dx": 27, "dy": 18 },
+    { "type": "discord_altar", "dx": 8, "dy": 27 },
+    { "type": "rocks_pure", "dx": 6, "dy": 26 },
+    { "type": "rocks_pure", "dx": 6, "dy": 27 },
+    { "type": "rocks_pure", "dx": 6, "dy": 28 }
+  ],
+  "terrainPads": [
+    { "dx": 0, "dy": 0, "w": 32, "h": 32, "code": 0 },
+    { "dx": 2, "dy": 2, "w": 18, "h": 18, "code": 2 },
+    { "dx": 8, "dy": 8, "w": 6, "h": 6, "code": 9 },
+    { "dx": 22, "dy": 4, "w": 9, "h": 13, "code": 3 },
+    { "dx": 22, "dy": 4, "w": 9, "h": 1, "code": 4 },
+    { "dx": 22, "dy": 16, "w": 9, "h": 1, "code": 4 },
+    { "dx": 22, "dy": 5, "w": 1, "h": 11, "code": 4 },
+    { "dx": 30, "dy": 5, "w": 1, "h": 11, "code": 4 },
+    { "dx": 22, "dy": 10, "w": 1, "h": 1, "code": 3 },
+    { "dx": 20, "dy": 10, "w": 2, "h": 1, "code": 2 },
+    { "dx": 10, "dy": 20, "w": 2, "h": 3, "code": 2 },
+    { "dx": 2, "dy": 23, "w": 18, "h": 8, "code": 13 },
+    { "dx": 10, "dy": 23, "w": 2, "h": 2, "code": 9 },
+    { "dx": 6, "dy": 25, "w": 10, "h": 4, "code": 9 }
+  ],
+  "magic": {
+    "spells": [
+      { "id": "wind_blast", "name": "Wind Blast", "level": 41, "xp": 25.5, "maxHit": 13, "runes": [ { "item": "air_rune", "qty": 3 }, { "item": "death_rune", "qty": 1 } ] },
+      { "id": "water_blast", "name": "Water Blast", "level": 47, "xp": 28.5, "maxHit": 14, "runes": [ { "item": "water_rune", "qty": 3 }, { "item": "air_rune", "qty": 3 }, { "item": "death_rune", "qty": 1 } ] },
+      { "id": "earth_blast", "name": "Earth Blast", "level": 53, "xp": 31.5, "maxHit": 15, "runes": [ { "item": "earth_rune", "qty": 4 }, { "item": "air_rune", "qty": 3 }, { "item": "death_rune", "qty": 1 } ] },
+      { "id": "fire_blast", "name": "Fire Blast", "level": 59, "xp": 34.5, "maxHit": 16, "runes": [ { "item": "fire_rune", "qty": 5 }, { "item": "air_rune", "qty": 4 }, { "item": "death_rune", "qty": 1 } ] },
+      { "id": "dissonant_strike", "name": "Dissonant Strike", "level": 60, "xp": 33, "maxHit": 18, "runes": [ { "item": "air_rune", "qty": 4 }, { "item": "discord_rune", "qty": 1 } ] },
+      { "id": "wind_wave", "name": "Wind Wave", "level": 62, "xp": 36, "maxHit": 17, "runes": [ { "item": "air_rune", "qty": 5 }, { "item": "blood_rune", "qty": 1 } ] },
+      { "id": "water_wave", "name": "Water Wave", "level": 65, "xp": 37.5, "maxHit": 18, "runes": [ { "item": "water_rune", "qty": 7 }, { "item": "air_rune", "qty": 5 }, { "item": "blood_rune", "qty": 1 } ] },
+      { "id": "earth_wave", "name": "Earth Wave", "level": 70, "xp": 40, "maxHit": 19, "runes": [ { "item": "earth_rune", "qty": 7 }, { "item": "air_rune", "qty": 5 }, { "item": "blood_rune", "qty": 1 } ] },
+      { "id": "fire_wave", "name": "Fire Wave", "level": 75, "xp": 42.5, "maxHit": 20, "runes": [ { "item": "fire_rune", "qty": 7 }, { "item": "air_rune", "qty": 5 }, { "item": "blood_rune", "qty": 1 } ] },
+      { "id": "wind_surge", "name": "Wind Surge", "level": 81, "xp": 44, "maxHit": 21, "runes": [ { "item": "air_rune", "qty": 7 }, { "item": "soul_rune", "qty": 1 } ] },
+      { "id": "water_surge", "name": "Water Surge", "level": 85, "xp": 46, "maxHit": 22, "runes": [ { "item": "water_rune", "qty": 8 }, { "item": "air_rune", "qty": 7 }, { "item": "soul_rune", "qty": 1 } ] },
+      { "id": "earth_surge", "name": "Earth Surge", "level": 90, "xp": 48, "maxHit": 23, "runes": [ { "item": "earth_rune", "qty": 9 }, { "item": "air_rune", "qty": 7 }, { "item": "soul_rune", "qty": 1 } ] },
+      { "id": "fire_surge", "name": "Fire Surge", "level": 95, "xp": 50, "maxHit": 24, "runes": [ { "item": "fire_rune", "qty": 10 }, { "item": "air_rune", "qty": 7 }, { "item": "soul_rune", "qty": 1 } ] }
+    ]
+  },
+  "sharedEdits": [
+    {
+      "file": "server/intent-produce.ts",
+      "what": "Replace the RUNECRAFT block (~line 393: `interface AltarDef` through the end of the registerIntentDomain('runecraft', ...) call). Extends AltarDef with an `essence` source (rune_essence vs pure_essence) and an optional talisman/tiara key, adds the full altar ladder, and replaces the hardcoded `altarKey === 'fire' ? 'fire_altar' : 'altar'` with a per-key `${altarKey}_altar` lookup ('air' also accepts the legacy plain 'altar' object so the original temple keeps working). High-tier divs are retuned to 14-25 per the verdict (spec's 3-5 gave 10x-31x rune yields).",
+      "snippet": "interface AltarDef {\n  rune: string; level: number; xpPer: number; div: number;\n  essence: string;\n  key?: { talisman: string; tiara: string };\n}\nconst ALTARS: Record<string, AltarDef> = {\n  // low tier — rune_essence, no key required\n  air:   { rune: 'air_rune',   level: 1,  xpPer: 5,   div: 11, essence: 'rune_essence' },\n  mind:  { rune: 'mind_rune',  level: 2,  xpPer: 5.5, div: 11, essence: 'rune_essence' },\n  water: { rune: 'water_rune', level: 5,  xpPer: 6,   div: 9,  essence: 'rune_essence' },\n  earth: { rune: 'earth_rune', level: 9,  xpPer: 6.5, div: 9,  essence: 'rune_essence' },\n  fire:  { rune: 'fire_rune',  level: 14, xpPer: 7,   div: 14, essence: 'rune_essence' },\n  // high tier — pure_essence, keyed by a held talisman OR the matching tiara worn\n  body:    { rune: 'body_rune',    level: 20, xpPer: 7.5,  div: 14, essence: 'pure_essence', key: { talisman: 'body_talisman',    tiara: 'body_tiara' } },\n  cosmic:  { rune: 'cosmic_rune',  level: 27, xpPer: 8,    div: 16, essence: 'pure_essence', key: { talisman: 'cosmic_talisman',  tiara: 'cosmic_tiara' } },\n  chord:   { rune: 'chord_rune',   level: 44, xpPer: 9,    div: 20, essence: 'pure_essence', key: { talisman: 'chord_talisman',   tiara: 'chord_tiara' } },\n  law:     { rune: 'law_rune',     level: 54, xpPer: 9.5,  div: 22, essence: 'pure_essence', key: { talisman: 'law_talisman',     tiara: 'law_tiara' } },\n  death:   { rune: 'death_rune',   level: 65, xpPer: 10,   div: 23, essence: 'pure_essence', key: { talisman: 'death_talisman',   tiara: 'death_tiara' } },\n  discord: { rune: 'discord_rune', level: 70, xpPer: 10.5, div: 23, essence: 'pure_essence', key: { talisman: 'discord_talisman', tiara: 'discord_tiara' } },\n  blood:   { rune: 'blood_rune',   level: 77, xpPer: 10.5, div: 24, essence: 'pure_essence', key: { talisman: 'blood_talisman',   tiara: 'blood_tiara' } },\n  soul:    { rune: 'soul_rune',    level: 90, xpPer: 11,   div: 25, essence: 'pure_essence', key: { talisman: 'soul_talisman',    tiara: 'soul_tiara' } },\n};\nregisterIntentDomain('runecraft', (ctx, payload) => {\n  if (ctx.dead) return fail('runecraft', 'dead');\n  const altarKey = String(payload.altar ?? '');\n  const a = ALTARS[altarKey];\n  if (!a) return fail('runecraft', 'unknown altar');\n  // each altar key validates against its own object type; 'air' also accepts\n  // the legacy plain 'altar' so the original air temple keeps working.\n  const atAltar = nearObject(ctx.x, ctx.y, `${altarKey}_altar`)\n    || (altarKey === 'air' && nearObject(ctx.x, ctx.y, 'altar'));\n  if (!atAltar) return fail('runecraft', 'not near an altar');\n  return tx(ctx, 'runecraft', (state) => {\n    const lvl = skillLevel(state, 'Runecraft');\n    if (lvl < a.level) return fail('runecraft', `requires Runecraft level ${a.level}`);\n    if (a.key) {\n      const worn = state.equipment?.head?.id === a.key.tiara;\n      if (!worn && !invHas(state, a.key.talisman, 1)) {\n        return fail('runecraft', 'the altar does not answer without its talisman (held) or tiara (worn)');\n      }\n    }\n    const n = invCount(state, a.essence);\n    if (n === 0) return fail('runecraft', a.essence === 'pure_essence' ? 'you need pure essence' : 'you need rune essence');\n    const mult = Math.floor(1 + lvl / a.div);\n    if (!invRemove(state, a.essence, n)) return fail('runecraft', 'you need essence');\n    // Guard the grant: if the rune stack would overflow MAX_QTY, invAdd adds\n    // nothing and the consumed essence would be destroyed. Re-add the essence and\n    // abort so the player never loses it (mirrors the refund pattern elsewhere).\n    if (!invAdd(state, a.rune, n * mult)) {\n      invAdd(state, a.essence, n);\n      return fail('runecraft', 'you have too many of that rune');\n    }\n    const xp = n * a.xpPer;\n    const x = addXp(state, 'Runecraft', xp);\n    return {\n      ok: true, kind: 'runecraft',\n      removed: [{ id: a.essence, qty: n }],\n      granted: [{ id: a.rune, qty: n * mult }],\n      xp: [{ skill: 'Runecraft' as SkillName, amount: xp }],\n      leveledUp: x.leveledUp ? [{ skill: 'Runecraft' as SkillName, level: x.newLevel }] : [],\n    };\n  });\n});"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "Add rocks_pure to the GATHER_REQS table (~line 694) so the built-in server gather intent accepts the new pure essence vein. Insert after the rocks_essence line.",
+      "snippet": "  rocks_pure: { skill: 'Mining', tool: 'bronze_pickaxe' },"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Register the new intent domain file (side-effect import, next to the existing `import './intent-misc';` line).",
+      "snippet": "import './intent-resonne'; // side-effect: registers enchant-tiara / grind-runes / conservatory-reward domain intents"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Register the Resonne client pack (side-effect import, append to the existing import list).",
+      "snippet": "import './resonne';                // Resonne, the Singing City — Magic/Runecraft hub"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Unlimited-rune staves (server side). In the magic branch of setSwingStateHooks (~line 687-699), the cast cost is consumed from INVENTORY via invHas/invRemove — runes do NOT mirror the equipment ammo path, so add an explicit staff skip. Replace the rune check + consume loop with this (the equipped resonant_staff supplies air runes, chord_staff supplies fire runes):",
+      "snippet": "        const staffId = state.equipment?.weapon?.id;\n        const freeRune = staffId === 'resonant_staff' ? 'air_rune' : staffId === 'chord_staff' ? 'fire_rune' : null;\n        for (const r of sp.runes) if (r.item !== freeRune && !invHas(state, r.item, r.qty)) return false;\n        const removed: { id: string; qty: number }[] = [];\n        for (const r of sp.runes) {\n          if (r.item === freeRune) continue;\n          invRemove(state, r.item, r.qty);\n          removed.push({ id: r.item, qty: r.qty });\n        }"
+    },
+    {
+      "file": "src/game.ts",
+      "what": "Unlimited-rune staves (client mirror). Add a helper near the cast functions, then in BOTH castOnPlayer (~line 1460) and castOnNpc (~line 1549) change the rune check `spell.runes.every((r) => invCount(r.item) >= r.qty)` to `spell.runes.every((r) => r.item === staffFreeRune() || invCount(r.item) >= r.qty)` so the client does not cancel autocast for a rune the staff supplies.",
+      "snippet": "const STAFF_FREE_RUNE: Record<string, string> = { resonant_staff: 'air_rune', chord_staff: 'fire_rune' };\nexport function staffFreeRune(): string | null {\n  const w = state.player.equipment.weapon;\n  return w ? STAFF_FREE_RUNE[w.id] ?? null : null;\n}"
+    },
+    {
+      "file": "src/ui.ts",
+      "what": "Unlimited-rune staves (spellbook). In renderPanel's spell list (~line 702), import staffFreeRune from ../game and change `const hasRunes = sp.runes.every((r) => invCount(r.item) >= r.qty);` (and the matching `if (!hasRunes)` click guard) to treat the staff-supplied rune as available.",
+      "snippet": "    const hasRunes = sp.runes.every((r) => r.item === staffFreeRune() || invCount(r.item) >= r.qty);"
+    }
+  ]
+}

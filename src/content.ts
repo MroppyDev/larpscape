@@ -62,11 +62,13 @@ function stepAside() {
 // ============================================================================
 // WOODCUTTING
 // ============================================================================
+const AXE_IDS = ['bronze_axe', 'iron_axe', 'steel_axe', 'mithril_axe', 'adamant_axe', 'rune_axe', 'resonant_axe'];
+const hasAxe = () => AXE_IDS.some((id) => hasTool(id));
 for (const type of ['tree', 'oak', 'willow']) {
   const data = SKILL_OBJS[type];
   registerObjectAction(type, 'Chop down', (o) => {
     if (o.depletedUntil > 0) { msg('Someone has chopped this tree down.'); return 'done'; }
-    if (!hasTool('bronze_axe')) { msg('You need an axe to chop down this tree.'); return 'done'; }
+    if (!hasAxe()) { msg('You need an axe to chop down this tree.'); return 'done'; }
     const lvl = level('Woodcutting');
     if (lvl < data.level) { msg(`You need a Woodcutting level of ${data.level} to chop this tree.`); return 'done'; }
     if (freeSlots() === 0) { msg("Your inventory is too full to hold any more logs."); return 'done'; }
@@ -89,11 +91,13 @@ for (const type of ['tree', 'oak', 'willow']) {
 // ============================================================================
 // MINING
 // ============================================================================
+const PICKAXE_IDS = ['bronze_pickaxe', 'iron_pickaxe', 'steel_pickaxe', 'tuned_pickaxe', 'mithril_pickaxe', 'adamant_pickaxe', 'rune_pickaxe', 'resonant_pickaxe'];
+const hasPickaxe = () => PICKAXE_IDS.some((id) => hasTool(id));
 for (const type of ['rocks_copper', 'rocks_tin', 'rocks_iron', 'rocks_coal', 'rocks_essence']) {
   const data = SKILL_OBJS[type];
   registerObjectAction(type, 'Mine', (o) => {
     if (o.depletedUntil > 0) { msg('There is no ore left in this rock.'); return 'done'; }
-    if (!hasTool('bronze_pickaxe')) { msg('You need a pickaxe to mine this rock.'); return 'done'; }
+    if (!hasPickaxe()) { msg('You need a pickaxe to mine this rock.'); return 'done'; }
     const lvl = level('Mining');
     if (lvl < data.level) { msg(`You need a Mining level of ${data.level} to mine this rock.`); return 'done'; }
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more ore.'); return 'done'; }
@@ -143,6 +147,10 @@ const FIREMAKING: { log: string; level: number; xp: number }[] = [
   { log: 'logs', level: 1, xp: 40 },
   { log: 'oak_logs', level: 15, xp: 60 },
   { log: 'willow_logs', level: 30, xp: 90 },
+  { log: 'maple_logs', level: 45, xp: 135 },
+  { log: 'yew_logs', level: 60, xp: 202.5 },
+  { log: 'chordwood_logs', level: 65, xp: 240 },
+  { log: 'magic_logs', level: 75, xp: 303.75 },
 ];
 for (const fm of FIREMAKING) {
   registerItemAction(fm.log, 'Light', async () => {

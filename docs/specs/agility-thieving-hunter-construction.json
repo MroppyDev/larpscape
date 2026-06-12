@@ -1,0 +1,216 @@
+{
+  "group": "agility-thieving-hunter-construction",
+  "areaName": "Quaverside (the Quaverside District) — sitting on the river Murmur weir",
+  "theme": "Resonance lore hook: the four utility skills are the \"trades that keep the Chord moving.\" The hub is **Quaverside**, a tiered canal-and-rooftop district built where the river Murmur drops over a weir — the rushing water hums a steady drone that masks footfalls (Thieving), the rooftops and locks form natural courses (Agility), the reed-marsh below funnels resonant fauna (Hunter), and the whole quarter is permanently half-built by the **Wrightsong Guild**, who \"sing\" timber into place (Construction). The district's anthem is the *Quaver* — a fast, light sixteenth-note that mirrors the speed/efficiency theme. Everything rings, lightly: the agility beams are tuned planks that chime when you land true; the trap-fauna (resonant fowl, chime-moths) are drawn to pitch; stolen guild-marked goods quietly \"hum off-key\" until laundered.",
+  "summary": "Current state from the code: each of the four skills has exactly ONE training site in the entire 500x500 world and no dedicated hub. Agility is two scattered 4-obstacle courses (castle + Frostpeak) hard-coded in AGILITY_XP with a per-obstacle 3s cooldown and a per-lap 15s cooldown. Thieving is a single bake_stall cluster (4 tiles), one gem_stall, and four pickpocket NPCs (man L1, desert_bandit L35, city_guard L40, pirate L45) that aren't co-located. Hunter is a single bird_snare loop (snare-lay/snare-check, 65% catch, L1, 34xp) with NO higher tier — it dead-ends instantly. Construction is one workbench with only 4 donated builds (L1-22, max 145xp) and dead-ends at L22 with no personal space. The expansion gives all four the Cairnchime treatment: a named district, dense clustered training (so a player barely walks), a real level-1-to-99 ladder per skill, new gear/items, and gold/material reward sinks — all using ONLY mechanics the engine already resolves (train, thieve, snare-lay/check, make|build, produce|saw-planks), plus three small additive server hooks described below.",
+  "newItems": [
+    {
+      "id": "quaver_boots",
+      "name": "Quaver boots",
+      "role": "Agility reward footwear: -2 fail chance flavor; the set piece that grants a small run-energy/lap-speed cosmetic. Sold by the Agility reward shop for Wrightsong marks.",
+      "tier": "Agility 40",
+      "value": 12000,
+      "source": "Quaverside reward shop (marks)"
+    },
+    {
+      "id": "graceful_jerkin",
+      "name": "Graceful jerkin",
+      "role": "Agility outfit body; 5-piece Graceful set (hood/jerkin/leggings/gloves/boots) — full set is the marquee Agility reward sink.",
+      "tier": "Agility 50",
+      "value": 18000,
+      "source": "Quaverside reward shop (marks)"
+    },
+    {
+      "id": "wrightsong_mark",
+      "name": "Wrightsong mark",
+      "role": "Stackable token currency earned from completed Agility laps and Construction contracts; spent at the reward shop. The shared sink across the district.",
+      "tier": "any",
+      "value": 1,
+      "source": "Lap bonuses + Construction contracts"
+    },
+    {
+      "id": "silk_climbing_rope",
+      "name": "Silk climbing rope",
+      "role": "Consumable tool that unlocks the express shortcut obstacles on the higher courses (acts as a held tool gate, like a pickaxe).",
+      "tier": "Agility 35",
+      "source": "Agility shop / made from 3 silk",
+      "value": 300,
+      "tier_note": "tool gate"
+    },
+    {
+      "id": "cutpurse_gloves",
+      "name": "Cutpurse gloves",
+      "role": "Thieving gloves: flavor +success; the Thieving reward-shop centerpiece worn for the market district.",
+      "tier": "Thieving 45",
+      "value": 15000,
+      "source": "Reward shop (marks)"
+    },
+    {
+      "id": "silk",
+      "name": "Silk",
+      "role": "New Thieving loot/material: rolled from silk_stall; feeds silk_climbing_rope and Crafting later. A genuine new tradeable.",
+      "tier": "Thieving 20",
+      "value": 120,
+      "source": "silk_stall steal"
+    },
+    {
+      "id": "hum_coin",
+      "name": "Off-key coin",
+      "role": "Thieving rare from coffer_stall: a guild-marked coin that 'hums'; launder 5 at the Fence NPC for clean coins (gold sink/source balance).",
+      "tier": "Thieving 55",
+      "value": 250,
+      "source": "coffer_stall rare"
+    },
+    {
+      "id": "box_trap",
+      "name": "Box trap",
+      "role": "Hunter tier-2 tool (reusable, like bird_snare): catches resonant fowl & chime-moths via box-lay/box-check. The core new Hunter item.",
+      "tier": "Hunter 20",
+      "value": 140,
+      "source": "Hunter shop / made"
+    },
+    {
+      "id": "chime_moth",
+      "name": "Chime-moth",
+      "role": "Hunter catch from box trap; the moth 'rings' — used in Construction tuning (see recipes) and sold.",
+      "tier": "Hunter 27",
+      "value": 60,
+      "source": "box_trap"
+    },
+    {
+      "id": "resonant_fowl_meat",
+      "name": "Resonant fowl meat",
+      "role": "Higher-tier raw food from box-trapping resonant fowl; cooks for solid HP, ties Hunter into Cooking.",
+      "tier": "Hunter 33",
+      "value": 45,
+      "source": "box_trap"
+    },
+    {
+      "id": "chincrest",
+      "name": "Chincrest",
+      "role": "Hunter top-tier catch (the 'red chinchompa' analogue): a thrown resonant critter / valuable pelt sink at the master tier.",
+      "tier": "Hunter 63",
+      "value": 900,
+      "source": "high_box_trap"
+    },
+    {
+      "id": "larupia_fur",
+      "name": "Marsh-cat fur",
+      "role": "Hunter pitfall catch; a fur sink feeding Construction upholstery + a fur outfit reward.",
+      "tier": "Hunter 45",
+      "value": 420,
+      "source": "pitfall_trap"
+    },
+    {
+      "id": "hunters_horn",
+      "name": "Hunter's horn",
+      "role": "Hunter reward: a horn that 'calls' fauna — cosmetic + flavor draw radius. Reward-shop sink for Hunter.",
+      "tier": "Hunter 50",
+      "value": 16000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "teak_plank",
+      "name": "Teak plank",
+      "role": "Construction tier-2 plank: from teak_logs via saw-planks (extend existing saw). Feeds mid builds.",
+      "tier": "Construction 35",
+      "value": 90,
+      "source": "saw teak_logs"
+    },
+    {
+      "id": "mahogany_plank",
+      "name": "Mahogany plank",
+      "role": "Construction tier-3 plank: from mahogany_logs. Feeds high builds.",
+      "tier": "Construction 50",
+      "value": 280,
+      "source": "saw mahogany_logs"
+    },
+    {
+      "id": "teak_logs",
+      "name": "Teak logs",
+      "role": "Woodcutting->Construction bridge log, cut at the Quaverside grove; sawn into teak_plank.",
+      "tier": "Woodcutting 35",
+      "value": 50,
+      "source": "teak tree (grove)"
+    },
+    {
+      "id": "mahogany_logs",
+      "name": "Mahogany logs",
+      "role": "High Construction log; sawn into mahogany_plank.",
+      "tier": "Woodcutting 50",
+      "value": 160,
+      "source": "mahogany tree (grove)"
+    },
+    {
+      "id": "tuned_hammer",
+      "name": "Tuned hammer",
+      "role": "Construction tool upgrade: lets you complete tuning-contract builds (chiming furniture) that plain hammer can't; gate item.",
+      "tier": "Construction 40",
+      "value": 4500,
+      "source": "Reward shop (marks)"
+    },
+    {
+      "id": "wrightsong_robe",
+      "name": "Wrightsong robe",
+      "role": "Construction outfit reward (guild livery); set bonus = small marks-rate flavor. The Construction reward sink.",
+      "tier": "Construction 55",
+      "value": 20000,
+      "source": "Reward shop (marks)"
+    },
+    {
+      "id": "skill_cape_agility",
+      "name": "Cape of the Quaver",
+      "role": "Agility 99 mastery cape (matches existing skill-cape pattern if present); pure prestige sink.",
+      "tier": "Agility 99",
+      "value": 99000,
+      "source": "Master (marks + gold)"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "saw-planks extension (existing handler, add log->plank rows): teak_logs + ~15 coins -> teak_plank; mahogany_logs + ~25 coins -> mahogany_plank (wealth-shaped, ECONOMY_FROZEN-gated).",
+    "constructionBuilds new rows (build|<name> class, existing make resolver): 'Teak chair' L28 200xp 3 teak_plank+3 nails; 'Teak bookcase' L36 260xp 4 teak_plank+4 nails; 'Mahogany table' L50 360xp 4 mahogany_plank+4 nails; 'Chiming wardrobe' L58 440xp 5 mahogany_plank+5 nails+1 chime_moth (needs tuned_hammer); 'Wrightsong lectern' L70 580xp 6 mahogany_plank+6 nails+2 chime_moth (needs tuned_hammer).",
+    "NEW server intent handlers (clone of snare-lay/snare-check): 'box-lay'/'box-check' (box_trap tool, level-tiered catch table), 'pitfall-lay'/'pitfall-check' (box_trap+L45). Use existing getSnare/setSnare tile-timer store and the existing server-side catch roll — additive, no change to intents.ts core.",
+    "Agility 'train' lap-mark hook (additive, inside existing train handler): when obstacle is in LAP_KEYS, also invAdd(wrightsong_mark, table[obstacle].marks) server-side; data-keyed, client never names the amount.",
+    "Construction contracts: model on existing quest-grant flow (advanceQuestStage/claimQuestReward) — contract_board accept -> turn in N donated builds -> grant wrightsong_mark. No new intent primitive.",
+    "silk_climbing_rope recipe (existing make|craft class): 3 silk -> 1 silk_climbing_rope, Crafting/Agility-flavored, as the zipline tool gate."
+  ],
+  "newObjectsOrMechanics": [
+    "AGILITY new object types (each needs a defs entry in objects.json + an AGILITY_XP entry keyed by type in intent-produce.ts, resolved by the EXISTING 'train' intent — no new handler): 'qv_beam' (Cross, L1, 14xp), 'qv_lock_jump' (Leap, L8, 18xp), 'qv_rooftop' (Climb, L20, 24xp), 'qv_zipline' (Ride, L30, 30xp, requires silk_climbing_rope tool), 'qv_chimney' (Squeeze, L40, 36xp), 'qv_gap_vault' (Vault, L52, 44xp), 'qv_spire_run' (Run, L65, 55xp). Lap keys added to LAP_KEYS: 'quaver_lap' (L1, 220xp + 5 wrightsong_mark) and 'spire_lap' (L60, 480xp + 12 wrightsong_mark). Lap-mark grant is the ONE additive server hook for Agility: in the train handler, when obstacle is a lap key, also invAdd the listed marks (data-keyed, server-owned).",
+    "THIEVING new stall object types (each a StallDef entry in the STALLS record in intent-produce.ts + objects.json def + map placement; resolved by EXISTING 'thieve' intent): 'silk_stall' (L20, 28xp, table silk 80 / bolt_of_cloth 20, lowRate .6 highRate .95), 'fruit_stall' (L25, 34xp, table apple/orange, food filler for dense early training), 'coffer_stall' (L55, 84xp, table coins-note 70 / hum_coin 25 / uncut_ruby 5, lowRate .4 highRate .9), 'relic_stall' (L75, 145xp, table resonant_shard 60 / uncut_diamond 30 / gold_bar 10, lowRate .3 highRate .85). All four follow the exact existing bake_stall/gem_stall pattern (object@tile, range 4, server-rolled table, empty-grant on miss).",
+    "THIEVING new pickpocket NPCs (npcs.json pickpocket blocks, resolved by EXISTING 'thieve' NPC branch — zero code change): 'market_crowd_thug' (Thieving L1, xp 8, loot coins[3,8], stunDmg 1 — the dense low-level filler), 'silk_merchant' (L38, xp 65, loot coins[20,60]+silk, stunDmg 3), 'guild_treasurer' (L60, xp 120, loot coins[60,140]+hum_coin@5%, stunDmg 4), 'gilded_noble' (L80, xp 185, loot coins[100,260]+uncut_diamond@5%, stunDmg 5). Co-located in the market square so a thief barely walks.",
+    "HUNTER new mechanics — three new tools mirroring the EXISTING snare-lay/snare-check pair. Implement as a generalized 'trap-lay'/'trap-check' that takes {kind} OR add box-lay/box-check, pitfall-lay/pitfall-check handlers cloned from snare-lay/snare-check (this is the additive server work for Hunter; all use the same server-owned getSnare/setSnare timer store keyed by tile, same 65%-ish catch roll, same item-consume pattern). Object types: 'box_trap_set'/'box_trap_caught' (box_trap tool, L20, catches chime_moth/resonant_fowl_meat+feather, 50xp; L27/L33 variants by player level), 'pitfall_set'/'pitfall_caught' (needs box_trap + level, L45, catches larupia_fur+resonant_fowl_meat, 110xp, placed on GRASS like snares), 'high_box_trap_set'/'high_box_trap_caught' (L63, catches chincrest, 198xp). Catch roll, timer, and loot all server-side exactly like snare-check.",
+    "CONSTRUCTION new mechanics: (1) extend the EXISTING saw-planks handler to map teak_logs->teak_plank (cost ~15 coins/log) and mahogany_logs->mahogany_plank (~25 coins/log) — pure data extension of the existing wealth-shaped handler. (2) New 'workbench' build types are just new constructionBuilds rows (build|<name> class already resolves via make). (3) New object 'contract_board' (Read/Accept) backing Construction contracts: accepting a contract is a quest-style stage; turning in N builds grants wrightsong_mark — model on the existing quest-grant pattern (advanceQuestStage), no new combat/intent primitive needed.",
+    "DECORATIVE/STRUCTURAL new object defs for the district (objects.json, blocks where noted): 'qv_weir' (the humming waterfall, blocks), 'qv_canal_lock', 'qv_scaffold', 'wrightsong_banner', 'trophy_mount' (Hunter), 'fence_table' (Thieving launder station), 'contract_board', 'reward_vendor_stall'."
+  ],
+  "newNpcs": [
+    "qv_agility_master — 'Pell the Quick', Agility trainer + Graceful/Quaver reward shop (spends wrightsong_mark)",
+    "qv_thieving_master — 'Sly Maren', Thieving trainer + Cutpurse reward shop; also the Fence (launder hum_coin/off-key coin -> clean coins)",
+    "qv_hunter_master — 'Brackle the Trapper', Hunter trainer, sells box_trap/pitfall kits + Hunter's horn reward shop",
+    "qv_construction_master — 'Foreward Oss' of the Wrightsong Guild, gives Construction contracts via contract_board, sells tuned_hammer/Wrightsong robe",
+    "market_crowd_thug — pickpocket target (L1 filler)",
+    "silk_merchant — pickpocket target (L38)",
+    "guild_treasurer — pickpocket target (L60)",
+    "gilded_noble — pickpocket target (L80)",
+    "qv_general_clerk — district general store (planks, nails, snares, food) so trainers don't have to walk to another town",
+    "qv_banker — bank booth NPC so all four skills can bank in-district"
+  ],
+  "trainingLayout": "Quaverside is built in four tight, walk-free quarters around a central plaza with a bank booth + reward vendors, so a player drops bank-to-training in under 5 tiles. (1) ROOFTOP COURSE (Agility): a single continuous loop of 7 obstacles (qv_beam -> qv_lock_jump -> qv_rooftop -> qv_zipline -> qv_chimney -> qv_gap_vault -> qv_spire_run) laid as a ring ~10x10 so finishing one obstacle lands you adjacent to the next, then the quaver_lap/spire_lap mark drops you back at the start — true zero-walk laps mirroring an OSRS rooftop course. Lower 4 obstacles form an inner ring (L1-30), outer 3 form the spire ring (L40-65+). (2) MARKET SQUARE (Thieving): a 6x6 plaza packed with stalls in pairs — 4x fruit_stall + 4x silk_stall clustered for L20-37 (steal one, pivot to the next), 4x coffer_stall and 2x relic_stall in a guarded inner court for L55-75, and the four pickpocket NPCs patrolling 2-3 tiles apart so you can chain pickpockets + stalls without moving. (Existing 4x bake_stall pattern proves the dense-stall layout works.) (3) THE REEDMARSH (Hunter): a 12x8 grass-and-marsh flat below the weir with marked trap-tiles in dense rows — ~8 box-trap tiles, ~6 pitfall tiles, ~4 high-box tiles, all within a few steps so you run a multi-trap line (lay all, check all) like real Hunter. (4) WRIGHTSONG YARD (Construction): a clustered build court with 3x workbench side by side, a contract_board, a plank vendor + saw spot adjacent, and a bank — so saw -> build -> turn-in is a tight triangle. The four quarters meet at the plaza so a player can multiskill the whole district without leaving render distance.",
+  "rewards": "Shared currency SINK: wrightsong_mark, earned from Agility laps (5/lap, 12/spire-lap) and Construction contracts, spent at the four reward vendors. Reward-shop sinks: Agility -> Graceful 5-piece set (~70k marks-equiv total) + Cape of the Quaver at 99; Thieving -> Cutpurse gloves + a fence service that LAUNDERS hum_coin (5 off-key coins -> clean coins, a soft gold sink with a cut); Hunter -> Hunter's horn + a marsh-cat fur outfit (fur sink); Construction -> tuned_hammer (gates tuning contracts) + Wrightsong robe livery. GOLD/MATERIAL sinks: saw-planks for teak/mahogany spends coins per log (wealth-shaped, ECONOMY_FROZEN-gated like existing saw); Construction contracts consume planks+nails+chime_moth (tuning builds) and are donated (no item back) — a steady plank/nail sink; the Fence takes a percentage cut laundering off-key coin. Set bonuses are flavor/QoL only (small marks-rate or run-energy nudges) to stay server-safe — no new combat math.",
+  "mapAreaProposal": "Place Quaverside in the mid-map river belt, roughly the 150-185 x / 130-165 y region (a temperate riverside between spawn's Castle at ~21,37 and Stonewatch at ~272,178), on/around an inland stretch of a river so the weir reads naturally and it bridges the early hub cluster to the eastern towns. Footprint ~32x28 tiles: NW Rooftop course (Agility ring), NE Market square (Thieving), SW Reedmarsh on the marsh/grass below the weir (Hunter), SE Wrightsong yard + grove of teak/mahogany trees (Construction), central plaza with bank + reward vendors. Final coords to be fixed at integration; this proposes the biome (riverside/marsh, temperate) and the four-quarter layout.",
+  "balanceNotes": "XP rates sit ON the existing curves. Agility: per-obstacle xp 14->55 across L1-65 matches the castle (12-20) and Frostpeak (25-35) values scaled up; quaver_lap 220xp / spire_lap 480xp extend the existing 60/150 lap bonuses, keeping the 3s obstacle / 15s lap cooldowns so rates stay ~45-65k/hr at high level (in line with OSRS rooftops, not faster than the game's gathering). Thieving: stall xp 28/34/84/145 and pickpocket xp 8/65/120/185 interpolate cleanly between the existing bake_stall(16)/gem_stall(40) and man(8)/pirate(75) anchors; success lowRate/highRate copy the existing successRoll shape so low levels fail often. Hunter: box-trap 50xp, pitfall 110xp, high-box 198xp ladder up from the existing 34xp snare with the same 65% server catch and 15-40 tick timers, so it's gated by trap count + walking, not click-spam. Construction: new builds run L28-70 at 200->580xp, continuing the existing 58/87/115/145 progression; plank costs (teak ~90, mahogany ~280) and contract turn-ins keep it a real gold/material sink rather than free xp. Level gating: nothing trains before its existing analogue (e.g. relic_stall L75 sits above gem_stall L30; chincrest L63 mirrors OSRS red chinchompa). No rate trivializes Cairnchime/Mining or existing gathering — the district is parallel, not a shortcut.",
+  "postBlurb": "QUAVERSIDE OPENS ITS LOCKS. Where the river Murmur tips over the weir and hums all day, the Wrightsong Guild has thrown up a district that never stops moving — and never quite finishes building. Run the Rooftop Course in walk-free laps for Agility, work the Market Square's silk, coffer and relic stalls (mind the guards) for Thieving, lay your trap-lines across the Reedmarsh for chime-moths, resonant fowl and the elusive chincrest, and saw teak and mahogany in the Wrightsong Yard to fill the contract board. Earn Wrightsong marks, dress in Graceful livery, and learn why the locals say the only honest trade in Quaverside is the one you can hum.",
+  "verdict": {
+    "buildable": false,
+    "idCollisions": [],
+    "mechanicFit": "PARTIAL — about half is pure data, half needs new engine code. WORKS AS PURE DATA (drop into existing tables/handlers): (a) Thieving stalls — STALLS record in intent-produce.ts:186 + objects.json `objs`/`skillObjs` def + map placement; existing 'thieve' intent resolves them. BUT note StallDef grants exactly ONE item per success (no multi-item/qty ranges), and the success path always invAdds qty 1 — fine. (b) Thieving pickpocket NPCs — npcs.json `pickpocket` blocks, resolved by existing thieve NPC branch, zero code. CAVEAT: rare-roll is hardcoded `isRare = item!=='coins' && !isStackable(item)` at a fixed 5% (intent-produce.ts:254-255); hum_coin is specced as a STACKABLE token, so it will be treated as a guaranteed-drop coin-like, NOT a 5% rare — either make hum_coin non-stackable or add code. uncut_diamond@5% works only if uncut_diamond is non-stackable. (c) Woodcutting trees teak/mahogany — add skillObjs entries (same shape as oak/yew), pure data. (d) Agility obstacle XP — add keys to AGILITY_XP map (intent-produce.ts:568), resolved by existing 'train' intent, pure data for the 7 obstacles + 2 lap keys added to LAP_KEYS set.\\n\\nNEEDS NEW ENGINE CODE (spec wrongly calls these 'existing'/'additive data'): (1) Agility lap-mark grant — the 'train' handler grants XP ONLY; it never invAdds any item (verified intent-produce.ts:605-619). Adding wrightsong_mark on lap keys is a real handler edit. (2) qv_zipline silk_climbing_rope TOOL GATE — 'train' checks no tool at all; tool gating only exists in gather/make (intents.ts:308,434). New code. (3) Hunter box-lay/box-check/pitfall — snare-check is fully HARDCODED (raw_bird_meat + feather x2 + 34xp, intent-produce.ts:549-552); there is NO catch table keyed by type and NO generalized trap kind param. New handlers required (the spec acknowledges this in one place but elsewhere calls it 'data-keyed'). getSnare/setSnare store exists and is reusable. (4) saw-planks is HARDCODED to logs->plank at 10 coins (intent-produce.ts:460-478); it does NOT read a data table. Mapping teak_logs->teak_plank / mahogany_logs->mahogany_plank requires editing the handler — NOT pure data. (5) constructionBuilds schema is `{name,level,xp,planks,nails}` and the resolver hardcodes `tool:'hammer'` and `item:'plank'` (intents.ts:760-768). It CANNOT express teak_plank/mahogany_plank inputs, a tuned_hammer gate, or a chime_moth extra input — schema + resolver change required for every new build. (6) contract_board / Construction contracts — `registerObjectAction`, `advanceQuestStage`, `claimQuestReward` DO NOT EXIST anywhere in server (verified). The real quest system is quest-stage/quest-turnin/quest-reward (intent-quest.ts) and stages are MONOTONIC + one-shot, so a REPEATABLE 'turn in N builds -> marks' loop has no existing primitive. New code. (7) Fence launder (5 hum_coin -> clean coins) has no existing handler. New code.",
+    "balanceFlags": [
+      "skill_cape_agility value 99000 has NO precedent: highest existing item is cindermaul at 64000, and there are ZERO skill capes in items.json — this is a brand-new prestige tier, not 'matching existing pattern'. Spec's own 'if present' hedge is correct: no skill-cape system exists.",
+      "No existing Agility/Graceful/Hunter/Construction reward items exist at all (grep returns NONE) — the 12000-20000 reward-shop cosmetics are net-new but sit reasonably within existing high-gear band (rune armor 12k-39k).",
+      "teak_logs value 50 at Woodcutting 35 vs yew_logs 160 (L60) and maple-tier — slightly low but acceptable; mahogany_logs 160 at WC50 equals yew at L60, a touch cheap for a 'high' log.",
+      "saw-planks existing cost is 10 coins/log producing a value-30 plank; spec's teak 15c->value-90 and mahogany 25c->value-280 keep the same wealth-shaped margin, consistent.",
+      "chime_moth value 60 / resonant_fowl_meat 45 are fine vs raw_bird_meat 2 — much higher-tier Hunter food, in line with higher levels.",
+      "Agility obstacle xp (14-55) and lap xp (220/480) are higher than existing castle (12-20, lap 60) and frost (25-35, lap 150) courses — these are higher-level courses so larger xp is curve-appropriate; lap 480 at L60 is aggressive but not broken."
+    ],
+    "notes": "No id collisions in items.json (311 ids), objects.json (objs+skillObjs), or npcs.json (73 ids) — every proposed id is free. BUT several items the recipes REFERENCE do not exist and must be added or the recipes break: apple, orange, saw, bolt_of_cloth, uncut_diamond are all MISSING from items.json. (uncut_ruby, gold_bar, resonant_shard, nails, feather, bird_snare, hammer DO exist.) objects.json is shaped `{objs:{...}, skillObjs:{...}}` not a flat map — new obstacle/stall/trap object types must go under those keys with the right shape (skillObjs entries carry level/xp/item; thieve/agility object types are referenced by `type` via objectTypeAt). The XP curve is standard OSRS (state.ts:96, L99 ~13M xp) so all level/xp gating is curve-consistent. Integrator must: (a) add the 5 missing referenced items; (b) write new server handlers for box/pitfall traps, saw-planks data-driven mapping, lap-mark grant, zipline tool gate, fence launder, and a REPEATABLE contract primitive (quest system is monotonic/one-shot and won't do repeatable contracts as-is); (c) extend constructionBuilds schema + resolver to support per-build plank type, extra inputs (chime_moth), and tuned_hammer tool gate; (d) resolve hum_coin stackable-vs-5%-rare conflict; (e) drop all references to the non-existent registerObjectAction/advanceQuestStage/claimQuestReward APIs."
+  }
+}

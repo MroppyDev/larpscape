@@ -159,6 +159,263 @@
           "qty": 1
         }
       ]
+    },
+    {
+      "id": "wind_blast",
+      "name": "Wind Blast",
+      "level": 41,
+      "xp": 25.5,
+      "maxHit": 13,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 3
+        },
+        {
+          "item": "death_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "water_blast",
+      "name": "Water Blast",
+      "level": 47,
+      "xp": 28.5,
+      "maxHit": 14,
+      "runes": [
+        {
+          "item": "water_rune",
+          "qty": 3
+        },
+        {
+          "item": "air_rune",
+          "qty": 3
+        },
+        {
+          "item": "death_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "earth_blast",
+      "name": "Earth Blast",
+      "level": 53,
+      "xp": 31.5,
+      "maxHit": 15,
+      "runes": [
+        {
+          "item": "earth_rune",
+          "qty": 4
+        },
+        {
+          "item": "air_rune",
+          "qty": 3
+        },
+        {
+          "item": "death_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_blast",
+      "name": "Fire Blast",
+      "level": 59,
+      "xp": 34.5,
+      "maxHit": 16,
+      "runes": [
+        {
+          "item": "fire_rune",
+          "qty": 5
+        },
+        {
+          "item": "air_rune",
+          "qty": 4
+        },
+        {
+          "item": "death_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "dissonant_strike",
+      "name": "Dissonant Strike",
+      "level": 60,
+      "xp": 33,
+      "maxHit": 18,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 4
+        },
+        {
+          "item": "discord_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "wind_wave",
+      "name": "Wind Wave",
+      "level": 62,
+      "xp": 36,
+      "maxHit": 17,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 5
+        },
+        {
+          "item": "blood_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "water_wave",
+      "name": "Water Wave",
+      "level": 65,
+      "xp": 37.5,
+      "maxHit": 18,
+      "runes": [
+        {
+          "item": "water_rune",
+          "qty": 7
+        },
+        {
+          "item": "air_rune",
+          "qty": 5
+        },
+        {
+          "item": "blood_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "earth_wave",
+      "name": "Earth Wave",
+      "level": 70,
+      "xp": 40,
+      "maxHit": 19,
+      "runes": [
+        {
+          "item": "earth_rune",
+          "qty": 7
+        },
+        {
+          "item": "air_rune",
+          "qty": 5
+        },
+        {
+          "item": "blood_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_wave",
+      "name": "Fire Wave",
+      "level": 75,
+      "xp": 42.5,
+      "maxHit": 20,
+      "runes": [
+        {
+          "item": "fire_rune",
+          "qty": 7
+        },
+        {
+          "item": "air_rune",
+          "qty": 5
+        },
+        {
+          "item": "blood_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "wind_surge",
+      "name": "Wind Surge",
+      "level": 81,
+      "xp": 44,
+      "maxHit": 21,
+      "runes": [
+        {
+          "item": "air_rune",
+          "qty": 7
+        },
+        {
+          "item": "soul_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "water_surge",
+      "name": "Water Surge",
+      "level": 85,
+      "xp": 46,
+      "maxHit": 22,
+      "runes": [
+        {
+          "item": "water_rune",
+          "qty": 8
+        },
+        {
+          "item": "air_rune",
+          "qty": 7
+        },
+        {
+          "item": "soul_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "earth_surge",
+      "name": "Earth Surge",
+      "level": 90,
+      "xp": 48,
+      "maxHit": 23,
+      "runes": [
+        {
+          "item": "earth_rune",
+          "qty": 9
+        },
+        {
+          "item": "air_rune",
+          "qty": 7
+        },
+        {
+          "item": "soul_rune",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_surge",
+      "name": "Fire Surge",
+      "level": 95,
+      "xp": 50,
+      "maxHit": 24,
+      "runes": [
+        {
+          "item": "fire_rune",
+          "qty": 10
+        },
+        {
+          "item": "air_rune",
+          "qty": 7
+        },
+        {
+          "item": "soul_rune",
+          "qty": 1
+        }
+      ]
     }
   ],
   "prayers": [
@@ -209,6 +466,94 @@
       "drain": 2,
       "boost": "attack",
       "mult": 1.1
+    },
+    {
+      "id": "steel_skin",
+      "name": "Steel Skin",
+      "level": 19,
+      "drain": 3,
+      "boost": "defence",
+      "mult": 1.15
+    },
+    {
+      "id": "raging_chord",
+      "name": "Raging Chord",
+      "level": 21,
+      "drain": 3,
+      "boost": "strength",
+      "mult": 1.15
+    },
+    {
+      "id": "true_aim",
+      "name": "True Aim",
+      "level": 23,
+      "drain": 3,
+      "boost": "attack",
+      "mult": 1.15
+    },
+    {
+      "id": "ward_of_aulden",
+      "name": "Ward of Aulden",
+      "level": 25,
+      "drain": 8,
+      "boost": "defence",
+      "mult": 1
+    },
+    {
+      "id": "ward_of_syla",
+      "name": "Ward of Syla",
+      "level": 28,
+      "drain": 8,
+      "boost": "defence",
+      "mult": 1
+    },
+    {
+      "id": "ward_of_quiess",
+      "name": "Ward of Quiess",
+      "level": 31,
+      "drain": 8,
+      "boost": "defence",
+      "mult": 1
+    },
+    {
+      "id": "ironheart_skin",
+      "name": "Ironheart Skin",
+      "level": 37,
+      "drain": 5,
+      "boost": "defence",
+      "mult": 1.2
+    },
+    {
+      "id": "chorus_of_war",
+      "name": "Chorus of War",
+      "level": 40,
+      "drain": 5,
+      "boost": "strength",
+      "mult": 1.23
+    },
+    {
+      "id": "perfect_pitch",
+      "name": "Perfect Pitch",
+      "level": 43,
+      "drain": 5,
+      "boost": "attack",
+      "mult": 1.2
+    },
+    {
+      "id": "culling_hymn",
+      "name": "Culling Hymn",
+      "level": 50,
+      "drain": 6,
+      "boost": "strength",
+      "mult": 1.18
+    },
+    {
+      "id": "last_verse",
+      "name": "The Last Verse",
+      "level": 60,
+      "drain": 12,
+      "boost": "defence",
+      "mult": 1
     }
   ],
   "slayerTargets": [

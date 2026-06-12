@@ -168,6 +168,9 @@ const TASK_POOL: string[] = [
   'ice_wolf', 'dire_wolf', 'bear', 'desert_bandit', 'pirate', 'ice_troll',
   'magma_crawler', 'ash_fiend', 'ruin_wraith', 'discord_wisp',
   'hollow_miner', 'manor_revenant',
+  // prayer-slayer: the Sundered Choir
+  'gravewail_hound', 'choir_ghast', 'dirgewolf', 'dirge_ghoul',
+  'chordwyrm', 'carillon_revenant',
 ];
 const TASK_SET = new Set(TASK_POOL);
 
@@ -177,6 +180,13 @@ const REWARDS: Record<string, RewardEntry> = {
   cull_band: { id: 'cull_band', cost: 60 },
   wardens_visor: { id: 'wardens_visor', cost: 50 },
   tome_of_grudges: { id: 'tome_of_grudges', cost: 25 },
+  // prayer-slayer: Cantor Veil's vault
+  binding_chime: { id: 'binding_chime', cost: 35 },
+  tome_of_dirges: { id: 'tome_of_dirges', cost: 60 },
+  silencers_cowl: { id: 'silencers_cowl', cost: 90 },
+  silencers_greaves: { id: 'silencers_greaves', cost: 100 },
+  silencers_robe: { id: 'silencers_robe', cost: 120 },
+  knell_brand: { id: 'knell_brand', cost: 250 },
 };
 
 const REROLL_COST = 1;

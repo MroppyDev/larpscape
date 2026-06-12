@@ -1,0 +1,166 @@
+{
+  "group": "prayer-slayer",
+  "areaName": "The Knell (temple hub) and the Sundered Choir (slayer dungeon beneath it)",
+  "theme": "The Sundered Choir / Order of the Last Verse. In Cantorne's sung cosmology, death is a voice falling silent — and the Offnote feeds on un-sung dead. The Order of the Last Verse is a militant monastic order that \"sings the dead to rest\": burying bones is literally completing an interrupted hymn, releasing resonance the Offnote would otherwise sour. Their cliff-cut temple, the Knell, sits over the Sundered Choir — a collapsed cathedral-cavern where Discord War dead never stopped fighting, now a slayer dungeon of resonant undead and Offnote-warped beasts. Prayer = restoring true notes (consonance). Slayer = silencing wrong ones (the cull). Both serve the same creed: every thing that rings false must be made to ring true or made to stop ringing.",
+  "summary": "Current gaps: PRAYER is the thinnest skill in the game — only two trainable items (bones buryXp 4.5, big_bones 15), no dragon/ourg-tier bones, no efficient burial site, no bone-running economy, no altar that boosts bury XP, and only 6 prayers (cap level 16, all minor stat mults). There is no Prayer hub at all; recharging happens at scattered quest altars. SLAYER has Brogan and a working task loop but tasks pull from a flat 18-NPC TASK_POOL scattered across the whole map (huge walking), a 4-item reward shop, and no dedicated slayer area — task monsters are wherever they happen to live. This expansion adds: (1) The Knell, a temple hub on a cliff with the Order of the Last Verse; (2) a high-XP-density Charnel Cloister for burning through bones with a consecrated altar that boosts bury XP, plus a full bone tier ladder (ranged/dragon/ourg/resonant); (3) the Sundered Choir, a clustered slayer dungeon with 6 new resonant/undead task monsters packed into tight chambers so a player barely walks; (4) higher prayers (level 17-60) including protection-style and a Slayer-synergy prayer; (5) an expanded slayer reward shop and a consecrated-altar/bone-sink reward economy; (6) a second slayer master (Cantor Veil) gating high-tier tasks.",
+  "newItems": [
+    {
+      "id": "ranged_bones",
+      "name": "Beast bones",
+      "role": "Mid-tier prayer training bones. buryXp 35. Dropped by Sundered Choir beasts (gravewail_hound, choir_ghast). Fills the gap between big_bones(15) and dragon_bones.",
+      "tier": "Prayer 1+ usable; sourced from lvl 30-50 task monsters",
+      "value": 2,
+      "source": "drop: gravewail_hound, choir_ghast, dirgewolf"
+    },
+    {
+      "id": "dragon_bones",
+      "name": "Drake bones",
+      "role": "High-tier prayer bones. buryXp 72. The standard fast-prayer training item. Dropped by Sundered Choir's chordwyrm and existing drakes.",
+      "tier": "Prayer training staple, ~level 40+ content",
+      "value": 3,
+      "source": "drop: chordwyrm, shadow_drake; Charnel Cloister reward sink"
+    },
+    {
+      "id": "ourg_bones",
+      "name": "Tollbone",
+      "role": "Top farmable prayer bones. buryXp 140. From the dungeon mini-boss carillon_revenant.",
+      "tier": "endgame prayer, ~level 60+",
+      "value": 5,
+      "source": "drop: carillon_revenant"
+    },
+    {
+      "id": "resonant_bones",
+      "name": "Unsung bones",
+      "role": "Best-in-slot prayer bones. buryXp 210 when buried, but 252 if buried on a consecrated_altar. The prestige bone, tied to the Charnel Cloister altar mechanic.",
+      "tier": "endgame, gated behind Sundered Choir clears",
+      "value": 8,
+      "source": "drop: choir_warden boss; carillon_revenant rare"
+    },
+    {
+      "id": "holy_censer",
+      "name": "Holy censer",
+      "role": "Held/offhand consumable-charge item: while equipped, burying any bones grants +25% Prayer XP (server multiplies buryXp). A bone-running QoL/efficiency reward. Recharged with incense at the Knell.",
+      "tier": "Prayer 30 to equip",
+      "value": 15000,
+      "source": "Knell reward shop (bone-offering currency)"
+    },
+    {
+      "id": "censer_incense",
+      "name": "Censer incense",
+      "role": "Stackable charge item for holy_censer; 1 restores 100 censer charges. Sold by Sister Plainsong.",
+      "tier": "any",
+      "value": 40,
+      "source": "Sister Plainsong shop, 40 coins each"
+    },
+    {
+      "id": "prayer_potion",
+      "name": "Prayer potion",
+      "role": "ALREADY EXISTS (restoresPrayer 25). Reused as the dungeon's recommended consumable; no change.",
+      "tier": "existing",
+      "value": 120,
+      "source": "existing herblore"
+    },
+    {
+      "id": "choir_dust",
+      "name": "Choir dust",
+      "role": "Slayer/dungeon currency item: dropped by all Sundered Choir monsters. Turned in to Cantor Veil for the bone-offering reward shop and consecrated_altar recharges. A material sink that doesn't inflate coins.",
+      "tier": "any",
+      "value": 10,
+      "source": "common drop from all 6 new task monsters"
+    },
+    {
+      "id": "silencers_cowl",
+      "name": "Silencer's cowl",
+      "role": "Slayer head gear. defBonus 20, attBonus 4. Set piece: wearing full Silencer set grants +15% Slayer XP from on-task kills (client/server flag like family_bane).",
+      "tier": "Slayer 35, Defence 30",
+      "value": 22000,
+      "source": "slayer reward shop, 90 points"
+    },
+    {
+      "id": "silencers_robe",
+      "name": "Silencer's robe",
+      "role": "Slayer body gear. defBonus 28, strBonus 4. Silencer set piece.",
+      "tier": "Slayer 35, Defence 30",
+      "value": 30000,
+      "source": "slayer reward shop, 120 points"
+    },
+    {
+      "id": "silencers_greaves",
+      "name": "Silencer's greaves",
+      "role": "Slayer legs. defBonus 24. Silencer set piece.",
+      "tier": "Slayer 35, Defence 30",
+      "value": 26000,
+      "source": "slayer reward shop, 100 points"
+    },
+    {
+      "id": "knell_brand",
+      "name": "Knell brand",
+      "role": "Top slayer weapon. attBonus 58, strBonus 55, attackSpeed 4, levelReq Attack 50/Slayer 50. effect family_bane vs family 'offnote' AND 'undead' (accMult 1.25, dmgMult 1.25). Spec 'Last Knell': heavy_hit accMult 1.4 dmgMult 1.8. The slayer capstone weapon, stronger than dirge_blade.",
+      "tier": "Slayer 50, Attack 50",
+      "value": 85000,
+      "source": "slayer reward shop, 250 points"
+    },
+    {
+      "id": "binding_chime",
+      "name": "Binding chime",
+      "role": "Slayer utility: equippable offhand, while on a Sundered Choir task grants +8% accuracy vs task monster family. Cheap early reward.",
+      "tier": "Slayer 25",
+      "value": 9000,
+      "source": "slayer reward shop, 35 points"
+    },
+    {
+      "id": "tome_of_dirges",
+      "name": "Tome of dirges",
+      "role": "Upgraded tome_of_grudges. read-dirge op: consumes one for 5000 Slayer XP. Mirrors existing read-tome handler.",
+      "tier": "Slayer 40",
+      "value": 6000,
+      "source": "slayer reward shop, 60 points"
+    },
+    {
+      "id": "unsung_helm",
+      "name": "Unsung helm",
+      "role": "Prayer-themed head gear, the prayer prestige cosmetic-with-stats reward: defBonus 12, and while equipped passive halves prayer point drain rate (server PRAYER_DRAIN reads an equip flag). Bone-offering reward.",
+      "tier": "Prayer 50, Defence 40",
+      "value": 45000,
+      "source": "Knell reward shop, bone-offering currency"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "NEW intent domain 'bone-offering' (op 'offer', item) in intent-misc.ts — consumes a bone item, grants buryXp as Prayer XP, awards boneTokens by tier (1/3/6/12/24/36). Mirrors the bury domain + the slayer buy pattern. Owns new state field state.boneTokens.",
+    "EXTEND 'recharge-prayer' intent (intent-produce.ts:709) to accept nearObject(...,'consecrated_altar') in addition to 'altar'.",
+    "EXTEND 'bury' intent (intent-produce.ts:626) — if nearObject(x,y,'consecrated_altar'), multiply buryXp by 1.20 (Math.floor) before addXp; and if holy_censer is equipped with charges, multiply by 1.25 and decrement a charge.",
+    "EXTEND slayer intent: add TASK_POOL_HIGH for Cantor Veil (the 6 new monsters) selectable when player Slayer level >= 40; add buy entries (binding_chime, tome_of_dirges, silencers_cowl/robe/greaves, knell_brand) to REWARDS with the costs above; add 'read-dirge' op mirroring 'read-tome' (consume tome_of_dirges, +5000 Slayer XP); add 'turn-in-dust' op (consume choir_dust for incense/altar upkeep).",
+    "NEW prayers in magic.json prayers[] (PRAYER_DRAIN auto-reads them): {steel_skin lvl19 drain3 boost defence mult1.15}, {raging_chord lvl21 drain3 boost strength mult1.15}, {true_aim lvl23 drain3 boost attack mult1.15}, {ward_of_aulden lvl25 drain8 boost protect_melee}, {ward_of_syla lvl28 drain8 boost protect_ranged}, {ward_of_quiess lvl31 drain8 boost protect_magic}, {ironheart_skin lvl37 drain5 boost defence mult1.20}, {chorus_of_war lvl40 drain5 boost strength mult1.23}, {perfect_pitch lvl43 drain5 boost attack mult1.20}, {culling_hymn lvl50 drain6 boost strength mult1.18 (Slayer-synergy: extra mult vs on-task target, client-side like family_bane)}, {last_verse lvl60 drain12 boost protect_melee + strength mult1.05 (capstone)}.",
+    "New combat NPCs in npcs.json (reuse existing schema): gravewail_hound (cb 22, hp 30, family undead, drops ranged_bones 1@1, choir_dust 1@0.5), choir_ghast (cb 28, hp 36, family offnote, drops ranged_bones, choir_dust), dirgewolf (cb 38, hp 55, family undead, drops ranged_bones/big_bones, choir_dust), chordwyrm (cb 48, hp 75, family offnote, drops dragon_bones 1@1, choir_dust), dirge_ghoul (cb 42, hp 64, family undead, drops big_bones, choir_dust, prayer_potion 1@0.05), carillon_revenant (cb 70, hp 130, family undead, mini-boss, drops ourg_bones 1@1, resonant_bones 1@0.1, choir_dust 2-4), choir_warden (cb 95, hp 220, family offnote/undead, boss, drops resonant_bones 1-2, ourg_bones, choir_dust, knell_brand 1@0.01).",
+    "map.json placements: object {type:'consecrated_altar'} at Charnel Cloister center; 8x {type:'bone_offering_brazier'}; staircase/dungeon entrance; the 32 task-monster spawns in spawns.json across the three dungeon chambers."
+  ],
+  "newObjectsOrMechanics": [
+    "object type 'consecrated_altar' — placed in the Charnel Cloister at the Knell. Two behaviors: (a) acts like 'altar' for recharge-prayer (extend nearObject check OR add to recharge-prayer's accepted types); (b) NEW bury-boost mechanic: the bury intent checks nearObject(x,y,'consecrated_altar') and if true multiplies buryXp by 1.20 (e.g. resonant_bones 210 -> 252). Server-resolved in intent-produce.ts bury domain; no client trust. Recharged/kept-lit by offering choir_dust (optional sink).",
+    "object type 'bone_offering_brazier' — at the Knell. New intent domain 'bone-offering' (op:'offer', item): consumes a bone item, grants its buryXp as Prayer XP AND awards 'offering tokens' (a new owned state field state.boneTokens) scaled by the bone tier (bones=1, big_bones=3, ranged_bones=6, dragon_bones=12, ourg_bones=24, resonant_bones=36). Tokens are the Knell reward-shop currency. This is the prayer reward sink — you sacrifice bones you'd otherwise bury for prestige gear (holy_censer, unsung_helm).",
+    "prayer 'protect' mechanic extension — current prayers only do stat mults via prayerMult. Add boost types 'protect_melee'/'protect_magic'/'protect_ranged' (mult ignored; client halves incoming damage of that style, same pattern as boss_drake.ts which already checks activePrayers.size). Server already owns activePrayers + drain, so only the client damage-halving branch and the magic.json entries are new.",
+    "object type 'task_brazier' (cluster marker, decorative + 'Examine' lore) scattered in Sundered Choir chambers so the dungeon reads as a consecrated battlefield; no mechanic, registerObjectAction Examine only.",
+    "NO new engine primitives required — bone tiers reuse buryXp, new prayers reuse the prayers[] schema + drain map, task monsters reuse npcs.json+spawns.json+drops, reward shops reuse the existing REWARDS buy-op pattern. Only genuinely new server logic: consecrated_altar bury multiplier, bone-offering domain + boneTokens field, and protect-prayer client damage halving."
+  ],
+  "newNpcs": [
+    "cantor_veil — name 'Cantor Veil', the Knell's high slayer master. Second slayer master gating a high-tier TASK_POOL_HIGH (the 6 new Sundered Choir monsters); runs the expanded slayer reward shop (silencer set, knell_brand, binding_chime, tome_of_dirges) and turns in choir_dust. Placed at the Knell ~ (155,232).",
+    "sister_plainsong — name 'Sister Plainsong', Order quartermaster: sells censer_incense and prayer_potion, runs the Knell bone-offering reward shop (boneTokens -> holy_censer, unsung_helm), explains the consecrated altar. Placed in the Charnel Cloister ~ (150,228).",
+    "abbot_threnody — name 'Abbot Threnody', lore/quest-giver head of the Order of the Last Verse. Tutorial dialogue for prayer/bury economy and the protect prayers; future quest hook. Placed at the Knell chapel ~ (152,230).",
+    "choir_warden — boss NPC (combatLevel ~95, hitpoints 220, family 'undead'/'offnote') at the deepest Sundered Choir chamber; drops resonant_bones, choir_dust, knell_brand rare. Acts as both a slayer target and the dungeon's capstone."
+  ],
+  "trainingLayout": "PRAYER — The Charnel Cloister: a small walled courtyard at the Knell (~12x12 tiles, region around 145-158,224-236) holding ONE consecrated_altar in the center and a ring of 8 bone_offering_braziers around it, so a player banks bones at Sister Plainsong (adjacent, ~1 tile north), steps to the altar, and burns a full inventory of resonant_bones/dragon_bones with the +20% altar bonus without moving more than 2 tiles. Bank chest + Plainsong + altar + brazier all within a 4-tile radius — the densest prayer-training footprint in the game. SLAYER — The Sundered Choir dungeon, three tight chambers stacked along a short corridor beneath the Knell (entrance staircase object at ~155,234 dropping into a dungeon-region cluster, footprint ~24x18). Chamber 1 'The Pews' (low tier): 6 gravewail_hound + 6 choir_ghast packed in a 8x6 room. Chamber 2 'The Transept' (mid): 6 dirgewolf + 4 chordwyrm + 6 dirge_ghoul in a 10x8 room. Chamber 3 'The Apse' (high): 4 carillon_revenant + the choir_warden boss. All spawns clustered 1-2 tiles apart with respawnTicks ~30-60 so a player on a Cantor Veil task barely walks between kills — this is the dense, efficient slayer grind analog to the mining rock pits. Total ~32 task-monster spawns in one contiguous dungeon.",
+  "rewards": "Two reward economies. (1) SLAYER points shop (Cantor Veil, extends existing REWARDS): binding_chime 35, tome_of_dirges 60, silencers_cowl 90, silencers_greaves 100, silencers_robe 120, knell_brand 250 — keeps existing dirge_blade/cull_band/wardens_visor/tome_of_grudges. Silencer full-set bonus (+15% on-task Slayer XP) is the prestige grind goal; knell_brand the BiS capstone. Points already flow via streak (BASE 3 / 5th 15 / 10th 40). (2) PRAYER bone-offering economy (Sister Plainsong, new boneTokens currency): holy_censer (+25% bury XP, big QoL) and unsung_helm (halved prayer drain) — both sinks for the bones you'd otherwise bury, creating a meaningful 'bury vs offer' choice. choir_dust is a pure material sink turned in to Cantor Veil to keep the consecrated_altar lit and buy incense, draining dungeon trash without inflating coins. coins sinks: censer_incense at 40 ea is a steady ongoing gold drain for active bone-runners.",
+  "mapAreaProposal": "Place the Knell on the unused south-central highlands between Port Brackwater (105,196) and Stonewatch (272,178), roughly centered around (152,232) — a cliff-edge temple precinct ~16x16 tiles. The Charnel Cloister occupies the walled courtyard NW of the chapel (~145-158,224-236). The Sundered Choir dungeon sits 'beneath' it as its own contiguous dungeon-region cluster (~24x18) reached by a staircase at ~155,234; coordinates finalized at integration. Biome: weathered grey stone, cliff/coast adjacency fitting a clifftop monastery, near the Gullswreck(94,262)/Port Brackwater coastal band so it ties into the southern travel network. Theme: lonely militant-monastic temple over a haunted collapsed cathedral.",
+  "balanceNotes": "XP curve consistency: bury XP currently bones 4.5 / big_bones 15. New ladder 35/72/140/210 mirrors OSRS spacing (dragon 72 is the real number) and slots cleanly above big_bones. Consecrated altar (+20%) and holy_censer (+25%) stack to ~+50% — strong but gated behind a hub, a 30-Prayer equip, an incense gold sink, and bone supply, matching OSRS gilded-altar economics. To 99 Prayer from buried drake bones at ~3.5 bones/inv-cycle the rates stay comparable to current bones grind, just less walking. SLAYER: kill XP stays = npc hitpoints (existing creditSlayerKill), so the 6 new monsters (hp 30-220) give 30-220 Slayer XP/kill — carillon_revenant (130) and choir_warden (220) are efficient but combat-gated. New high tasks only roll for Cantor Veil at Slayer>=40 so low players still get the easy TASK_POOL via Brogan; no curve trivialization. Points stay scarce (streak-based), and knell_brand at 250 points (~25-80 tasks) is a genuine long-term goal. knell_brand (att58/str55) edges above dirge_blade (str42) but requires Slayer 50 + dungeon access, so it gates the slayer-weapon ceiling without dwarfing mainline gear. choir_dust and censer_incense are net sinks (no coin output), keeping the economy tight.",
+  "postBlurb": "The Order of the Last Verse has opened the gates of the Knell — a clifftop temple where the dead are sung to rest and the un-sung are put down. Bring your bones to the Charnel Cloister, where a consecrated altar makes every burial ring truer (and burn faster), or offer them at the brazier for relics like the Holy Censer and the Unsung Helm. Below the chapel, the Sundered Choir still fights a war that ended an age ago: Cantor Veil has tasks for those brave enough to descend, and a reward vault holding the Silencer's vestments and the Knell Brand for those who finish them. Some notes were never meant to be held. Go and end them.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [],
+    "mechanicFit": "Most mechanics map onto the existing engine as pure data; three need new server code (all correctly self-identified by the spec) plus one client change. PURE DATA (no engine work): new bone items reuse items.json buryXp -> existing bury domain at intent-produce.ts:626 reads ITEMS[item].buryXp generically. New combat NPCs reuse npcs.json schema (sim.ts family + family_bane). New prayers reuse magic.json prayers[] -> PRAYER_DRAIN (index.ts:635) auto-reads any {id,drain}, and stat-mult prayers (steel_skin/raging_chord/true_aim/ironheart_skin/chorus_of_war/perfect_pitch) reuse the existing boost+mult schema; pray-toggle (intent-produce.ts:730) already enforces level + one-prayer-per-boost-group. censer_incense/prayer_potion shop sales reuse intent-shop. NEW SERVER CODE REQUIRED: (1) consecrated_altar bury multiplier + holy_censer charge-decrement in the bury domain (new branch, new state field for censer charges); (2) recharge-prayer (intent-produce.ts:711 hardcodes nearObject(...,'altar')) must be extended to also accept 'consecrated_altar'; (3) new 'bone-offering' intent domain + state.boneTokens field + a second (bone-token) reward shop, mirroring the slayer REWARDS buy pattern at intent-misc.ts:304-318. NEW CLIENT CODE REQUIRED: protect_melee/magic/ranged prayers — prayerMult() in src/game.ts:1186 is typed to only attack|strength|defence, so protect boosts produce NO effect today; the damage halving must hook the existing registerDamageModifier infra (src/game.ts:208-212) — new code, but the infra exists. SLAYER: a second master (cantor_veil) with a high-tier TASK_POOL_HIGH and Slayer>=40 gating is NEW logic — the current slayer() has a single global TASK_POOL and pickTask() weights purely by combat level, with no master identity or slayer-level gate; adding a second pool/master requires code, not just data. read-dirge mirrors read-tome (intent-misc.ts:290) trivially. The +15% Slayer-set and binding_chime +8% on-task accuracy and culling_hymn on-task mult are client-side on-task flags like family_bane — new client code, modest.",
+    "balanceFlags": [
+      "bones buryXp in items.json is 4.5, NOT 15 as the spec's gap description implies ('between big_bones(15)') — big_bones is 15, bones is 4.5; bone-offering token tiers (bones=1.. resonant=36) are arbitrary and fine, but verify the 'fills the gap' framing: ranged_bones 35 and dragon_bones 72 sit far above big_bones 15, a 2.3x jump — sane progression but steeper than the 4.5->15 base step.",
+      "knell_brand value 85000 / 250 pts vs existing capstone dirge_blade 30000 / 120 pts: roughly double cost for ~+12 att/+13 str over dirge_blade — reasonable tier-up, not broken. silencer set values (22k-30k) and unsung_helm 45k are consistent with existing high-tier (wardens_visor 6k is much lower tier; cull_band 8k). No XP-curve violation: 5000 Slayer XP per tome_of_dirges is ~3.3x the existing tome_of_grudges 1500 — fine for a higher-tier item. Prayer mults up to 1.23 (chorus_of_war) exceed the current max 1.1 (stone_hide/giants_strength) — this is a real power-creep jump; confirm intended since current top prayer is only 1.1.",
+      "ranged_bones value 2 / dragon_bones 3 / ourg_bones 5 / resonant_bones 8 mirror existing bones=1/big_bones=1 cheap-vendor pattern — fine (they are XP items, not gold). holy_censer 15000 and unsung_helm 45000 have item 'value' but are bone-token shop only; ensure they are NOT purchasable for coins anywhere or the value field leaks a gold path."
+    ],
+    "notes": "No id collisions: none of the 15 new item ids, 7 new npc ids, or 3 object types exist in items.json/npcs.json/objects.json. Referenced existing ids are valid: bones, big_bones, prayer_potion, dirge_blade, tome_of_grudges (items), shadow_drake (npc, spec drops dragon_bones from it), altar (object). CORRECTIONS THE INTEGRATOR MUST APPLY: (1) NPC family is a single string (sim.ts: family?: string; familyMods matches one e.family===n.def.family). choir_warden cannot have family 'offnote/undead' — pick ONE family, or the family_bane weapon only hits one of them. (2) knell_brand 'family_bane vs offnote AND undead' must be authored as TWO separate family_bane effect objects in effects[] (familyMods loops effects and multiplies each match) — a single effect with two families is unsupported. (3) recharge-prayer currently hardcodes nearObject('altar') — must be code-extended, not data, to accept consecrated_altar. (4) protect_* prayers do nothing until prayerMult()'s union type is widened AND a registerDamageModifier hook is added client-side; without that they are dead toggles that still drain. (5) state.boneTokens and any holy_censer charge counter are new persisted fields — add to state.ts AuthState (cf. activePrayers at state.ts:140) and initialize. (6) The second slayer master + TASK_POOL_HIGH + Slayer>=40 gate is new server logic; the existing slayer() has one global pool weighted by combat level only, no master identity. (7) Confirm holy_censer/unsung_helm are NOT added to any coin shop (shops.json) — their 'value' field should not create a gold purchase path."
+  }
+}

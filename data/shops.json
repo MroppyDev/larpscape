@@ -517,5 +517,647 @@
         "qty": 5
       }
     ]
+  },
+  "qv_general": {
+    "name": "Quaverside Sundries",
+    "stock": [
+      {
+        "item": "hammer",
+        "qty": 4
+      },
+      {
+        "item": "saw",
+        "qty": 4
+      },
+      {
+        "item": "nails",
+        "qty": 100
+      },
+      {
+        "item": "plank",
+        "qty": 10
+      },
+      {
+        "item": "chisel",
+        "qty": 2
+      },
+      {
+        "item": "apple",
+        "qty": 10
+      },
+      {
+        "item": "orange",
+        "qty": 10
+      },
+      {
+        "item": "bolt_of_cloth",
+        "qty": 5
+      },
+      {
+        "item": "bucket",
+        "qty": 2
+      }
+    ]
+  },
+  "qv_hunter_supplies": {
+    "name": "Brackle's Traps & Tackle",
+    "stock": [
+      {
+        "item": "bird_snare",
+        "qty": 10
+      },
+      {
+        "item": "box_trap",
+        "qty": 8
+      },
+      {
+        "item": "feather",
+        "qty": 50
+      }
+    ]
+  },
+  "saltsong_tackle": {
+    "name": "Orin's Lines & Weights",
+    "stock": [
+      {
+        "item": "small_net",
+        "qty": 10
+      },
+      {
+        "item": "fishing_rod",
+        "qty": 10
+      },
+      {
+        "item": "harpoon",
+        "qty": 10
+      },
+      {
+        "item": "lobster_pot",
+        "qty": 10
+      },
+      {
+        "item": "fishing_bait",
+        "qty": 1000
+      },
+      {
+        "item": "bronze_net",
+        "qty": 10
+      },
+      {
+        "item": "feather_rod",
+        "qty": 6
+      },
+      {
+        "item": "iron_harpoon",
+        "qty": 6
+      },
+      {
+        "item": "wicker_cage",
+        "qty": 6
+      }
+    ]
+  },
+  "saltsong_galley": {
+    "name": "The Hearthchoir Larder",
+    "stock": [
+      {
+        "item": "onion",
+        "qty": 30
+      },
+      {
+        "item": "bowl_of_water",
+        "qty": 30
+      },
+      {
+        "item": "salt_pinch",
+        "qty": 200
+      },
+      {
+        "item": "knife",
+        "qty": 10
+      }
+    ]
+  },
+  "verdancourt_seeds": {
+    "name": "Verdancourt Seed Trough",
+    "stock": [
+      {
+        "item": "onion_seed",
+        "qty": 50
+      },
+      {
+        "item": "potato_seed",
+        "qty": 30
+      },
+      {
+        "item": "cabbage_seed",
+        "qty": 30
+      },
+      {
+        "item": "sweetcorn_seed",
+        "qty": 30
+      },
+      {
+        "item": "strawberry_seed",
+        "qty": 30
+      },
+      {
+        "item": "watermelon_seed",
+        "qty": 20
+      },
+      {
+        "item": "harralander_seed",
+        "qty": 20
+      },
+      {
+        "item": "toadflax_seed",
+        "qty": 15
+      },
+      {
+        "item": "avantoe_seed",
+        "qty": 10
+      },
+      {
+        "item": "kwuarm_seed",
+        "qty": 10
+      },
+      {
+        "item": "rake",
+        "qty": 10
+      },
+      {
+        "item": "seed_dibber",
+        "qty": 10
+      },
+      {
+        "item": "verdant_trowel",
+        "qty": 5
+      },
+      {
+        "item": "compost",
+        "qty": 20
+      }
+    ]
+  },
+  "verdancourt_apothecary": {
+    "name": "Vell's Apothecary",
+    "stock": [
+      {
+        "item": "vial_of_water",
+        "qty": 50
+      },
+      {
+        "item": "eye_of_newt",
+        "qty": 50
+      },
+      {
+        "item": "limpwurt_root",
+        "qty": 15
+      },
+      {
+        "item": "snape_grass",
+        "qty": 15
+      },
+      {
+        "item": "white_berries",
+        "qty": 10
+      },
+      {
+        "item": "red_spiders_eggs",
+        "qty": 10
+      },
+      {
+        "item": "resonant_dust",
+        "qty": 8
+      }
+    ]
+  },
+  "sustainer_rewards": {
+    "name": "Sustainer's Reward Trough",
+    "stock": [
+      {
+        "item": "herb_sack",
+        "qty": 2
+      },
+      {
+        "item": "gardeners_hat",
+        "qty": 5
+      },
+      {
+        "item": "gardeners_top",
+        "qty": 5
+      },
+      {
+        "item": "gardeners_legs",
+        "qty": 5
+      },
+      {
+        "item": "gardeners_boots",
+        "qty": 5
+      },
+      {
+        "item": "resonant_dibber",
+        "qty": 2
+      },
+      {
+        "item": "supercompost",
+        "qty": 20
+      },
+      {
+        "item": "truechord_seed",
+        "qty": 4
+      },
+      {
+        "item": "cadantine_seed",
+        "qty": 8
+      },
+      {
+        "item": "dwarf_weed_seed",
+        "qty": 6
+      }
+    ]
+  },
+  "resonne_runes": {
+    "name": "Ompin's Bulk Ledger",
+    "stock": [
+      {
+        "item": "air_rune",
+        "qty": 1000
+      },
+      {
+        "item": "mind_rune",
+        "qty": 1000
+      },
+      {
+        "item": "water_rune",
+        "qty": 600
+      },
+      {
+        "item": "earth_rune",
+        "qty": 600
+      },
+      {
+        "item": "fire_rune",
+        "qty": 600
+      },
+      {
+        "item": "chaos_rune",
+        "qty": 250
+      }
+    ]
+  },
+  "resonne_supplies": {
+    "name": "Brae's First Lessons",
+    "stock": [
+      {
+        "item": "rune_essence",
+        "qty": 1000
+      },
+      {
+        "item": "chant_tiara",
+        "qty": 10
+      },
+      {
+        "item": "bronze_pickaxe",
+        "qty": 10
+      }
+    ]
+  },
+  "quartermaster_bell": {
+    "name": "The Quartermaster's Rack",
+    "stock": [
+      {
+        "item": "drillmasters_baton",
+        "qty": 10
+      },
+      {
+        "item": "metronome_charm",
+        "qty": 5
+      },
+      {
+        "item": "tuned_scimitar",
+        "qty": 2
+      },
+      {
+        "item": "hammer",
+        "qty": 10
+      },
+      {
+        "item": "bronze_sword",
+        "qty": 5
+      },
+      {
+        "item": "wooden_shield",
+        "qty": 5
+      }
+    ]
+  },
+  "hold_infirmary": {
+    "name": "The Hold Infirmary",
+    "stock": [
+      {
+        "item": "sustain_brew",
+        "qty": 50
+      },
+      {
+        "item": "bread",
+        "qty": 20
+      }
+    ]
+  },
+  "knell_supplies": {
+    "name": "Sister Plainsong's Stores",
+    "stock": [
+      {
+        "item": "censer_incense",
+        "qty": 100
+      },
+      {
+        "item": "prayer_potion",
+        "qty": 15
+      },
+      {
+        "item": "bread",
+        "qty": 10
+      }
+    ]
+  },
+  "quillrook_fletcher": {
+    "name": "Wren's Fletchery",
+    "stock": [
+      {
+        "item": "knife",
+        "qty": 10
+      },
+      {
+        "item": "feather",
+        "qty": 1000
+      },
+      {
+        "item": "arrow_shaft",
+        "qty": 1000
+      },
+      {
+        "item": "headless_arrow",
+        "qty": 500
+      },
+      {
+        "item": "bowstring",
+        "qty": 100
+      },
+      {
+        "item": "spidersilk_bowstring",
+        "qty": 8
+      },
+      {
+        "item": "steel_arrowtips",
+        "qty": 300
+      },
+      {
+        "item": "dragon_arrowtips",
+        "qty": 45
+      },
+      {
+        "item": "steel_arrow",
+        "qty": 200
+      },
+      {
+        "item": "reedwood_logs",
+        "qty": 25
+      },
+      {
+        "item": "bronze_axe",
+        "qty": 10
+      }
+    ]
+  },
+  "quillrook_gunsmith": {
+    "name": "Brace & Bore",
+    "stock": [
+      {
+        "item": "bronze_rifle",
+        "qty": 4
+      },
+      {
+        "item": "iron_rifle",
+        "qty": 3
+      },
+      {
+        "item": "steel_rifle",
+        "qty": 2
+      },
+      {
+        "item": "mithril_rifle",
+        "qty": 1
+      },
+      {
+        "item": "rune_rifle",
+        "qty": 1
+      },
+      {
+        "item": "gunpowder",
+        "qty": 500
+      },
+      {
+        "item": "longshot_bullet_casing",
+        "qty": 60
+      },
+      {
+        "item": "longshot_round",
+        "qty": 30
+      },
+      {
+        "item": "steel_round",
+        "qty": 300
+      },
+      {
+        "item": "mithril_round",
+        "qty": 200
+      },
+      {
+        "item": "adamant_round",
+        "qty": 100
+      },
+      {
+        "item": "rune_round",
+        "qty": 50
+      }
+    ]
+  },
+  "forgekeep_smith": {
+    "name": "Branna's Forge Supply",
+    "stock": [
+      {
+        "item": "hammer",
+        "qty": 10
+      },
+      {
+        "item": "coal",
+        "qty": 200
+      },
+      {
+        "item": "tuning_flux",
+        "qty": 30
+      },
+      {
+        "item": "steel_studs",
+        "qty": 100
+      }
+    ]
+  },
+  "forgekeep_weaver": {
+    "name": "The Weaver's Hush",
+    "stock": [
+      {
+        "item": "thread",
+        "qty": 500
+      },
+      {
+        "item": "needle",
+        "qty": 10
+      },
+      {
+        "item": "shears",
+        "qty": 10
+      },
+      {
+        "item": "ball_of_wool",
+        "qty": 100
+      },
+      {
+        "item": "leather",
+        "qty": 50
+      }
+    ]
+  },
+  "forgekeep_fletcher": {
+    "name": "The Stavewright's Gallery",
+    "stock": [
+      {
+        "item": "knife",
+        "qty": 10
+      },
+      {
+        "item": "feather",
+        "qty": 1000
+      },
+      {
+        "item": "bowstring",
+        "qty": 200
+      },
+      {
+        "item": "longbow_u",
+        "qty": 10
+      },
+      {
+        "item": "wooden_stock",
+        "qty": 20
+      }
+    ]
+  },
+  "forgekeep_gems": {
+    "name": "Yael's Gem Corner",
+    "stock": [
+      {
+        "item": "chisel",
+        "qty": 10
+      },
+      {
+        "item": "gold_bar",
+        "qty": 20
+      },
+      {
+        "item": "uncut_sapphire",
+        "qty": 10
+      },
+      {
+        "item": "uncut_emerald",
+        "qty": 6
+      }
+    ]
+  },
+  "forgekeep_ore": {
+    "name": "Halle's Ore Brokerage",
+    "stock": [
+      {
+        "item": "orikon_ore",
+        "qty": 8
+      },
+      {
+        "item": "coal",
+        "qty": 100
+      },
+      {
+        "item": "iron_ore",
+        "qty": 50
+      }
+    ]
+  },
+  "bole_axes": {
+    "name": "Bole's Felling Supplies",
+    "stock": [
+      {
+        "item": "bronze_axe",
+        "qty": 10
+      },
+      {
+        "item": "iron_axe",
+        "qty": 8
+      },
+      {
+        "item": "steel_axe",
+        "qty": 6
+      },
+      {
+        "item": "mithril_axe",
+        "qty": 4
+      },
+      {
+        "item": "adamant_axe",
+        "qty": 3
+      },
+      {
+        "item": "rune_axe",
+        "qty": 2
+      },
+      {
+        "item": "tinderbox",
+        "qty": 10
+      }
+    ]
+  },
+  "sawmill_stores": {
+    "name": "The Metronome Sawmill",
+    "stock": [
+      {
+        "item": "logs",
+        "qty": 50
+      },
+      {
+        "item": "oak_logs",
+        "qty": 20
+      },
+      {
+        "item": "willow_logs",
+        "qty": 10
+      },
+      {
+        "item": "knife",
+        "qty": 10
+      }
+    ]
+  },
+  "emberyard_coal": {
+    "name": "Quill's Coal Scuttle",
+    "stock": [
+      {
+        "item": "charcoal",
+        "qty": 30
+      },
+      {
+        "item": "tinderbox",
+        "qty": 10
+      }
+    ]
   }
 }

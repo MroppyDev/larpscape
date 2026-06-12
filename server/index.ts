@@ -39,6 +39,15 @@ import { makeIntents, dispatchIntentWs, registerIntentRoutes } from './intents-w
 import './intent-shop'; // side-effect: registers the 'shop'/'bank' WS domain handlers
 import './intent-produce'; // side-effect: registers production/gathering domain intents
 import './intent-misc'; // side-effect: registers gambling/slayer/misc-grant domain intents
+import './intent-melee'; // side-effect: registers Drummar's Hold melee domain intents
+import './intent-ranged'; // side-effect: registers range-shot / quill-load / quill-rewards domain intents
+import './intent-resonne'; // side-effect: registers enchant-tiara / grind-runes / conservatory-reward domain intents
+import './intent-forestry'; // side-effect: registers bonfire/quench/forestry-buy domain intents
+import './intent-saltsong'; // side-effect: registers the Saltsong Harbour fishing/cooking/token domains
+import './intent-forgekeep'; // side-effect: registers the 'forgekeep' domain (tan-hard + reward exchange)
+import './intent-verdancourt'; // side-effect: registers verd-pick / verd-compost / verd-extreme domains
+import './intent-knell'; // side-effect: registers the 'bone-offering' Knell domain (offer/consecrated bury/recharge/token shop)
+import './intent-quaverside'; // side-effect: registers Quaverside agility/hunter/construction domain intents
 import { installSlayerKillHook } from './intent-misc';
 import './intent-questb'; // side-effect: registers the 'questb-grant' repeatable quest-object domain
 import { installQuestKillHook } from './intent-quest'; // side-effect: registers quest-mark/turnin/craft; kill hook installed below

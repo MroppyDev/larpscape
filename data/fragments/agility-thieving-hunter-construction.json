@@ -1,0 +1,179 @@
+{
+  "group": "agility-thieving-hunter-construction",
+  "areaName": "Quaverside District",
+  "origin": { "x": 70, "y": 160 },
+  "items": [
+    { "id": "apple", "name": "Apple", "examine": "Crisp, red, and recently someone else's.", "value": 4, "edible": { "heals": 3 } },
+    { "id": "orange", "name": "Orange", "examine": "Round, orange, and named with tremendous imagination.", "value": 6, "edible": { "heals": 4 } },
+    { "id": "saw", "name": "Saw", "examine": "Cuts wood and conversations equally short.", "value": 13 },
+    { "id": "bolt_of_cloth", "name": "Bolt of cloth", "examine": "Guild-grade weave. Hums faintly off-key — best launder it into something wearable.", "value": 100 },
+    { "id": "uncut_diamond", "name": "Uncut diamond", "examine": "A cloudy stone with expensive intentions.", "value": 200 },
+    { "id": "diamond", "name": "Diamond", "examine": "A cut diamond. It catches the light, and everyone's attention.", "value": 500 },
+    { "id": "silk", "name": "Silk", "examine": "Smooth as a fence's alibi.", "value": 120 },
+    { "id": "hum_coin", "name": "Off-key coin", "examine": "A guild-marked coin that hums a sour note. Spend it and people notice; launder it and they don't.", "value": 250 },
+    { "id": "coin_pouch", "name": "Clipped coin pouch", "examine": "A coffer pouch, strings still warm. Worth more than the moral cost. Probably.", "value": 180 },
+    { "id": "wrightsong_mark", "name": "Wrightsong mark", "examine": "A stamped timber token. The Guild's way of saying thanks without saying coins.", "value": 1, "stackable": true },
+    { "id": "silk_climbing_rope", "name": "Silk climbing rope", "examine": "Three stalls' worth of silk, braided into something that holds your whole reputation.", "value": 300 },
+    { "id": "quaver_boots", "name": "Quaver boots", "examine": "Tuned soles. They land a sixteenth-note before you do.", "value": 12000, "equipSlot": "boots", "defBonus": 2 },
+    { "id": "graceful_hood", "name": "Graceful hood", "examine": "Light as a rumour. Part of the Graceful set.", "value": 10000, "equipSlot": "head", "defBonus": 1 },
+    { "id": "graceful_jerkin", "name": "Graceful jerkin", "examine": "Cut for running over rooftops, not from guards. Part of the Graceful set.", "value": 18000, "equipSlot": "body", "defBonus": 2 },
+    { "id": "graceful_leggings", "name": "Graceful leggings", "examine": "They make every gap look jumpable. Part of the Graceful set.", "value": 15000, "equipSlot": "legs", "defBonus": 2 },
+    { "id": "graceful_gloves", "name": "Graceful gloves", "examine": "Grip like a debt collector. Part of the Graceful set.", "value": 8000, "equipSlot": "gloves", "defBonus": 1 },
+    { "id": "graceful_boots", "name": "Graceful boots", "examine": "So quiet the weir drowns them out entirely. Part of the Graceful set.", "value": 9000, "equipSlot": "boots", "defBonus": 1 },
+    { "id": "cutpurse_gloves", "name": "Cutpurse gloves", "examine": "Supple leather, sticky fingers sold separately.", "value": 15000, "equipSlot": "gloves", "defBonus": 1 },
+    { "id": "box_trap", "name": "Box trap", "examine": "A tuned box that closes on anything curious enough to deserve it.", "value": 140 },
+    { "id": "chime_moth", "name": "Chime-moth", "examine": "It rings a perfect E when startled. It is always startled.", "value": 60 },
+    { "id": "resonant_fowl_meat", "name": "Resonant fowl meat", "examine": "Raw fowl that still hums a little. Cooking fixes the pitch.", "value": 45 },
+    { "id": "roast_fowl", "name": "Roast fowl", "examine": "Roasted to a warm, satisfied silence.", "value": 75, "edible": { "heals": 11 } },
+    { "id": "chincrest", "name": "Chincrest", "examine": "A round, resonant critter. Handle gently; it holds a grudge and a charge.", "value": 900 },
+    { "id": "larupia_fur", "name": "Marsh-cat fur", "examine": "Plush fur from a marsh-cat that fell for the oldest trick in the reeds.", "value": 420 },
+    { "id": "hunters_horn", "name": "Hunter's horn", "examine": "One long note and the marsh leans in to listen.", "value": 16000 },
+    { "id": "teak_logs", "name": "Teak logs", "examine": "Dense grove timber. The Wrightsong Guild swears it sings in tune.", "value": 50 },
+    { "id": "mahogany_logs", "name": "Mahogany logs", "examine": "Dark, heavy, and priced like it knows it.", "value": 160 },
+    { "id": "teak_plank", "name": "Teak plank", "examine": "Sawn teak. Furniture with ambitions.", "value": 90 },
+    { "id": "mahogany_plank", "name": "Mahogany plank", "examine": "A plank for builds you invite people over to see.", "value": 280 },
+    { "id": "tuned_hammer", "name": "Tuned hammer", "examine": "Strikes the nail AND the note. Required for the Guild's chiming commissions.", "value": 4500 },
+    { "id": "wrightsong_robe", "name": "Wrightsong robe", "examine": "Guild livery. Sawdust is included and non-negotiable.", "value": 20000, "equipSlot": "body", "defBonus": 3 },
+    { "id": "skill_cape_agility", "name": "Cape of the Quaver", "examine": "Ninety-nine levels of never touching the ground. The weir hums it a fanfare.", "value": 99000 }
+  ],
+  "objs": [
+    { "id": "qv_beam", "name": "Tuned beam", "examine": "A plank over the canal that chimes when you land true.", "action": "Cross", "blocks": false },
+    { "id": "qv_lock_jump", "name": "Lock gates", "examine": "Canal lock gates with a sporting gap between them.", "action": "Leap", "blocks": false },
+    { "id": "qv_rooftop", "name": "Rooftop ladder", "examine": "Half scaffold, half ladder, all liability.", "action": "Climb", "blocks": false },
+    { "id": "qv_zipline", "name": "Silk zipline", "examine": "A taut line over the weir. Bring your own rope, and your own nerve.", "action": "Ride", "blocks": false },
+    { "id": "qv_chimney", "name": "Chimney gap", "examine": "Two warm flues and barely a person's width of regret between them.", "action": "Squeeze", "blocks": false },
+    { "id": "qv_gap_vault", "name": "Rooftop gap", "examine": "The street below is patient. It can wait for you to miss.", "action": "Vault", "blocks": false },
+    { "id": "qv_spire_run", "name": "Spire ridgeline", "examine": "A run along the bell-spire's ridge. The bell judges your footwork.", "action": "Run", "blocks": false },
+    { "id": "silk_stall", "name": "Silk stall", "examine": "Fine silks, loosely supervised.", "action": "Steal-from", "blocks": true },
+    { "id": "fruit_stall", "name": "Fruit stall", "examine": "Fresh fruit, priced for the honest and free for the quick.", "action": "Steal-from", "blocks": true },
+    { "id": "coffer_stall", "name": "Coffer stall", "examine": "The Guild's counting table. The coins hum; the guards hum back.", "action": "Steal-from", "blocks": true },
+    { "id": "relic_stall", "name": "Relic stall", "examine": "Resonant curios under glass. The glass is mostly a suggestion.", "action": "Steal-from", "blocks": true },
+    { "id": "box_trap_set", "name": "Box trap", "examine": "A set box trap, humming an inviting little tune.", "action": "Check", "blocks": false },
+    { "id": "pitfall_set", "name": "Pitfall", "examine": "Reeds laid over a hole. Convincing, if you're a marsh-cat.", "action": "Check", "blocks": false },
+    { "id": "high_box_trap_set", "name": "High box trap", "examine": "A reinforced box trap tuned for something with opinions.", "action": "Check", "blocks": false },
+    { "id": "qv_workbench", "name": "Guild workbench", "examine": "A Wrightsong bench. The vice hums when the work is good.", "action": "Build", "blocks": true },
+    { "id": "qv_sawmill", "name": "Sawmill bench", "examine": "Logs in, planks out, coins gone. The Guild calls it alchemy.", "action": "Saw-logs", "blocks": true },
+    { "id": "contract_board", "name": "Contract board", "examine": "Guild commissions, paid in Wrightsong marks. The ink never dries before the work changes.", "action": "Read", "blocks": true },
+    { "id": "fence_table", "name": "Fence's table", "examine": "A plain table where off-key coins learn to sing in tune. For a cut.", "action": "Launder", "blocks": true },
+    { "id": "qv_weir", "name": "Murmur weir", "examine": "The river drops an octave here and never stops humming about it.", "action": "Listen", "blocks": true },
+    { "id": "qv_canal_lock", "name": "Canal lock", "examine": "A lock that raises barges and lowers expectations.", "action": "Look-at", "blocks": true },
+    { "id": "qv_scaffold", "name": "Wrightsong scaffold", "examine": "Permanently temporary, like everything in Quaverside.", "action": "Look-at", "blocks": true },
+    { "id": "wrightsong_banner", "name": "Wrightsong banner", "examine": "A timber-and-quaver crest. It flaps in 4/4 time.", "action": "Look-at", "blocks": false },
+    { "id": "trophy_mount", "name": "Trophy mount", "examine": "A mounted marsh-cat with an expression of mild surprise.", "action": "Look-at", "blocks": true },
+    { "id": "teak", "name": "Teak tree", "examine": "Grove-grown teak. The Guild planted it singing; it grew up sarcastic.", "action": "Chop down", "blocks": true },
+    { "id": "mahogany", "name": "Mahogany tree", "examine": "Dark timber for bright commissions.", "action": "Chop down", "blocks": true }
+  ],
+  "skillObjs": [
+    { "id": "teak", "level": 35, "xp": 85, "item": "teak_logs", "depleteChance": 0.125, "respawn": 18, "lowRate": 0.15, "highRate": 0.8 },
+    { "id": "mahogany", "level": 50, "xp": 125, "item": "mahogany_logs", "depleteChance": 0.125, "respawn": 30, "lowRate": 0.1, "highRate": 0.65 }
+  ],
+  "recipes": {
+    "gemCuts": [
+      { "uncut": "uncut_diamond", "cut": "diamond", "level": 43, "xp": 107.5 }
+    ],
+    "craftables": [
+      { "output": "silk_climbing_rope", "level": 30, "xp": 50, "inputs": [{ "item": "silk", "qty": 3 }], "station": "spinning_wheel" }
+    ],
+    "cookables": [
+      { "raw": "resonant_fowl_meat", "cooked": "roast_fowl", "burnt": "burnt_fish", "level": 35, "xp": 140, "stopBurn": 64 }
+    ]
+  },
+  "npcs": [
+    { "id": "market_crowd_thug", "name": "Market loiterer", "examine": "Here for the atmosphere, and whatever isn't nailed down.", "family": "humankind", "combatLevel": 2, "hitpoints": 8, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 25, "color": "#9a8466", "size": 1, "attackable": true, "pickpocket": { "level": 1, "xp": 8, "loot": [{ "item": "coins", "qty": [3, 8] }], "stunDmg": 1 }, "drops": [{ "item": "bones", "qty": [1, 1], "chance": 1 }, { "item": "coins", "qty": [2, 12], "chance": 0.6 }] },
+    { "id": "silk_merchant", "name": "Silk merchant", "examine": "Sells silk by the bolt and buys excuses by the dozen.", "family": "humankind", "combatLevel": 12, "hitpoints": 20, "attack": 8, "strength": 8, "defence": 8, "attackSpeed": 4, "respawnTicks": 40, "color": "#b06a9a", "size": 1, "attackable": false, "pickpocket": { "level": 38, "xp": 65, "loot": [{ "item": "coins", "qty": [20, 60] }, { "item": "silk", "qty": [1, 1] }], "stunDmg": 3 }, "drops": [] },
+    { "id": "guild_treasurer", "name": "Guild treasurer", "examine": "Counts the Wrightsong coffers twice. Misses things exactly once.", "family": "humankind", "combatLevel": 25, "hitpoints": 30, "attack": 15, "strength": 15, "defence": 20, "attackSpeed": 4, "respawnTicks": 50, "color": "#7a6a3a", "size": 1, "attackable": false, "pickpocket": { "level": 60, "xp": 120, "loot": [{ "item": "coins", "qty": [60, 140] }, { "item": "hum_coin", "qty": [1, 1] }], "stunDmg": 4 }, "drops": [] },
+    { "id": "gilded_noble", "name": "Gilded noble", "examine": "Wears a quarter of the district's wealth and none of its sense.", "family": "humankind", "combatLevel": 40, "hitpoints": 40, "attack": 20, "strength": 20, "defence": 30, "attackSpeed": 4, "respawnTicks": 60, "color": "#c8a83a", "size": 1, "attackable": false, "pickpocket": { "level": 80, "xp": 185, "loot": [{ "item": "coins", "qty": [100, 260] }, { "item": "uncut_diamond", "qty": [1, 1] }], "stunDmg": 5 }, "drops": [] },
+    { "id": "qv_agility_master", "name": "Pell the Quick", "examine": "Stands perfectly still, somehow smugly.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#4a8ac0", "size": 1, "attackable": false, "drops": [] },
+    { "id": "qv_thieving_master", "name": "Sly Maren", "examine": "Knows what you stole. Knows what it's worth. Knows a guy.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#5a4a6a", "size": 1, "attackable": false, "drops": [] },
+    { "id": "qv_hunter_master", "name": "Brackle the Trapper", "examine": "Smells of reeds and patience.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#6a7a4a", "size": 1, "attackable": false, "drops": [] },
+    { "id": "qv_construction_master", "name": "Foreward Oss", "examine": "Foreman of the Wrightsong Guild. Half her sentences are load-bearing.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#a8743a", "size": 1, "attackable": false, "drops": [] },
+    { "id": "qv_general_clerk", "name": "Clerk Tilba", "examine": "Sells everything the four trades forgot to pack.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#b0a070", "size": 1, "attackable": false, "drops": [] },
+    { "id": "qv_banker", "name": "Vaultwright Senna", "examine": "Keeps the district's coin in tune and in trust.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#888898", "size": 1, "attackable": false, "drops": [] }
+  ],
+  "shops": [
+    { "id": "qv_general", "name": "Quaverside Sundries", "stock": [{ "item": "hammer", "qty": 4 }, { "item": "saw", "qty": 4 }, { "item": "nails", "qty": 100 }, { "item": "plank", "qty": 10 }, { "item": "chisel", "qty": 2 }, { "item": "apple", "qty": 10 }, { "item": "orange", "qty": 10 }, { "item": "bolt_of_cloth", "qty": 5 }, { "item": "bucket", "qty": 2 }] },
+    { "id": "qv_hunter_supplies", "name": "Brackle's Traps & Tackle", "stock": [{ "item": "bird_snare", "qty": 10 }, { "item": "box_trap", "qty": 8 }, { "item": "feather", "qty": 50 }] }
+  ],
+  "spawns": [
+    { "id": "market_crowd_thug", "dx": 20, "dy": 6 },
+    { "id": "market_crowd_thug", "dx": 22, "dy": 6 },
+    { "id": "market_crowd_thug", "dx": 24, "dy": 7 },
+    { "id": "silk_merchant", "dx": 20, "dy": 4 },
+    { "id": "guild_treasurer", "dx": 21, "dy": 9 },
+    { "id": "gilded_noble", "dx": 23, "dy": 10 },
+    { "id": "qv_thieving_master", "dx": 26, "dy": 3 },
+    { "id": "qv_agility_master", "dx": 12, "dy": 5 },
+    { "id": "qv_hunter_master", "dx": 6, "dy": 19 },
+    { "id": "qv_construction_master", "dx": 19, "dy": 19 },
+    { "id": "qv_general_clerk", "dx": 16, "dy": 16 },
+    { "id": "qv_banker", "dx": 16, "dy": 13 }
+  ],
+  "mapObjects": [
+    { "type": "qv_beam", "dx": 3, "dy": 2 },
+    { "type": "qv_lock_jump", "dx": 7, "dy": 2 },
+    { "type": "qv_rooftop", "dx": 10, "dy": 4 },
+    { "type": "qv_zipline", "dx": 10, "dy": 8 },
+    { "type": "qv_chimney", "dx": 7, "dy": 10 },
+    { "type": "qv_gap_vault", "dx": 3, "dy": 10 },
+    { "type": "qv_spire_run", "dx": 1, "dy": 6 },
+    { "type": "fruit_stall", "dx": 19, "dy": 3 },
+    { "type": "fruit_stall", "dx": 21, "dy": 3 },
+    { "type": "fruit_stall", "dx": 23, "dy": 3 },
+    { "type": "silk_stall", "dx": 19, "dy": 5 },
+    { "type": "silk_stall", "dx": 21, "dy": 5 },
+    { "type": "silk_stall", "dx": 23, "dy": 5 },
+    { "type": "coffer_stall", "dx": 20, "dy": 8 },
+    { "type": "coffer_stall", "dx": 22, "dy": 8 },
+    { "type": "relic_stall", "dx": 24, "dy": 9 },
+    { "type": "relic_stall", "dx": 26, "dy": 9 },
+    { "type": "fence_table", "dx": 27, "dy": 4 },
+    { "type": "bank_booth", "dx": 15, "dy": 14 },
+    { "type": "bank_booth", "dx": 16, "dy": 14 },
+    { "type": "wrightsong_banner", "dx": 13, "dy": 12 },
+    { "type": "wrightsong_banner", "dx": 19, "dy": 12 },
+    { "type": "qv_weir", "dx": 12, "dy": 13 },
+    { "type": "qv_canal_lock", "dx": 11, "dy": 14 },
+    { "type": "trophy_mount", "dx": 2, "dy": 18 },
+    { "type": "qv_workbench", "dx": 21, "dy": 21 },
+    { "type": "qv_workbench", "dx": 22, "dy": 21 },
+    { "type": "qv_workbench", "dx": 23, "dy": 21 },
+    { "type": "qv_sawmill", "dx": 25, "dy": 21 },
+    { "type": "contract_board", "dx": 19, "dy": 21 },
+    { "type": "qv_scaffold", "dx": 27, "dy": 20 },
+    { "type": "qv_scaffold", "dx": 27, "dy": 24 },
+    { "type": "spinning_wheel", "dx": 18, "dy": 16 },
+    { "type": "teak", "dx": 20, "dy": 26 },
+    { "type": "teak", "dx": 22, "dy": 26 },
+    { "type": "teak", "dx": 24, "dy": 26 },
+    { "type": "mahogany", "dx": 26, "dy": 26 },
+    { "type": "mahogany", "dx": 28, "dy": 27 }
+  ],
+  "terrainPads": [
+    { "dx": 0, "dy": 0, "w": 30, "h": 30, "code": 0 },
+    { "dx": 11, "dy": 12, "w": 10, "h": 4, "code": 2 },
+    { "dx": 14, "dy": 2, "w": 2, "h": 10, "code": 2 },
+    { "dx": 14, "dy": 16, "w": 2, "h": 4, "code": 2 },
+    { "dx": 21, "dy": 13, "w": 7, "h": 2, "code": 2 },
+    { "dx": 18, "dy": 2, "w": 11, "h": 10, "code": 3 },
+    { "dx": 18, "dy": 18, "w": 11, "h": 8, "code": 9 },
+    { "dx": 0, "dy": 12, "w": 11, "h": 2, "code": 1 },
+    { "dx": 5, "dy": 12, "w": 2, "h": 2, "code": 5 }
+  ],
+  "sharedEdits": [
+    {
+      "file": "server/intent-produce.ts",
+      "what": "Add the four Quaverside stall entries to the STALLS record (~line 186, after gem_stall). Pure data; the existing 'thieve' intent resolves them.",
+      "snippet": "  silk_stall: {\n    type: 'silk_stall', level: 20, xp: 28, lowRate: 0.6, highRate: 0.95,\n    table: [{ item: 'silk', weight: 80 }, { item: 'bolt_of_cloth', weight: 20 }],\n  },\n  fruit_stall: {\n    type: 'fruit_stall', level: 25, xp: 34, lowRate: 0.65, highRate: 0.97,\n    table: [{ item: 'apple', weight: 60 }, { item: 'orange', weight: 40 }],\n  },\n  coffer_stall: {\n    type: 'coffer_stall', level: 55, xp: 84, lowRate: 0.4, highRate: 0.9,\n    table: [{ item: 'coin_pouch', weight: 70 }, { item: 'hum_coin', weight: 25 }, { item: 'uncut_ruby', weight: 5 }],\n  },\n  relic_stall: {\n    type: 'relic_stall', level: 75, xp: 145, lowRate: 0.3, highRate: 0.85,\n    table: [{ item: 'resonant_shard', weight: 60 }, { item: 'uncut_diamond', weight: 30 }, { item: 'gold_bar', weight: 10 }],\n  },"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Register the Quaverside intent domains (qv-train / qv-trap-lay / qv-trap-check / qv-saw / qv-build / qv-launder / qv-redeem). Add directly below the intent-produce import (~line 40).",
+      "snippet": "import './intent-quaverside'; // side-effect: registers Quaverside agility/hunter/construction domain intents"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Load the Quaverside client pack (course, stalls, traps, yard, masters).",
+      "snippet": "import './quaverside';          // Quaverside District — agility/thieving/hunter/construction hub"
+    }
+  ]
+}

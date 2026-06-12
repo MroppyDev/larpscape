@@ -32,6 +32,13 @@ const REWARDS: RewardEntry[] = [
   { id: 'cull_band', cost: 60, blurb: 'Tally-ring. Hits a little harder for every grudge it remembers.' },
   { id: 'wardens_visor', cost: 50, blurb: 'Half-helm I wore for thirty years of bad ideas.' },
   { id: 'tome_of_grudges', cost: 25, blurb: 'My field notes. Read them once and burn brighter for it.' },
+  // prayer-slayer: Cantor Veil's consignment — Brogan stocks it too, grudgingly.
+  { id: 'binding_chime', cost: 35, blurb: 'Order hand-bell. Rings once, and the quarry forgets how to duck.' },
+  { id: 'tome_of_dirges', cost: 60, blurb: 'Veil\'s ledger of endings. Heavier reading than mine.' },
+  { id: 'silencers_cowl', cost: 90, blurb: 'Grey hood of the cull. Hears everything, says nothing.' },
+  { id: 'silencers_greaves', cost: 100, blurb: 'Padded greaves. Wrong notes never hear them coming.' },
+  { id: 'silencers_robe', cost: 120, blurb: 'The cull\'s vestments. Stitched in notation: a rest.' },
+  { id: 'knell_brand', cost: 250, blurb: 'Bell-bronze, tuned to a dead stop. The Order\'s last word.' },
 ];
 
 function brogan(...texts: string[]): DialogueLine[] {

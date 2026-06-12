@@ -14,6 +14,7 @@ import {
 } from '../game';
 import { SKILL_OBJS } from '../defs';
 import { audio } from '../audio';
+import { hasAnyAxe } from './resin_hollow';
 
 // ---------------- helpers (mirrored from content.ts) ----------------
 
@@ -39,7 +40,7 @@ for (const type of ['maple', 'yew', 'magic_tree']) {
   const data = SKILL_OBJS[type];
   registerObjectAction(type, 'Chop down', (o) => {
     if (o.depletedUntil > 0) { msg('Someone has chopped this tree down.'); return 'done'; }
-    if (!hasTool('bronze_axe')) { msg('You need an axe to chop down this tree.'); return 'done'; }
+    if (!hasAnyAxe()) { msg('You need an axe to chop down this tree.'); return 'done'; }
     const lvl = level('Woodcutting');
     if (lvl < data.level) { msg(`You need a Woodcutting level of ${data.level} to chop this tree.`); return 'done'; }
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more logs.'); return 'done'; }
@@ -59,13 +60,20 @@ for (const type of ['maple', 'yew', 'magic_tree']) {
 }
 
 // ============================================================================
-// MINING — gold / runite rocks
+// MINING — the full ore ladder (silver / gold / mithril / adamantite / runite)
+// (copper/tin/iron/coal/essence are registered in content.ts). Any pickaxe works.
 // ============================================================================
-for (const type of ['rocks_gold', 'rocks_runite']) {
+const PICKAXE_IDS = [
+  'bronze_pickaxe', 'iron_pickaxe', 'steel_pickaxe', 'tuned_pickaxe',
+  'mithril_pickaxe', 'adamant_pickaxe', 'rune_pickaxe', 'resonant_pickaxe',
+];
+export function hasPickaxe(): boolean { return PICKAXE_IDS.some((id) => hasTool(id)); }
+
+for (const type of ['rocks_silver', 'rocks_gold', 'rocks_mithril', 'rocks_adamantite', 'rocks_runite']) {
   const data = SKILL_OBJS[type];
   registerObjectAction(type, 'Mine', (o) => {
     if (o.depletedUntil > 0) { msg('There is no ore left in this rock.'); return 'done'; }
-    if (!hasTool('bronze_pickaxe')) { msg('You need a pickaxe to mine this rock.'); return 'done'; }
+    if (!hasPickaxe()) { msg('You need a pickaxe to mine this rock.'); return 'done'; }
     const lvl = level('Mining');
     if (lvl < data.level) { msg(`You need a Mining level of ${data.level} to mine this rock.`); return 'done'; }
     if (freeSlots() === 0) { msg('Your inventory is too full to hold any more ore.'); return 'done'; }

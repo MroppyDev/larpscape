@@ -1,0 +1,548 @@
+{
+  "group": "prayer-slayer",
+  "origin": { "x": 245, "y": 230 },
+  "items": [
+    {
+      "id": "ranged_bones",
+      "name": "Beast bones",
+      "examine": "Bones off something that died mid-howl. The hymn picks up where it left off.",
+      "value": 2,
+      "buryXp": 35
+    },
+    {
+      "id": "dragon_bones",
+      "name": "Drake bones",
+      "examine": "Heavy as a church door and twice as resonant. Quiess hears these from a long way off.",
+      "value": 3,
+      "buryXp": 72
+    },
+    {
+      "id": "ourg_bones",
+      "name": "Tollbone",
+      "examine": "A femur the size of a bell-clapper. Drop it and the whole graveyard takes notice.",
+      "value": 5,
+      "buryXp": 140
+    },
+    {
+      "id": "resonant_bones",
+      "name": "Unsung bones",
+      "examine": "Bones still holding their last note. Bury them properly or they will hold it forever.",
+      "value": 8,
+      "buryXp": 210
+    },
+    {
+      "id": "choir_dust",
+      "name": "Choir dust",
+      "examine": "Grey ash that hums when you shake the pouch. The Order pays in favours, not coin.",
+      "value": 10,
+      "stackable": true
+    },
+    {
+      "id": "censer_incense",
+      "name": "Censer incense",
+      "examine": "Pressed resin cones, Order issue. Smells of cold chapels and good intentions.",
+      "value": 40,
+      "stackable": true
+    },
+    {
+      "id": "holy_censer",
+      "name": "Holy censer",
+      "examine": "A swinging brazier on a chain. Where its smoke goes, burials count for more.",
+      "value": 15000,
+      "equipSlot": "shield",
+      "defBonus": 3,
+      "levelReq": [{ "skill": "Prayer", "level": 30 }]
+    },
+    {
+      "id": "unsung_helm",
+      "name": "Unsung helm",
+      "examine": "A monk's barbute with no visor slit. The dead do not need to see you to respect you.",
+      "value": 45000,
+      "equipSlot": "head",
+      "defBonus": 12,
+      "levelReq": [
+        { "skill": "Prayer", "level": 50 },
+        { "skill": "Defence", "level": 40 }
+      ]
+    },
+    {
+      "id": "silencers_cowl",
+      "name": "Silencer's cowl",
+      "examine": "A grey hood cut so the wearer hears everything and is heard by nothing.",
+      "value": 22000,
+      "equipSlot": "head",
+      "defBonus": 20,
+      "attBonus": 4,
+      "levelReq": [
+        { "skill": "Defence", "level": 30 },
+        { "skill": "Slayer", "level": 35 }
+      ]
+    },
+    {
+      "id": "silencers_robe",
+      "name": "Silencer's robe",
+      "examine": "Quilted grey vestments of the cull. The stitching spells out a rest, in notation.",
+      "value": 30000,
+      "equipSlot": "body",
+      "defBonus": 28,
+      "strBonus": 4,
+      "levelReq": [
+        { "skill": "Defence", "level": 30 },
+        { "skill": "Slayer", "level": 35 }
+      ]
+    },
+    {
+      "id": "silencers_greaves",
+      "name": "Silencer's greaves",
+      "examine": "Padded leg-wraps. You cannot end a wrong note if it hears you coming.",
+      "value": 26000,
+      "equipSlot": "legs",
+      "defBonus": 24,
+      "levelReq": [
+        { "skill": "Defence", "level": 30 },
+        { "skill": "Slayer", "level": 35 }
+      ]
+    },
+    {
+      "id": "binding_chime",
+      "name": "Binding chime",
+      "examine": "A hand-bell with its clapper wrapped in lead. Rung once at the start of a cull, by tradition.",
+      "value": 9000,
+      "equipSlot": "shield",
+      "attBonus": 6,
+      "levelReq": [{ "skill": "Slayer", "level": 25 }],
+      "effects": [
+        { "type": "family_bane", "family": "offnote", "accMult": 1.08 },
+        { "type": "family_bane", "family": "undead", "accMult": 1.08 }
+      ]
+    },
+    {
+      "id": "tome_of_dirges",
+      "name": "Tome of dirges",
+      "examine": "Cantor Veil's ledger of endings. Every entry is a name, a note, and a line through both.",
+      "value": 6000
+    },
+    {
+      "id": "knell_brand",
+      "name": "Knell brand",
+      "examine": "A bell-bronze blade tuned to a dead stop. Things it cuts stay sung.",
+      "value": 85000,
+      "equipSlot": "weapon",
+      "attBonus": 58,
+      "strBonus": 55,
+      "attackSpeed": 4,
+      "levelReq": [
+        { "skill": "Attack", "level": 50 },
+        { "skill": "Slayer", "level": 50 }
+      ],
+      "effects": [
+        { "type": "family_bane", "family": "offnote", "accMult": 1.25, "dmgMult": 1.25 },
+        { "type": "family_bane", "family": "undead", "accMult": 1.25, "dmgMult": 1.25 }
+      ],
+      "spec": {
+        "name": "Last Knell",
+        "energy": 60,
+        "desc": "One tolling blow: 40% more accuracy and 80% more damage. There is no encore.",
+        "kind": "heavy_hit",
+        "params": { "accMult": 1.4, "dmgMult": 1.8 }
+      }
+    }
+  ],
+  "objs": [
+    {
+      "id": "consecrated_altar",
+      "name": "Consecrated altar",
+      "examine": "An altar tuned by the Order of the Last Verse. Bones buried here ring a fifth truer.",
+      "action": "Pray-at",
+      "blocks": true
+    },
+    {
+      "id": "bone_offering_brazier",
+      "name": "Offering brazier",
+      "examine": "An iron bowl of grey flame. It takes bones and keeps a tally that isn't written anywhere.",
+      "action": "Offer-bones",
+      "blocks": true
+    },
+    {
+      "id": "knell_bell",
+      "name": "The Knell",
+      "examine": "The temple's great bell. Rung once per funeral, twice per cull, never for fun. Officially.",
+      "action": "Toll",
+      "blocks": true
+    },
+    {
+      "id": "choir_pew",
+      "name": "Pew",
+      "examine": "A hard bench facing the altar. Discomfort, the Abbot insists, keeps the pitch honest.",
+      "blocks": true
+    },
+    {
+      "id": "sundered_gate",
+      "name": "Sundered arch",
+      "examine": "The broken doorway of a cathedral that fell mid-hymn. The draft coming up is in a minor key.",
+      "blocks": true
+    },
+    {
+      "id": "task_brazier",
+      "name": "Cull brazier",
+      "examine": "An Order marker-flame. It burns grey over consecrated ground and not at all over the other kind.",
+      "blocks": true
+    }
+  ],
+  "skillObjs": [],
+  "recipes": {},
+  "npcs": [
+    {
+      "id": "cantor_veil",
+      "name": "Cantor Veil",
+      "examine": "The Order's master of the cull. Keeps a list of every wrong note still ringing, alphabetised.",
+      "combatLevel": 0,
+      "hitpoints": 30,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#4a4458",
+      "size": 1.05,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "sister_plainsong",
+      "name": "Sister Plainsong",
+      "examine": "The Order's quartermaster. Trades in incense, bones and a frankly unsettling cheerfulness.",
+      "combatLevel": 0,
+      "hitpoints": 30,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#8a8da0",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "abbot_threnody",
+      "name": "Abbot Threnody",
+      "examine": "Head of the Order of the Last Verse. Has personally sung four hundred dead to rest, twice for emphasis.",
+      "combatLevel": 0,
+      "hitpoints": 30,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#6e6250",
+      "size": 1.05,
+      "attackable": false,
+      "drops": []
+    },
+    {
+      "id": "gravewail_hound",
+      "name": "Gravewail hound",
+      "examine": "A dog that outlived its own funeral and resents the paperwork.",
+      "family": "undead",
+      "combatLevel": 22,
+      "hitpoints": 30,
+      "attack": 19,
+      "strength": 18,
+      "defence": 16,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 35,
+      "color": "#5b6470",
+      "size": 0.95,
+      "attackable": true,
+      "drops": [
+        { "item": "ranged_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [1, 1], "chance": 0.5 }
+      ]
+    },
+    {
+      "id": "choir_ghast",
+      "name": "Choir ghast",
+      "examine": "A chorister's shape holding a note nobody wrote. It would like you to listen forever.",
+      "family": "offnote",
+      "combatLevel": 28,
+      "hitpoints": 36,
+      "attack": 25,
+      "strength": 24,
+      "defence": 21,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 35,
+      "color": "#7d8aa6",
+      "size": 1.1,
+      "attackable": true,
+      "drops": [
+        { "item": "ranged_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [1, 1], "chance": 0.5 }
+      ]
+    },
+    {
+      "id": "dirgewolf",
+      "name": "Dirgewolf",
+      "examine": "It howls in perfect descending thirds. The pack it mourns is also here, also dead, also hostile.",
+      "family": "undead",
+      "combatLevel": 38,
+      "hitpoints": 55,
+      "attack": 33,
+      "strength": 34,
+      "defence": 30,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 40,
+      "color": "#4c5560",
+      "size": 1.2,
+      "attackable": true,
+      "drops": [
+        { "item": "ranged_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [1, 1], "chance": 0.6 }
+      ]
+    },
+    {
+      "id": "dirge_ghoul",
+      "name": "Dirge ghoul",
+      "examine": "A Discord War soldier still keeping formation. The war ended. Nobody sang him the memo.",
+      "family": "undead",
+      "combatLevel": 42,
+      "hitpoints": 64,
+      "attack": 37,
+      "strength": 36,
+      "defence": 33,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 45,
+      "color": "#66705c",
+      "size": 1.15,
+      "attackable": true,
+      "drops": [
+        { "item": "big_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [1, 1], "chance": 0.6 },
+        { "item": "coins", "qty": [10, 60], "chance": 0.4 },
+        { "item": "prayer_potion", "qty": [1, 1], "chance": 0.05 }
+      ]
+    },
+    {
+      "id": "chordwyrm",
+      "name": "Chordwyrm",
+      "examine": "A drake the Offnote retuned. Every scale rings a different wrong note, all at once.",
+      "family": "offnote",
+      "combatLevel": 48,
+      "hitpoints": 75,
+      "attack": 42,
+      "strength": 43,
+      "defence": 39,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 50,
+      "color": "#564a72",
+      "size": 1.5,
+      "attackable": true,
+      "drops": [
+        { "item": "dragon_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [1, 1], "chance": 0.7 },
+        { "item": "coins", "qty": [20, 90], "chance": 0.4 }
+      ]
+    },
+    {
+      "id": "carillon_revenant",
+      "name": "Carillon revenant",
+      "examine": "It wears the cathedral's bell-frame as armour and tolls itself into battle. Committed, you have to admit.",
+      "family": "undead",
+      "combatLevel": 70,
+      "hitpoints": 130,
+      "attack": 60,
+      "strength": 62,
+      "defence": 57,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 90,
+      "color": "#8a7d5a",
+      "size": 1.7,
+      "attackable": true,
+      "drops": [
+        { "item": "ourg_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "resonant_bones", "qty": [1, 1], "chance": 0.1 },
+        { "item": "choir_dust", "qty": [2, 4], "chance": 1 },
+        { "item": "coins", "qty": [50, 200], "chance": 0.5 }
+      ]
+    },
+    {
+      "id": "choir_warden",
+      "name": "Choir Warden",
+      "examine": "The cathedral's last conductor, still conducting. The orchestra is bones. The tempo is you.",
+      "family": "undead",
+      "combatLevel": 95,
+      "hitpoints": 220,
+      "attack": 82,
+      "strength": 85,
+      "defence": 78,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "boss": true,
+      "respawnTicks": 250,
+      "color": "#3d3a52",
+      "size": 2.1,
+      "attackable": true,
+      "drops": [
+        { "item": "resonant_bones", "qty": [1, 2], "chance": 1 },
+        { "item": "ourg_bones", "qty": [1, 1], "chance": 1 },
+        { "item": "choir_dust", "qty": [3, 6], "chance": 1 },
+        { "item": "coins", "qty": [150, 600], "chance": 1 },
+        { "item": "knell_brand", "qty": [1, 1], "chance": 0.01 }
+      ]
+    }
+  ],
+  "shops": [
+    {
+      "id": "knell_supplies",
+      "name": "Sister Plainsong's Stores",
+      "stock": [
+        { "item": "censer_incense", "qty": 100 },
+        { "item": "prayer_potion", "qty": 15 },
+        { "item": "bread", "qty": 10 }
+      ]
+    }
+  ],
+  "spawns": [
+    { "id": "abbot_threnody", "dx": 23, "dy": 8 },
+    { "id": "sister_plainsong", "dx": 7, "dy": 4 },
+    { "id": "cantor_veil", "dx": 17, "dy": 13 },
+
+    { "id": "gravewail_hound", "dx": 9, "dy": 18 },
+    { "id": "gravewail_hound", "dx": 10, "dy": 20 },
+    { "id": "gravewail_hound", "dx": 9, "dy": 21 },
+    { "id": "gravewail_hound", "dx": 11, "dy": 18 },
+    { "id": "gravewail_hound", "dx": 12, "dy": 20 },
+    { "id": "gravewail_hound", "dx": 11, "dy": 22 },
+    { "id": "choir_ghast", "dx": 14, "dy": 18 },
+    { "id": "choir_ghast", "dx": 15, "dy": 20 },
+    { "id": "choir_ghast", "dx": 14, "dy": 21 },
+    { "id": "choir_ghast", "dx": 16, "dy": 18 },
+    { "id": "choir_ghast", "dx": 16, "dy": 21 },
+    { "id": "choir_ghast", "dx": 17, "dy": 19 },
+
+    { "id": "dirgewolf", "dx": 2, "dy": 23 },
+    { "id": "dirgewolf", "dx": 3, "dy": 25 },
+    { "id": "dirgewolf", "dx": 2, "dy": 27 },
+    { "id": "dirgewolf", "dx": 4, "dy": 24 },
+    { "id": "dirgewolf", "dx": 4, "dy": 26 },
+    { "id": "dirgewolf", "dx": 3, "dy": 28 },
+    { "id": "dirge_ghoul", "dx": 6, "dy": 23 },
+    { "id": "dirge_ghoul", "dx": 7, "dy": 25 },
+    { "id": "dirge_ghoul", "dx": 6, "dy": 27 },
+    { "id": "dirge_ghoul", "dx": 8, "dy": 24 },
+    { "id": "dirge_ghoul", "dx": 8, "dy": 26 },
+    { "id": "dirge_ghoul", "dx": 7, "dy": 28 },
+    { "id": "chordwyrm", "dx": 9, "dy": 23 },
+    { "id": "chordwyrm", "dx": 10, "dy": 25 },
+    { "id": "chordwyrm", "dx": 9, "dy": 27 },
+    { "id": "chordwyrm", "dx": 10, "dy": 28 },
+
+    { "id": "carillon_revenant", "dx": 22, "dy": 23 },
+    { "id": "carillon_revenant", "dx": 24, "dy": 25 },
+    { "id": "carillon_revenant", "dx": 22, "dy": 26 },
+    { "id": "carillon_revenant", "dx": 25, "dy": 23 },
+    { "id": "choir_warden", "dx": 26, "dy": 27 }
+  ],
+  "mapObjects": [
+    { "type": "consecrated_altar", "dx": 7, "dy": 8 },
+    { "type": "bone_offering_brazier", "dx": 5, "dy": 6 },
+    { "type": "bone_offering_brazier", "dx": 7, "dy": 6 },
+    { "type": "bone_offering_brazier", "dx": 9, "dy": 6 },
+    { "type": "bone_offering_brazier", "dx": 5, "dy": 8 },
+    { "type": "bone_offering_brazier", "dx": 9, "dy": 8 },
+    { "type": "bone_offering_brazier", "dx": 5, "dy": 10 },
+    { "type": "bone_offering_brazier", "dx": 7, "dy": 10 },
+    { "type": "bone_offering_brazier", "dx": 9, "dy": 10 },
+    { "type": "bank_booth", "dx": 4, "dy": 4 },
+    { "type": "altar", "dx": 25, "dy": 8 },
+    { "type": "knell_bell", "dx": 23, "dy": 6 },
+    { "type": "choir_pew", "dx": 20, "dy": 7 },
+    { "type": "choir_pew", "dx": 20, "dy": 9 },
+    { "type": "sundered_gate", "dx": 13, "dy": 14 },
+    { "type": "task_brazier", "dx": 8, "dy": 17 },
+    { "type": "task_brazier", "dx": 16, "dy": 22 },
+    { "type": "task_brazier", "dx": 1, "dy": 22 },
+    { "type": "task_brazier", "dx": 28, "dy": 28 }
+  ],
+  "terrainPads": [
+    { "dx": 14, "dy": 0, "w": 2, "h": 14, "code": 2 },
+    { "dx": 2, "dy": 3, "w": 12, "h": 10, "code": 3 },
+    { "dx": 18, "dy": 4, "w": 10, "h": 1, "code": 4 },
+    { "dx": 18, "dy": 11, "w": 10, "h": 1, "code": 4 },
+    { "dx": 27, "dy": 5, "w": 1, "h": 6, "code": 4 },
+    { "dx": 18, "dy": 5, "w": 1, "h": 2, "code": 4 },
+    { "dx": 18, "dy": 9, "w": 1, "h": 2, "code": 4 },
+    { "dx": 19, "dy": 5, "w": 8, "h": 6, "code": 3 },
+    { "dx": 16, "dy": 7, "w": 2, "h": 2, "code": 2 },
+    { "dx": 0, "dy": 14, "w": 30, "h": 16, "code": 13 },
+    { "dx": 14, "dy": 14, "w": 2, "h": 4, "code": 11 },
+    { "dx": 8, "dy": 17, "w": 10, "h": 6, "code": 11 },
+    { "dx": 5, "dy": 19, "w": 3, "h": 4, "code": 11 },
+    { "dx": 1, "dy": 22, "w": 10, "h": 7, "code": 11 },
+    { "dx": 18, "dy": 19, "w": 3, "h": 4, "code": 11 },
+    { "dx": 20, "dy": 22, "w": 9, "h": 7, "code": 11 }
+  ],
+  "magic": {
+    "prayers": [
+      { "id": "steel_skin", "name": "Steel Skin", "level": 19, "drain": 3, "boost": "defence", "mult": 1.15 },
+      { "id": "raging_chord", "name": "Raging Chord", "level": 21, "drain": 3, "boost": "strength", "mult": 1.15 },
+      { "id": "true_aim", "name": "True Aim", "level": 23, "drain": 3, "boost": "attack", "mult": 1.15 },
+      { "id": "ward_of_aulden", "name": "Ward of Aulden", "level": 25, "drain": 8, "boost": "protect_melee", "mult": 1 },
+      { "id": "ward_of_syla", "name": "Ward of Syla", "level": 28, "drain": 8, "boost": "protect_ranged", "mult": 1 },
+      { "id": "ward_of_quiess", "name": "Ward of Quiess", "level": 31, "drain": 8, "boost": "protect_magic", "mult": 1 },
+      { "id": "ironheart_skin", "name": "Ironheart Skin", "level": 37, "drain": 5, "boost": "defence", "mult": 1.2 },
+      { "id": "chorus_of_war", "name": "Chorus of War", "level": 40, "drain": 5, "boost": "strength", "mult": 1.23 },
+      { "id": "perfect_pitch", "name": "Perfect Pitch", "level": 43, "drain": 5, "boost": "attack", "mult": 1.2 },
+      { "id": "culling_hymn", "name": "Culling Hymn", "level": 50, "drain": 6, "boost": "strength", "mult": 1.18 },
+      { "id": "last_verse", "name": "The Last Verse", "level": 60, "drain": 12, "boost": "protect_melee", "mult": 1 }
+    ]
+  },
+  "sharedEdits": [
+    {
+      "file": "server/intent-misc.ts",
+      "what": "Add the 6 new Sundered Choir monsters to TASK_POOL (~line 166) so Brogan's loop can assign them (pickTask already weights by combat level, so they only roll for appropriately levelled players).",
+      "snippet": "const TASK_POOL: string[] = [\n  'chicken', 'cow', 'giant_rat', 'goblin', 'scorpion', 'forest_spider',\n  'ice_wolf', 'dire_wolf', 'bear', 'desert_bandit', 'pirate', 'ice_troll',\n  'magma_crawler', 'ash_fiend', 'ruin_wraith', 'discord_wisp',\n  'hollow_miner', 'manor_revenant',\n  // prayer-slayer: the Sundered Choir\n  'gravewail_hound', 'choir_ghast', 'dirgewolf', 'dirge_ghoul',\n  'chordwyrm', 'carillon_revenant',\n];"
+    },
+    {
+      "file": "server/intent-misc.ts",
+      "what": "Add the Knell reward tier to the slayer REWARDS record (~line 176) so the slayer 'buy' op honours the new points prices.",
+      "snippet": "const REWARDS: Record<string, RewardEntry> = {\n  dirge_blade: { id: 'dirge_blade', cost: 120 },\n  cull_band: { id: 'cull_band', cost: 60 },\n  wardens_visor: { id: 'wardens_visor', cost: 50 },\n  tome_of_grudges: { id: 'tome_of_grudges', cost: 25 },\n  // prayer-slayer: Cantor Veil's vault\n  binding_chime: { id: 'binding_chime', cost: 35 },\n  tome_of_dirges: { id: 'tome_of_dirges', cost: 60 },\n  silencers_cowl: { id: 'silencers_cowl', cost: 90 },\n  silencers_greaves: { id: 'silencers_greaves', cost: 100 },\n  silencers_robe: { id: 'silencers_robe', cost: 120 },\n  knell_brand: { id: 'knell_brand', cost: 250 },\n};"
+    },
+    {
+      "file": "src/packs/slayer_tasks.ts",
+      "what": "Add matching entries (cost + blurb) to the client REWARDS list (~line 30) so Brogan's shop menu shows the new tier; Cantor Veil's pack shows the same items at the Knell.",
+      "snippet": "const REWARDS: RewardEntry[] = [\n  { id: 'dirge_blade', cost: 120, blurb: 'My masterwork. Sings the Offnote to sleep — permanently.' },\n  { id: 'cull_band', cost: 60, blurb: 'Tally-ring. Hits a little harder for every grudge it remembers.' },\n  { id: 'wardens_visor', cost: 50, blurb: 'Half-helm I wore for thirty years of bad ideas.' },\n  { id: 'tome_of_grudges', cost: 25, blurb: 'My field notes. Read them once and burn brighter for it.' },\n  // prayer-slayer: Cantor Veil's consignment — Brogan stocks it too, grudgingly.\n  { id: 'binding_chime', cost: 35, blurb: 'Order hand-bell. Rings once, and the quarry forgets how to duck.' },\n  { id: 'tome_of_dirges', cost: 60, blurb: 'Veil\\'s ledger of endings. Heavier reading than mine.' },\n  { id: 'silencers_cowl', cost: 90, blurb: 'Grey hood of the cull. Hears everything, says nothing.' },\n  { id: 'silencers_greaves', cost: 100, blurb: 'Padded greaves. Wrong notes never hear them coming.' },\n  { id: 'silencers_robe', cost: 120, blurb: 'The cull\\'s vestments. Stitched in notation: a rest.' },\n  { id: 'knell_brand', cost: 250, blurb: 'Bell-bronze, tuned to a dead stop. The Order\\'s last word.' },\n];"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Wire the new Knell intent domain (side-effect import, next to the other intent imports ~line 41).",
+      "snippet": "import './intent-knell'; // side-effect: registers the 'bone-offering' Knell domain (offer/consecrated bury/recharge/token shop)"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Wire the Knell content pack (side-effect import, after './slayer_tasks').",
+      "snippet": "import './the_knell';              // The Knell temple + Sundered Choir dungeon (prayer hub, Cantor Veil, bone offering)"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "OPTIONAL (spec: unsung_helm passive): in the prayer drain tick (~line 635, where PRAYER_DRAIN is applied), halve the drain when the unsung helm is worn.",
+      "snippet": "// unsung_helm passive: the Order's helm halves prayer drain.\nconst helm = (state.equipment as Record<string, { id: string } | null> | undefined)?.head?.id;\nif (helm === 'unsung_helm') drain = Math.max(1, Math.ceil(drain / 2));"
+    },
+    {
+      "file": "server/intent-misc.ts",
+      "what": "OPTIONAL (spec: Silencer set bonus): in creditSlayerKill, grant +15% Slayer XP on-task when the full Silencer set (cowl+robe+greaves) is equipped.",
+      "snippet": "const eq = state.equipment ?? {};\nconst fullSilencer = eq.head?.id === 'silencers_cowl' && eq.body?.id === 'silencers_robe' && eq.legs?.id === 'silencers_greaves';\nconst amount = fullSilencer ? Math.floor(xp * 1.15) : xp;"
+    },
+    {
+      "file": "src/game.ts",
+      "what": "REQUIRED for the ward prayers to do anything (verdict correction 4): widen the prayer boost union and halve incoming damage client-side when the matching ward is active. In netNpcHitYou (~line 652), before applying dmg: if the attacking npc's style matches an active protect prayer, halve it. Minimal version (all current dungeon monsters are melee):",
+      "snippet": "// protect-prayer damage halving (ward_of_aulden / ward_of_syla / ward_of_quiess / last_verse)\nfunction protectMult(style: 'melee' | 'ranged' | 'magic'): number {\n  const want = style === 'melee' ? 'protect_melee' : style === 'ranged' ? 'protect_ranged' : 'protect_magic';\n  for (const id of state.player.activePrayers) {\n    const def = PRAYERS.find((pr) => pr.id === id);\n    if ((def?.boost as string) === want) return 0.5;\n  }\n  return 1;\n}\n// in netNpcHitYou: dmg = Math.floor(dmg * protectMult('melee'));\n// NOTE: src/defs.ts PRAYERS boost union must widen to include 'protect_melee' | 'protect_ranged' | 'protect_magic'."
+    }
+  ]
+}

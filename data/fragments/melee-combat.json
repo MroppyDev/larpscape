@@ -1,0 +1,464 @@
+{
+  "items": {
+    "tuned_scimitar": {
+      "id": "tuned_scimitar",
+      "name": "Tuned scimitar",
+      "examine": "Annealed against the Cadence Stone. The swing lands on the beat; complaints land on deaf ears.",
+      "value": 7200,
+      "equipSlot": "weapon",
+      "attBonus": 38,
+      "strBonus": 40,
+      "attackSpeed": 4,
+      "levelReq": [{ "skill": "Attack", "level": 35 }]
+    },
+    "tuned_warblade": {
+      "id": "tuned_warblade",
+      "name": "Tuned warblade",
+      "examine": "Heavy on the downbeat. Whatever note it rings is mostly somebody else's problem.",
+      "value": 9000,
+      "equipSlot": "weapon",
+      "attBonus": 36,
+      "strBonus": 43,
+      "attackSpeed": 5,
+      "levelReq": [{ "skill": "Attack", "level": 38 }]
+    },
+    "drillmasters_baton": {
+      "id": "drillmasters_baton",
+      "name": "Drillmaster's baton",
+      "examine": "Standard issue. It has taught a thousand recruits and respected none of them.",
+      "value": 120,
+      "equipSlot": "weapon",
+      "attBonus": 5,
+      "strBonus": 3,
+      "attackSpeed": 4
+    },
+    "concord_helm": {
+      "id": "concord_helm",
+      "name": "Concord helm",
+      "examine": "The padding hums a held fifth. Thoughts start arriving in time signatures.",
+      "value": 9500,
+      "equipSlot": "head",
+      "defBonus": 24,
+      "strBonus": 2,
+      "levelReq": [{ "skill": "Defence", "level": 30 }]
+    },
+    "concord_platebody": {
+      "id": "concord_platebody",
+      "name": "Concord platebody",
+      "examine": "Concord plate. Blows that land off the beat are simply not acknowledged.",
+      "value": 26000,
+      "equipSlot": "body",
+      "defBonus": 58,
+      "strBonus": 3,
+      "levelReq": [{ "skill": "Defence", "level": 30 }]
+    },
+    "concord_platelegs": {
+      "id": "concord_platelegs",
+      "name": "Concord platelegs",
+      "examine": "Each greave tuned a fourth apart. Marching becomes involuntary.",
+      "value": 16000,
+      "equipSlot": "legs",
+      "defBonus": 26,
+      "strBonus": 2,
+      "levelReq": [{ "skill": "Defence", "level": 30 }]
+    },
+    "concord_cape": {
+      "id": "concord_cape",
+      "name": "Cape of Concord",
+      "examine": "The full chord, clasped at the throat. Wear the rest of the set and it resolves.",
+      "value": 40000,
+      "equipSlot": "neck",
+      "attBonus": 4,
+      "strBonus": 4,
+      "defBonus": 4,
+      "levelReq": [
+        { "skill": "Defence", "level": 35 },
+        { "skill": "Attack", "level": 35 }
+      ],
+      "setBonus": {
+        "name": "Perfect Cadence",
+        "requires": ["concord_helm", "concord_platebody", "concord_platelegs"],
+        "accMult": 1.05,
+        "refundChance": 0.125
+      }
+    },
+    "cadence_gauntlets": {
+      "id": "cadence_gauntlets",
+      "name": "Cadence gauntlets",
+      "examine": "Knuckles that keep count for you.",
+      "value": 7000,
+      "equipSlot": "gloves",
+      "attBonus": 3,
+      "strBonus": 3,
+      "defBonus": 6,
+      "levelReq": [{ "skill": "Attack", "level": 30 }]
+    },
+    "metronome_charm": {
+      "id": "metronome_charm",
+      "name": "Metronome charm",
+      "examine": "Tick, swing. Tock, swing. Keeps you on the beat; the beat declined to comment.",
+      "value": 2200,
+      "equipSlot": "neck",
+      "attBonus": 2,
+      "strBonus": 2
+    },
+    "valour_token": {
+      "id": "valour_token",
+      "name": "Valour token",
+      "examine": "Stamped bell-bronze. The Hold's only honest currency: it cannot be earned sitting down.",
+      "value": 0,
+      "stackable": true
+    },
+    "sustain_brew": {
+      "id": "sustain_brew",
+      "name": "Sustain brew",
+      "examine": "Tastes like barley and one held note. The infirmarian swears by it, mostly at recruits.",
+      "value": 35,
+      "edible": { "heals": 9 }
+    },
+    "true_note_blade": {
+      "id": "true_note_blade",
+      "name": "True-note blade",
+      "examine": "Forged on the Cadence Stone itself. It has never missed the beat; you are merely the instrument.",
+      "value": 48000,
+      "equipSlot": "weapon",
+      "attBonus": 52,
+      "strBonus": 50,
+      "attackSpeed": 4,
+      "levelReq": [{ "skill": "Attack", "level": 50 }],
+      "effects": [
+        { "type": "bleed", "chance": 0.2, "dmg": 2, "hits": 4, "every": 2, "maxStacks": 1 }
+      ],
+      "spec": {
+        "name": "Perfect Cadence",
+        "energy": 55,
+        "desc": "Land the one note the world was sung to: +20% damage and a guaranteed resonance bleed.",
+        "kind": "guaranteed_dot",
+        "params": {
+          "dmgMult": 1.2,
+          "dot": { "type": "bleed", "chance": 1, "dmg": 3, "hits": 5, "every": 2, "maxStacks": 1 }
+        }
+      }
+    }
+  },
+  "objs": {
+    "metronome_dummy": {
+      "id": "metronome_dummy",
+      "name": "Metronome dummy",
+      "examine": "Straw, leather, and a small bell. Hit it on the beat and it rings; hit it off the beat and it judges.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "reinforced_dummy": {
+      "id": "reinforced_dummy",
+      "name": "Reinforced dummy",
+      "examine": "Iron-banded and unimpressed. It only rings for a properly weighted blow.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "cadence_pillar": {
+      "id": "cadence_pillar",
+      "name": "Cadence pillar",
+      "examine": "Cut from the Cadence Stone's casing. Striking it is sparring with the tempo itself.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "cadence_anvil": {
+      "id": "cadence_anvil",
+      "name": "Cadence anvil",
+      "examine": "It hums a low A before your hammer ever lands. Metal annealed here rings true.",
+      "action": "Smith",
+      "blocks": true
+    },
+    "cadence_post": {
+      "id": "cadence_post",
+      "name": "Cadence post",
+      "examine": "Drill notices, posted in strict 4/4.",
+      "action": "Read",
+      "blocks": false
+    }
+  },
+  "recipes": {
+    "smithables": [
+      {
+        "output": "tuned_scimitar",
+        "bar": "mithril_bar",
+        "bars": 2,
+        "extraInputs": [{ "item": "resonant_shard", "qty": 1 }],
+        "level": 55,
+        "xp": 120
+      },
+      {
+        "output": "tuned_warblade",
+        "bar": "mithril_bar",
+        "bars": 2,
+        "extraInputs": [{ "item": "resonant_shard", "qty": 2 }],
+        "level": 60,
+        "xp": 150
+      }
+    ]
+  },
+  "npcs": {
+    "drillmaster_concord": {
+      "id": "drillmaster_concord",
+      "name": "Drillmaster Concord",
+      "examine": "Forty years of drills and not one missed downbeat. Her shout has its own time signature.",
+      "combatLevel": 0,
+      "hitpoints": 60,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#8a4a2a",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "quartermaster_bell": {
+      "id": "quartermaster_bell",
+      "name": "Quartermaster Bell",
+      "examine": "Sells anything that swings, and ledgers every gram of it.",
+      "combatLevel": 0,
+      "hitpoints": 20,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#7a6a3a",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "valour_steward": {
+      "id": "valour_steward",
+      "name": "Valour Steward",
+      "examine": "Keeper of the Hold's honours. Counts tokens the way a metronome counts beats: exactly.",
+      "combatLevel": 0,
+      "hitpoints": 20,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#b09030",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "hold_infirmarian": {
+      "id": "hold_infirmarian",
+      "name": "Hold Infirmarian",
+      "examine": "Patches up enthusiasm-related injuries. Has opinions about your guard.",
+      "combatLevel": 0,
+      "hitpoints": 20,
+      "attack": 1,
+      "strength": 1,
+      "defence": 1,
+      "attackSpeed": 4,
+      "respawnTicks": 50,
+      "color": "#c0c0d8",
+      "size": 1,
+      "attackable": false,
+      "drops": []
+    },
+    "sparring_recruit": {
+      "id": "sparring_recruit",
+      "name": "Sparring recruit",
+      "examine": "All enthusiasm, no rhythm. Yet.",
+      "family": "humankind",
+      "combatLevel": 8,
+      "hitpoints": 12,
+      "attack": 7,
+      "strength": 7,
+      "defence": 6,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 13,
+      "color": "#b09a6a",
+      "size": 0.95,
+      "attackable": true,
+      "drops": [
+        { "item": "bones", "qty": [1, 1], "chance": 1 },
+        { "item": "valour_token", "qty": [1, 2], "chance": 0.6 }
+      ]
+    },
+    "sparring_veteran": {
+      "id": "sparring_veteran",
+      "name": "Sparring veteran",
+      "examine": "Knows the drills well enough to be dangerous on the off-beat too.",
+      "family": "humankind",
+      "combatLevel": 25,
+      "hitpoints": 30,
+      "attack": 22,
+      "strength": 22,
+      "defence": 20,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 14,
+      "color": "#8a7f9a",
+      "size": 1.05,
+      "attackable": true,
+      "drops": [
+        { "item": "bones", "qty": [1, 1], "chance": 1 },
+        { "item": "valour_token", "qty": [2, 4], "chance": 0.7 }
+      ]
+    },
+    "sparring_champion": {
+      "id": "sparring_champion",
+      "name": "Champion's Echo",
+      "examine": "It fights the way the Cadence Stone keeps time: inevitably.",
+      "family": "humankind",
+      "combatLevel": 55,
+      "hitpoints": 70,
+      "attack": 48,
+      "strength": 50,
+      "defence": 45,
+      "attackSpeed": 4,
+      "aggressive": true,
+      "respawnTicks": 15,
+      "color": "#9a3030",
+      "size": 1.3,
+      "attackable": true,
+      "drops": [
+        { "item": "bones", "qty": [1, 1], "chance": 1 },
+        { "item": "valour_token", "qty": [4, 8], "chance": 0.85 },
+        { "item": "true_note_blade", "qty": [1, 1], "chance": 0.00195 }
+      ]
+    }
+  },
+  "shops": {
+    "quartermaster_bell": {
+      "name": "The Quartermaster's Rack",
+      "stock": [
+        { "item": "drillmasters_baton", "qty": 10 },
+        { "item": "metronome_charm", "qty": 5 },
+        { "item": "tuned_scimitar", "qty": 2 },
+        { "item": "hammer", "qty": 10 },
+        { "item": "bronze_sword", "qty": 5 },
+        { "item": "wooden_shield", "qty": 5 }
+      ]
+    },
+    "hold_infirmary": {
+      "name": "The Hold Infirmary",
+      "stock": [
+        { "item": "sustain_brew", "qty": 50 },
+        { "item": "bread", "qty": 20 }
+      ]
+    }
+  },
+  "spawns": [
+    { "id": "drillmaster_concord", "dx": 10, "dy": 14 },
+    { "id": "hold_infirmarian", "dx": 17, "dy": 13 },
+    { "id": "quartermaster_bell", "dx": 16, "dy": 26 },
+    { "id": "valour_steward", "dx": 20, "dy": 26 },
+    { "id": "sparring_recruit", "dx": 1, "dy": 17 },
+    { "id": "sparring_recruit", "dx": 3, "dy": 17 },
+    { "id": "sparring_recruit", "dx": 5, "dy": 17 },
+    { "id": "sparring_recruit", "dx": 7, "dy": 17 },
+    { "id": "sparring_recruit", "dx": 1, "dy": 19 },
+    { "id": "sparring_recruit", "dx": 3, "dy": 19 },
+    { "id": "sparring_recruit", "dx": 5, "dy": 19 },
+    { "id": "sparring_recruit", "dx": 7, "dy": 19 },
+    { "id": "sparring_recruit", "dx": 2, "dy": 21 },
+    { "id": "sparring_recruit", "dx": 6, "dy": 21 },
+    { "id": "sparring_veteran", "dx": 11, "dy": 17 },
+    { "id": "sparring_veteran", "dx": 13, "dy": 17 },
+    { "id": "sparring_veteran", "dx": 15, "dy": 17 },
+    { "id": "sparring_veteran", "dx": 17, "dy": 17 },
+    { "id": "sparring_veteran", "dx": 11, "dy": 19 },
+    { "id": "sparring_veteran", "dx": 13, "dy": 19 },
+    { "id": "sparring_veteran", "dx": 15, "dy": 19 },
+    { "id": "sparring_veteran", "dx": 17, "dy": 19 },
+    { "id": "sparring_champion", "dx": 22, "dy": 17 },
+    { "id": "sparring_champion", "dx": 25, "dy": 17 },
+    { "id": "sparring_champion", "dx": 22, "dy": 20 },
+    { "id": "sparring_champion", "dx": 25, "dy": 20 }
+  ],
+  "mapObjects": [
+    { "type": "metronome_dummy", "dx": 1, "dy": 1 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 1 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 1 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 1 },
+    { "type": "metronome_dummy", "dx": 1, "dy": 3 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 3 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 3 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 3 },
+    { "type": "metronome_dummy", "dx": 1, "dy": 5 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 5 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 5 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 5 },
+    { "type": "metronome_dummy", "dx": 1, "dy": 7 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 7 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 7 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 7 },
+    { "type": "metronome_dummy", "dx": 1, "dy": 9 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 9 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 9 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 9 },
+    { "type": "metronome_dummy", "dx": 1, "dy": 11 },
+    { "type": "metronome_dummy", "dx": 3, "dy": 11 },
+    { "type": "metronome_dummy", "dx": 5, "dy": 11 },
+    { "type": "metronome_dummy", "dx": 7, "dy": 11 },
+    { "type": "reinforced_dummy", "dx": 11, "dy": 2 },
+    { "type": "reinforced_dummy", "dx": 13, "dy": 2 },
+    { "type": "reinforced_dummy", "dx": 15, "dy": 2 },
+    { "type": "reinforced_dummy", "dx": 11, "dy": 4 },
+    { "type": "reinforced_dummy", "dx": 13, "dy": 4 },
+    { "type": "reinforced_dummy", "dx": 15, "dy": 4 },
+    { "type": "reinforced_dummy", "dx": 11, "dy": 6 },
+    { "type": "reinforced_dummy", "dx": 13, "dy": 6 },
+    { "type": "reinforced_dummy", "dx": 15, "dy": 6 },
+    { "type": "reinforced_dummy", "dx": 11, "dy": 8 },
+    { "type": "reinforced_dummy", "dx": 13, "dy": 8 },
+    { "type": "reinforced_dummy", "dx": 15, "dy": 8 },
+    { "type": "cadence_pillar", "dx": 19, "dy": 2 },
+    { "type": "cadence_pillar", "dx": 21, "dy": 2 },
+    { "type": "cadence_pillar", "dx": 23, "dy": 2 },
+    { "type": "cadence_pillar", "dx": 25, "dy": 2 },
+    { "type": "cadence_pillar", "dx": 19, "dy": 4 },
+    { "type": "cadence_pillar", "dx": 21, "dy": 4 },
+    { "type": "cadence_pillar", "dx": 23, "dy": 4 },
+    { "type": "cadence_pillar", "dx": 25, "dy": 4 },
+    { "type": "cadence_post", "dx": 9, "dy": 6 },
+    { "type": "cadence_post", "dx": 4, "dy": 14 },
+    { "type": "bank_booth", "dx": 14, "dy": 13 },
+    { "type": "cadence_anvil", "dx": 12, "dy": 26 },
+    { "type": "anvil", "dx": 12, "dy": 26 }
+  ],
+  "terrainPads": [
+    { "dx": 0, "dy": 0, "w": 30, "h": 30, "code": 2 },
+    { "dx": 0, "dy": 0, "w": 10, "h": 13, "code": 9 },
+    { "dx": 18, "dy": 0, "w": 10, "h": 7, "code": 3 },
+    { "dx": 0, "dy": 16, "w": 9, "h": 7, "code": 9 },
+    { "dx": 10, "dy": 16, "w": 9, "h": 7, "code": 9 },
+    { "dx": 20, "dy": 16, "w": 8, "h": 6, "code": 9 }
+  ],
+  "sharedEdits": [
+    {
+      "file": "src/packs/index.ts",
+      "what": "Register the new client pack",
+      "snippet": "Add alongside the other pack imports: import './drummars_hold';"
+    },
+    {
+      "file": "server/index.ts",
+      "what": "Register the new server intent domain",
+      "snippet": "Add next to the existing `import './intent-misc';` side-effect import: import './intent-melee';"
+    },
+    {
+      "file": "server/intents.ts",
+      "what": "Smithables loader (~line 735) must fold the new optional extraInputs[] into inputs[] so the resonant_shard cost on tuned_scimitar/tuned_warblade is enforced (make handler already iterates inputs[] generically)",
+      "snippet": "Replace the smithables loop body in RECIPE_INDEX with:\n  for (const s of RECIPES.smithables) {\n    const inputs = [{ item: s.bar, qty: s.bars }, ...(((s as { extraInputs?: { item: string; qty: number }[] }).extraInputs) ?? [])];\n    idx['smith|' + s.output] = { skill: 'Smithing', level: s.level, xp: s.xp, tool: 'hammer', inputs, output: s.output, outputQty: s.outputQty ?? 1 };\n  }"
+    },
+    {
+      "file": "data/map.json (bake step)",
+      "what": "The 'make' intent hardcodes stationReq 'anvil' (server/intents.ts ~line 424) and nearObject(x,y,'anvil'); the Cadence anvil tile must also carry type 'anvil' or smithing there fails. The fragment already emits BOTH {type:'cadence_anvil'} and {type:'anvil'} at dx 12, dy 26 (absolute 162,121) — keep both when baking. Alternative (code fix): widen the check at line 428 to `if (stationReq && !nearObject(ctx.x, ctx.y, stationReq) && !(stationReq === 'anvil' && nearObject(ctx.x, ctx.y, 'cadence_anvil')))` and drop the duplicate 'anvil' map object."
+    },
+    {
+      "file": "server/combat.ts (profile builder) + server/index.ts deriveCombatProfile call path",
+      "what": "Concord set bonus (NEW engine code per verdict E): concord_cape carries a data-only `setBonus` field { name:'Perfect Cadence', requires:[concord_helm, concord_platebody, concord_platelegs], accMult:1.05, refundChance:0.125 }. In the combat profile builder, after equipment bonuses are summed: if equipment.neck is concord_cape AND every id in setBonus.requires is equipped in its slot (head/body/legs), multiply the derived melee accuracy by setBonus.accMult and push 'perfect_cadence' onto effectGear. Optionally, in the npc-death hook path, when perfect_cadence is in effectGear roll Math.random() < refundChance to grant back floor(half the valour_token cost of the killed reward purchase) — if that refund proves awkward, ship accMult only; the cape is balanced without the refund.",
+      "snippet": "const cape = state.equipment?.neck; const sb = cape && ITEMS[cape.id]?.setBonus; if (sb && Array.isArray(sb.requires) && sb.requires.every((id) => [state.equipment?.head, state.equipment?.body, state.equipment?.legs].some((e) => e?.id === id))) { profile.accMult = (profile.accMult ?? 1) * (sb.accMult ?? 1); profile.effectGear.push('perfect_cadence'); }"
+    }
+  ]
+}

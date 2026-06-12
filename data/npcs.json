@@ -2913,5 +2913,1410 @@
     "size": 1,
     "attackable": false,
     "drops": []
+  },
+  "market_crowd_thug": {
+    "id": "market_crowd_thug",
+    "name": "Market loiterer",
+    "examine": "Here for the atmosphere, and whatever isn't nailed down.",
+    "family": "humankind",
+    "combatLevel": 2,
+    "hitpoints": 8,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 25,
+    "color": "#9a8466",
+    "size": 1,
+    "attackable": true,
+    "pickpocket": {
+      "level": 1,
+      "xp": 8,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            3,
+            8
+          ]
+        }
+      ],
+      "stunDmg": 1
+    },
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          2,
+          12
+        ],
+        "chance": 0.6
+      }
+    ]
+  },
+  "silk_merchant": {
+    "id": "silk_merchant",
+    "name": "Silk merchant",
+    "examine": "Sells silk by the bolt and buys excuses by the dozen.",
+    "family": "humankind",
+    "combatLevel": 12,
+    "hitpoints": 20,
+    "attack": 8,
+    "strength": 8,
+    "defence": 8,
+    "attackSpeed": 4,
+    "respawnTicks": 40,
+    "color": "#b06a9a",
+    "size": 1,
+    "attackable": false,
+    "pickpocket": {
+      "level": 38,
+      "xp": 65,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            20,
+            60
+          ]
+        },
+        {
+          "item": "silk",
+          "qty": [
+            1,
+            1
+          ]
+        }
+      ],
+      "stunDmg": 3
+    },
+    "drops": []
+  },
+  "guild_treasurer": {
+    "id": "guild_treasurer",
+    "name": "Guild treasurer",
+    "examine": "Counts the Wrightsong coffers twice. Misses things exactly once.",
+    "family": "humankind",
+    "combatLevel": 25,
+    "hitpoints": 30,
+    "attack": 15,
+    "strength": 15,
+    "defence": 20,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a6a3a",
+    "size": 1,
+    "attackable": false,
+    "pickpocket": {
+      "level": 60,
+      "xp": 120,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            60,
+            140
+          ]
+        },
+        {
+          "item": "hum_coin",
+          "qty": [
+            1,
+            1
+          ]
+        }
+      ],
+      "stunDmg": 4
+    },
+    "drops": []
+  },
+  "gilded_noble": {
+    "id": "gilded_noble",
+    "name": "Gilded noble",
+    "examine": "Wears a quarter of the district's wealth and none of its sense.",
+    "family": "humankind",
+    "combatLevel": 40,
+    "hitpoints": 40,
+    "attack": 20,
+    "strength": 20,
+    "defence": 30,
+    "attackSpeed": 4,
+    "respawnTicks": 60,
+    "color": "#c8a83a",
+    "size": 1,
+    "attackable": false,
+    "pickpocket": {
+      "level": 80,
+      "xp": 185,
+      "loot": [
+        {
+          "item": "coins",
+          "qty": [
+            100,
+            260
+          ]
+        },
+        {
+          "item": "uncut_diamond",
+          "qty": [
+            1,
+            1
+          ]
+        }
+      ],
+      "stunDmg": 5
+    },
+    "drops": []
+  },
+  "qv_agility_master": {
+    "id": "qv_agility_master",
+    "name": "Pell the Quick",
+    "examine": "Stands perfectly still, somehow smugly.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4a8ac0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "qv_thieving_master": {
+    "id": "qv_thieving_master",
+    "name": "Sly Maren",
+    "examine": "Knows what you stole. Knows what it's worth. Knows a guy.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#5a4a6a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "qv_hunter_master": {
+    "id": "qv_hunter_master",
+    "name": "Brackle the Trapper",
+    "examine": "Smells of reeds and patience.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6a7a4a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "qv_construction_master": {
+    "id": "qv_construction_master",
+    "name": "Foreward Oss",
+    "examine": "Foreman of the Wrightsong Guild. Half her sentences are load-bearing.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a8743a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "qv_general_clerk": {
+    "id": "qv_general_clerk",
+    "name": "Clerk Tilba",
+    "examine": "Sells everything the four trades forgot to pack.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#b0a070",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "qv_banker": {
+    "id": "qv_banker",
+    "name": "Vaultwright Senna",
+    "examine": "Keeps the district's coin in tune and in trust.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#888898",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "harbourmaster_sella": {
+    "id": "harbourmaster_sella",
+    "name": "Harbourmaster Sella",
+    "examine": "Runs Saltsong by tide-table and glare. Pays in Tide-Tokens, never in compliments.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#2f5d7c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "tackle_keeper_orin": {
+    "id": "tackle_keeper_orin",
+    "name": "Tackle-Keeper Orin",
+    "examine": "Knows every knot and most of the fish by grudge.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6b4f2a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "tide_token_broker_vey": {
+    "id": "tide_token_broker_vey",
+    "name": "Broker Vey",
+    "examine": "Trades in Tide-Tokens and understatement.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7c6a9c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "galley_cook_maren": {
+    "id": "galley_cook_maren",
+    "name": "Galley-Cook Maren",
+    "examine": "Conducts six ranges at once. None of them dares burn.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#b0563c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "fishmonger_pell": {
+    "id": "fishmonger_pell",
+    "name": "Fishmonger Pelline",
+    "examine": "Pell of Brackwater's sister. She got the better harbour and never lets him forget it.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4878a0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "lighthouse_keeper_brann": {
+    "id": "lighthouse_keeper_brann",
+    "name": "Lighthouse-Keeper Brann",
+    "examine": "Keeps the light, the bell, and several decades of weather in his beard.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#5a6a55",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "warden_brisa": {
+    "id": "warden_brisa",
+    "name": "Warden Brisa",
+    "examine": "Keeper of the Seed Trough. Counts seeds the way bankers count coins.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6a8c4a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "master_sustainer_oak": {
+    "id": "master_sustainer_oak",
+    "name": "Master Sustainer Oak",
+    "examine": "Has kept the long green note true for sixty years. Hums when he listens.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#3f6f3f",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "apothecary_vell": {
+    "id": "apothecary_vell",
+    "name": "Apothecary Vell",
+    "examine": "Smells of forty herbs at once. Claims this is a professional credential.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a5c8c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "keeper_thistle": {
+    "id": "keeper_thistle",
+    "name": "Keeper Thistle",
+    "examine": "Minds the Reward Trough. Prickly about it, naturally.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8c6f3f",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "blight_warden_mara": {
+    "id": "blight_warden_mara",
+    "name": "Blight Warden Mara",
+    "examine": "Fights rot with a trowel and an unreasonable amount of optimism.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#5c7a6a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "resonne_archcantor": {
+    "id": "resonne_archcantor",
+    "name": "Archcantor Veyl",
+    "examine": "Master of the Conservatory. Speaks in cadences and ends conversations on the tonic.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a5cc8",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "resonne_quartermaster": {
+    "id": "resonne_quartermaster",
+    "name": "Quartermaster Sella",
+    "examine": "Runs the reward stores. Accepts rune dust, resonant shards, and absolutely no excuses.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4a6cc0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "resonne_runecraft_tutor": {
+    "id": "resonne_runecraft_tutor",
+    "name": "Tutor Brae",
+    "examine": "Teaches the altar loop to anyone who stands still long enough. Few do twice.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#5c9cc8",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "resonne_magic_clerk": {
+    "id": "resonne_magic_clerk",
+    "name": "Clerk Ompin",
+    "examine": "Keeps the spell ledgers and sells low runes in bulk. Hums while he counts. Counts while he hums.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6060b0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "resonne_mill_keeper": {
+    "id": "resonne_mill_keeper",
+    "name": "Keeper Dross",
+    "examine": "Operates the rune mill. Permanently dusted in other people's surplus magic.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#9a8a6a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "drillmaster_concord": {
+    "id": "drillmaster_concord",
+    "name": "Drillmaster Concord",
+    "examine": "Forty years of drills and not one missed downbeat. Her shout has its own time signature.",
+    "combatLevel": 0,
+    "hitpoints": 60,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8a4a2a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "quartermaster_bell": {
+    "id": "quartermaster_bell",
+    "name": "Quartermaster Bell",
+    "examine": "Sells anything that swings, and ledgers every gram of it.",
+    "combatLevel": 0,
+    "hitpoints": 20,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a6a3a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "valour_steward": {
+    "id": "valour_steward",
+    "name": "Valour Steward",
+    "examine": "Keeper of the Hold's honours. Counts tokens the way a metronome counts beats: exactly.",
+    "combatLevel": 0,
+    "hitpoints": 20,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#b09030",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "hold_infirmarian": {
+    "id": "hold_infirmarian",
+    "name": "Hold Infirmarian",
+    "examine": "Patches up enthusiasm-related injuries. Has opinions about your guard.",
+    "combatLevel": 0,
+    "hitpoints": 20,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#c0c0d8",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "sparring_recruit": {
+    "id": "sparring_recruit",
+    "name": "Sparring recruit",
+    "examine": "All enthusiasm, no rhythm. Yet.",
+    "family": "humankind",
+    "combatLevel": 8,
+    "hitpoints": 12,
+    "attack": 7,
+    "strength": 7,
+    "defence": 6,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 13,
+    "color": "#b09a6a",
+    "size": 0.95,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "valour_token",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.6
+      }
+    ]
+  },
+  "sparring_veteran": {
+    "id": "sparring_veteran",
+    "name": "Sparring veteran",
+    "examine": "Knows the drills well enough to be dangerous on the off-beat too.",
+    "family": "humankind",
+    "combatLevel": 25,
+    "hitpoints": 30,
+    "attack": 22,
+    "strength": 22,
+    "defence": 20,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 14,
+    "color": "#8a7f9a",
+    "size": 1.05,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "valour_token",
+        "qty": [
+          2,
+          4
+        ],
+        "chance": 0.7
+      }
+    ]
+  },
+  "sparring_champion": {
+    "id": "sparring_champion",
+    "name": "Champion's Echo",
+    "examine": "It fights the way the Cadence Stone keeps time: inevitably.",
+    "family": "humankind",
+    "combatLevel": 55,
+    "hitpoints": 70,
+    "attack": 48,
+    "strength": 50,
+    "defence": 45,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 15,
+    "color": "#9a3030",
+    "size": 1.3,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "valour_token",
+        "qty": [
+          4,
+          8
+        ],
+        "chance": 0.85
+      },
+      {
+        "item": "true_note_blade",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.00195
+      }
+    ]
+  },
+  "cantor_veil": {
+    "id": "cantor_veil",
+    "name": "Cantor Veil",
+    "examine": "The Order's master of the cull. Keeps a list of every wrong note still ringing, alphabetised.",
+    "combatLevel": 0,
+    "hitpoints": 30,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4a4458",
+    "size": 1.05,
+    "attackable": false,
+    "drops": []
+  },
+  "sister_plainsong": {
+    "id": "sister_plainsong",
+    "name": "Sister Plainsong",
+    "examine": "The Order's quartermaster. Trades in incense, bones and a frankly unsettling cheerfulness.",
+    "combatLevel": 0,
+    "hitpoints": 30,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8a8da0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "abbot_threnody": {
+    "id": "abbot_threnody",
+    "name": "Abbot Threnody",
+    "examine": "Head of the Order of the Last Verse. Has personally sung four hundred dead to rest, twice for emphasis.",
+    "combatLevel": 0,
+    "hitpoints": 30,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#6e6250",
+    "size": 1.05,
+    "attackable": false,
+    "drops": []
+  },
+  "gravewail_hound": {
+    "id": "gravewail_hound",
+    "name": "Gravewail hound",
+    "examine": "A dog that outlived its own funeral and resents the paperwork.",
+    "family": "undead",
+    "combatLevel": 22,
+    "hitpoints": 30,
+    "attack": 19,
+    "strength": 18,
+    "defence": 16,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 35,
+    "color": "#5b6470",
+    "size": 0.95,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "ranged_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.5
+      }
+    ]
+  },
+  "choir_ghast": {
+    "id": "choir_ghast",
+    "name": "Choir ghast",
+    "examine": "A chorister's shape holding a note nobody wrote. It would like you to listen forever.",
+    "family": "offnote",
+    "combatLevel": 28,
+    "hitpoints": 36,
+    "attack": 25,
+    "strength": 24,
+    "defence": 21,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 35,
+    "color": "#7d8aa6",
+    "size": 1.1,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "ranged_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.5
+      }
+    ]
+  },
+  "dirgewolf": {
+    "id": "dirgewolf",
+    "name": "Dirgewolf",
+    "examine": "It howls in perfect descending thirds. The pack it mourns is also here, also dead, also hostile.",
+    "family": "undead",
+    "combatLevel": 38,
+    "hitpoints": 55,
+    "attack": 33,
+    "strength": 34,
+    "defence": 30,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 40,
+    "color": "#4c5560",
+    "size": 1.2,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "ranged_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.6
+      }
+    ]
+  },
+  "dirge_ghoul": {
+    "id": "dirge_ghoul",
+    "name": "Dirge ghoul",
+    "examine": "A Discord War soldier still keeping formation. The war ended. Nobody sang him the memo.",
+    "family": "undead",
+    "combatLevel": 42,
+    "hitpoints": 64,
+    "attack": 37,
+    "strength": 36,
+    "defence": 33,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 45,
+    "color": "#66705c",
+    "size": 1.15,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "big_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.6
+      },
+      {
+        "item": "coins",
+        "qty": [
+          10,
+          60
+        ],
+        "chance": 0.4
+      },
+      {
+        "item": "prayer_potion",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.05
+      }
+    ]
+  },
+  "chordwyrm": {
+    "id": "chordwyrm",
+    "name": "Chordwyrm",
+    "examine": "A drake the Offnote retuned. Every scale rings a different wrong note, all at once.",
+    "family": "offnote",
+    "combatLevel": 48,
+    "hitpoints": 75,
+    "attack": 42,
+    "strength": 43,
+    "defence": 39,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 50,
+    "color": "#564a72",
+    "size": 1.5,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "dragon_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.7
+      },
+      {
+        "item": "coins",
+        "qty": [
+          20,
+          90
+        ],
+        "chance": 0.4
+      }
+    ]
+  },
+  "carillon_revenant": {
+    "id": "carillon_revenant",
+    "name": "Carillon revenant",
+    "examine": "It wears the cathedral's bell-frame as armour and tolls itself into battle. Committed, you have to admit.",
+    "family": "undead",
+    "combatLevel": 70,
+    "hitpoints": 130,
+    "attack": 60,
+    "strength": 62,
+    "defence": 57,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "respawnTicks": 90,
+    "color": "#8a7d5a",
+    "size": 1.7,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "ourg_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "resonant_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          2,
+          4
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          50,
+          200
+        ],
+        "chance": 0.5
+      }
+    ]
+  },
+  "choir_warden": {
+    "id": "choir_warden",
+    "name": "Choir Warden",
+    "examine": "The cathedral's last conductor, still conducting. The orchestra is bones. The tempo is you.",
+    "family": "undead",
+    "combatLevel": 95,
+    "hitpoints": 220,
+    "attack": 82,
+    "strength": 85,
+    "defence": 78,
+    "attackSpeed": 4,
+    "aggressive": true,
+    "boss": true,
+    "respawnTicks": 250,
+    "color": "#3d3a52",
+    "size": 2.1,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "resonant_bones",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 1
+      },
+      {
+        "item": "ourg_bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "choir_dust",
+        "qty": [
+          3,
+          6
+        ],
+        "chance": 1
+      },
+      {
+        "item": "coins",
+        "qty": [
+          150,
+          600
+        ],
+        "chance": 1
+      },
+      {
+        "item": "knell_brand",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.01
+      }
+    ]
+  },
+  "quillrook_fletcher": {
+    "id": "quillrook_fletcher",
+    "name": "Fletcher Wren",
+    "examine": "She splits echo-stone-aged reedwood by ear. Claims a true shaft whistles in thirds.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#7a9a4a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "quillrook_gunsmith": {
+    "id": "quillrook_gunsmith",
+    "name": "Gunsmith Ada Brace",
+    "examine": "Aldgate Gun Guild, Quillrook outpost. Mills the wrongnote-tinged seam into rounds that answer back.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#4a5a68",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "quillrook_range_master": {
+    "id": "quillrook_range_master",
+    "name": "Range-Master Cole",
+    "examine": "Runs the firing line. Scores your shot by the note the cliff rings back. Hears everything twice.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#b08a4a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "quillrook_quartermaster": {
+    "id": "quillrook_quartermaster",
+    "name": "Quartermaster Sable",
+    "examine": "Keeps the reward ledger. Pays out in gear for tokens, and in silence for free.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#3a3a42",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "echo_hare": {
+    "id": "echo_hare",
+    "name": "Echo hare",
+    "examine": "It zigzags a half-beat after its own footsteps. The cliff finds this hilarious.",
+    "family": "beastkind",
+    "combatLevel": 9,
+    "hitpoints": 12,
+    "attack": 5,
+    "strength": 4,
+    "defence": 4,
+    "attackSpeed": 6,
+    "respawnTicks": 16,
+    "color": "#cfc3a8",
+    "size": 0.6,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "echo_tokens",
+        "qty": [
+          1,
+          2
+        ],
+        "chance": 0.3
+      },
+      {
+        "item": "echo_stone_shard",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.06
+      },
+      {
+        "item": "coins",
+        "qty": [
+          2,
+          12
+        ],
+        "chance": 0.4
+      }
+    ]
+  },
+  "range_rat": {
+    "id": "range_rat",
+    "name": "Range rat",
+    "examine": "Grown fat on dropped rounds and lost arrows. Technically part of the ammo economy.",
+    "family": "beastkind",
+    "combatLevel": 16,
+    "hitpoints": 24,
+    "attack": 11,
+    "strength": 9,
+    "defence": 8,
+    "attackSpeed": 6,
+    "respawnTicks": 16,
+    "color": "#6a5a6e",
+    "size": 0.8,
+    "attackable": true,
+    "drops": [
+      {
+        "item": "bones",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 1
+      },
+      {
+        "item": "echo_tokens",
+        "qty": [
+          1,
+          3
+        ],
+        "chance": 0.35
+      },
+      {
+        "item": "echo_stone_shard",
+        "qty": [
+          1,
+          1
+        ],
+        "chance": 0.09
+      },
+      {
+        "item": "coins",
+        "qty": [
+          5,
+          30
+        ],
+        "chance": 0.5
+      },
+      {
+        "item": "steel_arrow",
+        "qty": [
+          5,
+          15
+        ],
+        "chance": 0.1
+      },
+      {
+        "item": "steel_round",
+        "qty": [
+          5,
+          15
+        ],
+        "chance": 0.1
+      }
+    ]
+  },
+  "smith_cantor_branna": {
+    "id": "smith_cantor_branna",
+    "name": "Smith-Cantor Branna",
+    "examine": "Mistress of the Anvil-Choir. Can tell a flat bar from across the plaza.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#c06a3a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "weaver_iseult": {
+    "id": "weaver_iseult",
+    "name": "Weaver Iseult",
+    "examine": "Keeper of the Weaver's Hush. Speaks softly; the loom does the shouting.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#9070b0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "stavewright_orlin": {
+    "id": "stavewright_orlin",
+    "name": "Stavewright Orlin",
+    "examine": "Runs the Stavewright's Gallery. Judges your draw arm silently.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#5a8a4a",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "gemcutter_yael": {
+    "id": "gemcutter_yael",
+    "name": "Gemcutter Yael",
+    "examine": "Sees the finished gem inside the rock, and occasionally inside you.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#40a0b0",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "concord_quartermaster": {
+    "id": "concord_quartermaster",
+    "name": "Quartermaster Doram",
+    "examine": "Keeps the Concord's ledger of marks and shards. Pays in prestige.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#806020",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "ore_broker_halle": {
+    "id": "ore_broker_halle",
+    "name": "Ore-Broker Halle",
+    "examine": "Sells deep-pit ore at plaza prices. Both parties pretend that is fair.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a08858",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "concord_tanner": {
+    "id": "concord_tanner",
+    "name": "Tanner Mauld",
+    "examine": "Smells like the vat. The vat smells like Mauld. The arrangement works.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a07040",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "bole_the_feller": {
+    "id": "bole_the_feller",
+    "name": "Bole the Feller",
+    "examine": "Sells axes in every metal. Names each one, then sells it anyway.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#8a5a2c",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "cinder_warden_ysolde": {
+    "id": "cinder_warden_ysolde",
+    "name": "Cinder-Warden Ysolde",
+    "examine": "Keeps the great bonfire lit and the chorale tokens honest. Smells permanently of warm resin.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#c45a20",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "sawwright_tamsin": {
+    "id": "sawwright_tamsin",
+    "name": "Sawwright Tamsin",
+    "examine": "Runs the waterwheel sawmill. Claims it keeps better time than the temple metronome.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#a08040",
+    "size": 1,
+    "attackable": false,
+    "drops": []
+  },
+  "quill_the_coalman": {
+    "id": "quill_the_coalman",
+    "name": "Old Quill the Coalman",
+    "examine": "Minds the charcoal pit. Black to the elbows, philosophical to the brim.",
+    "combatLevel": 0,
+    "hitpoints": 10,
+    "attack": 1,
+    "strength": 1,
+    "defence": 1,
+    "attackSpeed": 4,
+    "respawnTicks": 50,
+    "color": "#3c3a38",
+    "size": 1,
+    "attackable": false,
+    "drops": []
   }
 }

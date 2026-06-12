@@ -1,0 +1,250 @@
+{
+  "group": "ranged-gun",
+  "areaName": "Quillrook (the Tinnitus Range)",
+  "theme": "Quillrook, the Tinnitus Range — a wind-scoured proving valley where the cliffs are riddled with resonant \"echo-stone\" that REPEATS any sound fired at it. Archers and gunners train here because the range scores your shot by the NOTE the impact rings, not just the hit. Lore hook: when Cantorne was sung, the valley was the Choir's rehearsal hall; the cliffs still hold every note ever struck and \"answer back.\" Fletchers split echo-stone-aged reedwood for arrow shafts that whistle true; gunsmiths mill the same thunder-shale powder the Gun Guild uses, but Quillrook's wrongnote-tinged seam makes \"resonant rounds.\" The whole skill family unifies around the idea of a perfectly-pitched shot.",
+  "summary": "Current state from the code: Ranged ammo tops out at rune_arrow (fletch lvl 75) and bows are purely wood-based (shortbow→magic_shortbow lvl 80, rangedBonus 69) with one quest bow (shardsong_bow). Gun is a real skill trained by dealing damage (combatXpForHit pushes Gun 4×dmg), with a pistol ladder glock_18→rune_pistol (lvl 60, +60) plus errata_pistol, and a clean server-authoritative round economy: smith casings on an anvil (smithables in recipes.json), buy/mill gunpowder, then the load-rounds intent (server/intent-misc.ts ROUND_TIERS) fuses powder+casing→rounds for Gun xp. BUT: there is no metal-frame bow tier (huge gap 80→endgame), no dedicated ranged training hub, no DENSE training, no fletcher/gunsmith link beyond the lone Aldgate guild, no reward sink, and Gun ammo crafting reuses the same generic tier curve with no identity. This expansion adds Quillrook: a clustered target-range training valley (echo-targets you shoot for xp via a new gather-style intent), a metal/composite bow ladder closing the gear gap, a parallel rifle ladder giving Gun its own long-range identity distinct from pistols, the missing steel/composite/dragon arrow tiers, resonant ammo and a \"shot-pitch\" reward set, and a fletcher+gunsmith NPC pair so both halves of ammo crafting live in one walkable hub.",
+  "newItems": [
+    {
+      "id": "steel_arrowtips",
+      "name": "Steel arrowtips",
+      "role": "Smithable arrowtip filling the bronze/iron->mithril gap; 15 per steel_bar at anvil",
+      "tier": "Smithing ~30 / fletched into steel_arrow",
+      "value": 3,
+      "source": "smith: 1 steel_bar -> 15"
+    },
+    {
+      "id": "steel_arrow",
+      "name": "Steel arrow",
+      "role": "Ranged ammo between iron(+10) and mithril(+22); equipSlot ammo, stackable, rangedBonus 14, levelReq Ranged 30",
+      "tier": "Ranged 30 / Fletching 30",
+      "value": 6,
+      "source": "fletch: 15 headless_arrow + 15 steel_arrowtips -> 15"
+    },
+    {
+      "id": "reedwood_logs",
+      "name": "Reedwood logs",
+      "role": "New ranged-only fletching log harvested at Quillrook reed-stands; whistles when cut. Used for composite bows",
+      "tier": "Woodcutting 35 to cut, Fletching 35+ to use",
+      "value": 40,
+      "source": "cut reedwood_stand object at Quillrook"
+    },
+    {
+      "id": "composite_shortbow_u",
+      "name": "Composite shortbow (u)",
+      "role": "Unstrung metal-reinforced bow; closes the 80->endgame bow gap",
+      "tier": "Fletching 70",
+      "value": 350,
+      "source": "fletch: 1 reedwood_logs + 1 steel_bar"
+    },
+    {
+      "id": "composite_shortbow",
+      "name": "Composite shortbow",
+      "role": "Strung bow, rangedBonus 78, between magic_shortbow(+69) and chime tier",
+      "tier": "Ranged 70 / Fletching 70",
+      "value": 700,
+      "source": "fletch: composite_shortbow_u + bowstring"
+    },
+    {
+      "id": "chimewood_logs",
+      "name": "Chimewood logs",
+      "role": "Top reedwood-grade log from Quillrook's echo-grove; rings when nocked",
+      "tier": "Woodcutting 70 / Fletching 85",
+      "value": 300,
+      "source": "cut chimewood_stand object at Quillrook"
+    },
+    {
+      "id": "chime_longbow_u",
+      "name": "Chime longbow (u)",
+      "role": "Unstrung endgame bow stave",
+      "tier": "Fletching 85",
+      "value": 2000,
+      "source": "fletch: 1 chimewood_logs"
+    },
+    {
+      "id": "chime_longbow",
+      "name": "Chime longbow",
+      "role": "Endgame fletched bow, rangedBonus 90; fires every arrow a quarter-tone sharp",
+      "tier": "Ranged 85 / Fletching 85",
+      "value": 4500,
+      "source": "fletch: chime_longbow_u + spidersilk_bowstring"
+    },
+    {
+      "id": "dragon_arrowtips",
+      "name": "Dragon arrowtips",
+      "role": "Top smithable arrowtip above rune",
+      "tier": "Smithing 80 / fletch into dragon_arrow",
+      "value": 40,
+      "source": "smith: 1 dragon_bar -> 15 (or bought from Fletcher's resonance shop)"
+    },
+    {
+      "id": "dragon_arrow",
+      "name": "Dragon arrow",
+      "role": "Best standard arrow above rune(+49); equipSlot ammo, stackable, rangedBonus 60, levelReq Ranged 80",
+      "tier": "Ranged 80 / Fletching 85",
+      "value": 120,
+      "source": "fletch: 15 headless_arrow + 15 dragon_arrowtips -> 15"
+    },
+    {
+      "id": "resonant_arrow",
+      "name": "Resonant arrow",
+      "role": "Reward-sink ammo; rangedBonus 55 with on-hit bleed effect (mirrors wrongnote_round style). Bought with range tokens",
+      "tier": "Ranged 75",
+      "value": 90,
+      "source": "Quillrook reward shop (echo_tokens)"
+    },
+    {
+      "id": "bronze_rifle",
+      "name": "Bronze rifle",
+      "role": "Gun's own long-range ladder, distinct from pistols. Slower attackSpeed 5 but higher gunBonus per tier; gives Gun real identity",
+      "tier": "Gun 10",
+      "value": 600,
+      "source": "Gunsmith shop / drop"
+    },
+    {
+      "id": "iron_rifle",
+      "name": "Iron rifle",
+      "role": "Rifle tier 2; gunBonus 20, attackSpeed 5",
+      "tier": "Gun 25",
+      "value": 1400,
+      "source": "Gunsmith shop"
+    },
+    {
+      "id": "steel_rifle",
+      "name": "Steel rifle",
+      "role": "Rifle tier 3; gunBonus 30, attackSpeed 5",
+      "tier": "Gun 40",
+      "value": 4000,
+      "source": "Gunsmith shop"
+    },
+    {
+      "id": "mithril_rifle",
+      "name": "Mithril rifle",
+      "role": "Rifle tier 4; gunBonus 42, attackSpeed 5",
+      "tier": "Gun 50",
+      "value": 9000,
+      "source": "Gunsmith shop"
+    },
+    {
+      "id": "rune_rifle",
+      "name": "Rune rifle",
+      "role": "Top standard rifle; gunBonus 58, attackSpeed 5 — trades fire-rate for reach vs rune_pistol",
+      "tier": "Gun 70",
+      "value": 28000,
+      "source": "Gunsmith shop / drop"
+    },
+    {
+      "id": "longshot_round",
+      "name": "Longshot round",
+      "role": "Rifle-grade ammo (rifles can fire any _round, but these add reach); gunBonus 40, stackable, on-hit small accuracy bonus",
+      "tier": "Gun 60",
+      "value": 140,
+      "source": "load-rounds via longshot_casing + 2 gunpowder"
+    },
+    {
+      "id": "longshot_casing",
+      "name": "Longshot bullet casing",
+      "role": "Casing for longshot_round; longer brass",
+      "tier": "Smithing 75",
+      "value": 80,
+      "source": "smith: 1 rune_bar -> 10"
+    },
+    {
+      "id": "resonant_round",
+      "name": "Resonant round",
+      "role": "Reward-sink Gun ammo; gunBonus 50 with on-hit bleed, bought with echo_tokens",
+      "tier": "Gun 75",
+      "value": 110,
+      "source": "Quillrook reward shop"
+    },
+    {
+      "id": "quillrook_quiver",
+      "name": "Quillrook quiver",
+      "role": "Reward neck/cape-slot item granting a passive: chance to not consume ammo. QoL ammo-economy sink",
+      "tier": "Ranged 60 to equip",
+      "value": 15000,
+      "source": "Quillrook reward shop (echo_tokens)"
+    },
+    {
+      "id": "marksmans_earmuffs",
+      "name": "Marksman's earmuffs",
+      "role": "Reward head slot; the Tinnitus Range set piece. Small rangedBonus +4 and gunBonus +4",
+      "tier": "Ranged or Gun 50",
+      "value": 8000,
+      "source": "reward shop"
+    },
+    {
+      "id": "resonance_gloves",
+      "name": "Resonance gloves",
+      "role": "Reward hands slot; +3 ranged/gun bonus, completes the Sharpshooter set (set bonus below)",
+      "tier": "50",
+      "value": 8000,
+      "source": "reward shop"
+    },
+    {
+      "id": "echo_tokens",
+      "name": "Echo token",
+      "role": "Currency earned at the target range and from clustered mobs; spent at the reward shop",
+      "tier": "any",
+      "value": 0,
+      "source": "target-range scoring + Quillrook mob drops"
+    },
+    {
+      "id": "echo_stone_shard",
+      "name": "Echo-stone shard",
+      "role": "Material for resonant ammo recipes and the quiver; rings faintly",
+      "tier": "any",
+      "value": 25,
+      "source": "target-range bonus + mob drops"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "SMITHABLE steel_arrowtips: 1 steel_bar -> 15, Smithing ~30, xp 37.5 (slot into recipes.json smithables, mirrors iron_arrowtips)",
+    "SMITHABLE dragon_arrowtips: 1 dragon_bar -> 15, Smithing 80, xp 100 (smithables)",
+    "SMITHABLE longshot_casing: 1 rune_bar -> 10, Smithing 75, xp 90 (smithables)",
+    "FLETCHABLE steel_arrow: 15 headless_arrow + 15 steel_arrowtips -> 15, Fletching 30, xp 75 (fills curve between iron@37.5 and mithril@112.5)",
+    "FLETCHABLE dragon_arrow: 15 headless_arrow + 15 dragon_arrowtips -> 15, Fletching 85, xp 225",
+    "FLETCHABLE composite_shortbow_u: 1 reedwood_logs + 1 steel_bar, Fletching 70, xp 80",
+    "FLETCHABLE composite_shortbow: composite_shortbow_u + bowstring, Fletching 70, xp 80",
+    "FLETCHABLE chime_longbow_u: 1 chimewood_logs, Fletching 85, xp 100",
+    "FLETCHABLE chime_longbow: chime_longbow_u + spidersilk_bowstring, Fletching 85, xp 100 (reuses existing unused spidersilk_bowstring item — gives it a purpose)",
+    "FLETCHABLE resonant_arrow: 15 headless_arrow + 5 echo_stone_shard -> 15, Fletching 75, xp 150 (token/material sink alt to buying)",
+    "LOAD-ROUNDS extension: add longshot_casing -> longshot_round (level 60, xp 90) and resonant_round to the ROUND_TIERS table in server/intent-misc.ts; resonant_round uses 2 gunpowder + 1 echo_stone_shard per (server table) for the sink",
+    "NEW INTENT 'range-shot' in server/intents.ts: payload {target} -> validates equipped bow|pistol|rifle + matching ammo (_arrow for bows->Ranged xp, _round for firearms->Gun xp), consumes 1 ammo, grants tier xp + token roll. Server owns the per-target-tier table (TARGET_TIERS) exactly like ROUND_TIERS. Client wires via registerObjectAction('echo_target_*','Shoot', requestIntent('range-shot',{target})).",
+    "GATHER resource entries: reedwood_stand->reedwood_logs (Woodcutting 35, xp 25), chimewood_stand->chimewood_logs (Woodcutting 70, xp 85) added to the gather intent's resource table + data/objects.json."
+  ],
+  "newObjectsOrMechanics": [
+    "OBJECT echo_target — type 'echo_target', name 'Echo target', action 'Shoot', blocks:true. NEW MECHANIC: shooting it resolves SERVER-SIDE via a new 'range-shot' intent (sibling of gather in server/intents.ts): validates an equipped bow OR pistol/rifle AND matching ammo in the ammo slot, consumes 1 ammo, rolls success vs the target's level, grants Ranged xp (if bow) or Gun xp (if firearm) based on the ammo tier, plus a small chance of echo_tokens/echo_stone_shard. Dense, AFK-style training that 'barely walks' the player. XP per shot scales with target tier (see below).",
+    "OBJECT echo_target_novice — tier param: Ranged/Gun lvl 1, ~8 xp/shot. echo_target_keen — lvl 30, ~22 xp/shot. echo_target_master — lvl 60, ~40 xp/shot. echo_target_perfect — lvl 80, ~62 xp/shot (token-richer). Same 'range-shot' intent, server owns the tier table (mirror of ROUND_TIERS pattern in intent-misc.ts).",
+    "OBJECT reedwood_stand — type 'reedwood_stand', name 'Reedwood reeds', action 'Cut', blocks:true. Woodcutting lvl 35, yields reedwood_logs (~25 xp), resolves via existing gather intent with a new resource entry.",
+    "OBJECT chimewood_stand — type 'chimewood_stand', name 'Chimewood', action 'Cut', blocks:true. Woodcutting lvl 70, yields chimewood_logs (~85 xp), gather intent.",
+    "OBJECT range_fletch_bench — type 'fletch_bench', name 'Fletching bench', action 'Fletch', blocks:true. Optional convenience station so fletchables can be made standing still at Quillrook (server still validates via existing produce/fletch recipe path; bench is just a colocated action surface).",
+    "MECHANIC rifle ammo: rifles share the existing _round ammo check in index.ts (mode 'gun', suffix '_round') — no engine change needed; rifles are just equipSlot weapon items with attackSpeed 5 and gunBonus. longshot_round/resonant_round end in _round so they validate automatically.",
+    "MECHANIC resonant on-hit bleed: resonant_arrow/resonant_round/longshot reuse the EXISTING item 'effects' array (type 'bleed', chance, dmg, hits, every) already used by wrongnote_round — no new engine code."
+  ],
+  "newNpcs": [
+    "fletcher (id: quillrook_fletcher, name: 'Fletcher Wren' — sells reedwood/chimewood fletching supplies, arrowtips, bowstrings; teaches the new bow tiers; lore on echo-stone-aged shafts)",
+    "gunsmith (id: quillrook_gunsmith, name: 'Gunsmith Ada Brace' — Aldgate Gun Guild outpost; sells the rifle ladder, longshot casings, gunpowder; the fletcher/gunsmith link the brief asks for)",
+    "range_master (id: quillrook_range_master, name: 'Range-Master Cole' — runs the echo-target range, explains scoring, exchanges echo_tokens, gives the training tutorial)",
+    "reward_quartermaster (id: quillrook_quartermaster, name: 'Quartermaster Sable' — runs the echo_tokens reward shop: quiver, earmuffs, gloves, resonant ammo)"
+  ],
+  "trainingLayout": "A tight horseshoe valley so the player barely walks. CENTER: a covered firing line — one long row of 16 echo_target objects placed 1 tile apart facing the cliff (4 novice, 4 keen, 4 master, 4 perfect), with a bank_booth and the range_fletch_bench at each end of the line so banking ammo and fletching more is a single step. The firing line is the densest training spot in the game for Ranged/Gun: stand on one tile, shoot the adjacent target, collect tokens, repeat. NORTH SLOPE: a clustered grove of 8 reedwood_stand + 4 chimewood_stand for fletching-log gathering, 2-tile spacing, with a stump-free regrow so cutting is continuous. SOUTH PEN: 'the Gallery' — a fenced clustered-mob pen of ~12 ranged-friendly low-threat mobs (echo-hares / range-rats, melee-only, slow, packed 2 tiles apart) so bow/gun players get live-target xp + echo_token/echo_stone_shard drops without chasing. EAST: the hub buildings (fletcher, gunsmith, quartermaster, range master, bank, general store) in one square so supply runs are ~5 tiles. Net effect: gather logs (north), fletch at bench (center), shoot the firing line OR the Gallery, bank and re-supply — all inside one screen.",
+  "rewards": "Echo_tokens (from the firing line + Gallery drops) spend at Quartermaster Sable's reward shop: (1) Quillrook quiver — passive ammo-saving (chance to not consume arrows/rounds), the headline ammo-economy sink; (2) the Sharpshooter set: marksmans_earmuffs (head) + resonance_gloves (hands) + the quiver, with a SET BONUS of +5% ranged AND gun accuracy when all 3 worn (implement via existing item 'effects'/equip-bonus aggregation); (3) resonant_arrow / resonant_round bundles for players who don't want to fletch them. GOLD/MATERIAL SINKS: dragon_arrowtips and the rifle ladder (rune_rifle 28k) drain coin; chime_longbow consumes the otherwise-unused spidersilk_bowstring; resonant ammo burns echo_stone_shard. The perfect-tier echo_target is token-rich but ammo-hungry, so high-end training is itself a gold/ammo sink that feeds the fletcher/gunsmith economy.",
+  "mapAreaProposal": "A wind-scoured cliff valley in the upland/mountain band, north-east of the existing world, themed as a rehearsal-hall canyon with echo-stone cliffs. Roughly a 24x20 footprint. Suggested region: between Frostpeak (~196,55) and Eldermere (~256,84) in the high country — e.g. a pocket around (220,40) tucked against the northern mountains so the 'echo off the cliffs' fiction reads. Coords finalized at integration; the firing line should back onto a solid cliff wall (north edge) with the hub square to its east and the Gallery pen to the south.",
+  "balanceNotes": "XP rates follow the existing OSRS-style curve (XP_TABLE in server/state.ts) and slot cleanly into current numbers. Ammo fletching: steel_arrow xp 75 sits exactly between iron_arrow(37.5) and mithril_arrow(112.5); dragon_arrow 225 extends past rune(187.5). Bows: composite 80xp/lvl70, chime 100xp/lvl85 mirror yew(67.5/65) and magic(83.3/80) pacing. Gun: rifles use attackSpeed 5 (vs pistol 4) so they deal more per-shot but fewer shots — gunBonus is set ~2 lower than the same-tier pistol to keep DPS comparable, preserving pistols as the fast/close identity and rifles as slow/reach. Combat xp is unchanged (4×dmg via combatXpForHit) so rifles don't inflate Gun xp/hr beyond pistols. Echo-target shot xp (8/22/40/62 per shot) is deliberately a touch below killing live mobs of the same level — it's the AFK/convenience lane, not the fastest, matching how cooking-range vs fire works elsewhere. Level gating: novice target lvl1, keen 30, master 60, perfect 80 keeps the dense range relevant across the whole journey. Token drop rates kept low so the quiver/set are a multi-hour grind, not trivial. Nothing here trivializes existing content — it FILLS the 80->endgame bow gap and gives Gun a second weapon archetype that currently doesn't exist.",
+  "postBlurb": "QUILLROOK OPENS — the Tinnitus Range now answers back. The Choir's old rehearsal canyon has been cleared for marksmen: a sixteen-target firing line where the cliffs score your shot by the note it rings, fresh reedwood and chimewood for fletchers, and Aldgate Gun Guild's own Ada Brace setting up a rifle bench beside Fletcher Wren. Close the long gap to the endgame bow with composite and chime tiers, finally smith steel and dragon arrowtips, and — for the gunners — pick up a rifle, because a pistol was never going to reach the back wall. Bring ammo. Bring lots of ammo. Range-Master Cole is counting every echo.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [],
+    "mechanicFit": "Most mechanics map cleanly to existing systems; TWO need new engine code and ONE spec claim is FALSE.\n\nPURE DATA (no engine code):\n- All smithables (steel/dragon/longshot arrowtips+casing) -> recipes.json `smithables` (note: smithables use {output,bar,bars,level,xp}, NO `inputs` array; '1 bar -> 15' = bars:1,outputQty:15).\n- All fletchables (steel_arrow, composite bow u/strung, chime bow u/strung, dragon_arrow) -> recipes.json `fletchables` ({output,outputQty,level,xp,inputs[]}). Wired via existing produce/'make' intent.\n- reedwood_stand / chimewood_stand WOODCUTTING -> add entries to data/objects.json `skillObjs` (keyed by object id, fields: level,xp,item,depleteChance,respawn,lowRate,highRate). Object defs go in objects.json `objs`.\n- Ammo bleed effects: item `effects:[{type:'bleed',chance,dmg,hits,every}]` already used by wrongnote_round (server combat.ts reads effects from equipped gear). No engine code.\n- New bow/rifle/ammo items: rangedBonus/gunBonus/attackSpeed/value/levelReq/equipSlot fields all supported by combat.ts CItemDef.\n\nNEW ENGINE CODE REQUIRED:\n1. weaponMode() in server/combat.ts (lines 148-151) derives attack mode by HARDCODED id substring: pistol/glock_18 -> 'gun', shortbow -> 'ranged'. So: (a) RIFLES (bronze_rifle..rune_rifle) contain neither 'pistol' nor 'glock' and resolve to MELEE — gunBonus ignored, no _round ammo check. Spec's claim 'rifles need no engine change' is FALSE; must add a 'rifle' branch. (b) chime_longbow contains neither 'shortbow' nor 'shortbow' -> resolves MELEE, rangedBonus ignored; needs a 'longbow' branch. composite_shortbow is OK (contains 'shortbow').\n2. resonant_round recipe (2 gunpowder + 1 echo_stone_shard) CANNOT use loadRounds/ROUND_TIERS: loadRounds hardcodes exactly 1 gunpowder + 1 casing per round (server/intent-misc.ts), no 3rd ingredient, fixed 1:1:1 ratio. Needs either a new recipe path or loadRounds refactor. longshot_round (1 casing + 1 gunpowder) DOES fit ROUND_TIERS as-is (add longshot_bullet_casing entry — note: existing keys are *_bullet_casing; spec's id is 'longshot_casing'/'Longshot bullet casing', align the key).\n\nNEW INTENT 'range-shot': genuinely new but follows the established pattern (new case in server/intents-wire.ts dispatch + new fn in server/intents.ts + server-owned TARGET_TIERS mirroring ROUND_TIERS; client via registerObjectAction(type,'Shoot',()=>requestIntent('range-shot',{...}))). registerObjectAction(type,label,handler) and requestIntent both exist. Buildable, ~standard.\n\nAmmo suffix check: server validates ammo by ammo.id.endsWith('_arrow')/'_round') (index.ts:702) — all new ammo ids comply.",
+    "balanceFlags": [
+      "dragon_bar DOES NOT EXIST in items.json (bars are bronze/iron/steel/mithril/adamantite/gold/rune/silver). dragon_arrowtips/dragon_arrow inputs reference a nonexistent item — either add a dragon_bar tier or change the input.",
+      "Smithing levels off-curve: actual mithril_arrowtips=L55, adamant=L75, rune_arrowtips=L86. Spec's dragon_arrowtips at Smithing 80 sits BELOW rune_arrowtips (L86) yet is meant to be the top tier — bump above 86.",
+      "composite_shortbow value 700 is UNDERPRICED: rangedBonus 78 beats magic_shortbow (rb69) which is valued 1280. A strictly-better bow should cost > 1280.",
+      "rune_rifle gunBonus 58 is LOWER than rune_pistol (gb60) and errata_pistol (gb64) yet valued 28000 vs rune_pistol 15000 — paying ~2x for less gunBonus. Defensible only if reach/attackSpeed identity is real; flag for review. (Top existing gun is errata_pistol gb64.)",
+      "chime_longbow rb90 at value 4500: it is the strongest bow in game; vs errata_pistol gb64@42000 this looks low for a best-in-slot, but bow values trend lower — borderline.",
+      "resonant_arrow rb55 / resonant_round gb50 are reward-shop sinks priced 90/110 — fine, but resonant_round gb50 < wrongnote_round gb52 (existing top gun ammo) while costing similar; minor.",
+      "longshot_casing value 80 from 1 rune_bar->10 (rune_bar=3700): 10x80=800 output vs 3700 input — heavy GP loss, intended sink but verify."
+    ],
+    "notes": "No id collisions: checked all 24 item ids vs items.json, all 5 object types vs objects.json (objs+skillObjs), all 4 npc ids vs npcs.json — zero overlaps. Spidersilk_bowstring exists (value 380) and is currently unused in recipes — spec correctly gives it purpose.\n\nINTEGRATOR MUST APPLY:\n1. FIX dragon_bar: it doesn't exist. Add a dragon_bar smeltable/item OR retarget dragon_arrowtips input. Without it the smithable is dead.\n2. FIX weaponMode() in server/combat.ts ~line 148-151: add explicit branches so rifle ids -> 'gun' and longbow ids -> 'ranged'. This is NOT optional — without it rifles and chime_longbow are silently treated as melee weapons (no ammo, wrong bonus). Update the spec's false 'rifles need no engine change' line.\n3. FIX resonant_round recipe: loadRounds (intent-misc.ts) only supports 1 casing + 1 gunpowder; the 2-gunpowder + echo_stone_shard recipe needs new code or a loadRounds generalization. Decide path before data entry.\n4. ROUND_TIERS keys are *_bullet_casing; spec's longshot_casing id should be added as a ROUND_TIERS entry (level 60 fits curve: existing rune_round=L60 xp75; longshot xp 90 is slightly high but plausible).\n5. smithables in recipes.json use {output,bar,bars,level,xp} (NOT inputs[]) — map '1 X_bar -> 15' to bars:1,outputQty:15. fletchables DO use inputs[].\n6. Bump dragon_arrowtips Smithing req above 86 (rune is L86) to keep the tier ladder monotonic.\n7. Add GATHER_REQS entries (server/intents.ts) for reedwood_stand/chimewood_stand: {skill:'Woodcutting', tool:'bronze_axe'} — required alongside the skillObjs entries, gather() reads both tables.\n8. range-shot intent: register in BOTH server/intents.ts (handler) and server/intents-wire.ts (WS dispatch case). Use server-owned TARGET_TIERS; validate equipment via the same weaponMode/ammo-suffix logic (which must be fixed per #2). Map files: gather/range objects must also be placed in data/map.json objects[] (gather validates objectTypeAt against map.json), not just objects.json defs.\n\nXP table is standard OSRS 1..99 (XP_TABLE in src/defs.ts); all proposed per-action xp values are in the normal range for their levels. Fletching curve: actual iron_arrow fletch=L15 xp37.5, mithril=L45 xp112.5 — spec's steel_arrow L30 xp75 slots correctly between them."
+  }
+}

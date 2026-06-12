@@ -192,6 +192,22 @@ const STALLS: Record<string, StallDef> = {
     type: 'gem_stall', level: 30, xp: 40, lowRate: 0.55, highRate: 0.95,
     table: [{ item: 'uncut_sapphire', weight: 60 }, { item: 'uncut_emerald', weight: 30 }, { item: 'uncut_ruby', weight: 10 }],
   },
+  silk_stall: {
+    type: 'silk_stall', level: 20, xp: 28, lowRate: 0.6, highRate: 0.95,
+    table: [{ item: 'silk', weight: 80 }, { item: 'bolt_of_cloth', weight: 20 }],
+  },
+  fruit_stall: {
+    type: 'fruit_stall', level: 25, xp: 34, lowRate: 0.65, highRate: 0.97,
+    table: [{ item: 'apple', weight: 60 }, { item: 'orange', weight: 40 }],
+  },
+  coffer_stall: {
+    type: 'coffer_stall', level: 55, xp: 84, lowRate: 0.4, highRate: 0.9,
+    table: [{ item: 'coin_pouch', weight: 70 }, { item: 'hum_coin', weight: 25 }, { item: 'uncut_ruby', weight: 5 }],
+  },
+  relic_stall: {
+    type: 'relic_stall', level: 75, xp: 145, lowRate: 0.3, highRate: 0.85,
+    table: [{ item: 'resonant_shard', weight: 60 }, { item: 'uncut_diamond', weight: 30 }, { item: 'gold_bar', weight: 10 }],
+  },
 };
 function rollTable(table: { item: string; weight: number }[]): string {
   const total = table.reduce((s, g) => s + g.weight, 0);
@@ -390,37 +406,63 @@ registerIntentDomain('farm-harvest', (ctx, payload) => {
 // rune kind + level + xp-per-essence + multiplier formula are server data.
 // { altar:'air'|'fire' }
 // ===========================================================================
-interface AltarDef { rune: string; level: number; xpPer: number; div: number; }
+interface AltarDef {
+  rune: string; level: number; xpPer: number; div: number;
+  essence: string;
+  key?: { talisman: string; tiara: string };
+}
 const ALTARS: Record<string, AltarDef> = {
-  air: { rune: 'air_rune', level: 1, xpPer: 5, div: 11 },
-  fire: { rune: 'fire_rune', level: 14, xpPer: 7, div: 14 },
+  // low tier — rune_essence, no key required
+  air:   { rune: 'air_rune',   level: 1,  xpPer: 5,   div: 11, essence: 'rune_essence' },
+  mind:  { rune: 'mind_rune',  level: 2,  xpPer: 5.5, div: 11, essence: 'rune_essence' },
+  water: { rune: 'water_rune', level: 5,  xpPer: 6,   div: 9,  essence: 'rune_essence' },
+  earth: { rune: 'earth_rune', level: 9,  xpPer: 6.5, div: 9,  essence: 'rune_essence' },
+  fire:  { rune: 'fire_rune',  level: 14, xpPer: 7,   div: 14, essence: 'rune_essence' },
+  // high tier — pure_essence, keyed by a held talisman OR the matching tiara worn
+  body:    { rune: 'body_rune',    level: 20, xpPer: 7.5,  div: 14, essence: 'pure_essence', key: { talisman: 'body_talisman',    tiara: 'body_tiara' } },
+  cosmic:  { rune: 'cosmic_rune',  level: 27, xpPer: 8,    div: 16, essence: 'pure_essence', key: { talisman: 'cosmic_talisman',  tiara: 'cosmic_tiara' } },
+  chord:   { rune: 'chord_rune',   level: 44, xpPer: 9,    div: 20, essence: 'pure_essence', key: { talisman: 'chord_talisman',   tiara: 'chord_tiara' } },
+  law:     { rune: 'law_rune',     level: 54, xpPer: 9.5,  div: 22, essence: 'pure_essence', key: { talisman: 'law_talisman',     tiara: 'law_tiara' } },
+  death:   { rune: 'death_rune',   level: 65, xpPer: 10,   div: 23, essence: 'pure_essence', key: { talisman: 'death_talisman',   tiara: 'death_tiara' } },
+  discord: { rune: 'discord_rune', level: 70, xpPer: 10.5, div: 23, essence: 'pure_essence', key: { talisman: 'discord_talisman', tiara: 'discord_tiara' } },
+  blood:   { rune: 'blood_rune',   level: 77, xpPer: 10.5, div: 24, essence: 'pure_essence', key: { talisman: 'blood_talisman',   tiara: 'blood_tiara' } },
+  soul:    { rune: 'soul_rune',    level: 90, xpPer: 11,   div: 25, essence: 'pure_essence', key: { talisman: 'soul_talisman',    tiara: 'soul_tiara' } },
 };
 registerIntentDomain('runecraft', (ctx, payload) => {
   if (ctx.dead) return fail('runecraft', 'dead');
   const altarKey = String(payload.altar ?? '');
   const a = ALTARS[altarKey];
   if (!a) return fail('runecraft', 'unknown altar');
-  const altarType = altarKey === 'fire' ? 'fire_altar' : 'altar';
-  if (!nearObject(ctx.x, ctx.y, altarType)) return fail('runecraft', 'not near an altar');
+  // each altar key validates against its own object type; 'air' also accepts
+  // the legacy plain 'altar' so the original air temple keeps working.
+  const atAltar = nearObject(ctx.x, ctx.y, `${altarKey}_altar`)
+    || (altarKey === 'air' && nearObject(ctx.x, ctx.y, 'altar'));
+  if (!atAltar) return fail('runecraft', 'not near an altar');
   return tx(ctx, 'runecraft', (state) => {
     const lvl = skillLevel(state, 'Runecraft');
     if (lvl < a.level) return fail('runecraft', `requires Runecraft level ${a.level}`);
-    const n = invCount(state, 'rune_essence');
-    if (n === 0) return fail('runecraft', 'you need rune essence');
+    if (a.key) {
+      const worn = state.equipment?.head?.id === a.key.tiara;
+      if (!worn && !invHas(state, a.key.talisman, 1)) {
+        return fail('runecraft', 'the altar does not answer without its talisman (held) or tiara (worn)');
+      }
+    }
+    const n = invCount(state, a.essence);
+    if (n === 0) return fail('runecraft', a.essence === 'pure_essence' ? 'you need pure essence' : 'you need rune essence');
     const mult = Math.floor(1 + lvl / a.div);
-    if (!invRemove(state, 'rune_essence', n)) return fail('runecraft', 'you need rune essence');
+    if (!invRemove(state, a.essence, n)) return fail('runecraft', 'you need essence');
     // Guard the grant: if the rune stack would overflow MAX_QTY, invAdd adds
     // nothing and the consumed essence would be destroyed. Re-add the essence and
     // abort so the player never loses it (mirrors the refund pattern elsewhere).
     if (!invAdd(state, a.rune, n * mult)) {
-      invAdd(state, 'rune_essence', n);
+      invAdd(state, a.essence, n);
       return fail('runecraft', 'you have too many of that rune');
     }
     const xp = n * a.xpPer;
     const x = addXp(state, 'Runecraft', xp);
     return {
       ok: true, kind: 'runecraft',
-      removed: [{ id: 'rune_essence', qty: n }],
+      removed: [{ id: a.essence, qty: n }],
       granted: [{ id: a.rune, qty: n * mult }],
       xp: [{ skill: 'Runecraft' as SkillName, amount: xp }],
       leveledUp: x.leveledUp ? [{ skill: 'Runecraft' as SkillName, level: x.newLevel }] : [],
@@ -680,7 +722,7 @@ registerIntentDomain('eat', (ctx, payload) => {
 // ===========================================================================
 interface DrinkItem { restoresPrayer?: number; }
 const DRINK_ITEMS = loadJson<Record<string, DrinkItem>>('../data/items.json');
-const DRINKABLE = new Set(['attack_potion', 'defence_potion', 'super_attack', 'prayer_potion']);
+const DRINKABLE = new Set(['attack_potion', 'defence_potion', 'super_attack', 'prayer_potion', 'strength_potion', 'restore_potion', 'energy_potion', 'steadying_brew', 'antiblight_tonic', 'super_strength', 'prayer_renewal', 'super_defence', 'ranging_potion', 'super_restore', 'extreme_attack', 'extreme_strength', 'truechord_draught']);
 registerIntentDomain('consume', (ctx, payload) => {
   if (ctx.dead) return fail('consume', 'dead');
   const item = String(payload.item ?? '');

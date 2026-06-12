@@ -1,0 +1,171 @@
+{
+  "group": "woodcutting-firemaking",
+  "areaName": "Resin Hollow (with the Chordwood grove and Emberyard bonfire commons)",
+  "theme": "The forest of Cantorne was the first thing Syla sang into being, and old hewers swear a clean axe-stroke completes a chord the tree was holding. Resin Hollow is a forestry hamlet built around the Chordwood — a stand of resonant timber whose grain rings when split and whose sap, when burned, releases the note locked inside it. Firemaking here is treated as a craft of \"releasing the held note\": a small fire frees one log's tone, a bonfire pools many tones into a sustained chord that warms anyone standing in it (faster, bonus-XP burning) and doubles as an open cook-fire. The aesthetic: sawdust-gold light, axe-rings hanging as tuning chimes, sap-lanterns, a sawmill waterwheel ticking like a metronome.",
+  "summary": "Current gaps: the tree DATA ladder is complete (tree L1, oak L15, willow L30, maple L45, yew L60, magic_tree L75 in objects.json skillObjs) but the CLIENT only registers chopping for tree/oak/willow (src/content.ts:65), so maple/yew/magic are orphaned and unreachable — a player can never cut past willow. Firemaking is a static 3-entry list (logs/oak/willow) in both server/intents.ts:671 and src/content.ts:142, so maple/yew/magic logs have no fire use, and there is no use for a fire once lit (the cook intent only accepts a 'range' object). There is exactly ONE axe in the game (bronze_axe) — no tier ladder — even though the sprite engine (src/sprites.ts:2541) already auto-renders iron/steel/mithril/adamant/rune _axe ids for free. Woodcutting/Firemaking have no hub, no dense training site, no reward sink. This expansion adds Resin Hollow: a full axe tier ladder (6 axes) gating chop speed, the missing firemaking tiers, a clustered Chordwood grove (dense trees so a player barely walks), a bonfire mechanic that gives bonus Firemaking XP and acts as a cook-fire (the cooking link), and a resonant reward set bought with a new log/charcoal sink.",
+  "newItems": [
+    {
+      "id": "iron_axe",
+      "name": "Iron axe",
+      "role": "Axe tier 2. Higher chop-success roll than bronze; usable from Woodcutting/Attack 1 like all axes, but the engine reads axe tier for speed (see mechanics).",
+      "tier": "Woodcutting 1+ to wield; recommended use ~L1",
+      "value": 56,
+      "source": "Resin Hollow axe shop (Bole the Feller); smithable later"
+    },
+    {
+      "id": "steel_axe",
+      "name": "Steel axe",
+      "role": "Axe tier 3.",
+      "tier": "recommended ~L6",
+      "value": 200,
+      "source": "Bole's axe shop"
+    },
+    {
+      "id": "mithril_axe",
+      "name": "Mithril axe",
+      "role": "Axe tier 4.",
+      "tier": "recommended ~L21",
+      "value": 832,
+      "source": "Bole's axe shop"
+    },
+    {
+      "id": "adamant_axe",
+      "name": "Adamant axe",
+      "role": "Axe tier 5.",
+      "tier": "recommended ~L31",
+      "value": 2080,
+      "source": "Bole's axe shop"
+    },
+    {
+      "id": "rune_axe",
+      "name": "Rune axe",
+      "role": "Axe tier 6 (top metal axe). Mirrors the rune end of the pickaxe ladder.",
+      "tier": "recommended ~L41",
+      "value": 8320,
+      "source": "Bole's axe shop / rare drop"
+    },
+    {
+      "id": "resonant_axe",
+      "name": "Resonant axe",
+      "role": "Best-in-slot axe. Reward-shop axe with the top chop-speed tier; faint chime on each cut. Mirrors the mining 'tuned_pickaxe' reward.",
+      "tier": "Woodcutting 61 to wield (soft-gate via levelReq)",
+      "value": 50000,
+      "source": "Resin Hollow reward shop (Chorale Tokens)"
+    },
+    {
+      "id": "charcoal",
+      "name": "Charcoal",
+      "role": "Firemaking byproduct/secondary. A fire or bonfire can be 'banked' to charcoal; used as a Smithing fuel substitute and as the main reward-shop currency sink alongside high logs.",
+      "tier": "any",
+      "value": 12,
+      "source": "Produced by quenching a bonfire (new intent); also charcoal_pit object"
+    },
+    {
+      "id": "sapglass_lantern",
+      "name": "Sap-glass lantern",
+      "role": "Firemaking light-source reward; equippable offhand that lets fires be lit on otherwise-dim Frostpeak/cave tiles (flavor + minor utility).",
+      "tier": "Firemaking 40",
+      "value": 12000,
+      "source": "Reward shop (Chorale Tokens)"
+    },
+    {
+      "id": "hollow_forester_top",
+      "name": "Forester's jerkin",
+      "role": "Reward outfit piece (body). Part of the Forester's outfit set.",
+      "tier": "Woodcutting 40",
+      "value": 15000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "hollow_forester_legs",
+      "name": "Forester's breeches",
+      "role": "Reward outfit piece (legs).",
+      "tier": "Woodcutting 40",
+      "value": 15000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "hollow_forester_hat",
+      "name": "Forester's cap",
+      "role": "Reward outfit piece (head). Full set grants a flavor +Woodcutting-XP set bonus (see rewards).",
+      "tier": "Woodcutting 40",
+      "value": 15000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "ashen_brand_top",
+      "name": "Ashen tabard",
+      "role": "Firemaking reward outfit (body); sap-singed, glows at the seams.",
+      "tier": "Firemaking 40",
+      "value": 15000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "ashen_brand_hood",
+      "name": "Ashen hood",
+      "role": "Firemaking reward outfit (head).",
+      "tier": "Firemaking 40",
+      "value": 15000,
+      "source": "Reward shop"
+    },
+    {
+      "id": "chordwood_logs",
+      "name": "Chordwood logs",
+      "role": "New top-tier log between yew and magic in VALUE for the resonance theme; the only log that, when burned on a bonfire, has a chance to yield a Chorale Token directly. Highest Firemaking XP.",
+      "tier": "Woodcutting 70 to cut; Firemaking 65 to burn",
+      "value": 300,
+      "source": "Chordwood grove (new 'chordwood' tree object) in Resin Hollow"
+    },
+    {
+      "id": "chorale_token",
+      "name": "Chorale Token",
+      "role": "Reward currency for the Resin Hollow reward shop. Earned per fire/bonfire lit (scaled by log tier) and as a rare bonfire byproduct.",
+      "tier": "any (stackable)",
+      "value": 1,
+      "source": "Firemaking activity (granted by firemake/bonfire intents); rare from chordwood on bonfire"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "FIREMAKING table additions (server/intents.ts:671 + src/content.ts:142): add {log:'maple_logs',level:45,xp:135}, {log:'yew_logs',level:60,xp:202.5}, {log:'magic_logs',level:75,xp:303.75}, {log:'chordwood_logs',level:65,xp:240}. Fills the missing tiers so every cut log is burnable.",
+    "GATHER_REQS additions (server/intents.ts:660): add maple, yew, magic_tree, chordwood -> {skill:'Woodcutting', tool:'<any axe>'} so the existing generic gather handler resolves them (data already exists in skillObjs for maple/yew/magic; add the chordwood skillObjs entry).",
+    "new intent 'bonfire' { log } — like firemake but requires nearObject(x,y,'bonfire'), grants xp*1.25 + 1 chorale_token (chordwood: + rare bonus token). Wire in server/intents-wire.ts beside the firemake case.",
+    "new intent 'quench' { } — requires nearObject(x,y,'charcoal_pit'); consumes 2 logs (any tier), grants 1 charcoal + small Firemaking xp.",
+    "cook intent guard change — accept 'range' || 'fire' || 'bonfire' as the cook station (server/intents.ts:342).",
+    "axe tier factor in gather — multiply successRoll chance by AXE_TIER factor; accept any axe id via hasAnyAxe(). No new recipe data, pure server logic.",
+    "Smithing (cross-skill, optional): add smithables for iron/steel/mithril/adamant/rune _axe (mirror the existing _pickaxe smithables) so axes are also craftable, not just bought."
+  ],
+  "newObjectsOrMechanics": [
+    "chordwood (skillObjs entry): a resonant tree tier. {level:70, xp:210, item:'chordwood_logs', depleteChance:0.125, respawn:35, lowRate:0.07, highRate:0.55}. Registered in src/content.ts woodcutting loop (extend the array to ['tree','oak','willow','maple','yew','magic_tree','chordwood'] — fixes the existing maple/yew/magic orphan at the same time). Resolves server-side via the EXISTING generic gather intent + GATHER_REQS — add chordwood/maple/yew/magic_tree keys to GATHER_REQS in server/intents.ts with {skill:'Woodcutting', tool:'bronze_axe'} (tool is just a 'has any axe' floor — see axe tier note).",
+    "AXE TIER LADDER (chop speed): axes do not change WHICH tree you can cut (level does that) but change chop SPEED. Implement as a small AXE_TIER map {bronze_axe:1, iron_axe:2, steel_axe:3, mithril_axe:4, adamant_axe:5, rune_axe:6, resonant_axe:7} read in src/content.ts (cosmetic swing cadence) and in server/intents.ts gather: multiply the effective success roll by a per-tier factor (e.g. 1.0,1.05,1.10,1.18,1.28,1.40,1.55) so a better axe = more logs/hour. The 'tool' check stays a presence check but should accept ANY axe id, not just bronze_axe — add a hasAnyAxe(state) helper (any id in AXE_TIER). This mirrors how the mining brief ladders pickaxes.",
+    "bonfire (new world object 'bonfire'): non-blocking when lit; created by the firemake intent when the player chooses 'add to bonfire' instead of lighting a fresh fire. A bonfire is a SHARED, long-lived fire object placed at a fixed Emberyard tile (baked in map.json) that does NOT deplete on a timer the way a personal fire does. Mechanic: a new 'bonfire' intent (or a flag on firemake) consumes one log while standing adjacent to a bonfire object and grants Firemaking xp * 1.25 (the bonfire bonus) plus a Chorale Token. Server-validated by nearObject(x,y,'bonfire'). This is the 'use for fires' the direction asks for and is engine-trivial (reuses FIREMAKING table + nearObject).",
+    "COOKING LINK: extend the cook intent's station check (server/intents.ts:342) from nearObject('range') to also accept nearObject('fire') OR nearObject('bonfire'). This makes any lit fire / the Emberyard bonfire a valid cook-fire, tying Firemaking output to Cooking exactly like OSRS. No new data shape — just an OR in the existing guard.",
+    "charcoal_pit (new world object 'charcoal_pit'): a station in the Emberyard. New 'quench' intent: standing adjacent, converts logs->charcoal at a fixed ratio (e.g. 2 logs -> 1 charcoal) with small Firemaking xp; charcoal feeds the reward sink and acts as smithing fuel. Validated by nearObject(x,y,'charcoal_pit'). Optional but recommended as a second log sink.",
+    "Personal-fire cook-station lifetime: personal 'fire' objects already get created client-side on firemake success (src/content.ts:159) and time out; making them count as a cook station (above) means a player can chain chop->fire->cook in place."
+  ],
+  "newNpcs": [
+    "Bole the Feller (id: bole_the_feller) — axe-shop owner in Resin Hollow; sells the full axe tier ladder bronze->rune.",
+    "Cinder-Warden Ysolde (id: cinder_warden_ysolde) — tends the Emberyard bonfire; runs the Chorale Token reward shop (Forester's/Ashen outfits, resonant_axe, sapglass_lantern).",
+    "Sawwright Tamsin (id: sawwright_tamsin) — runs the sawmill waterwheel; lore + a general log-buyer (gold sink/source) and tutorialises the bonfire mechanic.",
+    "Old Quill the Coalman (id: quill_the_coalman) — minds the charcoal_pit; buys logs, explains charcoal/quenching."
+  ],
+  "trainingLayout": "Resin Hollow sits in a clearing; two dense training clusters flank it so a player barely walks. (1) THE CHORDWOOD GROVE — a tight 7x7 stand of mixed trees laid out as alternating rows so any standing tile is adjacent to 3-4 trees: ~10 regular tree (L1), ~8 oak, ~8 willow on the near edge; deeper in, a 5x5 inner ring of ~6 maple, ~6 yew, ~4 magic_tree, and a central knot of ~4 chordwood. Because depleteChance is only 0.125 and trees respawn, a player chops near-continuously without moving, and high-level trees are 1-2 tiles from low ones so a leveling player drifts inward, never returning to town. (2) THE EMBERYARD — a paved commons immediately west of the grove: a row of ~6 firelight tiles (non-floor, object-free) for solo fires right where you drop logs, ONE big shared bonfire object at the centre (the bonus-XP + cook-fire spot), and a charcoal_pit on the south edge. The grove's east exit is two tiles from the Emberyard's bonfire, so the loop chop -> step to Emberyard -> bonfire-burn -> (optional) cook is a few tiles end to end. Bole's axe shop and Ysolde's reward shop bracket the Emberyard so upgrades are one screen away.",
+  "rewards": "Reward sinks via Chorale Tokens (earned from Firemaking, especially bonfire burning) plus high-log/charcoal gold sinks at Sawwright Tamsin and Quill: (1) resonant_axe — best-in-slot top-tier chop-speed axe (mirrors mining's tuned_pickaxe reward), the marquee buy. (2) Forester's outfit (hat/jerkin/breeches) — full set worn grants a flavor +2.5% Woodcutting XP set bonus (engine: check all three equipped in addXp). (3) Ashen outfit (hood/tabard) — Firemaking cosmetic set, optional +2.5% Firemaking-XP set bonus. (4) sapglass_lantern — light source / fire-anywhere utility. (5) charcoal as a Smithing-fuel sink so logs feed back into the wider economy. Token math: 1 token per personal fire of yew+; bonfire burns always grant a token; chordwood on a bonfire has a rare direct-token bonus — so the reward set is reachable but represents real hours, keeping it a genuine sink rather than trivializing other content.",
+  "mapAreaProposal": "A wooded river-valley region, roughly a 14x16 footprint, placed between Eldermere (~256,84) and the Tanglewood (~232,110) — i.e. the forested east-central belt, biome = temperate deepwood with a stream feeding the sawmill waterwheel. Far enough from spawn to gate behind some travel, but riding the existing 'Tanglewood = deep forest' lore so it reads as the civilised forestry outpost on the Tanglewood's edge. Coords finalized at integration; proposing the deepwood east-central region near the Eldermere/Tanglewood seam.",
+  "balanceNotes": "XP/curve consistency: all numbers follow the existing tree ladder ratios. Firemaking xp is set just above the matching tree's chop xp, exactly as the existing entries do (logs cut=25/burn=40, oak 37.5/60, willow 67.5/90 => ratio ~1.45-1.6x). New burns continue this: maple 100->135, yew 175->202.5, magic 250->303.75, chordwood 210->240. chordwood TREE xp (210) slots correctly between yew(175) and magic(250) and its level (70) sits between yew(60) and magic(75); lowRate/highRate (0.07/0.55) interpolate the existing curve (yew 0.08/0.6, magic 0.05/0.45). The bonfire 1.25x bonus is modest (OSRS-style) and only applies at one fixed shared tile, so it rewards setup without breaking solo balance. Axe tier factors (1.0->1.55) only scale SUCCESS rate, never tree-level gating, so axes can't skip content — they just reward gear progression, mirroring pickaxes. Reward outfit set bonuses are small (+2.5%) and cosmetic-first. Level gating: axes wieldable at Attack/WC 1 (cheap entry) but priced steeply at the top (rune 8320, resonant 50000) so they pace with mid/late game. No mechanic here exists that the engine can't already do — every piece reuses gather/firemake/cook/nearObject/skillObjs/AXE-tier-as-pickaxe-tier patterns already in the codebase.",
+  "postBlurb": "RESIN HOLLOW OPENS ITS GATES. Past the Eldermere road, where the Tanglewood thins to honest timber, axes are ringing again. The forestry hamlet of Resin Hollow throws open the Chordwood grove — the densest stand of cuttable timber in Cantorne, from common saplings to the singing chordwood at its heart — and Bole the Feller is selling axes in every metal, bronze to rune. At the Emberyard, Cinder-Warden Ysolde keeps the great bonfire lit: feed it logs for richer Firemaking, warm your hands, and cook your catch right there on the coals. Burn enough and she'll trade you a Chorale Token or two — enough of those buy a Forester's outfit, an Ashen tabard, or the legendary resonant axe that finishes a tree's note in a single chime.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [],
+    "mechanicFit": "Mostly fits, but several items need NEW engine code, not pure data.\n\nPURE DATA (drop-in, no code):\n- All 15 items -> data/items.json (no id collisions; see below).\n- FIREMAKING table additions: server/intents.ts:671 FIREMAKING array AND src/content.ts:142 FIREMAKING array are TWO SEPARATE hardcoded arrays that must BOTH be edited (they are not loaded from JSON). Adding maple/yew/magic/chordwood rows is data-only but touches both files.\n- GATHER_REQS additions (server/intents.ts:660): adding maple/yew/magic_tree/chordwood keys is data-only. skillObjs data for maple(L45)/yew/magic_tree ALREADY EXISTS in data/objects.json; only chordwood needs a new skillObjs entry. NOTE: the client gather currently hardcodes hasTool('bronze_axe') at src/content.ts:69 and the server uses tool:'bronze_axe' — neither currently accepts other axes, so maple/yew/magic gather already silently requires a bronze_axe specifically.\n- Extending the woodcutting loop array in src/content.ts:65 to include maple/yew/magic_tree/chordwood: data-shaped edit; it does fix the existing orphan (skillObjs has the data but no registerObjectAction is wired for them). Also must add 'Chop down' object-type defs for chordwood in data/objects.json (maple/yew/magic_tree type defs already exist at lines 331-351).\n- npcs: 4 new ids, no collisions -> data/npcs.json + shops.json (shop stock). Shop buy/sell already generic via shop() — data only.\n- bonfire/charcoal_pit world objects baked into map.json: data only for placement.\n\nNEEDS NEW ENGINE CODE:\n- 'bonfire' intent: NEW handler. xp*1.25 + chorale_token grant + nearObject(x,y,'bonfire') guard. firemake() at intents.ts:363 does NOT grant items, only removes log + xp, so token grant is new logic. SPEC IS WRONG about wiring 'beside the firemake case' in intents-wire.ts: the documented extension path is registerIntentDomain() in a new server/intent-<domain>.ts (wire default case at intents-wire.ts:103-108 dispatches it). Core switch cases are reserved; the doc header (intents.ts:163-171) explicitly says domain agents DO NOT edit intents.ts or intents-wire.ts.\n- 'quench' intent: NEW handler (consume 2 logs -> 1 charcoal + xp, nearObject 'charcoal_pit'). Same registry path.\n- AXE_TIER speed factor: NEW logic. successRoll() (intents.ts:215) takes no multiplier; gather() at intents.ts:280 calls it bare. Multiplying the chance needs a code change in gather() + a hasAnyAxe() helper + AXE_TIER map. Also client src/content.ts:80 depletion estimate. Reasonable but real engine code.\n- cook station OR-guard (intents.ts:342): trivial code change nearObject('range') -> ||'fire'||'bonfire'. Client src/content.ts:210 already registers 'fire' as a cook station object, so client already supports it; only the SERVER guard is range-only. Real one-line code edit.\n- chorale_token as reward currency / reward shop: the existing shop() uses coins only (getCoins/removeCoins). A token-currency reward shop is NEW code (no token-currency shop mechanic exists).\n- Forester/Ashen set XP bonus: NO set-bonus engine exists — flavor only unless new code added.\n- bonfire as a shared, non-timer world object: personal 'fire' objects are client-side with expiresAt (content.ts:159-160). A persistent shared bonfire baked in map.json works as a static object for nearObject checks, but 'add to bonfire' choice on firemake needs new client UI/branch.\n- Smithing axe smithables: pure data (recipes.json smithables mirror _pickaxe), already supported by make/produce.",
+    "balanceFlags": [
+      "resonant_axe value 50000 is 3x the rune_pickaxe (16000) and ~42x tuned_pickaxe (1200), the mining reward it claims to mirror — tuned_pickaxe is only 1200. 50000 is wildly off the reward-axe precedent; expect ~1200-2000 to match.",
+      "Metal axe values (iron 56, steel 200, mithril 832, adamant 2080, rune 8320) do NOT match pickaxe curve (iron 140, steel 500, mithril 1300, adamant 4000, rune 16000). Axes are ~40-52% of the matching pickaxe — inconsistent with 'mirrors the pickaxe ladder'. Pick one curve.",
+      "chordwood_logs value 300 sits between yew_logs(160) and magic_logs(320) as claimed — OK. But Firemaking xp 240 at L65 is HIGHER than magic_logs' proposed 303.75 at L75 only by level; chordwood xp 240 > yew 202.5 but chordwood requires Woodcutting 70 to cut yet only Firemaking 65 to burn, while magic (303.75) needs FM 75 — chordwood is a strictly better xp/effort burn than yew and undercuts magic's gate. Intentional 'reward log' but flag as curve-bending.",
+      "Firemaking additions: existing table tops out at willow L30 xp90. maple L45 xp135, yew L60 xp202.5, magic L75 xp303.75 extrapolate the +linear pattern sanely. chordwood L65 xp240 inserts out of level order (between yew60 and magic75) — fine but non-monotonic vs cut-level 70.",
+      "sapglass_lantern value 12000 and outfit pieces 15000 each (75000 for two 3-pc sets) are token-shop sinks, not gold — only a balance concern if ever sellable for coins; cap sell value or mark untradeable.",
+      "charcoal value 12 vs 2-logs-in (logs=4, so 8 gold of logs -> 12 gold charcoal) is a slight value-creation at the bottom tier; trivial.",
+      "chorale_token value 1: stackable currency at value 1 means it's sellable to shops for 0 (40% floor -> min 1). Mark untradeable to avoid a gold faucet."
+    ],
+    "notes": "No id collisions anywhere: none of the 15 item ids, 4 npc ids, or the bonfire/charcoal_pit/chordwood object types exist today (verified against data/items.json, data/npcs.json, data/objects.json, data/map.json).\n\nCorrections the integrator MUST apply:\n1. FIREMAKING is duplicated: edit BOTH server/intents.ts:671 and src/content.ts:142 (not loaded from JSON). Same for the woodcutting type loop (src/content.ts:65) which is hardcoded, not data-driven.\n2. Do NOT add 'bonfire'/'quench' as new switch cases in intents-wire.ts or new methods in intents.ts — that violates the documented contract (intents.ts:163-171: domain agents add intents via registerIntentDomain in a separate server/intent-<domain>.ts; the wire default case already dispatches them). The spec's 'wire beside the firemake case' instruction is wrong.\n3. Tool checks are currently bronze_axe-specific in TWO places: server GATHER_REQS (tool:'bronze_axe') and client src/content.ts:69 (hasTool('bronze_axe')). The hasAnyAxe() helper must be added on BOTH sides or higher-tier axes won't satisfy the gather gate.\n4. Axe-tier speed factor requires modifying successRoll()/gather() in intents.ts (currently no multiplier param) — real engine code, plus mirroring the cosmetic estimate at src/content.ts:80.\n5. Cook-station OR change is server-only (intents.ts:342); the client already registers 'fire' as a cook object (content.ts:210), so the divergence is purely the server guard being range-only.\n6. chorale_token reward shop and the Forester/Ashen set-XP bonus have NO existing engine support (shop() is coins-only; there is no equipment set-bonus system). These need new code or must be descoped to flavor.\n7. Rebalance values: resonant_axe 50000 contradicts its stated mirror tuned_pickaxe(1200); metal-axe ladder doesn't match the pickaxe ladder it claims to mirror. Mark chorale_token + reward outfits + resonant_axe untradeable to avoid gold faucets/sinks leaking into the coin economy.\n8. chordwood needs a new data/objects.json skillObjs entry AND a type-def block (name/examine/action) like maple's at line 331; the spec's depleteChance 0.125 / xp 210 differs from the existing maple skillObjs (xp 100) — consistent with a higher tier, fine."
+  }
+}

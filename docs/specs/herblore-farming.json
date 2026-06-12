@@ -1,0 +1,472 @@
+{
+  "group": "herblore-farming",
+  "areaName": "Verdancourt (the Greening Garth)",
+  "theme": "Verdancourt, the Greening Garth — a terraced herb-garden town built around the Greenchord, a buried root-vein that \"hums in the key of growing things.\" In Cantorne's sung world, plants are slow notes: a seed is a held breath, a ripe herb a sustained tone, a brewed potion a chord struck once and drunk. Verdancourt's wardens are the Sustainers, who keep the long green note true; the Offnote rots it into Blight (withered crops, sour brews). Aesthetic: trellised allotment terraces, ringing watering troughs, a humming brew-cauldron that \"resolves\" reagents into chords. Potions are bottled chords — drinking one briefly tunes your body sharper (a stat boost) or steadies it (restore).",
+  "summary": "Today Farming is a 4-seed afterthought (potato L1, cabbage L7, sweetcorn L20, watermelon L47) with exactly TWO farming_patch tiles on the whole 300x300 map and no herb-growing at all — every grimy herb comes from mob drops, so the grow side of the loop is dead. Herblore is a 4-step ladder (clean guam L3 → marrentill L5 → ranarr L25 → irit L40; potions attack L3 / defence L9 / prayer L38 / super-attack L45) with a single secondary in existence (eye_of_newt) and — critically — combat potions are FLAVOR-ONLY (server consume handler restores nothing but prayer; attack/defence/super do nothing). The expansion adds: (1) Verdancourt, a dedicated herb-garden hub with a dense clustered allotment so players barely walk; (2) a full herb-seed tier ladder grown on farming_patch via the existing rake→plant→harvest intents (zero engine change, herb seeds slot into recipes.json.seeds with the grimy herb as \"produce\"); (3) clean + secondary tiers and a real potion ladder reaching L92 (extreme/sustain potions); (4) ONE honest engine hook — a data-driven `boost`/`heal` field on the consume intent, mirroring the existing `restoresPrayer` precedent — so combat potions finally DO something and become the combat sink the brief wants; (5) reward sinks at the Sustainer's Reward Trough (compost/auto-loop QoL, a herb-sack, a gardener outfit set with an XP bonus). All numbers sit on the existing Farming/Herblore curves.",
+  "newItems": [
+    {
+      "id": "grimy_harralander",
+      "name": "Grimy harralander",
+      "role": "Mid herb; cleans to harralander; secondary for energy/combo potions",
+      "tier": "clean L20 / grow L24",
+      "value": 18,
+      "source": "Verdancourt herb patches (harralander_seed), mob drops"
+    },
+    {
+      "id": "harralander",
+      "name": "Harralander",
+      "role": "Clean herb input for energy & combat-combo potions",
+      "tier": "Herblore 20",
+      "value": 30
+    },
+    {
+      "id": "grimy_toadflax",
+      "name": "Grimy toadflax",
+      "role": "Cleans to toadflax; basis of Saradomin/steady combo brews",
+      "tier": "clean L30 / grow L34",
+      "value": 26,
+      "source": "toadflax_seed patches"
+    },
+    {
+      "id": "toadflax",
+      "name": "Toadflax",
+      "role": "Clean herb for steadying (defence+attack combo) potions",
+      "tier": "Herblore 30",
+      "value": 45
+    },
+    {
+      "id": "grimy_avantoe",
+      "name": "Grimy avantoe",
+      "role": "Cleans to avantoe; fishing/forester boost brews",
+      "tier": "clean L48 / grow L52",
+      "value": 40,
+      "source": "avantoe_seed patches"
+    },
+    {
+      "id": "avantoe",
+      "name": "Avantoe",
+      "role": "Clean herb for super-energy / skiller-boost potions",
+      "tier": "Herblore 48",
+      "value": 70
+    },
+    {
+      "id": "grimy_kwuarm",
+      "name": "Grimy kwuarm",
+      "role": "Cleans to kwuarm; super-strength line",
+      "tier": "clean L54 / grow L58",
+      "value": 56,
+      "source": "kwuarm_seed patches"
+    },
+    {
+      "id": "kwuarm",
+      "name": "Kwuarm",
+      "role": "Clean herb for super-strength potion",
+      "tier": "Herblore 54",
+      "value": 95
+    },
+    {
+      "id": "grimy_cadantine",
+      "name": "Grimy cadantine",
+      "role": "Cleans to cadantine; super-defence line",
+      "tier": "clean L65 / grow L68",
+      "value": 78,
+      "source": "cadantine_seed patches"
+    },
+    {
+      "id": "cadantine",
+      "name": "Cadantine",
+      "role": "Clean herb for super-defence potion",
+      "tier": "Herblore 65",
+      "value": 130
+    },
+    {
+      "id": "grimy_dwarf_weed",
+      "name": "Grimy dwarf weed",
+      "role": "Cleans to dwarf weed; ranging/extreme line",
+      "tier": "clean L72 / grow L74",
+      "value": 95,
+      "source": "dwarf_weed_seed patches"
+    },
+    {
+      "id": "dwarf_weed",
+      "name": "Dwarf weed",
+      "role": "Clean herb for ranging & extreme potions",
+      "tier": "Herblore 72",
+      "value": 160
+    },
+    {
+      "id": "grimy_truechord_bloom",
+      "name": "Grimy truechord bloom",
+      "role": "Top resonance herb; Offnote-bane & extreme brews. Cleans to truechord bloom",
+      "tier": "clean L82 / grow L85",
+      "value": 140,
+      "source": "truechord patches in Verdancourt's Resonant Terrace (high-level)"
+    },
+    {
+      "id": "truechord_bloom",
+      "name": "Truechord bloom",
+      "role": "Top clean herb; extreme/antidote-supreme & Offnote-bane brews",
+      "tier": "Herblore 82",
+      "value": 240
+    },
+    {
+      "id": "harralander_seed",
+      "name": "Harralander seed",
+      "role": "Herb seed grown on patch -> grimy harralander",
+      "tier": "Farming 24",
+      "value": 18,
+      "source": "Verdancourt Seed Trough (Warden Brisa)"
+    },
+    {
+      "id": "toadflax_seed",
+      "name": "Toadflax seed",
+      "role": "Herb seed -> grimy toadflax",
+      "tier": "Farming 34",
+      "value": 30,
+      "source": "Verdancourt Seed Trough"
+    },
+    {
+      "id": "avantoe_seed",
+      "name": "Avantoe seed",
+      "role": "Herb seed -> grimy avantoe",
+      "tier": "Farming 52",
+      "value": 50,
+      "source": "Seed Trough / Blight drops"
+    },
+    {
+      "id": "kwuarm_seed",
+      "name": "Kwuarm seed",
+      "role": "Herb seed -> grimy kwuarm",
+      "tier": "Farming 58",
+      "value": 72,
+      "source": "Seed Trough / Blight drops"
+    },
+    {
+      "id": "cadantine_seed",
+      "name": "Cadantine seed",
+      "role": "Herb seed -> grimy cadantine",
+      "tier": "Farming 68",
+      "value": 100,
+      "source": "Blight drops"
+    },
+    {
+      "id": "dwarf_weed_seed",
+      "name": "Dwarf weed seed",
+      "role": "Herb seed -> grimy dwarf weed",
+      "tier": "Farming 74",
+      "value": 140,
+      "source": "Blight drops"
+    },
+    {
+      "id": "truechord_seed",
+      "name": "Truechord seed",
+      "role": "Top herb seed -> grimy truechord bloom",
+      "tier": "Farming 85",
+      "value": 260,
+      "source": "Resonant Terrace rare drop / Sustainer reward sink"
+    },
+    {
+      "id": "strawberry_seed",
+      "name": "Strawberry seed",
+      "role": "Allotment food crop (fills the L7-20 farming gap)",
+      "tier": "Farming 31",
+      "value": 14,
+      "source": "Seed Trough"
+    },
+    {
+      "id": "onion_seed",
+      "name": "Onion seed",
+      "role": "Low allotment crop; onion is a future cooking secondary",
+      "tier": "Farming 5",
+      "value": 3,
+      "source": "Seed Trough"
+    },
+    {
+      "id": "strawberry",
+      "name": "Strawberry",
+      "role": "Edible crop, heals 6; herblore-adjacent secondary",
+      "tier": "crop",
+      "value": 12,
+      "source": "harvest"
+    },
+    {
+      "id": "onion",
+      "name": "Onion",
+      "role": "Edible crop heals 2; cooking secondary",
+      "tier": "crop",
+      "value": 3,
+      "source": "harvest"
+    },
+    {
+      "id": "eye_of_newt",
+      "name": "Eye of newt",
+      "role": "EXISTS — keep as base potion secondary",
+      "tier": "existing",
+      "value": 3,
+      "source": "Verdancourt + Apothecary shops"
+    },
+    {
+      "id": "limpwurt_root",
+      "name": "Limpwurt root",
+      "role": "Secondary for strength/super-strength potions",
+      "tier": "Herblore secondary",
+      "value": 24,
+      "source": "limpwurt_plant gather object in Verdancourt; mob drops"
+    },
+    {
+      "id": "red_spiders_eggs",
+      "name": "Red spiders' eggs",
+      "role": "Secondary for restore/super-restore potions",
+      "tier": "Herblore secondary",
+      "value": 40,
+      "source": "spider nests near Verdancourt; mob drops"
+    },
+    {
+      "id": "white_berries",
+      "name": "White berries",
+      "role": "Secondary for defence/super-defence potions",
+      "tier": "Herblore secondary",
+      "value": 50,
+      "source": "white_berry_bush gather object"
+    },
+    {
+      "id": "snape_grass",
+      "name": "Snape grass",
+      "role": "Secondary for prayer-renewal & energy potions",
+      "tier": "Herblore secondary",
+      "value": 36,
+      "source": "snape_grass gather object by Verdancourt's troughs"
+    },
+    {
+      "id": "resonant_dust",
+      "name": "Resonant dust",
+      "role": "Secondary that ‘tunes’ a brew into its extreme form; gates extreme potions",
+      "tier": "Herblore secondary L80+",
+      "value": 120,
+      "source": "ground from ringing ore shards (cross-skill sink) / Sustainer reward shop"
+    },
+    {
+      "id": "strength_potion",
+      "name": "Strength potion",
+      "role": "+3 Strength boost (combat sink)",
+      "tier": "Herblore 12",
+      "value": 30,
+      "source": "brew: harralander + limpwurt_root"
+    },
+    {
+      "id": "super_strength",
+      "name": "Super strength potion",
+      "role": "+5 Strength boost",
+      "tier": "Herblore 55",
+      "value": 110,
+      "source": "brew: kwuarm + limpwurt_root"
+    },
+    {
+      "id": "super_defence",
+      "name": "Super defence potion",
+      "role": "+5 Defence boost",
+      "tier": "Herblore 66",
+      "value": 120,
+      "source": "brew: cadantine + white_berries"
+    },
+    {
+      "id": "ranging_potion",
+      "name": "Ranging potion",
+      "role": "+4 Ranged boost",
+      "tier": "Herblore 72",
+      "value": 130,
+      "source": "brew: dwarf_weed + red_spiders_eggs"
+    },
+    {
+      "id": "steadying_brew",
+      "name": "Steadying brew",
+      "role": "Combo: +3 Attack & +3 Defence at once",
+      "tier": "Herblore 38",
+      "value": 90,
+      "source": "brew: toadflax + eye_of_newt"
+    },
+    {
+      "id": "energy_potion",
+      "name": "Energy potion",
+      "role": "Restores run energy 30 (QoL sink for the walk-heavy world)",
+      "tier": "Herblore 26",
+      "value": 60,
+      "source": "brew: harralander + chocolate-free; secondary snape_grass"
+    },
+    {
+      "id": "restore_potion",
+      "name": "Restore potion",
+      "role": "Restores lowered Attack/Strength/Defence to base",
+      "tier": "Herblore 22",
+      "value": 70,
+      "source": "brew: harralander + red_spiders_eggs"
+    },
+    {
+      "id": "super_restore",
+      "name": "Super restore potion",
+      "role": "Restores all combat stats + 8 prayer",
+      "tier": "Herblore 76",
+      "value": 200,
+      "source": "brew: truechord_bloom + red_spiders_eggs",
+      "value_note": null
+    },
+    {
+      "id": "prayer_renewal",
+      "name": "Prayer renewal potion",
+      "role": "Restores 35 prayer (upgrade over prayer_potion's 25)",
+      "tier": "Herblore 60",
+      "value": 160,
+      "source": "brew: ranarr_weed + snape_grass"
+    },
+    {
+      "id": "antiblight_tonic",
+      "name": "Antiblight tonic",
+      "role": "Cures crop blight & cleanses player poison; Sustain-line consumable",
+      "tier": "Herblore 50",
+      "value": 90,
+      "source": "brew: toadflax + resonant_dust(cheap tier? no — white_berries)"
+    },
+    {
+      "id": "extreme_attack",
+      "name": "Extreme attack potion",
+      "role": "+7 Attack (top combat sink)",
+      "tier": "Herblore 88",
+      "value": 300,
+      "source": "brew: super_attack + resonant_dust"
+    },
+    {
+      "id": "extreme_strength",
+      "name": "Extreme strength potion",
+      "role": "+7 Strength",
+      "tier": "Herblore 90",
+      "value": 320,
+      "source": "brew: super_strength + resonant_dust"
+    },
+    {
+      "id": "truechord_draught",
+      "name": "Truechord draught",
+      "role": "Signature: +4 Attack/Strength/Defence at once (full ‘in-tune’ chord)",
+      "tier": "Herblore 92",
+      "value": 500,
+      "source": "brew: truechord_bloom + resonant_dust"
+    },
+    {
+      "id": "herb_sack",
+      "name": "Herb sack",
+      "role": "Reward-shop QoL: holds 30 of each grimy herb (reduces walking/banking)",
+      "tier": "reward",
+      "value": 4000,
+      "source": "Sustainer Reward Trough (Sustainer points)"
+    },
+    {
+      "id": "compost",
+      "name": "Compost",
+      "role": "Apply to a raked patch before planting: guarantees harvest yield 5 (vs randInt 3-5) and grants small Farming xp",
+      "tier": "Farming 20",
+      "value": 40,
+      "source": "brew/buy at Verdancourt; reward-shop bulk"
+    },
+    {
+      "id": "supercompost",
+      "name": "Supercompost",
+      "role": "As compost + boosts herb-patch yield and lowers blight chance",
+      "tier": "Farming 50",
+      "value": 120,
+      "source": "compost bin reward / brew from withered crops"
+    },
+    {
+      "id": "verdant_trowel",
+      "name": "Verdant trowel",
+      "role": "Tier-2 farming tool: faster plant/harvest tick (gear ladder)",
+      "tier": "Farming 30",
+      "value": 600,
+      "source": "Verdancourt tool stall"
+    },
+    {
+      "id": "resonant_dibber",
+      "name": "Resonant dibber",
+      "role": "Top farming tool: chance to not consume seed on plant",
+      "tier": "Farming 70",
+      "value": 4500,
+      "source": "Sustainer Reward Trough"
+    },
+    {
+      "id": "gardeners_hat",
+      "name": "Gardener's hat",
+      "role": "Outfit head; part of Sustainer set (+Farming xp)",
+      "tier": "reward",
+      "value": 2000,
+      "source": "Reward Trough"
+    },
+    {
+      "id": "gardeners_top",
+      "name": "Gardener's smock",
+      "role": "Outfit body; Sustainer set",
+      "tier": "reward",
+      "value": 2000,
+      "source": "Reward Trough"
+    },
+    {
+      "id": "gardeners_legs",
+      "name": "Gardener's trousers",
+      "role": "Outfit legs; Sustainer set",
+      "tier": "reward",
+      "value": 2000,
+      "source": "Reward Trough"
+    },
+    {
+      "id": "gardeners_boots",
+      "name": "Gardener's boots",
+      "role": "Outfit feet; Sustainer set (full set = +5% Farming xp)",
+      "tier": "reward",
+      "value": 2000,
+      "source": "Reward Trough"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "recipes.json.herbs (append clean steps): {grimy_harralander->harralander L20 xp27.5}, {grimy_toadflax->toadflax L30 xp38}, {grimy_avantoe->avantoe L48 xp61.5}, {grimy_kwuarm->kwuarm L54 xp67.5}, {grimy_cadantine->cadantine L65 xp75}, {grimy_dwarf_weed->dwarf_weed L72 xp78.5}, {grimy_truechord_bloom->truechord_bloom L82 xp86}",
+    "recipes.json.potions (append; all input vial_of_water + herb + secondary): strength_potion L12 xp50 herb harralander sec limpwurt_root; restore_potion L22 xp62.5 harralander+red_spiders_eggs; energy_potion L26 xp67.5 harralander+snape_grass; steadying_brew L38 xp82.5 toadflax+eye_of_newt; antiblight_tonic L50 xp95 toadflax+white_berries; super_strength L55 xp125 kwuarm+limpwurt_root; prayer_renewal L60 xp130 ranarr_weed+snape_grass; super_defence L66 xp150 cadantine+white_berries; ranging_potion L72 xp162.5 dwarf_weed+red_spiders_eggs; super_restore L76 xp142.5 truechord_bloom+red_spiders_eggs",
+    "recipes.json.potions extreme tier (input is a finished super-potion + resonant_dust, NOT a vial — integrator: generalise potion inputs to allow herb-slot to be any item, OR add a `potions2` table with explicit inputs[]): extreme_attack L88 xp175 (super_attack+resonant_dust); extreme_strength L90 xp180 (super_strength+resonant_dust); truechord_draught L92 xp200 (truechord_bloom+resonant_dust)",
+    "recipes.json.seeds (append herb seeds; grimy herb as produce, harvest yields randInt(3,5) like crops): harralander_seed->grimy_harralander L24 plantXp 22 harvestXp 12 growTicks 200; toadflax_seed->grimy_toadflax L34 plant 26 harvest 14 grow 240; avantoe_seed->grimy_avantoe L52 plant 49 harvest 25 grow 320; kwuarm_seed->grimy_kwuarm L58 plant 56 harvest 28 grow 360; cadantine_seed->grimy_cadantine L68 plant 67 harvest 34 grow 420; dwarf_weed_seed->grimy_dwarf_weed L74 plant 79 harvest 36 grow 480; truechord_seed->grimy_truechord_bloom L85 plant 110 harvest 50 grow 600",
+    "recipes.json.seeds (append allotment crops to fill gaps): onion_seed->onion L5 plant 9.5 harvest 10.5 grow 130; strawberry_seed->strawberry L31 plant 26 harvest 29 grow 260",
+    "NEW intent 'farm-compost' (server/intent-produce.ts): near compost_bin (<=2), Farming L20 for compost / L50 for supercompost, consumes withered-crop or N basic crops, grants 1 compost(super), small xp. Mirrors farm-rake structure.",
+    "NEW intent 'farm-apply-compost' OR extend farm-plant payload with {compost?:itemId}: on raked patch before/at planting, consume 1 compost -> patch flagged so farm-harvest yields fixed 5 (compost) and herb patches get +1 yield (supercompost). Stored on the existing FarmPatch state object as compost:'compost'|'supercompost'.",
+    "ENGINE HOOK on existing 'consume' intent: read item.boost/heal/restoreStats/restoreEnergy from items.json and apply transient state.statBoosts; expand DRINKABLE allow-list to include all new potion ids."
+  ],
+  "newObjectsOrMechanics": [
+    "OBJECT type 'farming_patch' (EXISTS) — reuse as-is for allotment crops AND herb patches; no schema change. Verdancourt places a dense cluster of these. State model unchanged (rake/plant/harvest already validate seed+level server-side).",
+    "OBJECT type 'compost_bin' — new world object, action 'Compost'. Server: a new intent 'farm-compost' that, when standing <=2 tiles, consumes 1 of {withered_crop or 15 of a basic crop} and grants 1 compost (Farming L20) / supercompost (L50). Mirrors the make pattern; small Farming xp. Add to objects.json (blocks:false).",
+    "OBJECT type 'limpwurt_plant' — gather object (GATHER_REQS: skill Herblore? no — keep as Farming gather, tool none) yielding limpwurt_root. Reuses the generic 'gather' intent; add a GATHER_REQS entry {skill:'Farming'} and an object def. Level-gate via object roll.",
+    "OBJECT type 'white_berry_bush' — gather object yielding white_berries (Farming gather, no tool).",
+    "OBJECT type 'snape_grass' — gather object yielding snape_grass (no tool).",
+    "OBJECT type 'brew_cauldron' — FLAVOR/station object (action 'Brew'). NOTE: current potion recipes are stationless via the generic 'make' intent, so brewing works WITHOUT this. If the integrator wants potions gated to Verdancourt, add 'potion' to the make-intent stationReq switch (server/intents.ts ~line 389) mapping to 'brew_cauldron'; otherwise place it as decoration. Recommend stationless to preserve current behaviour.",
+    "MECHANIC (ENGINE HOOK, the one real addition): extend the existing 'consume' intent (server/intent-produce.ts ~line 684) to read data-driven consumable effects from items.json, exactly mirroring the existing restoresPrayer path. Add optional item keys: `boost`: { skill: SkillName, amount: number, capPct?: number }, `restoreStats`: SkillName[] (restore lowered combat levels to base), `restoreEnergy`: number, `heal`: number. Server applies a transient boost to the player's effective combat level used by the swing path. Because combat already trusts client-sent `eff`/`bonus`/`maxHit` from the swing intent (EFFECTS.md §3.1) with the SERVER re-deriving from owned state, the integrator stores boosts in a new transient state field (e.g. state.statBoosts: {skill, amount, until}[]) read where skillLevel() feeds combat. This is the SAME shape/precedent as prayerPoints+restoresPrayer and activePrayers — no new combat math, just an additive level delta. Keep DRINKABLE allow-list and expand it to the new potion ids.",
+    "MECHANIC: herb growing needs NO new code — herb seeds are added to recipes.json.seeds with the grimy herb as `produce`. The existing farm-plant/farm-harvest loop validates Farming level, consumes seed, grants grimy-herb produce + harvestXp. Cleaning + brewing then ride the existing 'clean|' and 'potion|' make recipes."
+  ],
+  "newNpcs": [
+    "warden_brisa — Verdancourt Seed Trough keeper (shop: all herb seeds + allotment seeds + compost + rake/dibber/trowel)",
+    "master_sustainer_oak — Herblore/Farming trainer & lore (the Greenchord, the Blight); gives skill tips and gates the Resonant Terrace",
+    "apothecary_vell — Verdancourt Apothecary (shop: vial_of_water, eye_of_newt, secondaries limpwurt/white_berries/snape_grass; buys grimy herbs)",
+    "keeper_thistle — Sustainer Reward Trough vendor (spends Sustainer points: herb_sack, gardener outfit, resonant_dibber, supercompost, truechord_seed)",
+    "blight_warden_mara — quest/lore NPC who fights crop Blight; hands out antiblight_tonic recipe and Blight herb-seed drops"
+  ],
+  "trainingLayout": "Verdancourt is a 3-terrace garden so a player can rake/plant/harvest/clean/brew without leaving a ~10-tile core — directly answering the 'barely walk' priority. TERRACE 1 (Allotment Garth, lower): a 4x4 BLOCK of 16 farming_patch tiles in a tight grid with 1-tile walkways, flanked by Warden Brisa's Seed Trough and a water trough (refill vials) and 2 compost_bins — this is the food/low farming grind. TERRACE 2 (Herb Rows, middle): TWO rows of 8 farming_patch tiles (16 total) reserved for herb seeds, with Apothecary Vell's stall and a brew_cauldron between the rows, plus a cluster of 3 limpwurt_plant + 2 white_berry_bush + 3 snape_grass gather nodes against the wall so secondaries are 2 tiles from the cauldron — the core grow+clean+brew loop lives entirely here. TERRACE 3 (Resonant Terrace, upper, Herblore 82 / Farming 85 gated by Master Sustainer Oak): a 3x3 = 9 farming_patch cluster for truechord_seed plus the Sustainer Reward Trough and 2 extra compost_bins. Total: 41 farming_patch tiles (vs 2 today), 8 secondary gather nodes, all within Verdancourt. A bank chest sits at the junction of all three terraces so banking is ≤4 tiles from any patch.",
+  "rewards": "SUSTAINER POINTS earned per herb harvested / potion brewed (server grants alongside xp, like a token currency) spent at Keeper Thistle's Reward Trough: (1) herb_sack (4000pts) — holds 30 of each grimy herb, kills banking trips; (2) Sustainer outfit set — gardeners_hat/top/legs/boots (2000pts each), full set = +5% Farming xp; (3) resonant_dibber (8000pts) — top farming tool, chance to not consume seed; (4) supercompost & bulk compost (gold + withered-crop sink); (5) truechord_seed (rare, 6000pts) — the only reliable route to the L85 herb, a deep endgame sink. GOLD/MATERIAL SINKS: high-tier seeds (cadantine 100g, dwarf_weed 140g, truechord 260g) and resonant_dust (120g, also consumes cross-skill ringing-ore shards) drain the economy; extreme potions cost a super-potion + resonant_dust each, so the best combat consumables are a recurring sink. Combat sink loop: PvE/boss players burn strength/super-strength/ranging/extreme/truechord_draught per trip, and super_restore/prayer_renewal to sustain — making Herblore the supply spine for all combat.",
+  "mapAreaProposal": "Place Verdancourt in a temperate, well-watered lowland in the SOUTH-CENTRAL map between Port Brackwater (~105,196) and Gullswreck (~94,262) — a green river-valley region the existing towns frame but leave empty. Footprint ~16x18 tiles for the 3 stacked terraces (Allotment Garth lower-south, Herb Rows middle, Resonant Terrace upper-north against a low ridge where the Greenchord root-vein surfaces). Roughly the (110-128, 215-235) band — riverbank biome, fed by a stream that justifies the water troughs. Final coords set at integration; just keep it in the southern fertile lowland, not near the frost/mining north.",
+  "balanceNotes": "XP curve fit: cleaning xp scales smoothly from the existing guam 2.5 → irit 8.8, continuing harralander 27.5? — CORRECTION for the curve: clean xp should follow the existing gentle ramp, so use harralander 12.5, toadflax 15, avantoe 24.5, kwuarm 28, cadantine 30, dwarf_weed 33.5, truechord 38 (the higher numbers in the recipe list above are the brew xp, not clean — integrator: clean xp stays in the ~2.5–38 band, potion/brew xp stays in the existing 25–200 band). Potion brew xp continues the existing 25(attack)→100(super-attack) line up to truechord_draught 200, so a top brew is ~2x a super-attack — reasonable for an L92 multi-stat sink. Herb-seed Farming xp/growTicks extend the existing watermelon (L47, plant 48.5, grow 350) curve: truechord at L85 plants for 110xp over 600 ticks, keeping growth slow enough that herbs stay valuable and the 41-patch cluster doesn't trivialise output (a full cluster cycle still gates on grow time, not walking). Boost magnitudes mirror OSRS-style additive deltas that the combat path already supports via level deltas: regular +3, super +5, extreme +7, multi-stat combos +3/+4 each — strong but transient and consumed, so they're a sink, not power creep, and don't touch permanent gear bonuses. Level gating: herb growing (L24+) sits above the crop tier so Farming has continuous content L1→85; Herblore potions span L12→92 with no >8-level gap, fixing today's L9→L38 dead zone. Verdancourt's high terrace is double-gated (Herblore 82 AND Farming 85) so endgame reagents stay scarce.",
+  "postBlurb": "VERDANCOURT OPENS ITS GATES — the Greening Garth is found. Where the old gardener tilled two lonely furrows, a whole terraced town now hums to the Greenchord, the buried root-vein the Sustainers have tended in secret. Bring a rake and a dibber: forty-one patches climb three terraces, herb seeds from harralander to the rare truechord bloom now take root in Cantorne soil, and Apothecary Vell's cauldron resolves them into chords you can drink. And drink you should — strength, super-defence, ranging, and the storied Truechord Draught now bite in battle as sharply as any blade. But beware the Blight souring the upper rows; the Offnote covets a sour note in every garden. Plant true. Brew true. Stay in tune.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [],
+    "mechanicFit": "Most mechanics are pure-data and fit existing systems; TWO require new engine code, and the spec correctly flags both.\n\nPURE DATA (no engine change):\n- Herb growing: append to recipes.json.seeds (schema {seed,produce,level,plantXp,harvestXp,growTicks} confirmed at intent-produce.ts:59/331). farm-rake/plant/harvest loop validates Farming level + consumes seed + grants produce already. Works as-is.\n- Herb cleaning: append to recipes.json.herbs (schema {grimy,clean,level,xp}). Indexed as 'clean|<clean>' and run through the generic `make` intent (intents.ts:754). No station required (Herblore -> stationReq null). Works.\n- Standard potions (vial+herb+secondary): append to recipes.json.potions (schema {output,level,xp,herb,secondary}). Built via 'potion|<output>' make recipe, inputs HARDCODED as vial_of_water+herb+secondary (intents.ts:758). Brewing is stationless today — spec's recommendation to keep it stationless is correct; brew_cauldron is optional decoration.\n- Gather objects (limpwurt_plant/white_berry_bush/snape_grass): need (a) an object def in objects.json `objs`, (b) a GATHER_REQS entry {skill:'Farming'} (intents.ts:694), AND CRITICALLY (c) a SKILL_OBJS/`skillObjs` entry with {level,xp,item,depleteChance,respawn,lowRate,highRate} — the gather intent reads its data from SKILL_OBJS[type] (intents.ts:289), not from GATHER_REQS. Spec under-specifies this: it mentions GATHER_REQS + object def but NOT the required skillObjs data block. Still data-only, no code change. 'Farming' is a valid SkillName (state.ts:90).\n- NPCs/shops: pure data (npcs.json, shops.json).\n\nNEW ENGINE CODE REQUIRED (2 items):\n1. consume/boost hook: today the `consume` intent (intent-produce.ts:684) only honours `restoresPrayer` data-driven; boost/heal/restoreStats/restoreEnergy do NOT exist. Adding stat boosts requires: a new transient state field (e.g. statBoosts:[{skill,amount,until}]), threading it through combat's lvl()/skillLevel feed (combat.ts:159-173 derive eff/maxHit from lvl(state,'Attack'/'Strength') server-side), and a tick-based expiry. This is genuinely new combat-adjacent code, NOT pure data — spec admits this is 'the one real addition'. restoreStats/restoreEnergy similarly need new state plumbing. DRINKABLE allow-list (intent-produce.ts:683) must be expanded to the new potion ids or they return 'not drinkable'.\n2. Extreme-tier potions (super_attack+resonant_dust, etc.): the 'potion|' recipe inputs are HARDCODED to vial_of_water+herb+secondary (intents.ts:758). A potion whose input is a finished super-potion + resonant_dust (no vial) does NOT fit. Requires generalizing potion inputs to arbitrary inputs[] OR a new recipe table — NEW code. Spec flags this.\n3. farm-compost / farm-apply-compost / compost_bin: entirely new intents + new FarmPatch.compost state field + harvest-yield logic in farm-harvest (intent-produce.ts:351). New engine code; spec flags it. compost_bin also a new object.",
+    "balanceFlags": [
+      "Existing potion xp curve: attack_potion 25xp@L3 -> super_attack 100xp@L45. Spec's potion xp (strength 50@L12 ... truechord_draught 200@L92) is monotonic and in-band — sane.",
+      "Existing clean-herb xp: 2.5@L3 -> 8.8@L40. Spec jumps to 27.5@L20 for grimy_harralander clean, rising to 86@L82. This is a STEEP discontinuity vs the existing irit 8.8@L40, but matches OSRS real curve and is plausible for higher tiers; flag for intentional review — clean-herb xp roughly 3x the existing top entry at a lower level (27.5@L20 vs 8.8@L40).",
+      "Existing seed plantXp: 8@L1 -> 48.5@L47. Spec truechord_seed plant 110@L85 / harvest 50 is a large extrapolation but monotonic; acceptable.",
+      "Value curve sane: existing eye_of_newt 3, ranarr_weed 40, super_attack 90, prayer_potion 120. Spec values (grimy 18->140, clean 30->240, potions 30->500, reward gear 2000-4500) extend smoothly. truechord_draught 500 and resonant_dibber 4500 are the new ceiling — reasonable for L92/L70 top-tier.",
+      "prayer_renewal restores 35 vs existing prayer_potion restoresPrayer:25 — consistent upgrade, fits the restoresPrayer data path with no new code (only DRINKABLE allow-list add).",
+      "energy_potion 'secondary snape_grass' but recipes line says 'harralander + chocolate-free; secondary snape_grass' — ambiguous/garbled secondary; integrator must pin secondary = snape_grass for the 3-input potion schema."
+    ],
+    "notes": "No id collisions: none of the 50+ proposed item ids, nor the object types (compost_bin, limpwurt_plant, white_berry_bush, snape_grass, brew_cauldron, and the herb-patch reuse of farming_patch), nor the 5 NPC ids exist today. The intended-existing references all resolve correctly: eye_of_newt, super_attack, ranarr_weed, vial_of_water, prayer_potion, grimy_ranarr, guam_leaf all exist in items.json. NOTE: object type 'snape_grass' as a gather object collides conceptually with item id 'snape_grass' — they live in different namespaces (objects.json.objs vs items.json) so it is technically fine, but recommend distinct ids (e.g. object 'snape_grass_clump') to avoid confusion.\n\nRequired corrections for the integrator:\n1. Gather objects MUST also get a `skillObjs` data block in objects.json ({level,xp,item,depleteChance,respawn,lowRate,highRate}) — the gather intent reads SKILL_OBJS[type] for everything (intents.ts:289), GATHER_REQS only supplies skill/tool. The spec omits the skillObjs block.\n2. Expand DRINKABLE set (intent-produce.ts:683) to every new consumable potion id or consume returns 'not drinkable'.\n3. Extreme potions need generalized recipe inputs (the 'potion|' make recipe hardcodes vial+herb+secondary at intents.ts:758) — add an inputs[] table; do NOT shoehorn into the existing herb/secondary fields.\n4. The stat-boost system is the only substantive engine addition: new transient state.statBoosts, integration into combat.ts lvl() feed (lines 159-173) and a tick expiry. restoreStats/restoreEnergy/heal-on-drink also need new plumbing beyond the restoresPrayer precedent.\n5. compost system (farm-compost intent, farm-apply-compost / farm-plant payload extension, FarmPatch.compost field, harvest-yield branch in farm-harvest) is new code — currently farm-harvest yields randInt(3,5) with no compost path.\n6. Fix the garbled energy_potion secondary (pin to snape_grass).\n7. Herb seeds produce the GRIMY herb on harvest (correct in spec) and randInt(3,5) yield is consistent with existing crops — no engine change for growing."
+  }
+}

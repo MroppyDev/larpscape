@@ -1,0 +1,299 @@
+{
+  "group": "magic-runecraft",
+  "areaName": "Resonne (the Singing City) — with the Great Diapason rune-altar ring, the Conservatory wizard guild, and the deep Catalyst Hollow",
+  "theme": "The Choir That Binds. In Cantorne the world was sung; runes are \"frozen syllables\" of the makers (Quiess=air, Brell=water, Aulden=earth, Imber=fire). The hub is RESONNE, a cliff-terraced wizard city built around the Great Diapason — a natural amphitheatre of standing stones where every elemental altar rings at once, so a runecrafter barely walks between them. Magic is sung notes made permanent; the higher arts (Cosmic/Death/Blood/Soul runes and the spells they power) are about binding LONGER intervals of the First Chord. The Offnote angle: the deepest altar, the Discord Altar, binds the wrong note into Catalytic runes used for the strongest attack spells — power borrowed from the thing that's stirring.",
+  "summary": "Currently Magic and Runecraft are thin and barely-developed. Runecraft has exactly two altars (air at lvl 1, fire at lvl 14) wired in the server ALTARS map, one essence rock type (rocks_essence), and the simplistic \"bind all held essence\" loop — there is no progression past fire, no second essence tier, no talisman/tiara mechanic actually used, and no hub. Magic has 8 combat strike/bolt spells (lvl 1-35, maxHit capped at 12) and nothing above fire_bolt: no blast/wave tier, no curse/enchant utility, and the only runes that exist are air/mind/water/earth/fire/chaos. The expansion adds RESONNE, a dedicated wizard hub: (1) a dense ring of ALL elemental altars plus higher catalytic altars clustered around one essence/bank pad so a runecrafter loops with near-zero walking; (2) a second essence tier (pure_essence) and the full classic rune ladder (body/cosmic/nature/law/death/blood/soul + a lore-unique discord rune); (3) the Magic spell ladder extended through blast and wave tiers (maxHit to ~30) gated on the new runes, closing the rune-economy loop where Runecrafting feeds Magic; (4) talisman + tiara content giving each altar a key and an equippable hands-free runecrafting path; (5) reward sinks via a robe/staff gear ladder, a rune-pouch QoL line, and the Conservatory reward shop.",
+  "newItems": [
+    {
+      "id": "pure_essence",
+      "name": "Pure essence",
+      "role": "Second essence tier. Higher-grade blank stone required to craft all runes above fire (body/cosmic/nature/law/death/blood/soul/discord). Mined from rocks_pure at Resonne; rune_essence stays the low-tier stone for air/water/earth/fire/mind. Stackable.",
+      "tier": "Mining/Runecraft 20+ to mine; consumed by altars 20-90",
+      "value": 6,
+      "source": "Mined from rocks_pure veins in the Diapason quarry pad"
+    },
+    {
+      "id": "mind_talisman",
+      "name": "Mind talisman",
+      "role": "Locates/keys the Mind altar; lets the talisman-carrier craft mind runes (low-tier essence). Establishes the talisman pattern.",
+      "tier": "Runecraft 1",
+      "value": 300,
+      "source": "Drop from imps / Conservatory starter; Wizard quartermaster"
+    },
+    {
+      "id": "body_talisman",
+      "name": "Body talisman",
+      "role": "Keys the Body altar (body runes for curse/utility spells).",
+      "tier": "Runecraft 20",
+      "value": 600,
+      "source": "Conservatory reward shop / wizard drops"
+    },
+    {
+      "id": "cosmic_talisman",
+      "name": "Cosmic talisman",
+      "role": "Keys the Cosmic altar (cosmic runes for enchant spells).",
+      "tier": "Runecraft 27",
+      "value": 900,
+      "source": "Reward shop / drop"
+    },
+    {
+      "id": "chord_talisman",
+      "name": "Chord (nature) talisman",
+      "role": "Keys the Chord altar (chord runes — Cantorne's nature rune, the 'held note' that powers alchemy).",
+      "tier": "Runecraft 44",
+      "value": 2000,
+      "source": "Reward shop / drop"
+    },
+    {
+      "id": "law_talisman",
+      "name": "Law talisman",
+      "role": "Keys the Law altar (law runes for teleport spells).",
+      "tier": "Runecraft 54",
+      "value": 3000,
+      "source": "Reward shop / rare drop"
+    },
+    {
+      "id": "death_talisman",
+      "name": "Death talisman",
+      "role": "Keys the Death altar (death runes for blast-tier attack spells).",
+      "tier": "Runecraft 65",
+      "value": 4500,
+      "source": "Reward shop / rare drop"
+    },
+    {
+      "id": "blood_talisman",
+      "name": "Blood talisman",
+      "role": "Keys the Blood altar (blood runes for the wave/healing-leech tier).",
+      "tier": "Runecraft 77",
+      "value": 6500,
+      "source": "Reward shop / rare drop"
+    },
+    {
+      "id": "soul_talisman",
+      "name": "Soul talisman",
+      "role": "Keys the Soul altar (soul runes for the top attack tier).",
+      "tier": "Runecraft 90",
+      "value": 9000,
+      "source": "Reward shop / rare drop"
+    },
+    {
+      "id": "discord_talisman",
+      "name": "Discord talisman",
+      "role": "Keys the deep Discord altar (catalytic discord runes — the Offnote-tainted rune). Lore-unique to Cantorne.",
+      "tier": "Runecraft 70",
+      "value": 7000,
+      "source": "Catalyst Hollow boss/quest reward"
+    },
+    {
+      "id": "chant_tiara",
+      "name": "Chant tiara",
+      "role": "Head-slot blank tiara. Enchanted at an altar to become an element-specific tiara, letting a runecrafter craft that rune hands-free (no talisman occupying inventory).",
+      "tier": "Runecraft 1+ (per element)",
+      "value": 250,
+      "source": "Made: silver_bar + chant_tiara_mould at furnace, or bought at Resonne"
+    },
+    {
+      "id": "air_tiara",
+      "name": "Air tiara",
+      "role": "Worn (head) — passively keys the Air altar so essence binds to air runes hands-free. One enchanted tiara per element.",
+      "tier": "Runecraft 1",
+      "value": 400,
+      "source": "chant_tiara + presence at air_altar (enchant-tiara intent)"
+    },
+    {
+      "id": "body_rune",
+      "name": "Body rune",
+      "role": "New rune (pure essence) powering curse/debuff and utility spells.",
+      "tier": "Runecraft 20 to craft / Magic 19+ to use",
+      "value": 5,
+      "source": "Body altar (pure_essence)"
+    },
+    {
+      "id": "cosmic_rune",
+      "name": "Cosmic rune",
+      "role": "Powers enchant spells (turn cut gems into rings/amulets) and stat utility.",
+      "tier": "Runecraft 27 / Magic 7+",
+      "value": 12,
+      "source": "Cosmic altar (pure_essence)"
+    },
+    {
+      "id": "chord_rune",
+      "name": "Chord rune",
+      "role": "Cantorne's nature rune — 'the held note'. Powers High/Low Alchemy (item->coins sink). Replaces the classic nature rune in lore.",
+      "tier": "Runecraft 44 / Magic 21+",
+      "value": 120,
+      "source": "Chord altar (pure_essence)"
+    },
+    {
+      "id": "law_rune",
+      "name": "Law rune",
+      "role": "Powers teleport spells.",
+      "tier": "Runecraft 54 / Magic 25+",
+      "value": 140,
+      "source": "Law altar (pure_essence)"
+    },
+    {
+      "id": "death_rune",
+      "name": "Death rune",
+      "role": "Powers the blast tier of attack spells (replaces chaos as the high element catalyst).",
+      "tier": "Runecraft 65 / Magic 41+",
+      "value": 160,
+      "source": "Death altar (pure_essence)"
+    },
+    {
+      "id": "blood_rune",
+      "name": "Blood rune",
+      "role": "Powers the wave tier + a life-leech combat spell.",
+      "tier": "Runecraft 77 / Magic 55+",
+      "value": 230,
+      "source": "Blood altar (pure_essence)"
+    },
+    {
+      "id": "soul_rune",
+      "name": "Soul rune",
+      "role": "Powers the top surge tier of attack spells.",
+      "tier": "Runecraft 90 / Magic 65+",
+      "value": 260,
+      "source": "Soul altar (pure_essence)"
+    },
+    {
+      "id": "discord_rune",
+      "name": "Discord rune",
+      "role": "Catalytic Offnote rune — alternative catalyst for the strongest spells, slightly cheaper than soul but Offnote-tainted (flavor: occasional self-jangle). Lore-unique.",
+      "tier": "Runecraft 70 / Magic 60+",
+      "value": 200,
+      "source": "Discord altar in Catalyst Hollow (pure_essence)"
+    },
+    {
+      "id": "wizard_robe_resonne",
+      "name": "Conservatory robe top",
+      "role": "Body magic armor, modest magic bonus, Resonne hub gear tier above the basic blue wizard robe.",
+      "tier": "Magic 20, Defence 1",
+      "value": 2200,
+      "source": "Conservatory reward shop (rune dust sink)"
+    },
+    {
+      "id": "wizard_skirt_resonne",
+      "name": "Conservatory robe skirt",
+      "role": "Legs magic armor matching the top.",
+      "tier": "Magic 20",
+      "value": 2000,
+      "source": "Conservatory reward shop"
+    },
+    {
+      "id": "diapason_hat",
+      "name": "Diapason hat",
+      "role": "Head magic armor; set with the robe for a small max-hit/accuracy nudge (server applies via existing magic bonus path).",
+      "tier": "Magic 30",
+      "value": 2600,
+      "source": "Conservatory reward shop"
+    },
+    {
+      "id": "resonant_staff",
+      "name": "Resonant staff",
+      "role": "Two-hand magic weapon; acts as an unlimited air rune source (server: treat as owning air runes for cast cost) and gives magic attack bonus.",
+      "tier": "Magic 25, Attack 25",
+      "value": 4500,
+      "source": "Conservatory reward shop / made from resonant_shard + staff"
+    },
+    {
+      "id": "chord_staff",
+      "name": "Chord staff",
+      "role": "Higher magic staff; unlimited fire rune source + larger magic bonus.",
+      "tier": "Magic 50",
+      "value": 12000,
+      "source": "Reward shop (big shard + rune-dust sink)"
+    },
+    {
+      "id": "rune_pouch_small",
+      "name": "Small rune pouch",
+      "role": "QoL: holds up to 3 essence as overflow so a Runecraft loop carries 31 essence instead of 28. Server-tracked owned item like other pouches.",
+      "tier": "Runecraft 1",
+      "value": 1200,
+      "source": "Conservatory reward shop"
+    },
+    {
+      "id": "rune_pouch_large",
+      "name": "Large rune pouch",
+      "role": "Holds up to 9 essence overflow. Stronger loop efficiency.",
+      "tier": "Runecraft 50",
+      "value": 6000,
+      "source": "Conservatory reward shop"
+    },
+    {
+      "id": "rune_dust",
+      "name": "Rune dust",
+      "role": "Reward currency / sink material: ground-down surplus runes, traded at the Conservatory for robes, staves, pouches, tiaras.",
+      "tier": "any",
+      "value": 3,
+      "source": "Grind surplus runes at the Conservatory mill (grind intent), or drop"
+    },
+    {
+      "id": "chant_tiara_mould",
+      "name": "Chant tiara mould",
+      "role": "Crafting mould for making blank chant_tiara from silver_bar at a furnace (mirrors existing mould pattern).",
+      "tier": "Crafting 23",
+      "value": 50,
+      "source": "Resonne general/craft shop"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "RUNE LADDER (runecraft intent, essence->rune, level/xpPer): mind: rune_essence->mind_rune L2 xp5.5; water: ->water_rune L5 xp6; earth: ->earth_rune L9 xp6.5; (air L1 & fire L14 already exist). body: pure_essence->body_rune L20 xp7.5; cosmic: ->cosmic_rune L27 xp8; chord: ->chord_rune L44 xp9; law: ->law_rune L54 xp9.5; death: ->death_rune L65 xp10; discord: ->discord_rune L70 xp10.5; blood: ->blood_rune L77 xp10.5; soul: ->soul_rune L90 xp11. Mult = floor(1+lvl/div) per the existing formula (low-tier div ~9-14, high-tier div 3-5 so multi-rune crafting unlocks around the classic 2x/3x breakpoints).",
+    "MAGIC SPELL LADDER (append to magic.json spells; combat autocast, the only cast path the engine supports). Blast tier (death_rune catalyst): wind_blast L41 xp25.5 maxHit13 {air_rune x3, death_rune x1}; water_blast L47 xp28.5 maxHit14 {water_rune x3, air_rune x3, death_rune x1}; earth_blast L53 xp31.5 maxHit15 {earth_rune x4, air_rune x3, death_rune x1}; fire_blast L59 xp34.5 maxHit16 {fire_rune x5, air_rune x4, death_rune x1}. Wave tier (blood_rune): wind_wave L62 xp36 maxHit17 {air_rune x5, blood_rune x1}; water_wave L65 xp37.5 maxHit18 {water_rune x7, air_rune x5, blood_rune x1}; earth_wave L70 xp40 maxHit19 {earth_rune x7, air_rune x5, blood_rune x1}; fire_wave L75 xp42.5 maxHit20 {fire_rune x7, air_rune x5, blood_rune x1}. Surge tier (soul_rune): wind_surge L81 xp44 maxHit21 {air_rune x7, soul_rune x1}; water_surge L85 xp46 maxHit22; earth_surge L90 xp48 maxHit23; fire_surge L95 xp50 maxHit24 {fire_rune x10, air_rune x7, soul_rune x1}. Optional discord catalyst variant: dissonant_strike L60 xp33 maxHit18 {air_rune x4, discord_rune x1} — slightly cheaper than blast, flavor self-jangle.",
+    "UTILITY/CURSE spells (need an extended cast path; propose as future-flagged but spec'd): high_alchemy (chord_rune x1 + fire_rune x5 -> coins via 'alch' intent, ~60% item value) and low_alchemy (chord_rune x1 + fire_rune x3, ~40%); enchant_sapphire (cosmic_rune x1 + water_rune x1 -> sapphire ring/amulet, ties to gem/Crafting loop); curse_jangle (body_rune x1 + earth_rune x2 + water_rune x2, Magic 19, lowers target accuracy — flavor: sing them off-key). These require new non-combat-cast intents; if scope-limited, ship the combat ladder + alch first since alch closes the coin loop.",
+    "CRAFTING: chant_tiara = silver_bar(1) at furnace with chant_tiara_mould, Crafting 23, xp 52 (mirrors existing mould recipes).",
+    "ENCHANT-TIARA intent: at {element}_altar consume chant_tiara -> {element}_tiara, Runecraft xp 25.",
+    "GRIND intent (rune mill, reward sink): N runes -> rune_dust at floor(rune.value/3) each; pure loop, no RNG.",
+    "STAFF crafting (reward sink): resonant_staff = staff(1) + resonant_shard(8) + air_rune(50); chord_staff = resonant_staff(1) + resonant_shard(25) + rune_dust(200)."
+  ],
+  "newObjectsOrMechanics": [
+    "rocks_pure — new essence vein object type granting pure_essence. Mirror rocks_essence in data/objects.json skillObjs: {level:20,xp:8,item:'pure_essence',depleteChance:0,respawn:0,lowRate:0.5,highRate:0.98}. Client: register Mine action like rocks_essence; server-side it can route through the existing gather path (no new server code needed if added to skillObjs and the standard mine handler). Place a dense cluster at the Diapason quarry pad.",
+    "Higher altar object types — add air_altar/water_altar/earth_altar/fire_altar/mind_altar/body_altar/cosmic_altar/chord_altar/law_altar/death_altar/blood_altar/soul_altar/discord_altar as objects.json entries (action 'Craft-rune', blocks:true), mirroring the existing air_altar/fire_altar. Only air_altar+fire_altar exist today; the rest are new.",
+    "Server ALTARS table extension (server/intent-produce.ts) — add entries keyed by altar param. Low-tier (rune_essence): air{rune:air_rune,level:1,xpPer:5,div:11}(exists), water{water_rune,5,6,9}, earth{earth_rune,9,6.5,9}, fire{fire_rune,14,7,14}(exists), mind{mind_rune,2,5.5,11}. High-tier (pure_essence — extend AltarDef with essence:'pure_essence'): body{body_rune,20,7.5,9}, cosmic{cosmic_rune,27,8,8}, chord{chord_rune,44,9,5}, law{law_rune,54,9.5,4}, death{death_rune,65,10,3}, blood{blood_rune,77,10.5,3}, soul{soul_rune,90,11,3}, discord{discord_rune,70,10.5,3}. The intent already counts essence, applies mult=floor(1+lvl/div), grants rune*mult, and refunds on overflow — the only code change is the essence-source field per altar and the altarType lookup map (currently hardcoded air/fire).",
+    "altarTypeFor(key) map in the runecraft intent — replace the hardcoded `altarKey==='fire'?'fire_altar':'altar'` with a lookup so each altar key validates against its own object type (e.g. 'death' -> 'death_altar').",
+    "enchant-tiara intent (new, small) — near a given element altar, consume a chant_tiara and grant the matching {element}_tiara, awarding a flat Runecraft xp (e.g. 25). Talisman/tiara then satisfied as an alternative key: extend the runecraft intent to accept crafting when the player holds the matching talisman OR wears the matching tiara OR stands at the altar object (keeps current behavior as the floor).",
+    "grind intent (reward sink) — at the Conservatory mill object (rune_mill), convert surplus runes into rune_dust (server-validated: removes N runes, grants floor(N* value/3) rune_dust). Pure data/loop; no randomness.",
+    "Unlimited-rune staff handling — extend the existing swing cast cost path in server/index.ts: if the equipped weapon is resonant_staff treat air_rune as always-available; chord_staff -> fire_rune. Mirrors how ammo is read from equipment; small additive check.",
+    "alch mechanic (High/Low Alchemy) — a non-combat Magic cast: chord_rune(+fire_rune) consumed to convert one inventory item into coins at a % of value (Low ~40%, High ~60%). Implement as a new 'alch' intent (server owns the value table from items.json, applies ECONOMY_FROZEN gate like tan/saw-planks since it mints coins). This is the primary coin faucet/sink tie-in for the rune economy."
+  ],
+  "newNpcs": [
+    "resonne_archcantor: Archcantor Veyl — guild master / lore + quest-giver for the Catalyst Hollow and Discord altar",
+    "resonne_quartermaster: Quartermaster Sella — Conservatory reward shop (robes, staves, pouches, tiaras for rune_dust + coins) and talisman vendor",
+    "resonne_runecraft_tutor: Tutor Brae — teaches the altar loop, sells chant_tiara + chant_tiara_mould + rune_essence, explains pure_essence",
+    "resonne_magic_clerk: Clerk Ompin — Magic spell/teleport reference, sells low runes (air/mind/water/earth) in bulk like Mira",
+    "resonne_mill_keeper: Keeper Dross — runs the rune mill (grind action) and buys surplus runes"
+  ],
+  "trainingLayout": "The Great Diapason is a single tight amphitheatre (~18x18 tiles) so a runecrafter never walks more than ~4 tiles between binding stations. Center: a bank_booth + a 3x3 block of rocks_pure veins (6-8 of them) and an adjacent 3x3 block of rocks_essence (6-8) on a shared 'quarry pad', so you mine a full inventory of essence without moving. Ringed immediately around the pad, one tile apart, are the low-tier altars the new player loops on: air_altar, water_altar, earth_altar, fire_altar, mind_altar — each within 2-3 tiles of the essence rocks and the bank, so the classic mine->craft->bank cycle is a 3-tile triangle. The outer terrace ring holds the high-tier altars (body, cosmic, chord, law, death, blood, soul) spaced evenly, each beside its own small rocks_pure cluster (2-3 veins) and a shared deposit booth, so high-Runecraft training is equally walk-free. Place 2-3 redundant copies of each high altar+vein micro-cluster so multiple players don't contend. The Discord altar is deliberately NOT in the ring — it sits down in the Catalyst Hollow (a short descent below the city) with its own pure_essence cluster, gated behind the Archcantor's quest, so the strongest catalyst takes a little extra effort. Net effect matches the Mining brief's Cairnchime bar: dense, clustered, near-zero walking, with redundancy.\",\n\"resonant_shard sink (cross-skill tie): the Mining team's resonant_shard is accepted by Quartermaster Sella toward resonant_staff/chord_staff, linking the two overhauls.\"",
+  "rewards": "\"Conservatory reward shop (Quartermaster Sella), spending rune_dust + coins + resonant_shard: the Conservatory robe set (robe top/skirt/Diapason hat) with a small set bonus on the existing magic bonus path; the staff line (resonant_staff -> chord_staff) which double as unlimited air/fire rune sources (huge QoL and a continuous rune_dust/shard sink); the rune pouch line (small/large) for loop efficiency; blank chant_tiara and per-element tiaras for hands-free crafting. rune_dust is the dedicated sink currency minted by grinding surplus runes at the mill, so overproduction of cheap runes feeds the gear ladder instead of crashing the market. High/Low Alchemy (chord_rune) is the structural gold faucet+item sink that gives chord runes ongoing demand. Talismans/tiaras gate the higher altars, giving rune drops and reward-shop talismans a clear purpose. The Discord altar + Catalyst Hollow give a prestige catalyst behind a quest, and the resonant_shard acceptance ties this hub to the Mining overhaul.\",\n\"Gold/material sinks: alchemy coin generation is item-burning (sink); staff/robe purchases burn coins+dust+shards; tiara enchanting burns silver; mill grinding burns surplus runes. Net economy stays tight.\"",
+  "mapAreaProposal": "A cliff-terraced city in an under-used corner of the 300x300 map, away from the existing eastern hubs (Eldermere ~256,84 / Stonewatch ~272,178) — propose the north-west or west-central highlands (a region around x~40-80, y~110-160), reachable by road from The Castle/Port Brackwater. Footprint ~30x30 for the city, with the Great Diapason amphitheatre (~18x18) as its core and the Catalyst Hollow as a small sub-area (~12x12) reached by a descent stair just south of the ring. Exact tiles finalized at integration; needs open buildable ground for the dense altar+vein clusters and a clear road link.",
+  "balanceNotes": "\"XP/curve: low-tier altar xpPer (5-7) and the floor(1+lvl/div) mult match the existing air(div11)/fire(div14) so the classic multi-rune breakpoints land naturally; high-tier divs (3-5) give 2x near ~lvl 90-150-equivalent so density, not inflated per-craft xp, drives throughput — exactly the Mining brief's 'efficient via clustering, not via bloated rates'. pure_essence mining at lvl20/8xp slots cleanly above rocks_essence (lvl1/5xp). Magic cast xp continues the existing arithmetic step (strikes 5.5->fire_bolt 22.5, ~+3/tier): blast 25.5-34.5, wave 36-42.5, surge 44-50, so no discontinuity. maxHit climbs 12 (fire_bolt) ->24 (fire_surge) at lvl95, keeping Magic competitive with melee/ranged max hits at equivalent levels without exceeding them. New runes are gated both by Runecraft-to-make and Magic-to-use, so the loop is self-pacing. Level gating: low altars 1-14 (early), high altars 20-90 spread to give Runecraft a full curve to 99; blast spells gated at Magic 41+ (death runes ~RC65) so attack power trails rune supply slightly, preventing trivialization. Alchemy %s (40/60) sit below item value so it's a controlled faucet, gated by ECONOMY_FROZEN like the other coin-minting intents. resonant_shard reuse is additive, not a new currency, so it won't destabilize the Mining team's sink.\"",
+  "postBlurb": "RESONNE OPENS ITS GATES. The cliff-city of Resonne — long a rumor of robed figures and humming stones in the western highlands — has unsealed the Great Diapason, the amphitheatre where every elemental altar rings at once. Runecrafters can now loop air, water, earth, fire and mind without a wasted step, then climb to the higher terraces to bind body, cosmic, chord, law, death, blood and soul runes from pure essence. Mages: the strike-and-bolt days are over — blast, wave and surge spells are written in the Conservatory's books, and Tutor Brae will sell you your first chant tiara. And far below the city, behind the Archcantor's writ, the Discord altar still sings the wrong note for those bold enough to bind it.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [
+      "silver_bar (existing items.json:102 — spec only consumes it, fine; NOT a redefine)",
+      "rune_essence (items.json:1219 — spec REUSES as low-tier essence; do not redefine, value already 4)",
+      "air_rune (items.json:1267)",
+      "mind_rune (items.json:1274)",
+      "water_rune (items.json:1281)",
+      "earth_rune (items.json:1288)",
+      "fire_rune (items.json:1295)",
+      "resonant_shard (items.json:2109 — spec reuses as staff input, fine)",
+      "air_altar (objects.json:148, action Craft-rune — already exists)",
+      "fire_altar (objects.json:394 — already exists)",
+      "altar (objects.json:141 — prayer altar, distinct; do NOT reuse for runecraft)"
+    ],
+    "mechanicFit": "PURE DATA (no engine code): (1) rocks_pure — add to objects.json skillObjs; but NOTE the standard gather path is the built-in 'gather' intent reading SKILL_OBJS — rune essence today is mined how? rocks_essence exists in skillObjs (objects.json:58) so rocks_pure mirrors it cleanly and routes through the existing mine/gather handler. OK. (2) New altar OBJECT entries (water/earth/mind/body/cosmic/chord/law/death/blood/soul/discord_altar) — pure objects.json data. (3) chant_tiara furnace recipe — pure recipes.json data: the `make` craft path (intents.ts:419) is fully data-driven via RECIPE_INDEX with skill/level/xp/inputs/station/tool fields; set station:'furnace', tool:'chant_tiara_mould', skill:'Crafting'. (4) NPCs/shops — pure data. (5) Magic SPELL LADDER (blast/wave/surge) — pure magic.json data: the cast path (index.ts:685-699) reads sp.runes/sp.level/sp.xp/sp.maxHit generically and consumes runes from inventory via invHas/invRemove; appending spells Just Works as autocast combat spells. The dissonant_strike discord variant also pure data.\n\nNEEDS NEW ENGINE CODE (spec correctly flags most): (A) pure_essence altar tier — runecraft intent (intent-produce.ts:393-429) hardcodes essence='rune_essence' (lines 408/411/415/417/423). Must extend AltarDef with `essence` field + parameterize. Small, spec-acknowledged. (B) altarTypeFor map — line 403 hardcodes `altarKey==='fire'?'fire_altar':'altar'` (and 'air' currently maps to 'altar', NOT 'air_altar' — minor existing quirk). Needs a key->objectType lookup. Small. (C) Per-altar CLIENT registerObjectAction — src/content.ts:506 registers air_altar->{altar:'air'} hardcoded; each new altar needs its own client registration. Client code, not server. (D) enchant-tiara, grind, alch intents — all NEW intent domains (none exist). Straightforward registerIntentDomain handlers mirroring existing patterns; alch must use ctx.frozen/ECONOMY_FROZEN gate like tan/saw-planks. (E) tiara/talisman as alternate altar key — runecraft intent currently only checks nearObject(altar); accepting held-talisman-OR-worn-tiara is new branch logic. (F) UNLIMITED-RUNE STAFF — NEW engine code AND the spec's premise is WRONG: the cast cost path (index.ts:689-694) consumes runes from INVENTORY via invHas/invRemove; ammo is read from equipment.ammo in a SEPARATE mode branch (ranged/gun, line 701-707), so 'mirrors how ammo is read' is inaccurate. Must add an explicit 'if equipped weapon == resonant_staff, skip air_rune cost' check. (G) MAGIC ATTACK BONUS / robe+staff/diapason set max-hit nudge — DOES NOT EXIST: magicMaxHit comes solely from sp.maxHit (combat.ts:205-208); there is NO magic accuracy or magic-bonus path. 'server applies via existing magic bonus path' is FALSE — robes/staves can carry def bonuses but their claimed magic offence effect is a no-op without new engine code. (H) Utility/curse spells (alch/enchant_sapphire/curse_jangle) — only autocast COMBAT casts exist (index.ts:686 requires autocast + combat swing); any non-combat cast needs new intents. Spec acknowledges.",
+    "balanceFlags": [
+      "chord_rune value 120 vs existing chaos_rune 90 and nature-rune-replacement role: chord powers alchemy (coin faucet) so a 120 value plus alch minting is double-dipping; keep but watch alch % since alch mints coins from item value.",
+      "Low-tier altar xpPer in spec (mind 5.5, water 6, earth 6.5, fire 7) but EXISTING fire altar is xpPer:7 div:14 and air xpPer:5 div:11 — spec's fire matches, good. air stays 5 (spec leaves as-is). Consistent with curve.",
+      "High-tier div 3-5 means mult=floor(1+lvl/div): e.g. soul div:3 at L90 => floor(1+30)=31x runes per essence — that is an ENORMOUS multiplier vs OSRS ~ multiples. Low-tier div 9-14 at L99 => ~8-11x. The high-tier divs (3-5) produce 10x-31x rune yields; likely over-generous; recommend divs ~9-25 for high tier or cap mult.",
+      "rune values: death 160/blood 230/soul 260 vs chaos_rune 90 existing — these sit above chaos, reasonable for higher tiers, but combined with the 31x soul multiplier the gp/essence is very high. Re-tune div before value.",
+      "rune_essence value 4 already exists; pure_essence 6 is a sane small step.",
+      "Spell maxHit ladder fire_surge maxHit24 at L95 extends smoothly above existing fire_bolt maxHit12@L35; xp 22.5(fire_bolt)->25.5(wind_blast L41) continuous. Good.",
+      "talisman/tiara/robe/staff coin values (300-12000) are within existing item range (rune_bar 3700, adamantite_bar 640) — sane.",
+      "rune_dust value 3 = mind_rune value; grind floor(value/3) yields ~1 dust per low rune, sink ratios reasonable."
+    ],
+    "notes": "No item-id redefinition collisions that break things, but the spec MUST NOT redefine rune_essence/air_rune/mind_rune/water_rune/earth_rune/fire_rune/silver_bar/resonant_shard — they already exist and are reused; only ADD the genuinely new ids (pure_essence, *_talisman, chant_tiara/*_tiara, *_rune for body/cosmic/chord/law/death/blood/soul/discord, wizard/diapason/staff/pouch/dust/mould). No NPC or new-object id collisions found. The 'altar' object (objects.json:141) is the PRAYER altar (action Pray-at) — do not key runecraft off it; the current code's air->'altar' mapping is a pre-existing quirk, so add proper air_altar/water_altar/etc. object types and a real altarType lookup. Two spec premises are factually wrong and need rework, not just data: (1) unlimited-rune staff does NOT mirror ammo (runes are inventory-consumed in the magic branch, ammo is equipment in a different branch) — needs an explicit per-weapon rune-skip in index.ts:689-694; (2) there is NO magic attack/max-hit bonus path — robe/staff/diapason 'magic bonus' max-hit nudge is a no-op unless new engine code adds magic offence to combat.ts (magicMaxHit is spell-only at combat.ts:205-208). All other new mechanics (enchant-tiara, grind, alch, pure-essence altar tier, talisman/tiara alt-key) are new but small intent handlers that fit the registerIntentDomain + withState + ECONOMY_FROZEN patterns. Re-tune high-tier altar `div` (3-5 gives 10x-31x rune multipliers) before shipping. Spell ladder, chant_tiara recipe, new altars, rocks_pure, and NPCs are pure data and safe."
+  }
+}

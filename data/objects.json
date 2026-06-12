@@ -363,6 +363,13 @@
       "action": "Mine",
       "blocks": true
     },
+    "rocks_silver": {
+      "id": "rocks_silver",
+      "name": "Silver rocks",
+      "examine": "A bright seam of silver, clean as a struck bell.",
+      "action": "Mine",
+      "blocks": true
+    },
     "rocks_gem": {
       "id": "rocks_gem",
       "name": "Gem rocks",
@@ -681,6 +688,527 @@
       "examine": "Labelled 'MISC. EEL'. The eel, if any, is miscellaneous indeed.",
       "action": "Search",
       "blocks": true
+    },
+    "qv_beam": {
+      "id": "qv_beam",
+      "name": "Tuned beam",
+      "examine": "A plank over the canal that chimes when you land true.",
+      "action": "Cross",
+      "blocks": false
+    },
+    "qv_lock_jump": {
+      "id": "qv_lock_jump",
+      "name": "Lock gates",
+      "examine": "Canal lock gates with a sporting gap between them.",
+      "action": "Leap",
+      "blocks": false
+    },
+    "qv_rooftop": {
+      "id": "qv_rooftop",
+      "name": "Rooftop ladder",
+      "examine": "Half scaffold, half ladder, all liability.",
+      "action": "Climb",
+      "blocks": false
+    },
+    "qv_zipline": {
+      "id": "qv_zipline",
+      "name": "Silk zipline",
+      "examine": "A taut line over the weir. Bring your own rope, and your own nerve.",
+      "action": "Ride",
+      "blocks": false
+    },
+    "qv_chimney": {
+      "id": "qv_chimney",
+      "name": "Chimney gap",
+      "examine": "Two warm flues and barely a person's width of regret between them.",
+      "action": "Squeeze",
+      "blocks": false
+    },
+    "qv_gap_vault": {
+      "id": "qv_gap_vault",
+      "name": "Rooftop gap",
+      "examine": "The street below is patient. It can wait for you to miss.",
+      "action": "Vault",
+      "blocks": false
+    },
+    "qv_spire_run": {
+      "id": "qv_spire_run",
+      "name": "Spire ridgeline",
+      "examine": "A run along the bell-spire's ridge. The bell judges your footwork.",
+      "action": "Run",
+      "blocks": false
+    },
+    "silk_stall": {
+      "id": "silk_stall",
+      "name": "Silk stall",
+      "examine": "Fine silks, loosely supervised.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "fruit_stall": {
+      "id": "fruit_stall",
+      "name": "Fruit stall",
+      "examine": "Fresh fruit, priced for the honest and free for the quick.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "coffer_stall": {
+      "id": "coffer_stall",
+      "name": "Coffer stall",
+      "examine": "The Guild's counting table. The coins hum; the guards hum back.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "relic_stall": {
+      "id": "relic_stall",
+      "name": "Relic stall",
+      "examine": "Resonant curios under glass. The glass is mostly a suggestion.",
+      "action": "Steal-from",
+      "blocks": true
+    },
+    "box_trap_set": {
+      "id": "box_trap_set",
+      "name": "Box trap",
+      "examine": "A set box trap, humming an inviting little tune.",
+      "action": "Check",
+      "blocks": false
+    },
+    "pitfall_set": {
+      "id": "pitfall_set",
+      "name": "Pitfall",
+      "examine": "Reeds laid over a hole. Convincing, if you're a marsh-cat.",
+      "action": "Check",
+      "blocks": false
+    },
+    "high_box_trap_set": {
+      "id": "high_box_trap_set",
+      "name": "High box trap",
+      "examine": "A reinforced box trap tuned for something with opinions.",
+      "action": "Check",
+      "blocks": false
+    },
+    "qv_workbench": {
+      "id": "qv_workbench",
+      "name": "Guild workbench",
+      "examine": "A Wrightsong bench. The vice hums when the work is good.",
+      "action": "Build",
+      "blocks": true
+    },
+    "qv_sawmill": {
+      "id": "qv_sawmill",
+      "name": "Sawmill bench",
+      "examine": "Logs in, planks out, coins gone. The Guild calls it alchemy.",
+      "action": "Saw-logs",
+      "blocks": true
+    },
+    "contract_board": {
+      "id": "contract_board",
+      "name": "Contract board",
+      "examine": "Guild commissions, paid in Wrightsong marks. The ink never dries before the work changes.",
+      "action": "Read",
+      "blocks": true
+    },
+    "fence_table": {
+      "id": "fence_table",
+      "name": "Fence's table",
+      "examine": "A plain table where off-key coins learn to sing in tune. For a cut.",
+      "action": "Launder",
+      "blocks": true
+    },
+    "qv_weir": {
+      "id": "qv_weir",
+      "name": "Murmur weir",
+      "examine": "The river drops an octave here and never stops humming about it.",
+      "action": "Listen",
+      "blocks": true
+    },
+    "qv_canal_lock": {
+      "id": "qv_canal_lock",
+      "name": "Canal lock",
+      "examine": "A lock that raises barges and lowers expectations.",
+      "action": "Look-at",
+      "blocks": true
+    },
+    "qv_scaffold": {
+      "id": "qv_scaffold",
+      "name": "Wrightsong scaffold",
+      "examine": "Permanently temporary, like everything in Quaverside.",
+      "action": "Look-at",
+      "blocks": true
+    },
+    "wrightsong_banner": {
+      "id": "wrightsong_banner",
+      "name": "Wrightsong banner",
+      "examine": "A timber-and-quaver crest. It flaps in 4/4 time.",
+      "action": "Look-at",
+      "blocks": false
+    },
+    "trophy_mount": {
+      "id": "trophy_mount",
+      "name": "Trophy mount",
+      "examine": "A mounted marsh-cat with an expression of mild surprise.",
+      "action": "Look-at",
+      "blocks": true
+    },
+    "teak": {
+      "id": "teak",
+      "name": "Teak tree",
+      "examine": "Grove-grown teak. The Guild planted it singing; it grew up sarcastic.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "mahogany": {
+      "id": "mahogany",
+      "name": "Mahogany tree",
+      "examine": "Dark timber for bright commissions.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "shoal_net_spot": {
+      "id": "shoal_net_spot",
+      "name": "Shoal fishing spot",
+      "examine": "The Shoalrings boil with small silver. They surface on the swell, right on cue.",
+      "action": "Net",
+      "blocks": false
+    },
+    "deepbait_spot": {
+      "id": "deepbait_spot",
+      "name": "Deep-bait fishing spot",
+      "examine": "Darker water with an appetite. Bring bait and a sturdy rod.",
+      "action": "Bait",
+      "blocks": false
+    },
+    "reef_cage_spot": {
+      "id": "reef_cage_spot",
+      "name": "Reef cage spot",
+      "examine": "Brinemaw's ledges crawl with armoured tenants behind on rent.",
+      "action": "Cage",
+      "blocks": false
+    },
+    "deep_harpoon_spot": {
+      "id": "deep_harpoon_spot",
+      "name": "Deep harpoon spot",
+      "examine": "Big shadows patrol the reef drop-off. Some of them patrol back.",
+      "action": "Harpoon",
+      "blocks": false
+    },
+    "tidebell_spot": {
+      "id": "tidebell_spot",
+      "name": "Resonant fishing spot",
+      "examine": "Still water that listens. When the Tide-Bell rings, something answers.",
+      "action": "Harpoon",
+      "blocks": false
+    },
+    "bell_lever": {
+      "id": "bell_lever",
+      "name": "Bell lever",
+      "examine": "A brass lever, polished by hopeful hands. Pull it and the harbour holds its breath.",
+      "action": "Ring",
+      "blocks": true
+    },
+    "tide_bell": {
+      "id": "tide_bell",
+      "name": "The Tide-Bell",
+      "examine": "The great brass bell of Saltsong. It calls the catch; the catch, regrettably, comes.",
+      "blocks": true
+    },
+    "salt_pan": {
+      "id": "salt_pan",
+      "name": "Salt pan",
+      "examine": "Shallow stone trays where the sea is slowly talked out of its water.",
+      "action": "Scoop",
+      "blocks": true
+    },
+    "compost_bin": {
+      "id": "compost_bin",
+      "name": "Compost bin",
+      "examine": "Where crops go to become a promise.",
+      "action": "Compost",
+      "blocks": true
+    },
+    "limpwurt_plant": {
+      "id": "limpwurt_plant",
+      "name": "Limpwurt plant",
+      "examine": "A scowling little plant guarding a valuable root.",
+      "action": "Pick",
+      "blocks": false
+    },
+    "white_berry_bush": {
+      "id": "white_berry_bush",
+      "name": "White berry bush",
+      "examine": "Pale berries on a patient bush.",
+      "action": "Pick",
+      "blocks": false
+    },
+    "snape_grass_clump": {
+      "id": "snape_grass_clump",
+      "name": "Snape grass",
+      "examine": "A clump of snape grass, thriving by the trough water.",
+      "action": "Pick",
+      "blocks": false
+    },
+    "rocks_pure": {
+      "id": "rocks_pure",
+      "name": "Pure essence rocks",
+      "examine": "A vein of blank stone that holds its tuning under pressure. It never runs dry, only out of patience.",
+      "action": "Mine",
+      "blocks": true
+    },
+    "mind_altar": {
+      "id": "mind_altar",
+      "name": "Mind altar",
+      "examine": "A standing stone that hums whatever you were just thinking. Slightly off, to be polite.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "water_altar": {
+      "id": "water_altar",
+      "name": "Water altar",
+      "examine": "Brell's verse, dripping in stone. The puddle around it has never once evaporated.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "earth_altar": {
+      "id": "earth_altar",
+      "name": "Earth altar",
+      "examine": "Aulden's bass line surfaces here. Stand close and your boots hum along.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "body_altar": {
+      "id": "body_altar",
+      "name": "Body altar",
+      "examine": "It keeps a pulse older than anything that ever had one.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "cosmic_altar": {
+      "id": "cosmic_altar",
+      "name": "Cosmic altar",
+      "examine": "A stone singing an interval so wide that one end of it is somewhere else.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "chord_altar": {
+      "id": "chord_altar",
+      "name": "Chord altar",
+      "examine": "Three makers' parts held in one stone. The moss on it grows in perfect fifths.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "law_altar": {
+      "id": "law_altar",
+      "name": "Law altar",
+      "examine": "The strictest stone in the ring. It has never once come in early.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "death_altar": {
+      "id": "death_altar",
+      "name": "Death altar",
+      "examine": "It sings the rest between verses. The birds skip this terrace.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "blood_altar": {
+      "id": "blood_altar",
+      "name": "Blood altar",
+      "examine": "Warm stone with a downbeat. The Conservatory insists this is fine.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "soul_altar": {
+      "id": "soul_altar",
+      "name": "Soul altar",
+      "examine": "The longest interval the ring can hold. It knows your part better than you do.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "discord_altar": {
+      "id": "discord_altar",
+      "name": "Discord altar",
+      "examine": "The deepest stone in the Hollow, singing the wrong note with total confidence. Power, borrowed from the thing that's stirring.",
+      "action": "Craft-rune",
+      "blocks": true
+    },
+    "rune_mill": {
+      "id": "rune_mill",
+      "name": "Rune mill",
+      "examine": "Grinds surplus syllables back into dust. Keeper Dross calls it 'editing'.",
+      "action": "Grind",
+      "blocks": true
+    },
+    "metronome_dummy": {
+      "id": "metronome_dummy",
+      "name": "Metronome dummy",
+      "examine": "Straw, leather, and a small bell. Hit it on the beat and it rings; hit it off the beat and it judges.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "reinforced_dummy": {
+      "id": "reinforced_dummy",
+      "name": "Reinforced dummy",
+      "examine": "Iron-banded and unimpressed. It only rings for a properly weighted blow.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "cadence_pillar": {
+      "id": "cadence_pillar",
+      "name": "Cadence pillar",
+      "examine": "Cut from the Cadence Stone's casing. Striking it is sparring with the tempo itself.",
+      "action": "Hit",
+      "blocks": true
+    },
+    "cadence_anvil": {
+      "id": "cadence_anvil",
+      "name": "Cadence anvil",
+      "examine": "It hums a low A before your hammer ever lands. Metal annealed here rings true.",
+      "action": "Smith",
+      "blocks": true
+    },
+    "cadence_post": {
+      "id": "cadence_post",
+      "name": "Cadence post",
+      "examine": "Drill notices, posted in strict 4/4.",
+      "action": "Read",
+      "blocks": false
+    },
+    "consecrated_altar": {
+      "id": "consecrated_altar",
+      "name": "Consecrated altar",
+      "examine": "An altar tuned by the Order of the Last Verse. Bones buried here ring a fifth truer.",
+      "action": "Pray-at",
+      "blocks": true
+    },
+    "bone_offering_brazier": {
+      "id": "bone_offering_brazier",
+      "name": "Offering brazier",
+      "examine": "An iron bowl of grey flame. It takes bones and keeps a tally that isn't written anywhere.",
+      "action": "Offer-bones",
+      "blocks": true
+    },
+    "knell_bell": {
+      "id": "knell_bell",
+      "name": "The Knell",
+      "examine": "The temple's great bell. Rung once per funeral, twice per cull, never for fun. Officially.",
+      "action": "Toll",
+      "blocks": true
+    },
+    "choir_pew": {
+      "id": "choir_pew",
+      "name": "Pew",
+      "examine": "A hard bench facing the altar. Discomfort, the Abbot insists, keeps the pitch honest.",
+      "blocks": true
+    },
+    "sundered_gate": {
+      "id": "sundered_gate",
+      "name": "Sundered arch",
+      "examine": "The broken doorway of a cathedral that fell mid-hymn. The draft coming up is in a minor key.",
+      "blocks": true
+    },
+    "task_brazier": {
+      "id": "task_brazier",
+      "name": "Cull brazier",
+      "examine": "An Order marker-flame. It burns grey over consecrated ground and not at all over the other kind.",
+      "blocks": true
+    },
+    "echo_target_novice": {
+      "id": "echo_target_novice",
+      "name": "Echo target (novice)",
+      "examine": "A straw boss against the echo-stone. The cliff rings even your worst shots back politely.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_keen": {
+      "id": "echo_target_keen",
+      "name": "Echo target (keen)",
+      "examine": "A banded target on a tighter note. The cliff has started keeping score honestly.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_master": {
+      "id": "echo_target_master",
+      "name": "Echo target (master)",
+      "examine": "A slate ring barely wider than the arrow. The echo only answers a perfect pitch.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "echo_target_perfect": {
+      "id": "echo_target_perfect",
+      "name": "Echo target (perfect)",
+      "examine": "The Choir's old tuning mark. Hit the note and the whole valley applauds — in your own voice.",
+      "action": "Shoot",
+      "blocks": true
+    },
+    "reedwood_stand": {
+      "id": "reedwood_stand",
+      "name": "Reedwood reeds",
+      "examine": "Echo-stone-aged reedwood. It whistles in the wind, and louder when cut.",
+      "action": "Cut",
+      "blocks": true
+    },
+    "chimewood_stand": {
+      "id": "chimewood_stand",
+      "name": "Chimewood",
+      "examine": "A grove tree that holds every note ever struck near it. The axe is a percussion instrument now.",
+      "action": "Cut",
+      "blocks": true
+    },
+    "fletch_bench": {
+      "id": "fletch_bench",
+      "name": "Fletching bench",
+      "examine": "Wren's bench: clamps, knives, feathers, and a sign reading NO HUMMING NEAR THE STAVES.",
+      "action": "Fletch",
+      "blocks": true
+    },
+    "loom": {
+      "id": "loom",
+      "name": "Loom",
+      "examine": "Warp, weft, and a faint hum. The Hush's pride.",
+      "action": "Weave",
+      "blocks": true
+    },
+    "tanning_vat": {
+      "id": "tanning_vat",
+      "name": "Tanning vat",
+      "examine": "A vat of professional-smelling liquids. The hides go in sceptical and come out leather.",
+      "action": "Tan",
+      "blocks": true
+    },
+    "gem_bench": {
+      "id": "gem_bench",
+      "name": "Gemcutter's bench",
+      "examine": "A felt-topped bench scattered with sparkling evidence.",
+      "action": "Cut-gems",
+      "blocks": true
+    },
+    "resonance_organ": {
+      "id": "resonance_organ",
+      "name": "Great Bellows-Organ",
+      "examine": "Six furnaces breathe through it. The forge chord, held since the founding.",
+      "action": "Listen",
+      "blocks": true
+    },
+    "chordwood": {
+      "id": "chordwood",
+      "name": "Chordwood tree",
+      "examine": "Resonant timber. It has been holding the same chord since Syla sang it up; it would like to be excused.",
+      "action": "Chop down",
+      "blocks": true
+    },
+    "bonfire": {
+      "id": "bonfire",
+      "name": "Emberyard bonfire",
+      "examine": "A pooled chord of burning logs, decades deep. Warm enough to cook on, loud enough to pay you for the privilege.",
+      "action": "Add-logs",
+      "blocks": true
+    },
+    "charcoal_pit": {
+      "id": "charcoal_pit",
+      "name": "Charcoal pit",
+      "examine": "Quill's earth-banked smoulder. Logs go in singing and come out quiet, black, and useful.",
+      "action": "Make-charcoal",
+      "blocks": true
     }
   },
   "skillObjs": {
@@ -819,6 +1347,15 @@
       "lowRate": 0.05,
       "highRate": 0.5
     },
+    "rocks_silver": {
+      "level": 20,
+      "xp": 40,
+      "item": "silver_ore",
+      "depleteChance": 1,
+      "respawn": 12,
+      "lowRate": 0.18,
+      "highRate": 0.85
+    },
     "rocks_gem": {
       "level": 40,
       "xp": 65,
@@ -827,6 +1364,87 @@
       "respawn": 25,
       "lowRate": 0.12,
       "highRate": 0.8
+    },
+    "teak": {
+      "level": 35,
+      "xp": 85,
+      "item": "teak_logs",
+      "depleteChance": 0.125,
+      "respawn": 18,
+      "lowRate": 0.15,
+      "highRate": 0.8
+    },
+    "mahogany": {
+      "level": 50,
+      "xp": 125,
+      "item": "mahogany_logs",
+      "depleteChance": 0.125,
+      "respawn": 30,
+      "lowRate": 0.1,
+      "highRate": 0.65
+    },
+    "snape_grass_clump": {
+      "level": 10,
+      "xp": 14,
+      "item": "snape_grass",
+      "depleteChance": 1,
+      "respawn": 12,
+      "lowRate": 0.4,
+      "highRate": 0.95
+    },
+    "limpwurt_plant": {
+      "level": 22,
+      "xp": 20,
+      "item": "limpwurt_root",
+      "depleteChance": 1,
+      "respawn": 16,
+      "lowRate": 0.35,
+      "highRate": 0.92
+    },
+    "white_berry_bush": {
+      "level": 36,
+      "xp": 28,
+      "item": "white_berries",
+      "depleteChance": 1,
+      "respawn": 20,
+      "lowRate": 0.3,
+      "highRate": 0.9
+    },
+    "rocks_pure": {
+      "level": 20,
+      "xp": 8,
+      "item": "pure_essence",
+      "depleteChance": 0,
+      "respawn": 0,
+      "lowRate": 0.5,
+      "highRate": 0.98
+    },
+    "reedwood_stand": {
+      "level": 35,
+      "xp": 25,
+      "item": "reedwood_logs",
+      "depleteChance": 0.08,
+      "respawn": 10,
+      "lowRate": 0.2,
+      "highRate": 0.85
+    },
+    "chimewood_stand": {
+      "level": 70,
+      "xp": 85,
+      "item": "chimewood_logs",
+      "depleteChance": 0.15,
+      "respawn": 20,
+      "lowRate": 0.1,
+      "highRate": 0.7
+    },
+    "chordwood": {
+      "level": 70,
+      "xp": 210,
+      "item": "chordwood_logs",
+      "depleteChance": 0.125,
+      "respawn": 35,
+      "lowRate": 0.07,
+      "highRate": 0.55
     }
   }
 }

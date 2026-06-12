@@ -1,0 +1,587 @@
+{
+  "group": "smithing-crafting-fletching",
+  "areaName": "Forgekeep Concord",
+  "theme": "Resonance lore: in Cantorne every made thing is \"tuned\" — see theme field; Forgekeep Concord is the artisan town where Smithing, Crafting and Fletching all serve the First Chord.",
+  "summary": "Today Smithing/Crafting/Fletching are functional but shallow and badly clustered: a single anvil (33,58), single furnace (33,55), and single spinning wheel (25,17) far apart, so an artisan walks constantly and banks awkwardly. The metal ladder stops at rune (smith lvl 85-99); jewelry stops at ruby; leather has only body/gloves/boots (no studded/coif/vambrace ranged-armour line); Fletching has shortbows + 6 arrow tiers but NO longbows, NO crossbows/bolts, NO javelins/darts. There is no tanning station object (tanning is an NPC-only intent) and no loom. The expansion adds Forgekeep Concord: a tightly-packed maker's quarter with 8 anvils + 6 furnaces + 4 spinning wheels + a new loom + a tanning vat + a gem bench all within a ~12-tile bank-centred radius (barely-walk training). It extends Smithing two tiers above rune (orikon 90+, dawnsteel — capstone) pairing with the Mining ore expansion, adds emerald/diamond/dragonstone jewelry and an enchant-less amulet/ring ladder to Crafting, a full studded-leather + ranged-armour line and bow-string variety, and gives Fletching longbows, a crossbow+bolt chain, and javelins/darts. Reward sinks: a resonance-shard reward shop (smith's mark cosmetics, the Tuner's Apron set, a master toolset) and heavy bar/gem/leather material sinks via the new high tiers.",
+  "newItems": [
+    {
+      "id": "orikon_ore",
+      "name": "Orikon ore",
+      "role": "New ore tier above runite (mined by the Mining team's expansion). Smelts with coal into orikon_bar.",
+      "tier": "Mining ~75 / Smithing smelt 92",
+      "value": 5200,
+      "source": "Mined in the Mining expansion's deep pits; sold raw by Concord ore broker in small qty"
+    },
+    {
+      "id": "orikon_bar",
+      "name": "Orikon bar",
+      "role": "Smithing bar for the orikon gear tier; warm amber metal that 'holds a note'",
+      "tier": "Smithing smelt 92, xp 65",
+      "value": 7800,
+      "source": "Smelt orikon_ore + 8 coal at a Concord furnace"
+    },
+    {
+      "id": "dawnsteel_bar",
+      "name": "Dawnsteel bar",
+      "role": "Capstone Smithing bar; forged from orikon + a resonant catalyst, the true-octave metal",
+      "tier": "Smithing smelt 99, xp 90",
+      "value": 18000,
+      "source": "Smelt orikon_bar + 2 coal + 1 tuning_flux at a Concord furnace"
+    },
+    {
+      "id": "tuning_flux",
+      "name": "Tuning flux",
+      "role": "Smelting reagent that lets a bar 'ring true'; consumed making dawnsteel and high jewelry",
+      "tier": "buyable Smithing 90",
+      "value": 400,
+      "source": "Bought from Smith-Cantor Branna's forge supply (shop); rare anvil byproduct"
+    },
+    {
+      "id": "orikon_sword",
+      "name": "Orikon sword",
+      "role": "Melee weapon, tier above rune",
+      "tier": "Smith 92, xp 95; Attack 50 to wield",
+      "value": 24000,
+      "source": "Smith 1 orikon_bar at anvil"
+    },
+    {
+      "id": "orikon_scimitar",
+      "name": "Orikon scimitar",
+      "role": "Fast melee, tier above rune scim",
+      "tier": "Smith 93, xp 190; Attack 50",
+      "value": 30000,
+      "source": "Smith 2 orikon_bar"
+    },
+    {
+      "id": "orikon_full_helm",
+      "name": "Orikon full helm",
+      "role": "Head armour tier above rune",
+      "tier": "Smith 94, xp 190; Defence 50",
+      "value": 26000,
+      "source": "Smith 2 orikon_bar"
+    },
+    {
+      "id": "orikon_platelegs",
+      "name": "Orikon platelegs",
+      "role": "Legs armour above rune",
+      "tier": "Smith 96, xp 285; Defence 50",
+      "value": 31000,
+      "source": "Smith 3 orikon_bar"
+    },
+    {
+      "id": "orikon_kiteshield",
+      "name": "Orikon kiteshield",
+      "role": "Shield above rune",
+      "tier": "Smith 95, xp 285; Defence 50",
+      "value": 40000,
+      "source": "Smith 3 orikon_bar"
+    },
+    {
+      "id": "orikon_platebody",
+      "name": "Orikon platebody",
+      "role": "Body armour above rune (defBonus 82)",
+      "tier": "Smith 98, xp 475; Defence 50",
+      "value": 48000,
+      "source": "Smith 5 orikon_bar"
+    },
+    {
+      "id": "dawnsteel_platebody",
+      "name": "Dawnsteel platebody",
+      "role": "Capstone body, best smithable (defBonus 95)",
+      "tier": "Smith 99, xp 600; Defence 55",
+      "value": 120000,
+      "source": "Smith 5 dawnsteel_bar"
+    },
+    {
+      "id": "dawnsteel_full_helm",
+      "name": "Dawnsteel full helm",
+      "role": "Capstone head (defBonus 38)",
+      "tier": "Smith 99, xp 240; Defence 55",
+      "value": 62000,
+      "source": "Smith 2 dawnsteel_bar"
+    },
+    {
+      "id": "orikon_arrowtips",
+      "name": "Orikon arrowtips",
+      "role": "Arrowtips for orikon arrows (15-set)",
+      "tier": "Smith 92, xp 95",
+      "value": 60,
+      "source": "Smith 1 orikon_bar -> 15 tips"
+    },
+    {
+      "id": "orikon_arrow",
+      "name": "Orikon arrow",
+      "role": "Arrow tier above rune (rangedBonus 62)",
+      "tier": "Fletch 85, xp 225; Ranged 50",
+      "value": 150,
+      "source": "Fletch 15 headless_arrow + 15 orikon_arrowtips"
+    },
+    {
+      "id": "longbow",
+      "name": "Longbow",
+      "role": "Slower, harder-hitting bow line (rangedBonus 10, speed 6) — fills the missing longbow line",
+      "tier": "Fletch 10, xp 10; Ranged 1",
+      "value": 80,
+      "source": "Fletch longbow_u + bowstring"
+    },
+    {
+      "id": "longbow_u",
+      "name": "Longbow (u)",
+      "role": "Unstrung longbow stave",
+      "tier": "Fletch 10, xp 10",
+      "value": 40,
+      "source": "Fletch 1 logs (longbow shape)"
+    },
+    {
+      "id": "oak_longbow",
+      "name": "Oak longbow",
+      "role": "Longbow tier (rangedBonus 18, speed 6)",
+      "tier": "Fletch 25, xp 50; Ranged 5",
+      "value": 180,
+      "source": "Fletch oak_longbow_u + bowstring"
+    },
+    {
+      "id": "oak_longbow_u",
+      "name": "Oak longbow (u)",
+      "role": "Unstrung oak longbow",
+      "tier": "Fletch 25, xp 25",
+      "value": 70,
+      "source": "Fletch 1 oak_logs"
+    },
+    {
+      "id": "yew_longbow",
+      "name": "Yew longbow",
+      "role": "High longbow (rangedBonus 55, speed 6)",
+      "tier": "Fletch 70, xp 135; Ranged 40",
+      "value": 720,
+      "source": "Fletch yew_longbow_u + bowstring"
+    },
+    {
+      "id": "yew_longbow_u",
+      "name": "Yew longbow (u)",
+      "role": "Unstrung yew longbow",
+      "tier": "Fletch 70, xp 67.5",
+      "value": 300,
+      "source": "Fletch 1 yew_logs"
+    },
+    {
+      "id": "magic_longbow",
+      "name": "Magic longbow",
+      "role": "Best longbow (rangedBonus 80, speed 6)",
+      "tier": "Fletch 85, xp 166.6; Ranged 50",
+      "value": 2000,
+      "source": "Fletch magic_longbow_u + bowstring"
+    },
+    {
+      "id": "magic_longbow_u",
+      "name": "Magic longbow (u)",
+      "role": "Unstrung magic longbow",
+      "tier": "Fletch 85, xp 83.3",
+      "value": 480,
+      "source": "Fletch 1 magic_logs"
+    },
+    {
+      "id": "bronze_javelin",
+      "name": "Bronze javelin",
+      "role": "Thrown weapon (ammo slot, stackable, rangedBonus 8)",
+      "tier": "Fletch 3, xp 12; Ranged 1",
+      "value": 3,
+      "source": "Fletch 15 arrow_shaft + 15 bronze_javelin_heads"
+    },
+    {
+      "id": "bronze_javelin_heads",
+      "name": "Bronze javelin heads",
+      "role": "Smithing intermediate for javelins (15-set)",
+      "tier": "Smith 6, xp 12.5",
+      "value": 1,
+      "source": "Smith 1 bronze_bar"
+    },
+    {
+      "id": "steel_javelin",
+      "name": "Steel javelin",
+      "role": "Thrown weapon (rangedBonus 18)",
+      "tier": "Fletch 35, xp 50; Ranged 15",
+      "value": 12,
+      "source": "Fletch 15 arrow_shaft + 15 steel_javelin_heads"
+    },
+    {
+      "id": "steel_javelin_heads",
+      "name": "Steel javelin heads",
+      "role": "Smith intermediate (15-set)",
+      "tier": "Smith 36, xp 37.5",
+      "value": 3,
+      "source": "Smith 1 steel_bar"
+    },
+    {
+      "id": "rune_javelin",
+      "name": "Rune javelin",
+      "role": "Thrown weapon high tier (rangedBonus 42)",
+      "tier": "Fletch 75, xp 124; Ranged 40",
+      "value": 80,
+      "source": "Fletch 15 arrow_shaft + 15 rune_javelin_heads"
+    },
+    {
+      "id": "rune_javelin_heads",
+      "name": "Rune javelin heads",
+      "role": "Smith intermediate (15-set)",
+      "tier": "Smith 86, xp 75",
+      "value": 18,
+      "source": "Smith 1 rune_bar"
+    },
+    {
+      "id": "bronze_dart",
+      "name": "Bronze dart",
+      "role": "Fast thrown (ammo, rangedBonus 4)",
+      "tier": "Fletch 1, xp 1.8; Ranged 1",
+      "value": 1,
+      "source": "Fletch 1 bronze_dart_tip + 1 feather (per dart, 10-set wired like arrows)"
+    },
+    {
+      "id": "bronze_dart_tip",
+      "name": "Bronze dart tip",
+      "role": "Smith intermediate for darts (10-set)",
+      "tier": "Smith 4, xp 12.5",
+      "value": 1,
+      "source": "Smith 1 bronze_bar -> 10 tips"
+    },
+    {
+      "id": "adamant_dart",
+      "name": "Adamant dart",
+      "role": "High fast thrown (rangedBonus 13)",
+      "tier": "Fletch 65, xp 18.7; Ranged 30",
+      "value": 10,
+      "source": "Fletch adamant_dart_tip + feather"
+    },
+    {
+      "id": "adamant_dart_tip",
+      "name": "Adamant dart tip",
+      "role": "Smith intermediate (10-set)",
+      "tier": "Smith 75, xp 62.5",
+      "value": 7,
+      "source": "Smith 1 adamantite_bar -> 10 tips"
+    },
+    {
+      "id": "bronze_crossbow",
+      "name": "Bronze crossbow",
+      "role": "Opens the crossbow line (rangedBonus 9, speed 5, fires bolts)",
+      "tier": "Fletch 9, xp 12; Ranged 1",
+      "value": 80,
+      "source": "Fletch bronze_limbs + wooden_stock (item-on-item), string with bowstring"
+    },
+    {
+      "id": "wooden_stock",
+      "name": "Wooden stock",
+      "role": "Crossbow body, cut from logs",
+      "tier": "Fletch 9, xp 6",
+      "value": 10,
+      "source": "Fletch 1 oak_logs (carve stock)"
+    },
+    {
+      "id": "bronze_limbs",
+      "name": "Bronze limbs",
+      "role": "Smith intermediate for crossbows",
+      "tier": "Smith 6, xp 12.5",
+      "value": 8,
+      "source": "Smith 1 bronze_bar"
+    },
+    {
+      "id": "steel_crossbow",
+      "name": "Steel crossbow",
+      "role": "Mid crossbow (rangedBonus 24)",
+      "tier": "Fletch 40, xp 50; Ranged 20",
+      "value": 480,
+      "source": "Fletch steel_limbs + oak stock + bowstring"
+    },
+    {
+      "id": "steel_limbs",
+      "name": "Steel limbs",
+      "role": "Smith intermediate",
+      "tier": "Smith 38, xp 37.5",
+      "value": 40,
+      "source": "Smith 1 steel_bar"
+    },
+    {
+      "id": "rune_crossbow",
+      "name": "Rune crossbow",
+      "role": "Top crossbow (rangedBonus 52)",
+      "tier": "Fletch 80, xp 135; Ranged 50",
+      "value": 3500,
+      "source": "Fletch rune_limbs + yew stock + bowstring"
+    },
+    {
+      "id": "rune_limbs",
+      "name": "Rune limbs",
+      "role": "Smith intermediate",
+      "tier": "Smith 88, xp 75",
+      "value": 300,
+      "source": "Smith 1 rune_bar"
+    },
+    {
+      "id": "bronze_bolts",
+      "name": "Bronze bolts",
+      "role": "Crossbow ammo (stackable, rangedBonus 10)",
+      "tier": "Fletch 9, xp 1; Ranged 1",
+      "value": 3,
+      "source": "Fletch bronze_bolt_tips + feather (10-set)"
+    },
+    {
+      "id": "bronze_bolt_tips",
+      "name": "Bronze bolt tips",
+      "role": "Smith intermediate (10-set)",
+      "tier": "Smith 5, xp 12.5",
+      "value": 1,
+      "source": "Smith 1 bronze_bar -> 10 tips"
+    },
+    {
+      "id": "runite_bolts",
+      "name": "Runite bolts",
+      "role": "Top crossbow ammo (rangedBonus 55)",
+      "tier": "Fletch 80, xp 10; Ranged 50",
+      "value": 40,
+      "source": "Fletch runite_bolt_tips + feather (10-set)"
+    },
+    {
+      "id": "runite_bolt_tips",
+      "name": "Runite bolt tips",
+      "role": "Smith intermediate (10-set)",
+      "tier": "Smith 86, xp 75",
+      "value": 18,
+      "source": "Smith 1 rune_bar -> 10 tips"
+    },
+    {
+      "id": "flax",
+      "name": "Flax",
+      "role": "Already picked from flax_plant; confirmed input for bowstring — listed for completeness, NOT a new id",
+      "tier": "existing",
+      "value": 3,
+      "source": "existing flax_plant object"
+    },
+    {
+      "id": "studded_body",
+      "name": "Studded body",
+      "role": "Ranged armour: leather body reinforced with studs (defBonus 8, no att penalty)",
+      "tier": "Craft 41, xp 40; ranged armour",
+      "value": 120,
+      "source": "Craft (use steel studs on leather_body) at no station"
+    },
+    {
+      "id": "steel_studs",
+      "name": "Steel studs",
+      "role": "Smith intermediate for studded armour (15-set)",
+      "tier": "Smith 36, xp 37.5",
+      "value": 2,
+      "source": "Smith 1 steel_bar -> 15 studs"
+    },
+    {
+      "id": "studded_chaps",
+      "name": "Studded chaps",
+      "role": "Ranged leg armour (defBonus 5)",
+      "tier": "Craft 44, xp 42; ranged armour",
+      "value": 90,
+      "source": "Craft leather_chaps + steel_studs"
+    },
+    {
+      "id": "leather_chaps",
+      "name": "Leather chaps",
+      "role": "Soft ranged legs (defBonus 2)",
+      "tier": "Craft 18, xp 27; ranged armour",
+      "value": 24,
+      "source": "Craft 1 leather + thread"
+    },
+    {
+      "id": "leather_cowl",
+      "name": "Leather cowl",
+      "role": "Ranged head armour (defBonus 2)",
+      "tier": "Craft 9, xp 18.5",
+      "value": 18,
+      "source": "Craft 1 leather + thread"
+    },
+    {
+      "id": "leather_vambraces",
+      "name": "Leather vambraces",
+      "role": "Ranged glove armour, upgrades the bare leather_gloves line (defBonus 2)",
+      "tier": "Craft 11, xp 22",
+      "value": 20,
+      "source": "Craft 1 leather + thread"
+    },
+    {
+      "id": "hardleather",
+      "name": "Hard leather",
+      "role": "Tougher leather grade for chaps/body; tanned from cowhide at a vat for a higher fee",
+      "tier": "Tan; Craft input",
+      "value": 3,
+      "source": "Tan cowhide at the Concord tanning vat (hardleather mode, costs 3 coins)"
+    },
+    {
+      "id": "emerald_ring",
+      "name": "Emerald ring",
+      "role": "Fills the missing emerald jewelry slot (defBonus 1)",
+      "tier": "Craft 27, xp 55",
+      "value": 1500,
+      "source": "Craft gold_bar + emerald at furnace"
+    },
+    {
+      "id": "emerald_amulet",
+      "name": "Emerald amulet",
+      "role": "Emerald neck (att 2, def 2)",
+      "tier": "Craft 31, xp 70",
+      "value": 1650,
+      "source": "Craft gold_bar + emerald"
+    },
+    {
+      "id": "uncut_diamond",
+      "name": "Uncut diamond",
+      "role": "New gem above ruby; drops/mined from gem rocks in the Mining expansion",
+      "tier": "Craft cut 43",
+      "value": 200,
+      "source": "Gem rocks / drops"
+    },
+    {
+      "id": "diamond",
+      "name": "Diamond",
+      "role": "Cut diamond for top jewelry",
+      "tier": "Craft cut 43, xp 107.5",
+      "value": 2000,
+      "source": "Cut uncut_diamond with chisel"
+    },
+    {
+      "id": "diamond_ring",
+      "name": "Diamond ring",
+      "role": "Top non-dragon ring (strBonus 2, def 1)",
+      "tier": "Craft 43, xp 85",
+      "value": 4500,
+      "source": "Craft gold_bar + diamond"
+    },
+    {
+      "id": "diamond_amulet",
+      "name": "Diamond amulet",
+      "role": "Top non-dragon neck (str 6, def 2)",
+      "tier": "Craft 55, xp 100",
+      "value": 5000,
+      "source": "Craft gold_bar + diamond"
+    },
+    {
+      "id": "uncut_dragonstone",
+      "name": "Uncut dragonstone",
+      "role": "Rare capstone gem; rare drop / shard-shop",
+      "tier": "Craft cut 55",
+      "value": 3000,
+      "source": "Rare drop / resonance-shard reward shop"
+    },
+    {
+      "id": "dragonstone",
+      "name": "Dragonstone",
+      "role": "Cut capstone gem",
+      "tier": "Craft cut 55, xp 137.5",
+      "value": 6000,
+      "source": "Cut uncut_dragonstone (needs chisel)"
+    },
+    {
+      "id": "dragonstone_amulet",
+      "name": "Dragonstone amulet",
+      "role": "Best craftable amulet (str 8, att 4, def 4)",
+      "tier": "Craft 80, xp 150",
+      "value": 18000,
+      "source": "Craft gold_bar + dragonstone"
+    },
+    {
+      "id": "resonance_thread",
+      "name": "Resonance thread",
+      "role": "Premium bowstring spun in the Weaver's Hush; makes magic/orikon bows ring true (rangedBonus +2 vs plain string variants is handled by separate strung items if desired, here a crafting/material sink)",
+      "tier": "Craft spin 60, xp 25",
+      "value": 60,
+      "source": "Spin 2 ball_of_wool + 1 flax at a spinning wheel"
+    },
+    {
+      "id": "tuners_apron",
+      "name": "Tuner's apron",
+      "role": "Reward-shop cosmetic body that shows artisan mastery; small forge-flavour (defBonus 3)",
+      "tier": "Reward (shard shop)",
+      "value": 1,
+      "source": "Bought with resonance shards + maker's marks at the Concord reward shop"
+    },
+    {
+      "id": "makers_mark",
+      "name": "Maker's mark",
+      "role": "Reward token awarded on smithing/crafting/fletching level-ups past 90 and from a daily Concord commission; spent at reward shop",
+      "tier": "Reward token",
+      "value": 1,
+      "source": "Concord commission board + high-level make milestones"
+    },
+    {
+      "id": "master_chisel",
+      "name": "Master chisel",
+      "role": "Reward tool: 10% faster gem cutting (mirrors tuned_pickaxe perk style)",
+      "tier": "Reward (shard shop)",
+      "value": 1,
+      "source": "Reward shop"
+    },
+    {
+      "id": "true_hammer",
+      "name": "True hammer",
+      "role": "Reward tool: 10% chance to save a bar when smithing (material-return perk)",
+      "tier": "Reward (shard shop)",
+      "value": 1,
+      "source": "Reward shop"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "smeltable: orikon_bar <- orikon_ore x1 + coal x8 ; Smithing 92, xp 65",
+    "smeltable: dawnsteel_bar <- orikon_bar x1 + coal x2 + tuning_flux x1 ; Smithing 99, xp 90",
+    "smithables (orikon, like rune pattern): orikon_sword(1 bar,L92,95xp), orikon_scimitar(2,L93,190), orikon_full_helm(2,L94,190), orikon_kiteshield(3,L95,285), orikon_platelegs(3,L96,285), orikon_platebody(5,L98,475), orikon_arrowtips(1 bar->15,L92,95)",
+    "smithables (dawnsteel capstone): dawnsteel_full_helm(2 bar,L99,240), dawnsteel_platebody(5 bar,L99,600)",
+    "smithables (intermediates, outputQty pattern): bronze_javelin_heads(1 bronze_bar->15,L6,12.5), steel_javelin_heads(1 steel_bar->15,L36,37.5), rune_javelin_heads(1 rune_bar->15,L86,75); bronze_dart_tip(1 bronze_bar->10,L4,12.5), adamant_dart_tip(1 adamantite_bar->10,L75,62.5); bronze_bolt_tips(1 bronze_bar->10,L5,12.5), runite_bolt_tips(1 rune_bar->10,L86,75); bronze_limbs(1 bronze_bar,L6,12.5), steel_limbs(1 steel_bar,L38,37.5), rune_limbs(1 rune_bar,L88,75); steel_studs(1 steel_bar->15,L36,37.5)",
+    "fletchables (longbows, two-step like shortbow): longbow_u<-logs(L10,10), longbow<-longbow_u+bowstring(L10,10); oak_longbow_u<-oak_logs(L25,25), oak_longbow<-oak_longbow_u+bowstring(L25,25); yew_longbow_u<-yew_logs(L70,67.5), yew_longbow<-yew_longbow_u+bowstring(L70,67.5); magic_longbow_u<-magic_logs(L85,83.3), magic_longbow<-magic_longbow_u+bowstring(L85,83.3)",
+    "fletchables (orikon arrows): orikon_arrow<-headless_arrow x15 + orikon_arrowtips x15 (L85, 225, qty15)",
+    "fletchables (javelins, qty15): bronze_javelin<-arrow_shaft x15+bronze_javelin_heads x15(L3,12); steel_javelin<-...steel...(L35,50); rune_javelin<-...rune...(L75,124)",
+    "fletchables (darts, qty10, wired like headless-arrow batch): bronze_dart<-bronze_dart_tip x10+feather x10(L1,18); adamant_dart<-adamant_dart_tip x10+feather x10(L65,187)",
+    "fletchables (bolts, qty10): bronze_bolts<-bronze_bolt_tips x10+feather x10(L9,10); runite_bolts<-runite_bolt_tips x10+feather x10(L80,100)",
+    "fletchables (crossbow chain, two-step): wooden_stock<-oak_logs(L9,6); bronze_crossbow_u<-bronze_limbs x1+wooden_stock x1(L9,12); bronze_crossbow<-bronze_crossbow_u+bowstring(L9,12). Same pattern for steel_crossbow(L40,50, steel_limbs+oak stock) and rune_crossbow(L80,135, rune_limbs+yew stock).",
+    "craftables (loom station, leather ranged line): leather_cowl<-leather+thread(loom,L9,18.5); leather_vambraces<-leather+thread(loom,L11,22); leather_chaps<-leather+thread(loom,L18,27); studded_body<-leather_body+steel_studs(loom,L41,40); studded_chaps<-leather_chaps+steel_studs(loom,L44,42)",
+    "craftables (jewelry, furnace, station:null pattern): emerald_ring<-gold_bar+emerald(L27,55); emerald_amulet<-gold_bar+emerald(L31,70); diamond_ring<-gold_bar+diamond(L43,85); diamond_amulet<-gold_bar+diamond(L55,100); dragonstone_amulet<-gold_bar+dragonstone(L80,150)",
+    "craftables (spinning_wheel): resonance_thread<-ball_of_wool x2+flax x1(L60,25)",
+    "gemCuts: diamond<-uncut_diamond(L43,107.5); dragonstone<-uncut_dragonstone(L55,137.5)",
+    "intent extension (small): tan domain accepts optional payload {grade:'hard'} -> consumes 3 coins/hide, yields hardleather. Existing tan logic, new branch. gem_bench/loom/tanning_vat need client registerObjectAction in a new src/packs/forgekeep_concord.ts (mirrors skills_production.ts). NO brand-new server intent classes — everything routes through existing produce(make) + tan domains."
+  ],
+  "newObjectsOrMechanics": [
+    "loom :: new world-object type {id:'loom', name:'Loom', action:'Weave', blocks:true}. Used as a craft station string 'loom' (engine already routes craftables with station==='loom' via nearObject). Hosts leather ranged-armour weaving (cowl/vambraces/chaps/body/studded). Resolves server-side through the existing 'produce'/'make' intent with recipe:'craft' — no new intent needed.",
+    "tanning_vat :: new world-object {id:'tanning_vat', name:'Tanning vat', action:'Tan', blocks:true}. Client registers a Tan action that calls the EXISTING 'tan' domain intent (server/intent-produce.ts already implements tan: cowhide+coins->leather). A second menu option 'Tan (hard leather)' wires a small extension: tan at higher fee -> hardleather. This makes tanning a placeable station instead of NPC-only. Server: extend tan intent to accept payload {grade:'hard'} that consumes 3 coins/hide and yields hardleather (same xp-less wealth-shaped path, still ECONOMY_FROZEN gated).",
+    "gem_bench :: new world-object {id:'gem_bench', name:'Gemcutter's bench', action:'Cut-gems', blocks:true}. Convenience station: opens a Make menu listing all gemCuts (resolves via existing recipe:'gemcut'); lets a player cut a full inventory without item-on-item clicking. No new server intent — reuses gemcut.",
+    "Smithing two-tier extension (orikon, dawnsteel) is pure data: add 2 smeltables + ~10 smithables rows. Iron-style successChance NOT used (high tiers are deterministic, like rune). dawnsteel smelt consumes tuning_flux as an extra input (engine already supports multi-input smeltables).",
+    "Javelin/dart/bolt 'heads' and 'limbs'/'studs' are smithables with outputQty (15 or 10) — identical pattern to existing bronze_arrowtips. No new mechanic.",
+    "Crossbow assembly uses existing fletch recipes with multi-input (limbs+stock) then string with bowstring — same two-step pattern as shortbow_u->shortbow. Client registerItemOnItem for limbs+stock mirrors existing chisel-on-gem wiring.",
+    "resonance_organ :: decorative/lore world-object {id:'resonance_organ', name:'Great Bellows-Organ', action:'Listen', blocks:true} at the hub centre — flavour Inspect that plays the forge chord (audio.sfx), no mechanic, sets the scene like resonance_stand in the mine."
+  ],
+  "newNpcs": [
+    "smith_cantor_branna :: 'Smith-Cantor Branna', master-smith trainer + forge-supply shop (sells hammer, coal, tuning_flux, steel_studs, ammo moulds); gives smithing patter and the daily smithing commission",
+    "weaver_iseult :: 'Weaver Iseult', spinning/leather trainer at the Weaver's Hush; runs the loom tutorial and sells thread, needle, shears, ball_of_wool, leather",
+    "stavewright_orlin :: 'Stavewright Orlin', fletching trainer at the Stavewright's Gallery; sells knife, feather (bulk), bowstring, longbow_u staves; explains crossbow/javelin assembly",
+    "gemcutter_yael :: 'Gemcutter Yael', crafting/jewellery trainer at the gem bench; sells chisel, gold_bar (limited), uncut sapphires/emeralds; cuts demo gems",
+    "concord_quartermaster :: 'Concord Quartermaster Doram', runs the resonance-shard + maker's-mark REWARD SHOP and the commission board (daily make-X tasks for marks)",
+    "ore_broker_halle :: 'Ore-Broker Halle', sells small daily stock of orikon_ore and coal so smiths aren't fully gated on the Mining team's pits",
+    "concord_tanner :: 'Tanner Mauld', mans the tanning vat (re-skins existing tanner role here so leather is sourced in-quarter)"
+  ],
+  "trainingLayout": "Forgekeep Concord is a walled quarter built for near-zero walking, centred on a Vaultwright BANK BOOTH so every station is within ~6 tiles of the bank. Layout (relative tiles around a central plaza ~14x14):\n- CENTER: bank_booth + the resonance_organ (lore centrepiece).\n- SMITH ROW (the Anvil-Choir), east wall: 8 anvils in two tight rows of 4 (each anvil adjacent-diagonal so a player banks once and smiths a full inventory without moving more than 2 tiles). Directly behind them: 6 furnaces in a 2x3 block (smelt + jewelry-craft). Smith-Cantor Branna stands between the anvil rows; Ore-Broker Halle at the furnace block.\n- WEAVER'S HUSH, west wall: 4 spinning_wheels in a 2x2 cluster + 1 loom + 1 tanning_vat, all within 3 tiles of each other and ~5 of the bank. Weaver Iseult + Tanner Mauld here.\n- STAVEWRIGHT'S GALLERY, south side: a fletching nook — no station object needed (fletching is inventory-only) but Stavewright Orlin + a flax_plant patch (6 flax plants clustered) and 2 banks-adjacent benches sit here so a player picks flax, spins at the nearby wheels, and fletches in one loop.\n- GEM CORNER, north: 1 gem_bench + Gemcutter Yael, two tiles from a furnace (cut gems -> craft jewelry without crossing the plaza).\n- REWARD STALL, by the gate: Concord Quartermaster Doram's reward shop + commission board.\nCounts: 8 anvils, 6 furnaces, 4 spinning wheels, 1 loom, 1 tanning vat, 1 gem bench, 6 flax plants, 1 bank, all inside one wall. This is the densest artisan cluster in Cantorne — a smith can smelt-then-smith-then-bank in a 3-tile triangle; a fletcher can flax->spin->string->fletch in one corner. Matches the Mining brief's 'barely walks' bar.",
+  "rewards": "Reward sinks layered so high-level artisans always have a gold/material/shard outlet:\n1) RESONANCE-SHARD REWARD SHOP (Quartermaster Doram), spends resonant_shard (the Mining hub's currency) + new maker's_mark tokens: tuners_apron (cosmetic body), master_chisel (10% faster gem cutting, tuned_pickaxe-style perk), true_hammer (10% bar-save when smithing — material-return sink that also drives demand), and uncut_dragonstone for sale (gem sink feeding top jewelry).\n2) COMMISSION BOARD: daily 'make 50 of X' smithing/fletching/crafting tasks award maker's_marks + coins — a steady use for the new mid-tier outputs (javelin heads, bolts, studded armour) that would otherwise be vendor-trash.\n3) MATERIAL SINKS: the orikon/dawnsteel tiers consume huge coal+bar+tuning_flux volumes (dawnsteel platebody = 5 dawnsteel = 5 orikon_bar + 5 tuning_flux + lots of coal), absorbing the Mining expansion's ore output. Jewelry diamond/dragonstone lines sink gold_bar + cut gems. Studded armour sinks steel_bar (studs) + hardleather.\n4) PRESTIGE: a 'Master of the Concord' set bonus — wearing tuners_apron + master_chisel + true_hammer grants a small flavour 'the forge sings for you' message and stacks the two tool perks; the apron itself is the visible mark of a 99 artisan (gold sink-funded vanity, like OSRS skill capes).\"",
+  "mapAreaProposal": "On the 300x300 map, place Forgekeep Concord on the western road between The Castle/spawn (~21,37) and Port Brackwater (~105,196), in the lower-central vale around (60,120) — a ~16x16 walled town footprint. Rationale: it sits between the spawn smithing tutorial area and the existing scattered furnace/anvil (33,55 / 33,58), letting those be deprecated/redirected here; it is a natural midpoint for ore coming up from the Mining expansion (assume the new deep pits are south/east) and logs from the Tanglewood (232,110). Biome: cleared forge-clearing with a river branch (for the tanning vat / spinning flavour and a flax patch). Coords finalised at integration — propose region: lower-central vale, ~(52-68, 112-128).",
+  "balanceNotes": "XP/curve consistency: all new numbers extend the EXISTING curves exactly. Smithing per-bar xp tracks the rune slope (rune single-item 75xp/bar at L85; orikon ~95xp/bar at L92; dawnsteel ~120xp/bar at L99) — bodies = 5x bar xp, helms/scimitars = 2x, legs/shields = 3x, matching the existing 1/2/3/5-bar multipliers. Smelt xp 65/90 continues 6.2->50->(65,90). Fletch longbows reuse the shortbow xp values per tier (logs->u + string), so longbows are a parallel line, not faster xp than shortbows — chosen for the bow variety, balanced by slower attackSpeed 6 vs shortbow 5. Arrow/javelin/bolt 15- and 10-sets keep the existing per-set xp scaling (bronze 19.5 -> orikon 225 mirrors the rune 187.5 step). Gem cuts: diamond 107.5 / dragonstone 137.5 continue ruby's 85 slope. Jewelry xp 55->150 continues ruby_amulet's 85. Level GATING: orikon smith 92-98 and dawnsteel 99 sit ABOVE the current rune cap (85-99) so they are true endgame and don't trivialise rune; orikon gear requires Attack/Defence 50 to wield (above rune's 40) so the gear ladder advances in lockstep. The new mid-tier intermediates (javelin/bolt/dart heads, studs, limbs) are deliberately placed at the SAME smithing levels as their parent metal (bronze ~4-6, steel ~36-38, rune ~86-88) so they're alternative training fodder at those tiers, not new fast lanes. Material sinks (coal-heavy high smelts, tuning_flux purchases, gold_bar jewelry) keep the economy absorbing the Mining team's increased ore supply rather than inflating bar prices. successChance is NOT applied to any new high tier (kept deterministic like rune) to avoid frustrating endgame grinds; iron's 0.5 remains the only gamble. Clustering increases XP/HR (less walking) but NOT xp/action, so hiscores stay comparable — it improves quality-of-life, the stated priority, without breaking curves.",
+  "postBlurb": "The gates of FORGEKEEP CONCORD are open — and the whole quarter is ringing. Eight anvils stand in the Anvil-Choir pitched to a true scale, six furnaces roar to the Great Bellows-Organ, and across the plaza the Weaver's Hush and the Stavewright's Gallery hum with thread and bowstring. Smiths can now forge two metals beyond rune — warm amber ORIKON and the first-light capstone DAWNSTEEL — while crafters cut diamond and dragonstone, weave studded ranged-armour at the new loom, and fletchers string longbows, lock crossbows, and balance javelins and darts. Bring your bars, hides and staves: in Concord, nothing leaves the bench until it rings in key.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [
+      "flax (already exists in data/items.json; spec explicitly flags it as existing/not-new, so NOT a real collision — do not re-add the row, just reference it)"
+    ],
+    "mechanicFit": "Nearly everything maps onto the existing make()/produce intent in server/intents.ts (RECIPE_INDEX builds smelt|smith|fletch|craft|gemcut keys; client calls requestIntent('produce',{recipe,output})). Confirmed pure-DATA, no new engine code: (1) orikon/dawnsteel smeltables + smithables — multi-input smelt already supported (rune_bar smelts ore+8 coal); dawnsteel adding tuning_flux as a 3rd input is just another inputs[] entry. High tiers are deterministic (no successChance) like rune — correct, only iron-style burns use successChance. (2) javelin/dart/bolt heads, limbs, studs, arrowtips — all smithables with outputQty 10/15, identical to existing rune_arrowtips/rune_bullet_casing (outputQty:15). (3) longbow/oak/yew/magic two-step (u + bowstring) — identical to existing shortbow_u->shortbow fletchables. (4) javelins/darts/bolts as fletchables with multi-input + outputQty — same shape as existing arrow fletchables. (5) emerald/diamond/dragonstone jewelry — station:null craftables exactly like existing sapphire/ruby rings & amulets (client registers them under registerObjectAction('furnace',...) in skills_production.ts; server make() does NOT enforce a furnace because station is null). (6) gemCuts diamond/dragonstone — same as existing sapphire/emerald/ruby cuts, chisel tool auto-required. (7) resonance_thread at spinning_wheel — same as existing bowstring craftable. (8) crossbow assembly (limbs+stock then string) — two fletch recipes + a client registerItemOnItem(limbs,stock), mirrors existing knife-on-log / chisel-on-gem wiring (registerItemOnItem exists, used in 20+ packs). (9) loom/tanning_vat/gem_bench/resonance_organ are new world-objects added to data/objects.json.objs + placed in data/map.json, wired client-side via the existing registerObjectAction API in a new src/packs/forgekeep_concord.ts — no new object engine needed. NEEDS NEW SERVER CODE (NOT pure data): the 'hardleather' tanning path. The existing tan domain in server/intent-produce.ts (registerIntentDomain('tan')) IGNORES its payload entirely — it hardcodes cowhide+1coin->leather and reads no {grade}. So the spec's 'Tan (hard leather)' at 3 coins/hide -> hardleather REQUIRES a real code edit to the tan handler (branch on payload.grade==='hard'). This is the one item that is not pure data. Also note: making tanning a placeable station does NOT require the tan intent to check nearObject — currently tan() does no object/range check at all (it was NPC-driven), so the new tanning_vat is purely a client action surface; the spec's claim that placing it 'just works' is correct, but if range gating is desired that too is new code.",
+    "balanceFlags": [
+      "TIER/LEVEL INVERSION: existing rune_platebody is already Smithing 99 (xp 375). Spec puts the HIGHER-tier orikon_platebody at Smith 98 — below rune's smith level while being a stronger item. Bump orikon_platebody to >=99 or accept that the level gate no longer tracks tier. Several orikon pieces (helm 94, kite 95, legs 96) also sit at/just above their rune counterparts (rune helm 89, kite 93, legs 96) leaving a very thin band before the 99 cap.",
+      "dawnsteel_platebody defBonus 95 vs rune_platebody defBonus 70 is a +25 jump in one tier (orikon presumably ~82 per spec). Big but acceptable for a stated capstone; just confirm intended.",
+      "orikon_sword smith xp 95 for 1 bar vs existing rune_sword 75 for 1 bar — fine escalation. orikon_scimitar 190xp/2bar vs rune_scimitar 150/2 — consistent.",
+      "VALUE: dawnsteel_platebody value 120000 and dawnsteel_full_helm 62000 are far above any existing item (rune_platebody 39000 is current max). Intentional capstone, but it will dominate the shop-sell (40% = 48000) economy if ECONOMY_FROZEN is ever lifted — flag for the economy owner.",
+      "FIELD NAME: spec describes bows/crossbows with 'speed 6'/'speed 5'. The data field is attackSpeed (see magic_shortbow attackSpeed:5). Integrator must emit attackSpeed, not speed, or the speed is ignored.",
+      "Longbow rangedBonus values (longbow10/oak18/yew55/magic80) sit ABOVE the existing shortbow line (shortbow8/oak14/yew47/magic69) — correct for a slower-but-harder bow line; consistent.",
+      "orikon_arrow value150/rangedBonus62/Ranged50 vs existing rune_arrow value100/rangedBonus49/Ranged40 — clean one-tier step. Good.",
+      "JEWELRY: spec emerald_ring Craft27, emerald_amulet Craft31 — existing sapphire_amulet is Craft24, ruby_amulet Craft50. Emerald slotting at 31 between them is sane. diamond 43/55 and dragonstone 80 escalate cleanly."
+    ],
+    "notes": "Spec is overwhelmingly pure-data and buildable on the existing engine. Corrections the integrator MUST apply: (1) data/recipes.json category names are exact: smeltables/smithables/fletchables/craftables/gemCuts — use these. smithables row shape is {output, outputQty?, bar, bars, level, xp}; smeltables {bar, level, xp, inputs[], successChance?}; fletchables {output, outputQty?, level, xp, inputs[]}; craftables {output, level, xp, inputs[], station?}; gemCuts {uncut, cut, level, xp}. (2) WATCH THE THREAD AUTO-FOLD: server/intents.ts line 745 folds {thread,qty:1} into EVERY craftable whose station===null. So the new emerald/diamond/dragonstone jewelry (station:null) will silently require 1 thread per craft, exactly like existing gold/sapphire/ruby jewelry does today. That is existing behavior — fine, but the spec text says jewelry needs only gold_bar+gem; reality adds thread. Either accept it or set a non-null station. (3) The leather ranged-armour recipes use station:'loom' (NON-null), so thread is NOT auto-folded — the spec correctly lists thread for cowl/vambraces/chaps but OMITS it for studded_body and studded_chaps; those two will craft with no thread (probably fine since they consume steel_studs/leather_body, not raw leather). Confirm intent. (4) For station:'loom' to gate, a 'loom' object must exist in data/objects.json.objs AND be placed in data/map.json; make() calls nearObject(...,'loom'). Same for any station string. (5) THE ONLY NON-DATA WORK: extend server/intent-produce.ts tan handler to read payload.grade and yield hardleather at 3 coins/hide — the current handler reads no payload. Everything else routes through existing produce(make)/gemcut. No new intent classes needed. (6) Item schema: weapons use equipSlot:'weapon'+attBonus/strBonus/rangedBonus+attackSpeed+levelReq:[{skill,level}]; armour equipSlot+defBonus; stackable ammo stackable:true+equipSlot:'ammo'+rangedBonus. Match these keys exactly. (7) ID collisions: NONE except 'flax' which is intentional/pre-existing — do not add a flax item row; reference the existing one. All 4 new objects (loom, tanning_vat, gem_bench, resonance_organ) and all 7 NPCs are free of collisions. (8) Cross-team dependency: orikon_ore, uncut_diamond, uncut_dragonstone are listed as sourced from the Mining expansion / drop tables — those producers are NOT in this spec; ore_broker_halle shop is the only in-spec source, so smiths are shop-gated until Mining ships. Acceptable but note the dependency. (9) Reward-shop tokens (makers_mark, resonance shards, tuners_apron, master_chisel, true_hammer) and the tool PERKS (10% gem-cut speed, 10% bar-save) are NOT pure data — gemcut and smith have no perk hook today; tuned_pickaxe's +10% perk is hardcoded in mine-vein (intent-produce.ts veinSuccess), so master_chisel/true_hammer perks each need bespoke engine code in the make() gemcut/smith paths. Flag these as engine work, not data."
+  }
+}

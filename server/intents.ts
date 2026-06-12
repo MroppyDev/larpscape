@@ -212,9 +212,9 @@ export function stampRev(store: StateStore, ctx: IntentCtx, res: IntentResult): 
 
 // success-rate roll interpolated from the requirement level to 99 (mirrors
 // content.ts successRoll). Rolled SERVER-side.
-function successRoll(lvl: number, reqLevel: number, low: number, high: number): boolean {
+function successRoll(lvl: number, reqLevel: number, low: number, high: number, bonus = 0): boolean {
   const t = Math.min(1, Math.max(0, (lvl - reqLevel) / Math.max(1, 99 - reqLevel)));
-  return Math.random() < low + (high - low) * t;
+  return Math.random() < Math.min(0.97, low + (high - low) * t + bonus);
 }
 
 const randInt = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
@@ -240,6 +240,51 @@ function hasTool(state: AuthState, id: string): boolean {
     for (const slot of Object.keys(eq)) if (eq[slot]?.id === id) return true;
   }
   return false;
+}
+
+// Pickaxe ladder. ANY pickaxe lets you mine; the best one you own AND have the
+// Mining level to wield adds a flat boost to the per-swing success chance. The
+// tuned pickaxe sits mid-ladder for general mining (its vein bonus is separate).
+const PICKAXES: { id: string; useLevel: number; bonus: number }[] = [
+  { id: 'bronze_pickaxe', useLevel: 1, bonus: 0 },
+  { id: 'iron_pickaxe', useLevel: 1, bonus: 0.04 },
+  { id: 'steel_pickaxe', useLevel: 6, bonus: 0.08 },
+  { id: 'tuned_pickaxe', useLevel: 1, bonus: 0.10 },
+  { id: 'mithril_pickaxe', useLevel: 21, bonus: 0.13 },
+  { id: 'adamant_pickaxe', useLevel: 31, bonus: 0.18 },
+  { id: 'rune_pickaxe', useLevel: 41, bonus: 0.24 },
+  { id: 'resonant_pickaxe', useLevel: 61, bonus: 0.30 },
+];
+// Returns the best mining success-bonus the player qualifies for, or null if they
+// hold no pickaxe at all. Owning a pickaxe above your Mining level still lets you
+// mine (at the bonus of the best one you DO qualify for, 0 if none).
+function pickaxeBonus(state: AuthState, miningLvl: number): number | null {
+  let owns = false;
+  let best = 0;
+  for (const p of PICKAXES) {
+    if (hasTool(state, p.id)) { owns = true; if (miningLvl >= p.useLevel && p.bonus > best) best = p.bonus; }
+  }
+  return owns ? best : null;
+}
+
+// Axe ladder. ANY axe lets you chop; the best one you own AND have the
+// Woodcutting level to use adds a flat boost to the per-swing success chance.
+const AXES: { id: string; useLevel: number; bonus: number }[] = [
+  { id: 'bronze_axe', useLevel: 1, bonus: 0 },
+  { id: 'iron_axe', useLevel: 1, bonus: 0.04 },
+  { id: 'steel_axe', useLevel: 6, bonus: 0.08 },
+  { id: 'mithril_axe', useLevel: 21, bonus: 0.13 },
+  { id: 'adamant_axe', useLevel: 31, bonus: 0.18 },
+  { id: 'rune_axe', useLevel: 41, bonus: 0.24 },
+  { id: 'resonant_axe', useLevel: 61, bonus: 0.30 },
+];
+function axeBonus(state: AuthState, wcLvl: number): number | null {
+  let owns = false;
+  let best = 0;
+  for (const a of AXES) {
+    if (hasTool(state, a.id)) { owns = true; if (wcLvl >= a.useLevel && a.bonus > best) best = a.bonus; }
+  }
+  return owns ? best : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -273,11 +318,24 @@ export function createIntents(stateStore: StateStore) {
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       const lvl = skillLevel(state, skill);
       if (lvl < data.level) return fail('gather', `requires ${skill} level ${data.level}`);
-      if (reqs.tool && !hasTool(state, reqs.tool)) return fail('gather', `you need a ${reqs.tool}`);
+      // Mining accepts ANY pickaxe and the best one boosts the roll; other gather
+      // skills (woodcutting/etc.) still require their specific named tool.
+      let bonus = 0;
+      if (skill === 'Mining') {
+        const pb = pickaxeBonus(state, lvl);
+        if (pb === null) return fail('gather', 'you need a pickaxe');
+        bonus = pb;
+      } else if (skill === 'Woodcutting') {
+        const ab = axeBonus(state, lvl);
+        if (ab === null) return fail('gather', 'you need an axe');
+        bonus = ab;
+      } else if (reqs.tool && !hasTool(state, reqs.tool)) {
+        return fail('gather', `you need a ${reqs.tool}`);
+      }
       if (!hasRoomFor(state, data.item)) return fail('gather', 'inventory full');
 
       // roll success this attempt
-      if (!successRoll(lvl, data.level, data.lowRate, data.highRate)) {
+      if (!successRoll(lvl, data.level, data.lowRate, data.highRate, bonus)) {
         // no grant this tick; still a valid (ok) attempt so the client keeps looping
         return { ok: true, kind: 'gather', granted: [], xp: [] };
       }
@@ -339,7 +397,9 @@ export function createIntents(stateStore: StateStore) {
     if (ctx.dead) return fail('cook', 'dead');
     const c = RECIPES.cookables.find((cc) => cc.raw === raw);
     if (!c) return fail('cook', 'not cookable');
-    if (!nearObject(ctx.x, ctx.y, 'range')) return fail('cook', 'not near a range');
+    if (!nearObject(ctx.x, ctx.y, 'range') && !nearObject(ctx.x, ctx.y, 'fire') && !nearObject(ctx.x, ctx.y, 'bonfire')) {
+      return fail('cook', 'not near a range or fire');
+    }
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       const lvl = skillLevel(state, 'Cooking');
       if (lvl < c.level) return fail('cook', `requires Cooking level ${c.level}`);
@@ -661,17 +721,35 @@ const GATHER_REQS: Record<string, { skill: SkillName; tool?: string }> = {
   tree: { skill: 'Woodcutting', tool: 'bronze_axe' },
   oak: { skill: 'Woodcutting', tool: 'bronze_axe' },
   willow: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  maple: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  yew: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  magic_tree: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  chordwood: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  teak: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  mahogany: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  reedwood_stand: { skill: 'Woodcutting', tool: 'bronze_axe' },
+  chimewood_stand: { skill: 'Woodcutting', tool: 'bronze_axe' },
   rocks_copper: { skill: 'Mining', tool: 'bronze_pickaxe' },
   rocks_tin: { skill: 'Mining', tool: 'bronze_pickaxe' },
   rocks_iron: { skill: 'Mining', tool: 'bronze_pickaxe' },
   rocks_coal: { skill: 'Mining', tool: 'bronze_pickaxe' },
   rocks_essence: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_pure: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_silver: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_gold: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_mithril: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_adamantite: { skill: 'Mining', tool: 'bronze_pickaxe' },
+  rocks_runite: { skill: 'Mining', tool: 'bronze_pickaxe' },
 };
 
 const FIREMAKING: { log: string; level: number; xp: number }[] = [
   { log: 'logs', level: 1, xp: 40 },
   { log: 'oak_logs', level: 15, xp: 60 },
   { log: 'willow_logs', level: 30, xp: 90 },
+  { log: 'maple_logs', level: 45, xp: 135 },
+  { log: 'yew_logs', level: 60, xp: 202.5 },
+  { log: 'chordwood_logs', level: 65, xp: 240 },
+  { log: 'magic_logs', level: 75, xp: 303.75 },
 ];
 
 interface RecipeEntry {
@@ -694,7 +772,8 @@ const RECIPE_INDEX: Record<string, RecipeEntry> = (() => {
     idx['smelt|' + s.bar] = { skill: 'Smithing', level: s.level, xp: s.xp, inputs: s.inputs, output: s.bar, outputQty: 1, successChance: s.successChance };
   }
   for (const s of RECIPES.smithables) {
-    idx['smith|' + s.output] = { skill: 'Smithing', level: s.level, xp: s.xp, tool: 'hammer', inputs: [{ item: s.bar, qty: s.bars }], output: s.output, outputQty: s.outputQty ?? 1 };
+    const inputs = [{ item: s.bar, qty: s.bars }, ...(((s as { extraInputs?: { item: string; qty: number }[] }).extraInputs) ?? [])];
+    idx['smith|' + s.output] = { skill: 'Smithing', level: s.level, xp: s.xp, tool: 'hammer', inputs, output: s.output, outputQty: s.outputQty ?? 1 };
   }
   for (const f of RECIPES.fletchables) {
     idx['fletch|' + f.output] = { skill: 'Fletching', level: f.level, xp: f.xp, inputs: f.inputs, output: f.output, outputQty: f.outputQty ?? 1 };

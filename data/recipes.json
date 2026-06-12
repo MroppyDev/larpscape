@@ -79,6 +79,54 @@
       "level": 80,
       "xp": 210,
       "stopBurn": 94
+    },
+    {
+      "raw": "resonant_fowl_meat",
+      "cooked": "roast_fowl",
+      "burnt": "burnt_fish",
+      "level": 35,
+      "xp": 140,
+      "stopBurn": 64
+    },
+    {
+      "raw": "raw_mackerel",
+      "cooked": "mackerel",
+      "burnt": "burnt_fish",
+      "level": 16,
+      "xp": 55,
+      "stopBurn": 45
+    },
+    {
+      "raw": "raw_pike",
+      "cooked": "pike",
+      "burnt": "burnt_fish",
+      "level": 25,
+      "xp": 65,
+      "stopBurn": 53
+    },
+    {
+      "raw": "raw_bass",
+      "cooked": "bass",
+      "burnt": "burnt_fish",
+      "level": 33,
+      "xp": 80,
+      "stopBurn": 62
+    },
+    {
+      "raw": "raw_tunaling",
+      "cooked": "tunaling",
+      "burnt": "burnt_fish",
+      "level": 62,
+      "xp": 160,
+      "stopBurn": 88
+    },
+    {
+      "raw": "raw_chimefin",
+      "cooked": "chimefin",
+      "burnt": "burnt_fish",
+      "level": 90,
+      "xp": 240,
+      "stopBurn": 99
     }
   ],
   "smeltables": [
@@ -179,9 +227,89 @@
           "qty": 8
         }
       ]
+    },
+    {
+      "bar": "silver_bar",
+      "level": 20,
+      "xp": 27,
+      "inputs": [
+        {
+          "item": "silver_ore",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "bar": "orikon_bar",
+      "level": 92,
+      "xp": 65,
+      "inputs": [
+        {
+          "item": "orikon_ore",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 8
+        }
+      ]
+    },
+    {
+      "bar": "dawnsteel_bar",
+      "level": 99,
+      "xp": 90,
+      "inputs": [
+        {
+          "item": "orikon_bar",
+          "qty": 1
+        },
+        {
+          "item": "coal",
+          "qty": 2
+        },
+        {
+          "item": "tuning_flux",
+          "qty": 1
+        }
+      ]
     }
   ],
   "smithables": [
+    {
+      "output": "iron_pickaxe",
+      "bar": "iron_bar",
+      "bars": 2,
+      "level": 19,
+      "xp": 50
+    },
+    {
+      "output": "steel_pickaxe",
+      "bar": "steel_bar",
+      "bars": 2,
+      "level": 33,
+      "xp": 75
+    },
+    {
+      "output": "mithril_pickaxe",
+      "bar": "mithril_bar",
+      "bars": 2,
+      "level": 53,
+      "xp": 100
+    },
+    {
+      "output": "adamant_pickaxe",
+      "bar": "adamantite_bar",
+      "bars": 2,
+      "level": 73,
+      "xp": 125
+    },
+    {
+      "output": "rune_pickaxe",
+      "bar": "rune_bar",
+      "bars": 2,
+      "level": 88,
+      "xp": 200
+    },
     {
       "output": "bronze_arrowtips",
       "outputQty": 15,
@@ -529,6 +657,240 @@
       "bars": 5,
       "level": 99,
       "xp": 375
+    },
+    {
+      "output": "tuned_scimitar",
+      "bar": "mithril_bar",
+      "bars": 2,
+      "extraInputs": [
+        {
+          "item": "resonant_shard",
+          "qty": 1
+        }
+      ],
+      "level": 55,
+      "xp": 120
+    },
+    {
+      "output": "tuned_warblade",
+      "bar": "mithril_bar",
+      "bars": 2,
+      "extraInputs": [
+        {
+          "item": "resonant_shard",
+          "qty": 2
+        }
+      ],
+      "level": 60,
+      "xp": 150
+    },
+    {
+      "output": "steel_arrowtips",
+      "outputQty": 15,
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 30,
+      "xp": 37.5
+    },
+    {
+      "output": "longshot_bullet_casing",
+      "outputQty": 10,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 75,
+      "xp": 90
+    },
+    {
+      "output": "dragon_arrowtips",
+      "outputQty": 15,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 90,
+      "xp": 125
+    },
+    {
+      "output": "orikon_sword",
+      "bar": "orikon_bar",
+      "bars": 1,
+      "level": 92,
+      "xp": 95
+    },
+    {
+      "output": "orikon_arrowtips",
+      "outputQty": 15,
+      "bar": "orikon_bar",
+      "bars": 1,
+      "level": 92,
+      "xp": 95
+    },
+    {
+      "output": "orikon_scimitar",
+      "bar": "orikon_bar",
+      "bars": 2,
+      "level": 93,
+      "xp": 190
+    },
+    {
+      "output": "orikon_full_helm",
+      "bar": "orikon_bar",
+      "bars": 2,
+      "level": 94,
+      "xp": 190
+    },
+    {
+      "output": "orikon_kiteshield",
+      "bar": "orikon_bar",
+      "bars": 3,
+      "level": 95,
+      "xp": 285
+    },
+    {
+      "output": "orikon_platelegs",
+      "bar": "orikon_bar",
+      "bars": 3,
+      "level": 96,
+      "xp": 285
+    },
+    {
+      "output": "orikon_platebody",
+      "bar": "orikon_bar",
+      "bars": 5,
+      "level": 99,
+      "xp": 475
+    },
+    {
+      "output": "dawnsteel_full_helm",
+      "bar": "dawnsteel_bar",
+      "bars": 2,
+      "level": 99,
+      "xp": 240
+    },
+    {
+      "output": "dawnsteel_platebody",
+      "bar": "dawnsteel_bar",
+      "bars": 5,
+      "level": 99,
+      "xp": 600
+    },
+    {
+      "output": "bronze_javelin_heads",
+      "outputQty": 15,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 6,
+      "xp": 12.5
+    },
+    {
+      "output": "steel_javelin_heads",
+      "outputQty": 15,
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 36,
+      "xp": 37.5
+    },
+    {
+      "output": "rune_javelin_heads",
+      "outputQty": 15,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 86,
+      "xp": 75
+    },
+    {
+      "output": "bronze_dart_tip",
+      "outputQty": 10,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 4,
+      "xp": 12.5
+    },
+    {
+      "output": "adamant_dart_tip",
+      "outputQty": 10,
+      "bar": "adamantite_bar",
+      "bars": 1,
+      "level": 75,
+      "xp": 62.5
+    },
+    {
+      "output": "bronze_bolt_tips",
+      "outputQty": 10,
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 5,
+      "xp": 12.5
+    },
+    {
+      "output": "runite_bolt_tips",
+      "outputQty": 10,
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 86,
+      "xp": 75
+    },
+    {
+      "output": "bronze_limbs",
+      "bar": "bronze_bar",
+      "bars": 1,
+      "level": 6,
+      "xp": 12.5
+    },
+    {
+      "output": "steel_limbs",
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 38,
+      "xp": 37.5
+    },
+    {
+      "output": "rune_limbs",
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 88,
+      "xp": 75
+    },
+    {
+      "output": "steel_studs",
+      "outputQty": 15,
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 36,
+      "xp": 37.5
+    },
+    {
+      "output": "iron_axe",
+      "bar": "iron_bar",
+      "bars": 1,
+      "level": 16,
+      "xp": 25
+    },
+    {
+      "output": "steel_axe",
+      "bar": "steel_bar",
+      "bars": 1,
+      "level": 30,
+      "xp": 37.5
+    },
+    {
+      "output": "mithril_axe",
+      "bar": "mithril_bar",
+      "bars": 1,
+      "level": 50,
+      "xp": 50
+    },
+    {
+      "output": "adamant_axe",
+      "bar": "adamantite_bar",
+      "bars": 1,
+      "level": 70,
+      "xp": 62.5
+    },
+    {
+      "output": "rune_axe",
+      "bar": "rune_bar",
+      "bars": 1,
+      "level": 85,
+      "xp": 100
     }
   ],
   "fletchables": [
@@ -758,6 +1120,447 @@
           "qty": 1
         }
       ]
+    },
+    {
+      "output": "steel_arrow",
+      "outputQty": 15,
+      "level": 30,
+      "xp": 75,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "steel_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "composite_shortbow_u",
+      "outputQty": 1,
+      "level": 70,
+      "xp": 80,
+      "inputs": [
+        {
+          "item": "reedwood_logs",
+          "qty": 1
+        },
+        {
+          "item": "steel_bar",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "composite_shortbow",
+      "outputQty": 1,
+      "level": 70,
+      "xp": 80,
+      "inputs": [
+        {
+          "item": "composite_shortbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "resonant_arrow",
+      "outputQty": 15,
+      "level": 75,
+      "xp": 150,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "echo_stone_shard",
+          "qty": 5
+        }
+      ]
+    },
+    {
+      "output": "chime_longbow_u",
+      "outputQty": 1,
+      "level": 85,
+      "xp": 100,
+      "inputs": [
+        {
+          "item": "chimewood_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "chime_longbow",
+      "outputQty": 1,
+      "level": 85,
+      "xp": 100,
+      "inputs": [
+        {
+          "item": "chime_longbow_u",
+          "qty": 1
+        },
+        {
+          "item": "spidersilk_bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "dragon_arrow",
+      "outputQty": 15,
+      "level": 85,
+      "xp": 225,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "dragon_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "longbow_u",
+      "level": 10,
+      "xp": 10,
+      "inputs": [
+        {
+          "item": "logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "longbow",
+      "level": 10,
+      "xp": 10,
+      "inputs": [
+        {
+          "item": "longbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "oak_longbow_u",
+      "level": 25,
+      "xp": 25,
+      "inputs": [
+        {
+          "item": "oak_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "oak_longbow",
+      "level": 25,
+      "xp": 25,
+      "inputs": [
+        {
+          "item": "oak_longbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "yew_longbow_u",
+      "level": 70,
+      "xp": 67.5,
+      "inputs": [
+        {
+          "item": "yew_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "yew_longbow",
+      "level": 70,
+      "xp": 67.5,
+      "inputs": [
+        {
+          "item": "yew_longbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "magic_longbow_u",
+      "level": 85,
+      "xp": 83.3,
+      "inputs": [
+        {
+          "item": "magic_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "magic_longbow",
+      "level": 85,
+      "xp": 83.3,
+      "inputs": [
+        {
+          "item": "magic_longbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "orikon_arrow",
+      "outputQty": 15,
+      "level": 85,
+      "xp": 225,
+      "inputs": [
+        {
+          "item": "headless_arrow",
+          "qty": 15
+        },
+        {
+          "item": "orikon_arrowtips",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "bronze_javelin",
+      "outputQty": 15,
+      "level": 3,
+      "xp": 12,
+      "inputs": [
+        {
+          "item": "arrow_shaft",
+          "qty": 15
+        },
+        {
+          "item": "bronze_javelin_heads",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "steel_javelin",
+      "outputQty": 15,
+      "level": 35,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "arrow_shaft",
+          "qty": 15
+        },
+        {
+          "item": "steel_javelin_heads",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "rune_javelin",
+      "outputQty": 15,
+      "level": 75,
+      "xp": 124,
+      "inputs": [
+        {
+          "item": "arrow_shaft",
+          "qty": 15
+        },
+        {
+          "item": "rune_javelin_heads",
+          "qty": 15
+        }
+      ]
+    },
+    {
+      "output": "bronze_dart",
+      "outputQty": 10,
+      "level": 1,
+      "xp": 18,
+      "inputs": [
+        {
+          "item": "bronze_dart_tip",
+          "qty": 10
+        },
+        {
+          "item": "feather",
+          "qty": 10
+        }
+      ]
+    },
+    {
+      "output": "adamant_dart",
+      "outputQty": 10,
+      "level": 65,
+      "xp": 187,
+      "inputs": [
+        {
+          "item": "adamant_dart_tip",
+          "qty": 10
+        },
+        {
+          "item": "feather",
+          "qty": 10
+        }
+      ]
+    },
+    {
+      "output": "bronze_bolts",
+      "outputQty": 10,
+      "level": 9,
+      "xp": 10,
+      "inputs": [
+        {
+          "item": "bronze_bolt_tips",
+          "qty": 10
+        },
+        {
+          "item": "feather",
+          "qty": 10
+        }
+      ]
+    },
+    {
+      "output": "runite_bolts",
+      "outputQty": 10,
+      "level": 80,
+      "xp": 100,
+      "inputs": [
+        {
+          "item": "runite_bolt_tips",
+          "qty": 10
+        },
+        {
+          "item": "feather",
+          "qty": 10
+        }
+      ]
+    },
+    {
+      "output": "wooden_stock",
+      "level": 9,
+      "xp": 6,
+      "inputs": [
+        {
+          "item": "oak_logs",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "bronze_crossbow_u",
+      "level": 9,
+      "xp": 12,
+      "inputs": [
+        {
+          "item": "bronze_limbs",
+          "qty": 1
+        },
+        {
+          "item": "wooden_stock",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "bronze_crossbow",
+      "level": 9,
+      "xp": 12,
+      "inputs": [
+        {
+          "item": "bronze_crossbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "steel_crossbow_u",
+      "level": 40,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "steel_limbs",
+          "qty": 1
+        },
+        {
+          "item": "wooden_stock",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "steel_crossbow",
+      "level": 40,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "steel_crossbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "rune_crossbow_u",
+      "level": 80,
+      "xp": 135,
+      "inputs": [
+        {
+          "item": "rune_limbs",
+          "qty": 1
+        },
+        {
+          "item": "wooden_stock",
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "output": "rune_crossbow",
+      "level": 80,
+      "xp": 135,
+      "inputs": [
+        {
+          "item": "rune_crossbow_u",
+          "qty": 1
+        },
+        {
+          "item": "bowstring",
+          "qty": 1
+        }
+      ]
     }
   ],
   "craftables": [
@@ -908,6 +1711,230 @@
         }
       ],
       "station": null
+    },
+    {
+      "output": "silk_climbing_rope",
+      "level": 30,
+      "xp": 50,
+      "inputs": [
+        {
+          "item": "silk",
+          "qty": 3
+        }
+      ],
+      "station": "spinning_wheel"
+    },
+    {
+      "output": "chant_tiara",
+      "level": 23,
+      "xp": 52,
+      "inputs": [
+        {
+          "item": "silver_bar",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "leather_cowl",
+      "level": 9,
+      "xp": 18.5,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        },
+        {
+          "item": "thread",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "leather_vambraces",
+      "level": 11,
+      "xp": 22,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        },
+        {
+          "item": "thread",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "leather_chaps",
+      "level": 18,
+      "xp": 27,
+      "inputs": [
+        {
+          "item": "leather",
+          "qty": 1
+        },
+        {
+          "item": "thread",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "studded_body",
+      "level": 41,
+      "xp": 40,
+      "inputs": [
+        {
+          "item": "leather_body",
+          "qty": 1
+        },
+        {
+          "item": "steel_studs",
+          "qty": 15
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "studded_chaps",
+      "level": 44,
+      "xp": 42,
+      "inputs": [
+        {
+          "item": "leather_chaps",
+          "qty": 1
+        },
+        {
+          "item": "steel_studs",
+          "qty": 15
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "silver_ring",
+      "level": 13,
+      "xp": 25,
+      "inputs": [
+        {
+          "item": "silver_bar",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "silver_amulet",
+      "level": 16,
+      "xp": 35,
+      "inputs": [
+        {
+          "item": "silver_bar",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "emerald_ring",
+      "level": 27,
+      "xp": 55,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "emerald",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "emerald_amulet",
+      "level": 31,
+      "xp": 70,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "emerald",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "diamond_ring",
+      "level": 43,
+      "xp": 85,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "diamond",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "diamond_amulet",
+      "level": 55,
+      "xp": 100,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "diamond",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "dragonstone_amulet",
+      "level": 80,
+      "xp": 150,
+      "inputs": [
+        {
+          "item": "gold_bar",
+          "qty": 1
+        },
+        {
+          "item": "dragonstone",
+          "qty": 1
+        }
+      ],
+      "station": null
+    },
+    {
+      "output": "resonance_thread",
+      "level": 60,
+      "xp": 25,
+      "inputs": [
+        {
+          "item": "ball_of_wool",
+          "qty": 2
+        },
+        {
+          "item": "flax",
+          "qty": 1
+        }
+      ],
+      "station": "spinning_wheel"
     }
   ],
   "gemCuts": [
@@ -928,6 +1955,18 @@
       "cut": "ruby",
       "level": 34,
       "xp": 85
+    },
+    {
+      "uncut": "uncut_diamond",
+      "cut": "diamond",
+      "level": 43,
+      "xp": 107.5
+    },
+    {
+      "uncut": "uncut_dragonstone",
+      "cut": "dragonstone",
+      "level": 55,
+      "xp": 137.5
     }
   ],
   "herbs": [
@@ -954,6 +1993,48 @@
       "clean": "irit_leaf",
       "level": 40,
       "xp": 8.8
+    },
+    {
+      "grimy": "grimy_harralander",
+      "clean": "harralander",
+      "level": 20,
+      "xp": 12.5
+    },
+    {
+      "grimy": "grimy_toadflax",
+      "clean": "toadflax",
+      "level": 30,
+      "xp": 15
+    },
+    {
+      "grimy": "grimy_avantoe",
+      "clean": "avantoe",
+      "level": 48,
+      "xp": 24.5
+    },
+    {
+      "grimy": "grimy_kwuarm",
+      "clean": "kwuarm",
+      "level": 54,
+      "xp": 28
+    },
+    {
+      "grimy": "grimy_cadantine",
+      "clean": "cadantine",
+      "level": 65,
+      "xp": 30
+    },
+    {
+      "grimy": "grimy_dwarf_weed",
+      "clean": "dwarf_weed",
+      "level": 72,
+      "xp": 33.5
+    },
+    {
+      "grimy": "grimy_truechord_bloom",
+      "clean": "truechord_bloom",
+      "level": 82,
+      "xp": 38
     }
   ],
   "potions": [
@@ -984,6 +2065,83 @@
       "xp": 100,
       "herb": "irit_leaf",
       "secondary": "eye_of_newt"
+    },
+    {
+      "output": "strength_potion",
+      "level": 12,
+      "xp": 50,
+      "herb": "harralander",
+      "secondary": "limpwurt_root"
+    },
+    {
+      "output": "restore_potion",
+      "level": 22,
+      "xp": 62.5,
+      "herb": "harralander",
+      "secondary": "red_spiders_eggs"
+    },
+    {
+      "output": "energy_potion",
+      "level": 26,
+      "xp": 67.5,
+      "herb": "harralander",
+      "secondary": "snape_grass"
+    },
+    {
+      "output": "steadying_brew",
+      "level": 38,
+      "xp": 82.5,
+      "herb": "toadflax",
+      "secondary": "eye_of_newt"
+    },
+    {
+      "output": "antiblight_tonic",
+      "level": 50,
+      "xp": 95,
+      "herb": "toadflax",
+      "secondary": "white_berries"
+    },
+    {
+      "output": "super_strength",
+      "level": 55,
+      "xp": 125,
+      "herb": "kwuarm",
+      "secondary": "limpwurt_root"
+    },
+    {
+      "output": "prayer_renewal",
+      "level": 60,
+      "xp": 130,
+      "herb": "ranarr_weed",
+      "secondary": "snape_grass"
+    },
+    {
+      "output": "super_defence",
+      "level": 66,
+      "xp": 150,
+      "herb": "cadantine",
+      "secondary": "white_berries"
+    },
+    {
+      "output": "ranging_potion",
+      "level": 72,
+      "xp": 162.5,
+      "herb": "dwarf_weed",
+      "secondary": "red_spiders_eggs"
+    },
+    {
+      "output": "super_restore",
+      "level": 76,
+      "xp": 142.5,
+      "herb": "truechord_bloom",
+      "secondary": "red_spiders_eggs"
+    },
+    {
+      "output": "truechord_draught",
+      "level": 92,
+      "xp": 200,
+      "herb": "truechord_bloom",
+      "secondary": "resonant_dust"
     }
   ],
   "seeds": [
@@ -1018,6 +2176,78 @@
       "plantXp": 48.5,
       "harvestXp": 54.5,
       "growTicks": 350
+    },
+    {
+      "seed": "onion_seed",
+      "produce": "onion",
+      "level": 5,
+      "plantXp": 9.5,
+      "harvestXp": 10.5,
+      "growTicks": 130
+    },
+    {
+      "seed": "harralander_seed",
+      "produce": "grimy_harralander",
+      "level": 24,
+      "plantXp": 22,
+      "harvestXp": 12,
+      "growTicks": 200
+    },
+    {
+      "seed": "strawberry_seed",
+      "produce": "strawberry",
+      "level": 31,
+      "plantXp": 26,
+      "harvestXp": 29,
+      "growTicks": 260
+    },
+    {
+      "seed": "toadflax_seed",
+      "produce": "grimy_toadflax",
+      "level": 34,
+      "plantXp": 26,
+      "harvestXp": 14,
+      "growTicks": 240
+    },
+    {
+      "seed": "avantoe_seed",
+      "produce": "grimy_avantoe",
+      "level": 52,
+      "plantXp": 49,
+      "harvestXp": 25,
+      "growTicks": 320
+    },
+    {
+      "seed": "kwuarm_seed",
+      "produce": "grimy_kwuarm",
+      "level": 58,
+      "plantXp": 56,
+      "harvestXp": 28,
+      "growTicks": 360
+    },
+    {
+      "seed": "cadantine_seed",
+      "produce": "grimy_cadantine",
+      "level": 68,
+      "plantXp": 67,
+      "harvestXp": 34,
+      "growTicks": 420
+    },
+    {
+      "seed": "dwarf_weed_seed",
+      "produce": "grimy_dwarf_weed",
+      "level": 74,
+      "plantXp": 79,
+      "harvestXp": 36,
+      "growTicks": 480
+    },
+    {
+      "seed": "truechord_seed",
+      "produce": "grimy_truechord_bloom",
+      "level": 85,
+      "plantXp": 110,
+      "harvestXp": 50,
+      "growTicks": 600
     }
   ],
   "constructionBuilds": [

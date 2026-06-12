@@ -1,0 +1,305 @@
+{
+  "group": "fishing-cooking",
+  "areaName": "Saltsong Harbour (hub town); sub-sites: the Shoalrings (dense net/bait piers), Brinemaw Reef (cage/harpoon platforms), the Hearthchoir Galley (kitchen/range hall)",
+  "theme": "Saltsong Harbour — a tide-village built on the \"Tideverse,\" the oldest sung line in Cantorne. Here the sea itself keeps a rhythm: shoals surface on the swell, and a great brass Tide-Bell rung from the lighthouse \"calls the catch\" (lore reason shoals cluster densely). Fish here don't just ring like ore — they *answer* the bell. The kitchen counterpart is the Hearthchoir Galley, where cooks \"tune\" heat so a dish holds its note (doesn't burn) — higher cookware = steadier pitch. Aesthetic: weathered timber piers, kelp-strung net racks, gull cries, a humming bronze bell, steam and woodsmoke. Ties directly to Port Brackwater (the existing rough port) as its refined, skill-dedicated sister harbour.",
+  "summary": "Current state: Fishing has only 5 spot interactions across the whole map (17 placed spots total) and they're scattered — net (shrimp/anchovy), rod+bait (sardine/herring), lobster cage (40), harpoon (swordfish 50 / shark 76). XP per catch is low-density and spots are sparse, so players walk far between rare clusters. Cooking is a thin raw->cooked->burnt chain with only 10 cookables and a healing ladder full of holes (heals jump 5->12->14->20 with nothing in between, and there are no composite dishes). There is no dedicated fishing town, no rod/net/harpoon gear ladder beyond the 4 starter tools, and no reward sink. This expansion adds Saltsong Harbour: a tight cluster of ~30 fishing spots across three pier sites so a player barely moves; four new mid-tier fish that fill the XP and healing gaps; a full tool ladder (3 net tiers, 3 rod/harpoon tiers, 3 cage tiers) gated by Fishing level and bought with caught-fish currency; a Galley with banked ranges and a \"tuned cookware\" ladder that raises stop-burn; composite cooking recipes (chopped/seasoned dishes) that heal more than their parts; and a Tide-Token reward shop with a cooking outfit set, a fishing outfit set, and high-end gear sinks.",
+  "newItems": [
+    {
+      "id": "raw_mackerel",
+      "name": "Raw mackerel",
+      "role": "Net-tier fish (fills gap above anchovy). Cooks into mackerel.",
+      "tier": "Fishing 16 / Cooking 16",
+      "value": 12,
+      "source": "shoal_net_spot at Saltsong"
+    },
+    {
+      "id": "mackerel",
+      "name": "Mackerel",
+      "role": "Cooked food, heals 7 (fills 6-7 heal gap)",
+      "tier": "Cooking 16",
+      "value": 30,
+      "source": "cook raw_mackerel"
+    },
+    {
+      "id": "raw_pike",
+      "name": "Raw pike",
+      "role": "Bait/rod-tier fish above herring",
+      "tier": "Fishing 25 / Cooking 25",
+      "value": 25,
+      "source": "deepbait_spot at Saltsong"
+    },
+    {
+      "id": "pike",
+      "name": "Pike",
+      "role": "Cooked food, heals 8",
+      "tier": "Cooking 25",
+      "value": 50,
+      "source": "cook raw_pike"
+    },
+    {
+      "id": "raw_bass",
+      "name": "Raw bass",
+      "role": "Cage/big-net tier fish between herring and lobster",
+      "tier": "Fishing 33 / Cooking 33",
+      "value": 60,
+      "source": "reef_cage_spot at Saltsong"
+    },
+    {
+      "id": "bass",
+      "name": "Bass",
+      "role": "Cooked food, heals 10 (fills 8-11 heal gap)",
+      "tier": "Cooking 33",
+      "value": 110,
+      "source": "cook raw_bass"
+    },
+    {
+      "id": "raw_tunaling",
+      "name": "Raw tunaling",
+      "role": "Harpoon-tier fish between swordfish and shark",
+      "tier": "Fishing 62 / Cooking 62",
+      "value": 200,
+      "source": "harpoon_spot (deep) at Brinemaw Reef"
+    },
+    {
+      "id": "tunaling",
+      "name": "Tunaling",
+      "role": "Cooked food, heals 16 (fills 15-19 heal gap)",
+      "tier": "Cooking 62",
+      "value": 300,
+      "source": "cook raw_tunaling"
+    },
+    {
+      "id": "raw_chimefin",
+      "name": "Raw chimefin",
+      "role": "Capstone resonant fish — the fish that 'answers the bell'. Best raw catch.",
+      "tier": "Fishing 86 / Cooking 90",
+      "value": 600,
+      "source": "tidebell_spot (capstone harpoon, bell active)"
+    },
+    {
+      "id": "chimefin",
+      "name": "Chimefin",
+      "role": "Capstone food, heals 24 (above shark). Faint hum when eaten.",
+      "tier": "Cooking 90",
+      "value": 900,
+      "source": "cook raw_chimefin"
+    },
+    {
+      "id": "bronze_net",
+      "name": "Bronze-ringed net",
+      "role": "Net tool tier 2 — small heavy net, faster catch rate on net spots",
+      "tier": "Fishing 1 (upgrade), best from L15",
+      "value": 40,
+      "source": "Tackle shop / Tide-Token shop"
+    },
+    {
+      "id": "weighted_seine",
+      "name": "Weighted seine",
+      "role": "Net tool tier 3 — top net, catches mackerel + raises net success",
+      "tier": "Fishing 16",
+      "value": 400,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "feather_rod",
+      "name": "Feather rod",
+      "role": "Rod tier 2 — better bait fishing, unlocks pike",
+      "tier": "Fishing 25",
+      "value": 300,
+      "source": "Tackle shop"
+    },
+    {
+      "id": "resonant_rod",
+      "name": "Resonant rod",
+      "role": "Rod tier 3 — hums to lure fish, top bait success",
+      "tier": "Fishing 50",
+      "value": 1200,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "iron_harpoon",
+      "name": "Iron harpoon",
+      "role": "Harpoon tier 2 — higher harpoon success, unlocks tunaling",
+      "tier": "Fishing 50",
+      "value": 500,
+      "source": "Tackle shop"
+    },
+    {
+      "id": "tidesong_harpoon",
+      "name": "Tidesong harpoon",
+      "role": "Harpoon tier 3 — barbed brass, required to land chimefin at the Tide-Bell",
+      "tier": "Fishing 76",
+      "value": 3000,
+      "source": "Tide-Token shop (sink)"
+    },
+    {
+      "id": "wicker_cage",
+      "name": "Wicker cage",
+      "role": "Cage tool tier 2 above lobster_pot — unlocks bass cage",
+      "tier": "Fishing 33",
+      "value": 350,
+      "source": "Tackle shop"
+    },
+    {
+      "id": "brass_cage",
+      "name": "Brass cage",
+      "role": "Cage tier 3 — top cage success on lobster/bass spots",
+      "tier": "Fishing 55",
+      "value": 1500,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "tide_token",
+      "name": "Tide-Token",
+      "role": "Reward currency (stackable). Earned by handing fish to the harbourmaster; spent in reward shop.",
+      "tier": "all",
+      "value": 0,
+      "source": "turn-in NPC for caught fish"
+    },
+    {
+      "id": "kindling_bundle",
+      "name": "Kindling bundle",
+      "role": "Cooking aid — drop one on the ground to light a temporary cook-fire (Firemaking synergy) where no range exists",
+      "tier": "Firemaking 1",
+      "value": 8,
+      "source": "Galley supply shop"
+    },
+    {
+      "id": "chopped_onion",
+      "name": "Chopped onion",
+      "role": "Cooking intermediate (knife on onion). Input to seasoned dishes.",
+      "tier": "Cooking 20",
+      "value": 3,
+      "source": "use knife on onion"
+    },
+    {
+      "id": "fish_stew",
+      "name": "Fish stew",
+      "role": "Composite dish, heals 18, made in a bowl. Sustain food cheaper than tunaling.",
+      "tier": "Cooking 45",
+      "value": 160,
+      "source": "cook recipe: bowl_of_water + cooked bass + chopped_onion"
+    },
+    {
+      "id": "seasoned_shark",
+      "name": "Seasoned shark",
+      "role": "Composite dish, heals 23 — premium combat sustain just under chimefin",
+      "tier": "Cooking 84",
+      "value": 700,
+      "source": "cook recipe: shark + salt_pinch"
+    },
+    {
+      "id": "salt_pinch",
+      "name": "Pinch of sea salt",
+      "role": "Cooking reagent (stackable) for seasoned dishes",
+      "tier": "Cooking 1",
+      "value": 2,
+      "source": "salt_pan object / Galley shop"
+    },
+    {
+      "id": "galley_apron",
+      "name": "Galley apron",
+      "role": "Cooking outfit (body) — set piece, reduces burn chance",
+      "tier": "Cooking 40",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "galley_toque",
+      "name": "Galley toque",
+      "role": "Cooking outfit (head) — set piece",
+      "tier": "Cooking 40",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "galley_mitts",
+      "name": "Galley mitts",
+      "role": "Cooking outfit (hands) — set piece; full set = no-burn on bass and below",
+      "tier": "Cooking 50",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "oilskin_hat",
+      "name": "Oilskin hat",
+      "role": "Fishing outfit (head) — set piece, small catch-rate boost",
+      "tier": "Fishing 40",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "oilskin_coat",
+      "name": "Oilskin coat",
+      "role": "Fishing outfit (body) — set piece",
+      "tier": "Fishing 40",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "oilskin_waders",
+      "name": "Oilskin waders",
+      "role": "Fishing outfit (legs) — set piece; full set grants faster fishing",
+      "tier": "Fishing 50",
+      "value": 0,
+      "source": "Tide-Token shop"
+    },
+    {
+      "id": "tideturner_cape",
+      "name": "Tideturner's cape",
+      "role": "Capstone reward cape (Fishing+Cooking both 90) — prestige sink",
+      "tier": "Fishing 90 & Cooking 90",
+      "value": 0,
+      "source": "Tide-Token shop (large token sink)"
+    }
+  ],
+  "newRecipesOrIntents": [
+    "cookables additions (data/recipes.json): {raw_mackerel->mackerel, burnt_fish, level 16, xp 55, stopBurn 45}; {raw_pike->pike, burnt_fish, level 25, xp 65, stopBurn 53}; {raw_bass->bass, burnt_fish, level 33, xp 80, stopBurn 62}; {raw_tunaling->tunaling, burnt_fish, level 62, xp 160, stopBurn 88}; {raw_chimefin->chimefin, burnt_fish, level 90, xp 240, stopBurn 99}.",
+    "Composite cook recipe — fish_stew: inputs bowl_of_water + bass(cooked) + chopped_onion -> fish_stew, Cooking 45, xp 130. Resolved via the existing 'make'/'produce' multi-input path (mirrors how non-raw cooking would route), validated against inputs in state.",
+    "Composite cook recipe — seasoned_shark: inputs shark + salt_pinch -> seasoned_shark, Cooking 84, xp 230.",
+    "Prep recipe — chopped_onion: use knife on onion (make intent), Cooking 20, xp 5.",
+    "New intent: 'ring-bell' (or reuse 'train' kind) — sets area bell-active flag, no item. Validates player adjacent to bell_lever; pure server timestamp.",
+    "port-fish domain extensions (server/intent-produce.ts): add spot values 'reefcage' (raw_bass, L33, xp80), 'deep' harpoon (raw_tunaling, L62, xp130), 'tidebell' (raw_chimefin, L86, xp175, requires tidesong_harpoon + bell-active flag).",
+    "fish() extensions (server/intents.ts): net branch adds raw_mackerel (L16, xp55) gated on weighted_seine/bronze_net; bait branch adds raw_pike (L25, xp65) gated on feather_rod+. Tool tiers raise successRoll high-bound (e.g. weighted_seine 0.9->0.95).",
+    "COOKWARE map + cook() tweak: small data map {bronze_pan: -4 burnLevel, tidesong_pan: -8} OR galley-outfit set bonus that lowers burn — read in cook() the same way mining reads pickaxe tier."
+  ],
+  "newObjectsOrMechanics": [
+    "shoal_net_spot — new object type (action 'Net'). Server: extend the existing fish() net branch in server/intents.ts to recognize this type; rolls anchovy/shrimp at low Fishing and adds raw_mackerel from L16 when a bronze_net/weighted_seine is held. XP 10 (shrimp)/40 (anchovy)/55 (mackerel). respawn ~0 (always-on shoal). blocks:false.",
+    "deepbait_spot — new object type (action 'Bait'). Extend fish() bait branch: sardine/herring as today plus raw_pike from L25 (xp 65) when feather_rod/resonant_rod held, consuming fishing_bait. blocks:false.",
+    "reef_cage_spot — new object type (action 'Cage'), handled by the port-fish domain intent in server/intent-produce.ts: add spot:'reefcage' -> raw_bass at Fishing 33, xp 80, requires wicker_cage or brass_cage; lower tiers still get raw_lobster with lobster_pot. blocks:false.",
+    "Extend harpoon_spot in port-fish: add raw_tunaling at Fishing 62 (xp 130) requiring iron_harpoon+; keep swordfish 50 / shark 76. successRoll bumped slightly when iron/tidesong harpoon held.",
+    "tidebell_spot — new object type (action 'Harpoon'), capstone in port-fish: raw_chimefin at Fishing 86, xp 175, requires tidesong_harpoon AND the Tide-Bell 'ringing' window. Mechanic: bell_lever object toggles a 30s server flag (a simple ticking boolean on the area) during which tidebell_spot yields; else it returns the no-catch envelope. Reuses existing tick/respawn machinery — no new engine primitive.",
+    "tide_bell / bell_lever — world object (action 'Ring'). New tiny 'train'-style intent (model on existing register in intent-produce.ts) that sets the area's bell-active timestamp; pure server boolean, no client trust.",
+    "salt_pan — world object (action 'Scoop', model on gather): grants salt_pinch, Cooking xp 5, depleteChance like a gather node, respawn short. Feeds seasoned recipes.",
+    "galley_range — reuse existing 'range' object type (action 'Cook'); just a dense bank of them in the Galley. No new type needed — but introduce 'tuned cookware' as held items (galley pans) read by cook() to raise the effective stop-burn level by a flat amount (e.g. +6) so high cookware = fewer burns.",
+    "COOKWARE MECHANIC: cook() in server/intents.ts already reads c.stopBurn. Add an optional held-tool check: if player holds 'bronze_pan'/'tidesong_pan' (new tool items), subtract a burn-reduction from the burn roll. Cleanly data-driven via a small COOKWARE map mirroring PICKAXE patterns used by mining."
+  ],
+  "newNpcs": [
+    "harbourmaster_sella — Saltsong harbourmaster, fish turn-in NPC: trades caught raw/cooked fish for tide_token (reward currency).",
+    "tackle_keeper_orin — Tackle shop: sells fishing_bait, kindling_bundle, and the buyable gear tiers (bronze_net, feather_rod, iron_harpoon, wicker_cage).",
+    "tide_token_broker_vey — Reward shop: spends tide_token on weighted_seine, resonant_rod, tidesong_harpoon, brass_cage, the galley + oilskin outfits, and tideturner_cape.",
+    "galley_cook_maren — Cooking trainer/lore: teaches the seasoned/stew recipes, sells salt_pinch and bowls, explains 'tuning the heat' (stop-burn).",
+    "fishmonger_pell — Galley shop NPC: buys cooked fish for gold (gold sink/source balance) and sells onions/bowls for stew recipes.",
+    "lighthouse_keeper_brann — Lore NPC at the Tide-Bell: explains the Tideverse and when the bell calls chimefin; gates the capstone flavourfully."
+  ],
+  "trainingLayout": "Three tight, walk-minimal clusters all within Saltsong Harbour, each ringed by a bank booth so banking is 1-2 tiles away. (1) THE SHOALRINGS — a U-shaped double pier: 8x shoal_net_spot and 6x deepbait_spot placed on alternating pier-edge tiles so a player stands in one spot and has 3-4 fishing tiles adjacent (Chebyshev<=2). This is the early/mid grind hub (Fishing 1-32). Bank booth at pier head. (2) BRINEMAW REEF — a stone jetty platform off the south pier: 6x reef_cage_spot and 6x harpoon_spot interleaved on a 3-tile-wide deck, so cage and harpoon fishers share one dense pad (Fishing 33-75). Bank booth + small range on the deck for cook-as-you-go. (3) THE TIDE-BELL HEAD — the lighthouse point: 1x bell_lever + 4x tidebell_spot clustered at the base, capstone-only (Fishing 86+). THE HEARTHCHOIR GALLEY (cooking hub) sits between the Shoalrings and the reef: a hall with 6x range in two rows of 3, a bank booth between the rows (cook-bank-cook with zero walking), 2x salt_pan along the wall, and the cooking NPCs. Net effect: a fisher banks, fishes a wall of spots, walks ~5 tiles to a wall of ranges, banks again — the entire fish-cook loop fits in one screen.",
+  "rewards": "Reward sinks via tide_token (earned by handing fish to harbourmaster_sella, scaled by fish tier): (1) GEAR LADDER as purchases — weighted_seine, resonant_rod, brass_cage, tidesong_harpoon are token sinks that also gate higher catches, so progression and sink are the same purchase. (2) FISHING OUTFIT (oilskin_hat/coat/waders) — full set grants a small fishing speed/catch bonus (cosmetic+QoL). (3) COOKING OUTFIT (galley_toque/apron/mitts) — full set removes burn on bass-tier and below (a real QoL no-burn unlock, like an OSRS cooking gauntlet but as a set). (4) tideturner_cape — prestige capstone requiring Fishing 90 AND Cooking 90 plus a large token spend, the marquee flex item. (5) GOLD SINKS/SOURCES: fishmonger_pell buys cooked fish (gold faucet for cooks) while the Tackle shop and salt/bowl/onion purchases are gold sinks for the stew/seasoned recipes — keeping the composite-cooking loop economically active.",
+  "mapAreaProposal": "Place Saltsong Harbour on the southwest coast, just south/southwest of the existing Port Brackwater (~105,196) so the two ports read as a chain along the same shoreline — Saltsong as the dedicated skilling sister-harbour. Target region roughly x 70-100, y 215-245: a coastal biome with piers extending into open water (south/west edge of the landmass). Footprint ~25x25 tiles: the Galley + bank inland, the Shoalrings piers on the west water edge, Brinemaw Reef jetty on the south water edge, and the Tide-Bell lighthouse on the southwest point. Coords finalized at integration; this just claims the SW coastal water margin near Brackwater.",
+  "balanceNotes": "Fishing XP fills existing gaps without trivializing: net mackerel 55xp@L16, bait pike 65xp@L25 sit between herring (30) and lobster (90); cage bass 80xp@L33; harpoon tunaling 130xp@L62 between swordfish (100) and shark (110-ish); chimefin 175xp@L86 as the new top, below nothing existing so it doesn't undercut shark grinding — it's a prestige catch gated by the bell window so it's intentionally slower than spamming shark. Cooking xp mirrors mining/cooking curve (mackerel 55, pike 65, bass 80, tunaling 160, chimefin 240) — chimefin's 240 is just above shark's 210, appropriate for L90. Healing ladder now monotonic with no holes: shrimp3, mackerel7, pike8, bass10, lobster12, swordfish14, tunaling16, fish_stew18 (composite, cheaper bulk sustain), shark20, seasoned_shark23, chimefin24 — top-end stays at 24 so it doesn't break combat sustain balance versus existing shark(20). Tool tiers gate the new fish so you can't catch tunaling/chimefin without buying up the harpoon ladder (token sinks). The Tide-Bell window caps chimefin throughput so the capstone is aspirational, not a faster meta. Density is the main buff: clustered spots mean less walking and higher effective XP/hr at the SAME per-catch rates — matching the Mining brief's 'barely walks' goal without inflating numbers.",
+  "postBlurb": "The tide has learned a new verse. Saltsong Harbour now rings out on Cantorne's southwest coast — a working fishing village where the shoals answer a brass bell and the Hearthchoir Galley keeps its kitchens in perfect pitch. Cast nets along the crowded Shoalrings, haul cages and harpoons off Brinemaw Reef, and earn the right to land the resonant chimefin when the lighthouse bell calls. Cook your catch into stews, seasoned plates, and healing worthy of any fight — then trade your haul for Tide-Tokens and the oilskin, galley, and Tideturner's cape sets. Mind the heat: a note held too long still burns.",
+  "verdict": {
+    "buildable": false,
+    "idCollisions": [],
+    "mechanicFit": "Maps cleanly (PURE DATA, no engine code): the 5 single-fish cookables (raw_mackerel/pike/bass/tunaling/chimefin -> cooked) go straight into recipes.json `cookables[]` and work via existing cook() — it is fully data-driven and reads {raw,cooked,burnt,level,xp,stopBurn}. The 5 raw fish + 5 cooked fish + all the gear/outfit items are pure items.json entries with edible.heals. salt_pan COULD be a pure-data gather IF added to objects.json `skillObjs`, but only if mapped through the existing `gather` path which requires a GATHER_REQS[type] entry in intents.ts (hardcoded map) -> NEEDS a 1-line code edit, not pure data.\n\nNEEDS NEW ENGINE CODE (does NOT map onto existing system as-is):\n1. ALL new fishing spots. fish() in intents.ts is HARDCODED, not data-driven: it only knows object types 'fishing_spot'/'rod_fishing_spot' and emits literal ids raw_anchovies/raw_shrimps/raw_herring/raw_sardine. port-fish in intent-produce.ts is HARDCODED to exactly two spots via `payload.spot==='harpoon'?'harpoon':'lobster'` -> objType lobster_spot/harpoon_spot. Adding shoal_net_spot, deepbait_spot, reef_cage_spot(reefcage), deep harpoon (tunaling), tidebell all require editing these handlers + tool-tier branches. None of this is data.\n2. tidebell window: there is NO area-flag / ticking-boolean primitive. world-progress.ts has getFarmPatch/getSnare/getTrainCd (per-tile/per-key cooldowns) but no global 'bell active for 30s' state. bell_lever 'Ring' is NOT a 'train' analog — train only grants XP off AGILITY_XP and writes a per-key cooldown; it cannot set or expose a shared timed flag other spots read. NEW engine code + new intent kind required.\n3. Composite cooking (fish_stew, seasoned_shark, chopped_onion): make()/RECIPE_INDEX only support fixed classes smelt|smith|fletch|craft|gemcut|clean|potion|build, each Smithing/Crafting/Herblore/etc. There is NO Cooking multi-input class and no generic 'produce' multi-input cooking path. chopped_onion 'knife on onion' is not a registered recipe class either. Routing these needs a new recipe class + index wiring + (for Cooking) station='range'. NEW code.\n4. COOKWARE burn-reduction / galley+oilskin set bonuses / catch-rate boosts: cook() reads only c.stopBurn; there is NO PICKAXE-style tool map for cooking and NO set-bonus logic anywhere. (mine-vein's tuned_pickaxe +10% is a per-handler hardcode, not a reusable map.) Every one of these is new code in cook()/fish()/port-fish.\n5. tide_token turn-in NPC + reward shop spending a non-coin currency: shop() only does coins (buy at value, sell at 40%). A fish->token exchange and token-priced shop is NOT expressible in the current shop intent. NEW code (or a new intent domain).\n\nMISSING ITEM DEPENDENCIES (not just new, but referenced inputs that don't exist): onion, bowl_of_water, bowl, salt (salt_pinch is new but the recipes also lean on bowl_of_water/onion) are NOT in items.json (only 'knife' exists). bronze_pan/tidesong_pan referenced by COOKWARE mechanic are not in the items list at all.",
+    "balanceFlags": [
+      "chimefin food value 900 / raw 600: ratio ~1.5x is fine, but raw 600 already exceeds raw_shark (300) by 2x and heal 24 vs shark 20 — within curve but it is a hard new best-in-slot; OK if gated behind L86/90 as specced.",
+      "tunaling Cooking level 62 (xp 160, stopBurn 88): existing swordfish cooks at L45 and shark at L80 — inserting a L62 fish between them is consistent, but spec lists raw fishing at L62 too; existing swordfish is FISHED at 50 and shark at 76, so tunaling Fishing 62 slots fine.",
+      "bass cook xp 80 at L33 is LOW vs the curve trend (herring L5=50xp, lobster L40=120xp); 80 at L33 sits slightly under the interpolation but is acceptable. mackerel L16 xp 55 and pike L25 xp 65 are reasonable vs sardine(40)/herring(50).",
+      "chimefin cook xp 240 at L90 vs shark 210 at L80 — fine. tunaling cook xp 160 vs spec's recipes line says xp 160 but the items block implies 'heals 16' tier; consistent.",
+      "seasoned_shark heals 23 (just under chimefin 24) at Cooking 84, value 700: fine relative to shark(450)/chimefin(900).",
+      "fish_stew heals 18 at Cooking 45, value 160: sits between swordfish(14) and shark(20) heal — reasonable mid sustain.",
+      "salt_pinch value 2 / chopped_onion value 3 / kindling_bundle value 8: trivially small, fine. All the *_token=0 and outfit/cape value=0 items rely on a token shop that the engine cannot currently price (see mechanicFit #5)."
+    ],
+    "notes": "No id collisions to rename. The spec's core CLAIM that everything maps onto existing intents with 'no new engine primitive' is WRONG. Reality: (a) single-fish cookables and raw/cooked/gear ITEMS are pure data and safe to add to items.json + recipes.json cookables[]. (b) Everything else needs server code. Specifically the integrator MUST: add new branches/spot-types to fish() (intents.ts) and port-fish (intent-produce.ts) including the tool-tier gating (bronze_net/weighted_seine, feather_rod/resonant_rod, iron_harpoon/tidesong_harpoon, wicker_cage/brass_cage) — none of these are data-toggleable; build a NEW shared timed area-flag primitive in world-progress.ts for the Tide-Bell window plus a new 'ring-bell' intent domain (the 'train' kind cannot do this); add a NEW Cooking multi-input recipe class + RECIPE_INDEX wiring for fish_stew/seasoned_shark and a knife-on-onion path for chopped_onion (make() classes are a fixed enum today); add a COOKWARE/outfit-set-bonus read inside cook()/fish() (no such tool-tier map exists for Cooking/Fishing — mine-vein's +10% is a one-off hardcode, not reusable); and build a tide_token turn-in + token-priced reward shop, which the coins-only shop() cannot express (likely a whole new intent domain). Also note the 'registerObjectAction' the spec leans on is a CLIENT-side (src/) API, not a server intent mechanism — server authority for all of this lives in the intent domains, so the client object actions must be paired with matching server handlers or they grant nothing. Finally, ADD the missing input items onion, bowl_of_water, bowl, salt, bronze_pan, tidesong_pan to items.json or the composite recipes/cookware will reference unknown ids and silently fail isKnownItem checks. Heads-up on existing cooked-fish ids being PLURAL (raw_shrimps/raw_anchovies/shrimps/anchovies) — keep the new ids' singular/plural consistent with whatever the client content.ts expects."
+  }
+}

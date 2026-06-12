@@ -146,8 +146,8 @@ function weaponMode(state: AuthState, autocastSpell: string | null): AttackMode 
   }
   const w = weaponDef(state);
   if (w) {
-    if (w.id.includes('pistol') || w.id === 'glock_18') return 'gun';
-    if (w.id.includes('shortbow') || w.id === 'shortbow') return 'ranged';
+    if (w.id.includes('pistol') || w.id.includes('rifle') || w.id === 'glock_18') return 'gun';
+    if (w.id.includes('shortbow') || w.id.includes('longbow') || w.id === 'shortbow') return 'ranged';
   }
   return 'melee';
 }

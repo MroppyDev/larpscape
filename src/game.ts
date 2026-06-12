@@ -1354,8 +1354,8 @@ export function currentAttackMode(): AttackMode {
     if (spell && spell.runes.every((r) => invCount(r.item) >= r.qty)) return 'magic';
   }
   const w = p.equipment.weapon ? ITEMS[p.equipment.weapon.id] : null;
-  if (w && (w.id.includes('pistol') || w.id === 'glock_18')) return 'gun';
-  if (w && (w.id.includes('shortbow') || w.id === 'shortbow')) return 'ranged';
+  if (w && (w.id.includes('pistol') || w.id.includes('rifle') || w.id === 'glock_18')) return 'gun';
+  if (w && (w.id.includes('shortbow') || w.id.includes('longbow') || w.id === 'shortbow')) return 'ranged';
   return 'melee';
 }
 

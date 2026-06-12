@@ -1,0 +1,145 @@
+{
+  "group": "melee-combat",
+  "areaName": "Drummar's Hold (the Concord Lists)",
+  "theme": "The Concord Lists at Drummar's Hold — a fortified martial academy built around the Cadence Stone, a buried resonance-anchor that \"keeps time\" for the whole valley. In Cantorne's lore, a clean melee strike lands *on the beat* the world was sung to; a sloppy one is a missed note. The hold's drillmasters teach warriors to fight in rhythm with the Cadence Stone, and its training dummies (\"metronome dummies\") ring a tone on a true hit. Attack is the swing on-beat, Strength the force behind the note, Defence the held chord that absorbs a blow, Hitpoints the sustain. Aesthetic: grey drill-yards, struck-bell banners, anvils that hum, a sand-floored arena ringed with bleachers. Rewards are \"tuned\" gear whose metal was annealed against the Cadence Stone so it rings true.",
+  "summary": "Melee currently has a respectable WEAPON ladder (bronze->iron->steel->mithril->adamant->rune scimitar/sword, plus drop-only rune_scimitar/rimeglass_blade/red_smile/mirefang) and a full Defence ARMOUR ladder (bronze->rune platebody/helm/legs/kiteshield with Defence levelReq), but it has NO dedicated training destination. Players grind scattered aggressive NPC spawns (goblins at ~56,30; scorpions/bandits/etc.) with long walks between kills, and there is no controllable, safe-ish, DENSE way to choose which of the four melee skills you train. Gaps: (1) no melee hub/town; (2) no clustered controlled-level XP — every fight is a real fight with death risk and walking; (3) a hole in the gear curve between adamant scimitar (req Attack 30, val 2560) and rune scimitar (req 40, val 16000) and no body/glove/cape that boosts Attack/Strength offensively; (4) no melee reward sink. The expansion adds Drummar's Hold: a packed metronome-dummy yard with server-validated, style-routed XP (the exact `train`-intent pattern), tightly clustered controlled-level \"sparring\" NPCs at three difficulty tiers, a tuned-gear smith link bridging the adamant->rune gap, an offensive armour set with a real set bonus, and a Valour-token reward shop fed by combat.",
+  "newItems": [
+    {
+      "id": "tuned_scimitar",
+      "name": "Tuned scimitar",
+      "role": "Mid-tier melee weapon filling the adamant(30)->rune(40) gap. Forged at the Cadence anvil from a steel/mithril bar plus a resonant_shard; rings on a true hit.",
+      "tier": "req Attack 35",
+      "value": 7200,
+      "source": "Smithed at Cadence anvil (smithable recipe below) or bought from Quartermaster Bell."
+    },
+    {
+      "id": "tuned_warblade",
+      "name": "Tuned warblade",
+      "role": "Strength-leaning two-hand-feel sword, str>att, for aggressive trainers; sits between adamant_sword and rune_sword.",
+      "tier": "req Attack 38",
+      "value": 9000,
+      "source": "Smithed at Cadence anvil; resonant_shard + 2 mithril_bar."
+    },
+    {
+      "id": "drillmasters_baton",
+      "name": "Drillmaster's baton",
+      "role": "Cheap starter training weapon sold at the hub; modest att/str, fast speed 4 so new players hit the dummies often.",
+      "tier": "no req",
+      "value": 120,
+      "source": "Quartermaster Bell shop."
+    },
+    {
+      "id": "concord_helm",
+      "name": "Concord helm",
+      "role": "Offensive-defensive head: defence plus small str, part of the Concord set.",
+      "tier": "req Defence 30",
+      "value": 9500,
+      "source": "Valour token reward shop / smith."
+    },
+    {
+      "id": "concord_platebody",
+      "name": "Concord platebody",
+      "role": "Body piece of the Concord set; strong def with a str trim, the set's anchor.",
+      "tier": "req Defence 30",
+      "value": 26000,
+      "source": "Valour token reward shop."
+    },
+    {
+      "id": "concord_platelegs",
+      "name": "Concord platelegs",
+      "role": "Legs piece of the Concord set.",
+      "tier": "req Defence 30",
+      "value": 16000,
+      "source": "Valour token reward shop."
+    },
+    {
+      "id": "concord_cape",
+      "name": "Cape of Concord",
+      "role": "Back/cape slot melee cape (att+str+def). Wearing the full Concord set (helm+body+legs+cape) triggers the set bonus.",
+      "tier": "req Defence 35, Attack 35",
+      "value": 40000,
+      "source": "Valour token reward shop (capstone purchase)."
+    },
+    {
+      "id": "cadence_gauntlets",
+      "name": "Cadence gauntlets",
+      "role": "Gloves: balanced att/str/def, a QoL mid-tier glove between leather_gloves and molten_gauntlets.",
+      "tier": "req Attack 30",
+      "value": 7000,
+      "source": "Valour token reward shop."
+    },
+    {
+      "id": "metronome_charm",
+      "name": "Metronome charm",
+      "role": "Neck slot: small att+str, marketed as 'keeps your swing on the beat'. Affordable offensive amulet.",
+      "tier": "no req",
+      "value": 2200,
+      "source": "Quartermaster Bell shop / dummy yard drop-in reward."
+    },
+    {
+      "id": "valour_token",
+      "name": "Valour token",
+      "role": "Stackable reward currency earned from sparring-NPC kills at Drummar's Hold; spent in the Valour reward shop. The melee reward SINK.",
+      "tier": "n/a",
+      "value": 0,
+      "source": "Rolled drop from hub sparring NPCs (server-side, see mechanics)."
+    },
+    {
+      "id": "sustain_brew",
+      "name": "Sustain brew",
+      "role": "Hitpoints-flavored food/heal sold at the hub infirmary; heals a solid chunk so trainers stay in the yard longer.",
+      "tier": "no req",
+      "value": 35,
+      "source": "Hub infirmary shop (edible.heals via existing eat intent)."
+    },
+    {
+      "id": "true_note_blade",
+      "name": "True-note blade",
+      "role": "Capstone melee weapon, rare drop from the top sparring tier (the Champion's Echo). Best in-slot-ish att/str with a guaranteed-DOT spec themed 'Perfect Cadence'.",
+      "tier": "req Attack 50",
+      "value": 48000,
+      "source": "Rare drop (1/512) from sparring_champion; or 1500 valour_token at the shop."
+    }
+  ],
+  "newRecipesOrIntents": [
+    "NEW INTENT 'spar-dummy' (register in intent-produce.ts, copy of the 'train' intent): payload { dummy: 'metronome_dummy'|'reinforced_dummy'|'cadence_pillar', x, y }. Validates objectTypeAt + chebyshev<=2, per-tile cooldown via the trainLastMs/getTrainCd pattern (~2400ms), min Attack OR Strength OR Defence level >= grade level (use max of the three so any melee build qualifies), reads style from combatProfiles (same source combatXpForHit uses), grants melee xp by style + Hitpoints 1.33x. Grades: metronome_dummy {level 1, xp 16}, reinforced_dummy {level 30, xp 32}, cadence_pillar {level 50, xp 48}.",
+    "NEW SMITHABLE (recipes.json smithables[]): { output:'tuned_scimitar', bar:'mithril_bar', bars:2, extraInputs:[{item:'resonant_shard',qty:1}], level:55, xp:120 } — note: if smithables has no extraInputs field, add resonant_shard via a one-off branch in the make/smith handler keyed on output id; level here is the SMITHING level to make it, distinct from the Attack 35 equip req.",
+    "NEW SMITHABLE: { output:'tuned_warblade', bar:'mithril_bar', bars:2, extraInputs:[{item:'resonant_shard',qty:2}], level:60, xp:150 }.",
+    "npcs.json drops additions (no new intent): add { item:'valour_token', qty:[1,2], chance:0.6 } to sparring_recruit, [2,4]@0.7 to sparring_veteran, [4,8]@0.85 to sparring_champion; add { item:'true_note_blade', qty:[1,1], chance:0.00195 } (~1/512) to sparring_champion; standard bones drop @1 on all three.",
+    "Concord set bonus: a server-side check in deriveCombatProfile/effectGear — if helm+body+legs+cape all equipped, push a synthetic 'perfect_cadence' effect (the engine already iterates effectGear server-side, so model it as an effect on concord_cape that only activates when the other three ids are also in equipment)."
+  ],
+  "newObjectsOrMechanics": [
+    "metronome_dummy (object type 'metronome_dummy'): a striking dummy. New server intent 'spar-dummy' (clone of the existing 'train' intent in intent-produce.ts): validates object@tile + range<=2, a per-tile cooldown (~2400ms), a min-level gate per dummy grade, then grants pure melee XP ROUTED BY THE PLAYER'S SERVER-OWNED COMBAT STYLE exactly like combatXpForHit: accurate->Attack, aggressive->Strength, defensive->Defence, controlled-> split evenly across Attack/Strength/Defence; ALWAYS adds Hitpoints at the standard 1.33x ratio of the granted melee xp. No item granted, no death risk. Three dummy grades by object type to gate progression: 'metronome_dummy' (level 1, 16 melee xp/hit), 'reinforced_dummy' (level 30, 32 xp/hit), 'cadence_pillar' (level 50, 48 xp/hit). XP is server-data only; client sends only the object key + style selection it already sends.",
+    "cadence_anvil (object type 'cadence_anvil'): a humming anvil reusing the existing smithing flow but flagged as the only anvil that accepts resonant_shard recipes (tuned_scimitar/tuned_warblade). If the smith 'make' intent already keys off any anvil, these recipes simply require resonant_shard in inputs; otherwise add 'cadence_anvil' to the anvil object-type check.",
+    "sparring NPC drop of valour_token: handled by the EXISTING combat/drop system — add valour_token to the sparring NPCs' drops[] table in npcs.json (chance-based), no new intent needed. Keeps the reward currency server-authoritative via normal kill drops.",
+    "combat-style training signage (object type 'cadence_post', cosmetic): client-only registerObjectAction billboard explaining how style routes XP; no server intent."
+  ],
+  "newNpcs": [
+    "drillmaster_concord — combat-style trainer / lore NPC; dialogue explains accurate/aggressive/defensive/controlled XP routing and the dummy grades (no shop).",
+    "quartermaster_bell — shop NPC selling drillmasters_baton, metronome_charm, tuned_scimitar (capped stock), training-weapon basics.",
+    "valour_steward — reward-shop NPC; trades valour_token for the Concord set, cadence_gauntlets, true_note_blade, and the cape.",
+    "hold_infirmarian — sells sustain_brew and basic food; flavor as a Hitpoints/sustain vendor so trainers can heal without leaving the yard.",
+    "sparring_recruit — controlled-level aggressive sparring NPC (low tier).",
+    "sparring_veteran — mid-tier sparring NPC.",
+    "sparring_champion — high-tier sparring NPC (the Champion's Echo), drops true_note_blade rarely."
+  ],
+  "trainingLayout": "DENSE and clustered so a player barely walks, mirroring Cairnchime's dense rock pits. Drummar's Hold sits in the sparse south-central map region (~x165-205, y215-250). Layout, walled drill-yard: (A) The Dummy Court — a tight 4x6 grid of 24 metronome_dummy objects in the NW yard, 1-tile aisles, so one player stands at a junction and hits 2-4 dummies in rotation without moving; a separate cluster of 12 reinforced_dummy (level 30) in the central yard and 8 cadence_pillar (level 50) in the inner sanctum near the Cadence Stone. A player picks a style and AFK-rotates dummies for pure, death-free melee+HP XP. (B) The Sparring Pits — three small fenced rings, each packed with controlled-level aggressive NPCs at tight spacing (respawnTicks ~12-15 for fast turnover): Recruit Ring = 10x sparring_recruit (cb ~8, hp 12) clustered 1-2 tiles apart; Veteran Ring = 8x sparring_veteran (cb ~25, hp 30); Champion Ring = 4x sparring_champion (cb ~55, hp 70). Rings are adjacent so a player graduates by walking through a gate, not across the map. The infirmary (hold_infirmarian) and a bank chest sit dead-center between the dummy court and the pits, and the Cadence anvil + Quartermaster are on the south wall — full training loop in <15 tiles of walking.",
+  "rewards": "Valour token sink: sparring NPCs drop valour_token (recruit ~1-2 @ chance 0.6, veteran ~2-4 @ 0.7, champion ~4-8 @ 0.85). valour_steward shop: cadence_gauntlets (200 tokens), Concord helm (350), platelegs (550), platebody (900), Cape of Concord (1200, requires the other 3 owned — capstone), true_note_blade (1500) or as a rare champion drop. SET BONUS: wearing full Concord (helm+body+legs+cape) grants a server-checked passive — flavor 'Perfect Cadence': +5% melee accuracy and a 1-in-8 chance per kill to refund half the valour spent (implemented as a small effect/effectGear hook, since the engine already resolves effectGear server-side). Gold/material sinks: tuned_scimitar/tuned_warblade consume resonant_shard (ties melee progression to the Mining overhaul's reward shard, creating cross-skill demand) plus bars + coins at the Cadence anvil. sustain_brew is a small coin sink at the infirmary. QoL: a bank chest + style trainer + anvil + two shops + infirmary all inside one walled hub means a player can train, bank, smith, restock food, and buy upgrades without leaving Drummar's Hold.",
+  "mapAreaProposal": "South-central valley, roughly x165-205 by y215-250 (a ~40x35 walled compound) in the currently sparse '3,4'/'3,5' map cells (near-empty: 0-38 objects). Theme: a grey stone drill-fortress on flat scrubland south of the existing towns, with banners and the buried Cadence Stone at its heart. Footprint ~40x35 tiles. Coordinates to be finalized at integration; the region is open and unused so the dense dummy grid + three sparring rings fit without colliding with existing content.",
+  "balanceNotes": "XP rates anchor to the existing combat curve so the dummy yard is convenient, not broken. combatXpForHit gives Attack/Str/Def = 4*dmg and Hitpoints = 1.33*dmg per hit; a real melee fight already yields ~16-40 melee xp + ~5-13 HP per kill over several swings. The metronome_dummy at 16 xp/hit on a ~2400ms (4-tick) cooldown ~= 400 melee xp/min + 133 HP xp/min — comparable to grinding low NPCs but death-free and walk-free, which is the intended convenience tradeoff (same niche as agility's pure-xp 'train' intent, which grants 12-35 xp on a 3s cooldown). reinforced_dummy (32, gated Attack/Str/Def 30) and cadence_pillar (48, gated 50) keep rates in line with mid/high real-combat xp/hr without exceeding it. Level gating: dummies gate on max(Attack,Strength,Defence) so any melee build qualifies; tuned weapons fill the att 30->40 equip gap (tuned_scimitar req Attack 35, att 38/str 40 between adamant_scimitar att29/str31 and rune_scimitar att45/str44; tuned_warblade req 38, att 36/str 43). Concord set sits at Defence 30-35, between adamant and rune armour, so it's a sidegrade (offense trim) not a strict upgrade over rune defence. valour_token has value 0 (pure reward currency, no GE arbitrage). Sparring NPC combat levels (8/25/55) and hp (12/30/70) are tuned to existing NPCs (giant_rat cb3 hp5, scorpion cb14 hp20, desert_bandit cb26, pirate_captain cb60) so each ring is a controlled, safe-ish step. resonant_shard demand from tuned weapons intentionally couples melee to the Mining/Cairnchime reward economy without inflating either.",
+  "postBlurb": "DRUMMAR'S HOLD OPENS ITS GATES. South of the towns, where the Cadence Stone keeps the valley's time, the Concord Lists now ring with struck bells and steel. Pick your stance and drill the metronome dummies until every swing lands on the beat — accurate hands sharpen Attack, aggressive ones build Strength, a held guard trains Defence, and every true note sustains your Hitpoints. Graduate through the Recruit, Veteran, and Champion sparring pits, earn Valour tokens, and forge tuned, true-ringing steel at the Cadence anvil. Fight in rhythm. The Offnote is listening.",
+  "verdict": {
+    "buildable": true,
+    "idCollisions": [],
+    "mechanicFit": "Mostly fits, but two claims are FALSE and need new engine code. (1) spar-dummy is NOT a clean clone of combatXpForHit. The real combatXpForHit lives in server/index.ts (NOT combat.ts as implied), is keyed on DAMAGE DEALT (push('Attack'|'Strength'|'Defence', 4) i.e. dmg*4, plus Hitpoints dmg*1.33), and has NO controlled-split: `else push('Defence',4)` lumps controlled AND defensive into Defence. So the spec's flat-per-hit (16/32/48), style-routed, controlled->even-3-way model is NEW logic. The reusable parts are from the 'train' intent in intent-produce.ts (flat xp, trainLastMs cooldown, setTrainCd save-backed cooldown, objectTypeAt+chebyshev<=2, level gate) — copy those; but the style read (from combatProfiles in index.ts, which lives in a different module than intent-produce.ts — a cross-module accessor must be exposed) and the per-style routing + Hitpoints 1.33x must be written fresh. Doable, but ~40 lines of new intent code plus a profile/style getter export, not a trivial clone. (2) cadence_anvil: the 'make' handler in intents.ts hardcodes stationReq='anvil' and calls nearObject(x,y,'anvil'); a 'cadence_anvil' object will NOT pass unless it is ALSO typed 'anvil' in map.json, OR the station check is widened. Pure-data fix = give the object both types; otherwise small engine change. (3) Smithables loader (intents.ts ~line 735) hardcodes inputs:[{item:s.bar,qty:s.bars}] — there is NO extraInputs field. The downstream RecipeEntry/make handler iterate r.inputs[] generically, so the FIX is to extend the smithables JSON shape + the loader to fold extraInputs into inputs[]; the make handler itself needs no change. (4) valour_token drops, true_note_blade drop, bones drops: pure data — drops[] schema is {item, qty:[min,max], chance} exactly as spec writes. (5) Concord set bonus: effectGear exists (combat.ts builds it from items with .effects/.spec), but it is a string[] of equipped ids for cosmetic/effect iteration; there is NO existing 'conditional set bonus that reads OTHER equipped slots' mechanism. A synthetic 'perfect_cadence' effect on concord_cape that only fires when helm+body+legs also equipped requires NEW engine code in deriveCombatProfile (combat.ts) — that function name in the spec is approximate; real builder is deriveCombatProfile in index.ts / meleeNumbers+the profile builder in combat.ts. NOT pure data. (6) cadence_post billboard + dummy cosmetic depletion: client-side registerObjectAction (src/, confirmed) — pure client data, fine. (7) sustain_brew via eat intent: works as-is (eat reads items.json edible.heals).",
+    "balanceFlags": [
+      "tuned_scimitar value 7200 / tuned_warblade 9000: fine vs curve (adamant_sword 2080 < these < rune_sword 12800 / drake_sword 12000). Confirm att/str bonuses are authored — spec gives values+reqs but NO attBonus/strBonus/defBonus/attackSpeed numbers for any equipment; integrator MUST supply them or items are stat-less.",
+      "Smithing level to MAKE tuned_scimitar=55 / tuned_warblade=60 is very high for an Attack-35/38 equip weapon (rune_scimitar tier weapons aren't gated behind smith 55+). Internally consistent but steep; intended as a resonant_shard sink, acceptable.",
+      "Dummy flat xp 16/32/48 per hit introduces a NON-damage-scaled melee xp axis (all existing combat xp is dmg*4). At ~2400ms cooldown this is a steady ~6-12 xp/sec/skill with zero risk/cost — verify it isn't a faster no-risk alternative to actual combat for low levels; 16 xp/hit at lvl 1 is generous vs e.g. a 5-hp goblin yielding ~dmg*4 spread.",
+      "true_note_blade value 48000 vs rimeglass_blade 32000 (att50 BIS): 48k is the new top melee value — sane as a 1/512 capstone. 1500 valour_token alt-buy: with sparring_champion dropping 4-8 tokens@0.85, that's ~250-350 kills, reasonable.",
+      "concord_cape 40000 / platebody 26000: cape is now 2nd-highest-value item after true_note_blade; as a capstone token-shop purchase that's fine, but confirm the set bonus magnitude (unspecified) doesn't push effective melee above rune+rimeglass tiers.",
+      "valour_token value:0 is correct (non-tradeable reward currency); ensure shop sell-back (40% value) can't be invoked on it — value 0 makes sell-back 0, safe."
+    ],
+    "notes": "No id collisions — all 12 items, 4+ object types, 6 npc ids, 3 dummy types are absent from data/items.json, data/objects.json, data/npcs.json. resonant_shard already exists (it's a correct existing input, not a new id). REQUIRED corrections for the integrator: (A) Fix the spec's engine references: combatXpForHit and the combat-profile builder are in server/index.ts and server/combat.ts, NOT a single 'deriveCombatProfile/effectGear' as worded; combatXpForHit is DAMAGE-scaled and has NO controlled-style split (controlled==defensive==Defence today). spar-dummy must therefore be authored as NEW flat-xp intent (model on 'train' in intent-produce.ts for cooldown/gate/range) + a new style getter exported from index.ts's combatProfiles map + new controlled-even-split + Hitpoints*1.33 routing. This is the single biggest NEW-CODE item. (B) Add 4 equipment STAT blocks the spec omits (attBonus/strBonus/defBonus/attackSpeed/equipSlot/levelReq) for every weapon/armour item — spec only gives value+req text. (C) Smithables JSON+loader (intents.ts ~735) must be extended for resonant_shard extraInputs (fold into inputs[]); make handler is already generic. (D) cadence_anvil must be dual-typed 'anvil' in map.json OR widen make's station check. (E) Concord set bonus needs new conditional-set-effect engine code in the profile builder; effectGear is only a flat equipped-id list today. (F) valour_token / true_note_blade / bones drops are pure data and match the existing drops[] {item,qty:[min,max],chance} schema. Verdict: buildable on existing engine, but it is NOT 'pure data + a clone' — at minimum the spar-dummy style routing, the resonant-shard smithables, the cadence_anvil station check, and the Concord set bonus require new engine code."
+  }
+}

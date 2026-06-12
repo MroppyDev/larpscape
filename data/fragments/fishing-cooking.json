@@ -1,0 +1,173 @@
+{
+  "items": [
+    { "id": "raw_mackerel", "name": "Raw mackerel", "examine": "Striped like sheet music. It surfaced on the downbeat.", "value": 12 },
+    { "id": "mackerel", "name": "Mackerel", "examine": "Oily, honest, and cooked through. Holds a low note nicely.", "value": 30, "edible": { "heals": 7 } },
+    { "id": "raw_pike", "name": "Raw pike", "examine": "All teeth and opinions. Took the bait out of spite.", "value": 25 },
+    { "id": "pike", "name": "Pike", "examine": "Cooked pike. Bonier than an argument, twice as filling.", "value": 50, "edible": { "heals": 8 } },
+    { "id": "raw_bass", "name": "Raw bass", "examine": "It provides the bottom end of the shoal's harmony. Provided.", "value": 60 },
+    { "id": "bass", "name": "Bass", "examine": "Cooked bass. The Galley insists the pun is intentional.", "value": 110, "edible": { "heals": 10 } },
+    { "id": "raw_tunaling", "name": "Raw tunaling", "examine": "A young tuna that wandered into the wrong verse.", "value": 200 },
+    { "id": "tunaling", "name": "Tunaling", "examine": "Seared tunaling. Tender enough to apologise to.", "value": 300, "edible": { "heals": 16 } },
+    { "id": "raw_chimefin", "name": "Raw chimefin", "examine": "Its fins ring faintly when the Tide-Bell sounds. It answered. That was its mistake.", "value": 600 },
+    { "id": "chimefin", "name": "Chimefin", "examine": "Cooked chimefin. It still hums, very quietly, in B-flat.", "value": 900, "edible": { "heals": 24 } },
+    { "id": "bronze_net", "name": "Bronze-ringed net", "examine": "A small net weighted with bronze rings. The shoal finds it persuasive.", "value": 40 },
+    { "id": "weighted_seine", "name": "Weighted seine", "examine": "A serious net for serious fish. Mackerel sign no waivers.", "value": 400 },
+    { "id": "feather_rod", "name": "Feather rod", "examine": "Whips like a conductor's baton. Pike rise to the downstroke.", "value": 300 },
+    { "id": "resonant_rod", "name": "Resonant rod", "examine": "The line hums a lure-note. Fish call it unsporting.", "value": 1200 },
+    { "id": "iron_harpoon", "name": "Iron harpoon", "examine": "Heavier, sharper, and far less negotiable than the standard model.", "value": 500 },
+    { "id": "tidesong_harpoon", "name": "Tidesong harpoon", "examine": "Barbed brass, tuned to the Tide-Bell. The only thing a chimefin respects.", "value": 3000 },
+    { "id": "wicker_cage", "name": "Wicker cage", "examine": "Woven tight enough to disappoint a bass.", "value": 350 },
+    { "id": "brass_cage", "name": "Brass cage", "examine": "A cage that rings shut. Crustaceans check the reviews too late.", "value": 1500 },
+    { "id": "tide_token", "name": "Tide-Token", "examine": "Harbour scrip stamped with a wave. Sella's ledger says it's worth exactly one favour.", "stackable": true, "value": 1 },
+    { "id": "onion", "name": "Onion", "examine": "It will make you cry. The Galley calls this 'seasoning the cook'.", "value": 4 },
+    { "id": "chopped_onion", "name": "Chopped onion", "examine": "Diced fine. The tears were a fixed cost.", "value": 3 },
+    { "id": "bowl_of_water", "name": "Bowl of water", "examine": "Fresh from the Galley's rain butt. Soup waiting for a reason.", "value": 4 },
+    { "id": "salt_pinch", "name": "Pinch of sea salt", "examine": "Scooped from the pans. The sea, reduced to its argument.", "stackable": true, "value": 2 },
+    { "id": "fish_stew", "name": "Fish stew", "examine": "Bass, onion, and patience in a bowl. The Hearthchoir's steadiest chord.", "value": 160, "edible": { "heals": 18 } },
+    { "id": "seasoned_shark", "name": "Seasoned shark", "examine": "Shark, salted until it stopped holding a grudge.", "value": 700, "edible": { "heals": 23 } },
+    { "id": "galley_toque", "name": "Galley toque", "examine": "A tall white hat. Height of hat, the cooks insist, equals steadiness of pitch.", "value": 80, "equipSlot": "head", "levelReq": [{ "skill": "Cooking", "level": 40 }] },
+    { "id": "galley_apron", "name": "Galley apron", "examine": "Scorched in places that tell stories. Hearthchoir issue.", "value": 80, "equipSlot": "body", "levelReq": [{ "skill": "Cooking", "level": 40 }] },
+    { "id": "galley_mitts", "name": "Galley mitts", "examine": "Thick mitts for gripping pans and reputations.", "value": 80, "equipSlot": "gloves", "levelReq": [{ "skill": "Cooking", "level": 50 }] },
+    { "id": "oilskin_hat", "name": "Oilskin hat", "examine": "Keeps the rain out and the gull commentary muffled.", "value": 80, "equipSlot": "head", "levelReq": [{ "skill": "Fishing", "level": 40 }] },
+    { "id": "oilskin_coat", "name": "Oilskin coat", "examine": "Waterproof, windproof, and nearly excuse-proof.", "value": 80, "equipSlot": "body", "levelReq": [{ "skill": "Fishing", "level": 40 }] },
+    { "id": "oilskin_waders", "name": "Oilskin waders", "examine": "Wade in up to the chorus. The full oilskin set keeps your line luckier.", "value": 80, "equipSlot": "legs", "levelReq": [{ "skill": "Fishing", "level": 50 }] },
+    { "id": "tideturner_cape", "name": "Tideturner's cape", "examine": "Sea-silk that ripples on its own tide. Worn at the throat by those the harbour sings about.", "value": 350, "equipSlot": "neck", "levelReq": [{ "skill": "Fishing", "level": 90 }, { "skill": "Cooking", "level": 90 }] }
+  ],
+  "objs": [
+    { "id": "shoal_net_spot", "name": "Shoal fishing spot", "examine": "The Shoalrings boil with small silver. They surface on the swell, right on cue.", "action": "Net", "blocks": false },
+    { "id": "deepbait_spot", "name": "Deep-bait fishing spot", "examine": "Darker water with an appetite. Bring bait and a sturdy rod.", "action": "Bait", "blocks": false },
+    { "id": "reef_cage_spot", "name": "Reef cage spot", "examine": "Brinemaw's ledges crawl with armoured tenants behind on rent.", "action": "Cage", "blocks": false },
+    { "id": "deep_harpoon_spot", "name": "Deep harpoon spot", "examine": "Big shadows patrol the reef drop-off. Some of them patrol back.", "action": "Harpoon", "blocks": false },
+    { "id": "tidebell_spot", "name": "Resonant fishing spot", "examine": "Still water that listens. When the Tide-Bell rings, something answers.", "action": "Harpoon", "blocks": false },
+    { "id": "bell_lever", "name": "Bell lever", "examine": "A brass lever, polished by hopeful hands. Pull it and the harbour holds its breath.", "action": "Ring", "blocks": true },
+    { "id": "tide_bell", "name": "The Tide-Bell", "examine": "The great brass bell of Saltsong. It calls the catch; the catch, regrettably, comes.", "blocks": true },
+    { "id": "salt_pan", "name": "Salt pan", "examine": "Shallow stone trays where the sea is slowly talked out of its water.", "action": "Scoop", "blocks": true }
+  ],
+  "recipes": {
+    "cookables": [
+      { "raw": "raw_mackerel", "cooked": "mackerel", "burnt": "burnt_fish", "level": 16, "xp": 55, "stopBurn": 45 },
+      { "raw": "raw_pike", "cooked": "pike", "burnt": "burnt_fish", "level": 25, "xp": 65, "stopBurn": 53 },
+      { "raw": "raw_bass", "cooked": "bass", "burnt": "burnt_fish", "level": 33, "xp": 80, "stopBurn": 62 },
+      { "raw": "raw_tunaling", "cooked": "tunaling", "burnt": "burnt_fish", "level": 62, "xp": 160, "stopBurn": 88 },
+      { "raw": "raw_chimefin", "cooked": "chimefin", "burnt": "burnt_fish", "level": 90, "xp": 240, "stopBurn": 99 }
+    ]
+  },
+  "npcs": [
+    { "id": "harbourmaster_sella", "name": "Harbourmaster Sella", "examine": "Runs Saltsong by tide-table and glare. Pays in Tide-Tokens, never in compliments.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#2f5d7c", "size": 1, "attackable": false, "drops": [] },
+    { "id": "tackle_keeper_orin", "name": "Tackle-Keeper Orin", "examine": "Knows every knot and most of the fish by grudge.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#6b4f2a", "size": 1, "attackable": false, "drops": [] },
+    { "id": "tide_token_broker_vey", "name": "Broker Vey", "examine": "Trades in Tide-Tokens and understatement.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#7c6a9c", "size": 1, "attackable": false, "drops": [] },
+    { "id": "galley_cook_maren", "name": "Galley-Cook Maren", "examine": "Conducts six ranges at once. None of them dares burn.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#b0563c", "size": 1, "attackable": false, "drops": [] },
+    { "id": "fishmonger_pell", "name": "Fishmonger Pelline", "examine": "Pell of Brackwater's sister. She got the better harbour and never lets him forget it.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#4878a0", "size": 1, "attackable": false, "drops": [] },
+    { "id": "lighthouse_keeper_brann", "name": "Lighthouse-Keeper Brann", "examine": "Keeps the light, the bell, and several decades of weather in his beard.", "combatLevel": 0, "hitpoints": 10, "attack": 1, "strength": 1, "defence": 1, "attackSpeed": 4, "respawnTicks": 50, "color": "#5a6a55", "size": 1, "attackable": false, "drops": [] }
+  ],
+  "shops": [
+    {
+      "id": "saltsong_tackle",
+      "name": "Orin's Lines & Weights",
+      "stock": [
+        { "item": "small_net", "qty": 10 },
+        { "item": "fishing_rod", "qty": 10 },
+        { "item": "harpoon", "qty": 10 },
+        { "item": "lobster_pot", "qty": 10 },
+        { "item": "fishing_bait", "qty": 1000 },
+        { "item": "bronze_net", "qty": 10 },
+        { "item": "feather_rod", "qty": 6 },
+        { "item": "iron_harpoon", "qty": 6 },
+        { "item": "wicker_cage", "qty": 6 }
+      ]
+    },
+    {
+      "id": "saltsong_galley",
+      "name": "The Hearthchoir Larder",
+      "stock": [
+        { "item": "onion", "qty": 30 },
+        { "item": "bowl_of_water", "qty": 30 },
+        { "item": "salt_pinch", "qty": 200 },
+        { "item": "knife", "qty": 10 }
+      ]
+    }
+  ],
+  "spawns": [
+    { "id": "harbourmaster_sella", "dx": 10, "dy": 16 },
+    { "id": "tackle_keeper_orin", "dx": 5, "dy": 11 },
+    { "id": "tide_token_broker_vey", "dx": 9, "dy": 15 },
+    { "id": "galley_cook_maren", "dx": 16, "dy": 11 },
+    { "id": "fishmonger_pell", "dx": 11, "dy": 13 },
+    { "id": "lighthouse_keeper_brann", "dx": 2, "dy": 21 }
+  ],
+  "mapObjects": [
+    { "type": "shoal_net_spot", "dx": 3, "dy": 18 },
+    { "type": "shoal_net_spot", "dx": 3, "dy": 19 },
+    { "type": "shoal_net_spot", "dx": 3, "dy": 20 },
+    { "type": "shoal_net_spot", "dx": 3, "dy": 21 },
+    { "type": "shoal_net_spot", "dx": 7, "dy": 18 },
+    { "type": "shoal_net_spot", "dx": 7, "dy": 19 },
+    { "type": "shoal_net_spot", "dx": 7, "dy": 20 },
+    { "type": "shoal_net_spot", "dx": 7, "dy": 21 },
+    { "type": "deepbait_spot", "dx": 3, "dy": 22 },
+    { "type": "deepbait_spot", "dx": 3, "dy": 23 },
+    { "type": "deepbait_spot", "dx": 7, "dy": 22 },
+    { "type": "deepbait_spot", "dx": 7, "dy": 23 },
+    { "type": "deepbait_spot", "dx": 4, "dy": 24 },
+    { "type": "deepbait_spot", "dx": 6, "dy": 24 },
+    { "type": "bank_booth", "dx": 5, "dy": 17 },
+    { "type": "reef_cage_spot", "dx": 18, "dy": 23 },
+    { "type": "reef_cage_spot", "dx": 18, "dy": 24 },
+    { "type": "reef_cage_spot", "dx": 18, "dy": 25 },
+    { "type": "reef_cage_spot", "dx": 24, "dy": 23 },
+    { "type": "reef_cage_spot", "dx": 24, "dy": 24 },
+    { "type": "reef_cage_spot", "dx": 24, "dy": 25 },
+    { "type": "deep_harpoon_spot", "dx": 19, "dy": 26 },
+    { "type": "deep_harpoon_spot", "dx": 20, "dy": 26 },
+    { "type": "deep_harpoon_spot", "dx": 21, "dy": 26 },
+    { "type": "deep_harpoon_spot", "dx": 22, "dy": 26 },
+    { "type": "deep_harpoon_spot", "dx": 23, "dy": 26 },
+    { "type": "deep_harpoon_spot", "dx": 24, "dy": 26 },
+    { "type": "bank_booth", "dx": 20, "dy": 24 },
+    { "type": "range", "dx": 22, "dy": 24 },
+    { "type": "tide_bell", "dx": 0, "dy": 20 },
+    { "type": "bell_lever", "dx": 1, "dy": 21 },
+    { "type": "tidebell_spot", "dx": 3, "dy": 20 },
+    { "type": "tidebell_spot", "dx": 3, "dy": 21 },
+    { "type": "tidebell_spot", "dx": 3, "dy": 22 },
+    { "type": "tidebell_spot", "dx": 1, "dy": 23 },
+    { "type": "range", "dx": 12, "dy": 10 },
+    { "type": "range", "dx": 13, "dy": 10 },
+    { "type": "range", "dx": 14, "dy": 10 },
+    { "type": "range", "dx": 12, "dy": 12 },
+    { "type": "range", "dx": 13, "dy": 12 },
+    { "type": "range", "dx": 14, "dy": 12 },
+    { "type": "bank_booth", "dx": 13, "dy": 11 },
+    { "type": "salt_pan", "dx": 17, "dy": 10 },
+    { "type": "salt_pan", "dx": 17, "dy": 12 }
+  ],
+  "terrainPads": [
+    { "dx": 0, "dy": 0, "w": 30, "h": 28, "code": 0 },
+    { "dx": 0, "dy": 18, "w": 30, "h": 10, "code": 1 },
+    { "dx": 0, "dy": 16, "w": 30, "h": 2, "code": 8 },
+    { "dx": 2, "dy": 15, "w": 26, "h": 1, "code": 2 },
+    { "dx": 10, "dy": 8, "w": 9, "h": 7, "code": 4 },
+    { "dx": 11, "dy": 9, "w": 7, "h": 5, "code": 3 },
+    { "dx": 14, "dy": 14, "w": 1, "h": 1, "code": 3 },
+    { "dx": 3, "dy": 10, "w": 5, "h": 4, "code": 4 },
+    { "dx": 4, "dy": 11, "w": 3, "h": 2, "code": 3 },
+    { "dx": 5, "dy": 13, "w": 1, "h": 1, "code": 3 },
+    { "dx": 4, "dy": 18, "w": 3, "h": 6, "code": 5 },
+    { "dx": 21, "dy": 18, "w": 1, "h": 5, "code": 5 },
+    { "dx": 19, "dy": 23, "w": 5, "h": 3, "code": 3 },
+    { "dx": 1, "dy": 18, "w": 1, "h": 2, "code": 5 },
+    { "dx": 0, "dy": 20, "w": 3, "h": 3, "code": 3 }
+  ],
+  "sharedEdits": [
+    {
+      "file": "server/index.ts",
+      "what": "Register the Saltsong intent domains (side-effect import, next to the existing './intent-produce' import around line 40). Without it the server never registers salt-fish/salt-bell/salt-scoop/salt-prep/salt-exchange/salt-redeem.",
+      "snippet": "import './intent-saltsong'; // side-effect: registers the Saltsong Harbour fishing/cooking/token domains"
+    },
+    {
+      "file": "src/packs/index.ts",
+      "what": "Load the Saltsong client pack (side-effect import, append with the other pack imports).",
+      "snippet": "import './saltsong';            // Saltsong Harbour fishing & cooking expansion"
+    }
+  ]
+}
