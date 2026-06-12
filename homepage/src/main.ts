@@ -39,7 +39,7 @@ const RAIL: Record<string, RailLink[]> = {
     { label: 'Forum', href: FORUM_URL, icon: 'quill', ext: true },
     { label: 'The Larpscape Wiki', href: WIKI_URL, icon: 'book', ext: true },
     { label: 'The Aldgate Exchange', href: TRADE_URL, icon: 'economy', ext: true },
-    { label: 'Join our Discord', href: '#discord', icon: 'discord' },
+    { label: 'Join our Discord', href: 'https://discord.gg/jmqTS23Ttb', icon: 'discord', ext: true },
     { label: 'Guilds & trading', href: '#about', icon: 'banner' },
     { label: 'GitHub', href: GITHUB_URL, icon: 'code', ext: true },
   ],

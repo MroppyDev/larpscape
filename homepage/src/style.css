@@ -605,6 +605,7 @@ body.modal-open { overflow: hidden; }
 }
 .discord-blurb { flex: 1 1 260px; min-width: 230px; }
 .discord-blurb p { font-size: 16.5px; margin: 0 0 12px; }
+.discord-cta { display: inline-block; margin: 2px 0 12px; }
 .discord-note { font-style: italic; color: var(--ink-soft); font-size: 14.5px; }
 .discord-mark {
   display: block;
