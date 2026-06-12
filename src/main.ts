@@ -10,6 +10,7 @@ import './tutorial';
 import './worldmap';
 import { net } from './net';
 import { initUI } from './ui';
+import { maybeShowPatchNotes } from './patch-notes';
 import {
   render, renderMinimap, buildMinimapBase, markTick,
   setViewportScale, setViewportSize, nudgeZoom, nudgeYaw,
@@ -257,19 +258,22 @@ async function boot() {
   }
 
   document.getElementById('play-btn')!.addEventListener('click', () => {
-    const entered = nameInput?.value.trim();
-    if (entered && !net.online) state.player.name = entered.slice(0, 12);
-    const nameEl = document.getElementById('chat-name');
-    if (nameEl) nameEl.textContent = state.player.name + ':';
-    document.getElementById('welcome-screen')!.style.display = 'none';
-    state.started = true;
-    audio.init();
-    const want = trackForRegion(state.player.x, state.player.y);
-    const t = TRACKS.find((t) => t.name === want) ?? TRACKS[0];
-    audio.unlocked.add(t.name);
-    audio.play(t);
-    lastRegionTrack = t.name;
-    saveGame();
+    void (async () => {
+      await maybeShowPatchNotes();
+      const entered = nameInput?.value.trim();
+      if (entered && !net.online) state.player.name = entered.slice(0, 12);
+      const nameEl = document.getElementById('chat-name');
+      if (nameEl) nameEl.textContent = state.player.name + ':';
+      document.getElementById('welcome-screen')!.style.display = 'none';
+      state.started = true;
+      audio.init();
+      const want = trackForRegion(state.player.x, state.player.y);
+      const t = TRACKS.find((t) => t.name === want) ?? TRACKS[0];
+      audio.unlocked.add(t.name);
+      audio.play(t);
+      lastRegionTrack = t.name;
+      saveGame();
+    })();
   });
 }
 boot();

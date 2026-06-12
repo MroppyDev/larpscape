@@ -1,0 +1,17 @@
+{
+  "e95cd34": {
+    "title": "The Ledgers Remember",
+    "date": "F.S. 743 · 12 June 2026",
+    "intro": "After the Concord audit wiped the forged ledgers clean, we spent the week making sure the new ones actually stick. Your browser is no longer the bookkeeper — and this patch is the part where everything you earn, spend, pray, and heal remembers you when you log back in.",
+    "section": "What the server owns now",
+    "items": [
+      "Combat experience — every swing, shot, and spell that lands XP is granted by the server and written to your save. Refresh the page and your Strength still knows what you did.",
+      "Prayer — toggling a prayer, draining points, recharging at an altar: all server-side now. Active prayers survive a reload; running dry still clears them, as it should.",
+      "Healing — the Aldgate fountain, Dr. Ticksworth's chair, and Glen's controversial cracker all heal through the server. That extra hitpoint is real chalk in the health ledger, not a browser fantasy.",
+      "Inventory — burying bones, eating food, and every other debit now targets the slot you actually used. No more phantom removals from the wrong pocket.",
+      "The Exchange, trading, and guild vaults — when the server rewrites your save mid-session, the client pulls the authoritative copy instead of clobbering it on the next autosave.",
+      "New adventurers — starter kit is defined by the server. Twenty-five coins in the bank, tools in the pack, glock on the hip: the same honest morning everyone gets."
+    ],
+    "signoff": "The vale keeps its chalk. See you on the road. — The Larpscape team"
+  }
+}
