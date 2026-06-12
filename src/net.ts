@@ -177,7 +177,12 @@ function wsSend(obj: any): boolean {
 
 function sendChat(text: string) {
   const t = String(text ?? '').slice(0, 80).trim();
-  if (t && net.online) wsSend({ t: 'chat', text: t });
+  if (t && net.online) {
+    wsSend({ t: 'chat', text: t });
+    // the server broadcasts chat to OTHERS, not back to us, so set our own overhead
+    // bubble locally (mirrors how remote players' bubbles are set on the 'chat' echo).
+    if (state.player) state.player.chat = { text: t, until: performance.now() + 4000 };
+  }
 }
 
 function handlePlayers(players: { name: string; x: number; y: number; app: any; cb?: number; hp?: number; maxHp?: number; d?: boolean; tag?: string | null }[]) {

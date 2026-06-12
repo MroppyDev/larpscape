@@ -3213,6 +3213,15 @@ function syncPlayer(now: number) {
   playerNode.visible = !p.dead;
   const maxHp = level('Hitpoints');
   entityOverlays(p, p.hitsplat, p.curHp < maxHp ? Math.max(0, p.curHp / maxHp) : null, 1.1);
+  // own overhead chat bubble (server doesn't echo our chat back to us)
+  if (!p.dead && p.chat && now < p.chat.until) {
+    const fx = playerNode.position.x, fz = playerNode.position.z;
+    const gy = Math.max(groundH(fx, fz), WATER_LEVEL);
+    const cb = takeSprite();
+    cb.material = chatBubbleMat(p.chat.text);
+    cb.position.set(fx, gy + 1.82, fz);
+    cb.scale.set(3.2, 0.25, 1);
+  }
 }
 
 // ---- remote players (multiplayer presence) ----

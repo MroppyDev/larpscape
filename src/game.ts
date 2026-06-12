@@ -84,6 +84,7 @@ export interface Player {
   hitsplat: { dmg: number; until: number } | null;
   dead: boolean;
   lastFacing: { dx: number; dy: number };
+  chat?: { text: string; until: number }; // own overhead chat bubble (mirrors RemotePlayer.chat)
 }
 
 export interface XpDrop { skill: SkillName; amount: number; }
@@ -1075,9 +1076,16 @@ function movePlayer() {
   p.prevX = p.x; p.prevY = p.y;
   if (p.path.length === 0) return;
   let steps = p.run && p.energy > 0 ? 2 : 1;
+  // When walking up to attack, never step onto the target's own tile. The path was
+  // computed to where the NPC WAS; if it has moved into our next tile we stop one
+  // short (still adjacent) instead of stacking on top of it — tickPlayerCombat then
+  // swings (if adjacent) or re-paths to its new position next tick.
+  const a = p.action;
+  const target = (a?.type === 'attack' && a.npc && !a.npc.dead) ? a.npc : null;
   while (steps-- > 0 && p.path.length > 0) {
     const next = p.path[0];
     if (blocked(next.x, next.y)) { p.path = []; break; }
+    if (target && next.x === target.x && next.y === target.y) { p.path = []; break; }
     p.lastFacing = { dx: Math.sign(next.x - p.x), dy: Math.sign(next.y - p.y) };
     p.x = next.x; p.y = next.y;
     p.path.shift();
@@ -1466,6 +1474,15 @@ function tickPlayerCombat(npc: Npc) {
   const mode = currentAttackMode();
   const reach = mode === 'melee' ? 1 : 6; // ranged + gun share tile reach
   const dist = Math.max(Math.abs(p.x - npc.x), Math.abs(p.y - npc.y));
+  if (mode === 'melee' && dist === 0) {
+    // Stacked on the npc (it stepped onto our tile): hop to a free neighbour so we
+    // fight from an adjacent square, then swing next tick — never attack from on top.
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+      const nx = p.x + dx, ny = p.y + dy;
+      if (!blocked(nx, ny)) { p.path = [{ x: nx, y: ny }]; break; }
+    }
+    return;
+  }
   if (dist > reach || (mode !== 'melee' && dist === 0)) {
     if (p.path.length === 0) {
       const path = findPath(p.x, p.y, npc.x, npc.y, true);
