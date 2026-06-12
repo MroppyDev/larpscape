@@ -10,8 +10,8 @@
     "gd2_waystone_corr":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 3, "subKey": "gd2_rings", "bit": 2, "completeMask": 7, "completeStage": 4 },
     "gd2_waystone_south":  { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 3, "subKey": "gd2_rings", "bit": 4, "completeMask": 7, "completeStage": 4 },
 
-    "gd2_brazier_stoke":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 2, "subKey": "gd2_brazier", "bit": 1 },
-    "gd2_brazier_verdict": { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 2, "subKey": "gd2_brazier", "bit": 2 },
+    "gd2_brazier_stoke":   { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 1, "subKey": "gd2_brazier", "bit": 1 },
+    "gd2_brazier_verdict": { "parentQuest": "gd2_quarrel_of_wizards", "requireStage": 1, "subKey": "gd2_brazier", "bit": 2 },
 
     "gd4_calder_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 1 },
     "gd4_vesper_demand":  { "parentQuest": "gd4_gathering_discord", "requireStage": 1, "subKey": "gd4_accord", "bit": 2 },

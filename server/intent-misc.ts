@@ -280,8 +280,11 @@ function slayer(ctx: DomainCtx, payload: Record<string, unknown>): IntentResult 
     }
 
     if (op === 'kill') {
-      const npc = String(payload.npc ?? '');
-      return creditSlayerKill(state, npc);
+      // Slayer kill credit is authoritative-only: it is granted by the NPC death
+      // hook (npcDeathHooks) when the SERVER confirms a kill, never on client
+      // request. A client-reachable 'kill' op was a free Slayer XP/points mint
+      // (creditSlayerKill grants xp=hp + completion bonus + points with no kill).
+      return { ok: false, kind, error: 'unknown slayer op' };
     }
 
     if (op === 'read-tome') {

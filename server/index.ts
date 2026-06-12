@@ -1581,9 +1581,15 @@ initDungeon(db, (userId, msg) => {
 // real client; fall back to the socket address for direct connections.
 const wsUpgradeHits = new Map<string, { count: number; reset: number }>();
 function wsUpgradeAllowed(req: import('http').IncomingMessage): boolean {
+  // Key on the real client IP. nginx's /ws block appends the client address as the
+  // RIGHT-most X-Forwarded-For entry (proxy_add_x_forwarded_for); a client can
+  // prepend arbitrary entries but cannot control the one nginx appends, so we take
+  // the last entry — never the left-most (spoofable) one. Fall back to the socket
+  // address for any direct (non-proxied) connection.
   const xff = req.headers['x-forwarded-for'];
-  const fwd = Array.isArray(xff) ? xff[0] : xff;
-  const ip = (fwd ? String(fwd).split(',')[0].trim() : '')
+  const raw = Array.isArray(xff) ? xff[xff.length - 1] : xff;
+  const parts = raw ? String(raw).split(',').map((s) => s.trim()).filter(Boolean) : [];
+  const ip = (parts.length ? parts[parts.length - 1] : '')
     || req.socket.remoteAddress || 'unknown';
   const now = Date.now();
   let entry = wsUpgradeHits.get(ip);

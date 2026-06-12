@@ -498,8 +498,10 @@ CREATE TABLE IF NOT EXISTS guild_vault (
       cfOffers.delete(id);
       const challenger = clientForUser(offer.fromId);
       if (!challenger) { res.status(400).json({ error: 'challenger went offline' }); return; }
+      // Single draw drives BOTH the visible face and the winner: the challenger
+      // (offer.fromId) calls 'heads', so the shown coin matches who actually wins.
       const flip: 'heads' | 'tails' = Math.random() < 0.5 ? 'heads' : 'tails';
-      const winnerId = Math.random() < 0.5 ? offer.fromId : offer.toId;
+      const winnerId = flip === 'heads' ? offer.fromId : offer.toId;
       const loserId = winnerId === offer.fromId ? offer.toId : offer.fromId;
       const winnerName = winnerId === offer.fromId ? offer.fromName : offer.toName;
       const loserName = loserId === offer.fromId ? offer.fromName : offer.toName;

@@ -3009,7 +3009,7 @@ function syncObjects(now: number, px: number, pz: number) {
     }
   }
   for (const [o, inst] of objInst) {
-    if (!seen.has(o)) { objectGroup!.remove(inst.node); objInst.delete(o); }
+    if (!seen.has(o)) { if (inst.fall) for (const m of inst.fall.mats) m.dispose(); objectGroup!.remove(inst.node); objInst.delete(o); }
   }
 }
 

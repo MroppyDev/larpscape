@@ -51,7 +51,7 @@
   "gd2_quarrel_of_wizards": {
     "transitions": [
       { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "gd1_sour_notes", "stage": 5 }] },
-      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd2_brazier", "stage": 2 }] },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd2_brazier", "mask": 3 }] },
       { "from": 2, "to": 3 },
       { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "gd2_rings", "stage": 7 }] },
       { "from": 4, "to": 5 },
@@ -71,7 +71,7 @@
   "gd4_gathering_discord": {
     "transitions": [
       { "from": 0, "to": 1, "requiredQuestStages": [{ "id": "gd3_sealed_wing", "stage": 6 }] },
-      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd4_accord", "stage": 12 }] },
+      { "from": 1, "to": 2, "requiredQuestStages": [{ "id": "gd4_accord", "mask": 12 }] },
       { "from": 2, "to": 3 },
       { "from": 3, "to": 4, "requiredQuestStages": [{ "id": "gd4_boss", "stage": 1 }] },
       { "from": 4, "to": 5 }
@@ -181,7 +181,7 @@
       { "from": 1, "to": 2 },
       { "from": 2, "to": 3 },
       { "from": 3, "to": 4, "requiredItems": [{ "id": "cellar_key", "qty": 1 }] },
-      { "from": 4, "to": 5, "requiredQuestStages": [{ "id": "q5_cellar", "stage": 3 }] },
+      { "from": 4, "to": 5, "requiredQuestStages": [{ "id": "q5_cellar", "mask": 3 }] },
       { "from": 5, "to": 6, "requiredItems": [{ "id": "ravenmoor_diary", "qty": 1 }] }
     ]
   },

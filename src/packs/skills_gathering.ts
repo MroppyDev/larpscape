@@ -107,26 +107,9 @@ for (const type of ['rocks_gold', 'rocks_runite']) {
   });
 }
 
-// ============================================================================
-// POTIONS — Drink actions for the new brews
-// ============================================================================
-registerItemAction('prayer_potion', 'Drink', (slot) => {
-  void requestIntent('consume', { item: 'prayer_potion', invSlot: slot }).then((echo) => {
-    if (!echo.ok) return;
-    audio.sfx('pray');
-    msg('You drink the prayer potion. A calm, chapel-cold feeling restores your spirit.');
-    events.onStatsChange();
-  });
-});
-
-// NOTE: like attack/defence potions in content.ts, this is flavor-only in v1 —
-// no real stat boost is applied yet.
-registerItemAction('super_attack', 'Drink', (slot) => {
-  void requestIntent('consume', { item: 'super_attack', invSlot: slot }).then((echo) => {
-    if (!echo.ok) return;
-    audio.sfx('eat');
-    msg('You drink the super attack potion. Your arms feel ready for anything.');
-  });
-});
+// NOTE: 'Drink' actions for prayer_potion and super_attack are registered in
+// skills_production.ts (Herblore handles potions). They were previously also
+// registered here, which produced duplicate right-click "Drink" entries since
+// registerItemAction pushes rather than replaces.
 
 export {};

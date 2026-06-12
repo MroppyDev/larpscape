@@ -179,6 +179,13 @@ export interface DomainCtx extends IntentCtx {
   store: StateStore;
   frozen: boolean;
   revOf: (userId: number) => number;
+  // Live combat HP from the connected PlayerView (RAM), if any. Combat damage is
+  // applied to view.hp and only lazily flushed to the save's state.curHp, so HP-
+  // mutating intents (eat/heal/pickpocket-stun) MUST base their math on this live
+  // value — basing on the stale state.curHp let players eat to snap HP back up to
+  // the last-flushed value mid-fight (near-immortality). Undefined on the HTTP
+  // path (no live view); handlers fall back to state.curHp there.
+  hp?: number;
 }
 
 export type DomainHandler = (ctx: DomainCtx, payload: Record<string, unknown>) => IntentResult;
@@ -565,13 +572,17 @@ export function createIntents(stateStore: StateStore) {
       if (isStackable(itemId)) state.equipment[targetSlot] = { id: itemId, qty };
       // return the previously-worn item to the inventory (or bank if no room).
       const changed: Record<string, { id: string; qty: number } | null> = { [targetSlot]: state.equipment[targetSlot] };
+      const granted: { id: string; qty: number }[] = [];
       if (prev) {
         if (!invAdd(state, prev.id, prev.qty)) bankAdd(state, prev.id, prev.qty);
+        // echo the swapped-out item so the client mirror restores it (inventory or bank).
+        granted.push({ id: prev.id, qty: prev.qty });
       }
       return {
         ok: true, kind: 'equip',
         removed: [{ id: itemId, qty, ...(removedSlot !== undefined ? { slot: removedSlot } : {}) }],
         equip: changed,
+        ...(granted.length ? { granted } : {}),
       };
     });
     if (!res) return fail('equip', 'no character');
@@ -618,7 +629,13 @@ export function createIntents(stateStore: StateStore) {
         const amount = Math.max(0, Math.floor(g.amount));
         addXp(state, g.skill, amount); xp.push({ skill: g.skill, amount });
       }
-      if (reward.coins && reward.coins > 0) addCoins(state, Math.floor(reward.coins));
+      if (reward.coins && reward.coins > 0) {
+        const coins = Math.floor(reward.coins);
+        // addCoins adds nothing (returns false) when the carried stack would exceed
+        // the coin cap; overflow the whole reward to the bank so a player near the
+        // cap never loses it, mirroring the item overflow-to-bank path above.
+        if (!addCoins(state, coins)) bankAdd(state, 'coins', coins);
+      }
       state.quests[claimKey] = 1; // mark claimed
       return { ok: true, kind: 'quest', granted, xp, coins: reward.coins ? getCoins(state) : undefined, quest: id, stage: questStage(state, id) };
     });

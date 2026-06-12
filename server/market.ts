@@ -403,6 +403,9 @@ CREATE TABLE IF NOT EXISTS market_proceeds (
   });
 
   app.post('/api/market/cancel', (req, res) => {
+    // Intentionally functional during ECONOMY_FROZEN: cancelling returns a
+    // player's OWN pre-freeze escrowed item to the SAME account. The freeze
+    // scope covers cross-account / value-minting moves, not own-escrow returns.
     const user = requireUser(req, res);
     if (!user) return;
     const { id } = req.body ?? {};
@@ -444,6 +447,9 @@ CREATE TABLE IF NOT EXISTS market_proceeds (
   });
 
   app.post('/api/market/collect', (req, res) => {
+    // Intentionally functional during ECONOMY_FROZEN: collecting moves a
+    // player's OWN pre-freeze proceeds into the SAME account. The freeze scope
+    // covers cross-account / value-minting moves, not own-escrow returns.
     const user = requireUser(req, res);
     if (!user) return;
     let out;

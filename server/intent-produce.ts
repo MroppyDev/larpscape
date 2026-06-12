@@ -241,7 +241,9 @@ registerIntentDomain('thieve', (ctx, payload) => {
     }
     if (!successRoll(lvl, pp.level, 0.7, 0.95)) {
       const max = skillLevel(state, 'Hitpoints');
-      const cur = Math.max(0, Math.min(max, state.curHp ?? max));
+      // Apply stun damage to the LIVE combat HP (ctx.hp), not the stale save copy,
+      // so a failed pickpocket mid-fight can't snap HP up to the last-flushed value.
+      const cur = Math.max(0, Math.min(max, ctx.hp ?? state.curHp ?? max));
       const dmg = Math.max(1, Math.floor(pp.stunDmg));
       state.curHp = Math.max(1, cur - dmg);
       return { ok: true, kind: 'thieve', granted: [], xp: [], hp: state.curHp };
@@ -407,7 +409,13 @@ registerIntentDomain('runecraft', (ctx, payload) => {
     if (n === 0) return fail('runecraft', 'you need rune essence');
     const mult = Math.floor(1 + lvl / a.div);
     if (!invRemove(state, 'rune_essence', n)) return fail('runecraft', 'you need rune essence');
-    invAdd(state, a.rune, n * mult);
+    // Guard the grant: if the rune stack would overflow MAX_QTY, invAdd adds
+    // nothing and the consumed essence would be destroyed. Re-add the essence and
+    // abort so the player never loses it (mirrors the refund pattern elsewhere).
+    if (!invAdd(state, a.rune, n * mult)) {
+      invAdd(state, 'rune_essence', n);
+      return fail('runecraft', 'you have too many of that rune');
+    }
     const xp = n * a.xpPer;
     const x = addXp(state, 'Runecraft', xp);
     return {
@@ -648,7 +656,10 @@ registerIntentDomain('eat', (ctx, payload) => {
     const rm = invRemoveItem(state, item, 1, invSlot);
     if (!rm.ok) return fail('eat', 'you have none');
     const max = skillLevel(state, 'Hitpoints');
-    const cur = Math.max(0, Math.min(max, state.curHp ?? max));
+    // Base the heal on the LIVE combat HP (ctx.hp) when connected, not the lazily
+    // flushed save copy (state.curHp) — the latter lags combat damage by up to the
+    // flush interval, so eating off it snapped HP back up to a stale value.
+    const cur = Math.max(0, Math.min(max, ctx.hp ?? state.curHp ?? max));
     state.curHp = Math.min(max, cur + heals);
     return {
       ok: true, kind: 'eat',
@@ -763,6 +774,10 @@ registerIntentDomain('heal', (ctx, payload) => {
   if (source === 'tick_eater' && !nearNpc(ctx.x, ctx.y, 'tick_eater_glen')) return fail('heal', 'not near Glen');
   return tx(ctx, 'heal', (state) => {
     const max = maxHpFor(state);
+    // Reconcile the lazily-flushed save HP from the live combat HP before healing,
+    // so a heal mid-fight bases off real HP (not a stale higher value) — same
+    // near-immortality guard as eat/pickpocket-stun.
+    if (typeof ctx.hp === 'number') state.curHp = Math.max(0, Math.min(max, ctx.hp));
     const cur = typeof state.curHp === 'number' ? state.curHp : max;
     if (cur >= max) return { ok: true, kind: 'heal', hp: cur, healed: false };
     if (def.chance !== undefined && Math.random() >= def.chance) {

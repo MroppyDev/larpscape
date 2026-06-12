@@ -106,7 +106,11 @@ function gotoPages(base: string, total: number, perPage: number, start: number):
 // ---------------------------------------------------------------------------
 
 function renderBBCode(raw: string): string {
-  // 0. normalise newlines, hard cap (defence in depth; routes also cap).
+  // 0. strip C0 control chars (except \n and \t) FIRST — a raw NUL would
+  //     otherwise collide with the \x00 [code]-placeholder sentinel below and
+  //     let a user forge/duplicate code-block content.
+  raw = raw.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
+  // 0b. normalise newlines, hard cap (defence in depth; routes also cap).
   let src = raw.replace(/\r\n?/g, '\n').slice(0, BODY_MAX);
 
   // 1. pull [code] blocks out before anything else; restored verbatim at the end.

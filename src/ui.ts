@@ -1571,7 +1571,8 @@ function renderBank(layer: HTMLElement) {
   grid.className = 'modal-grid';
   let bankValue = 0;
   state.player.bank.forEach((b, i) => {
-    bankValue += (ITEMS[b.id]?.value ?? 0) * b.qty;
+    const def = ITEMS[b.id];
+    bankValue += (def?.value ?? 0) * b.qty;
     const slot = document.createElement('div');
     slot.className = 'modal-slot';
     slot.appendChild(copyCanvas(itemIcon(b.id)));
@@ -1579,11 +1580,11 @@ function renderBank(layer: HTMLElement) {
     q.className = 'inv-qty';
     q.textContent = fmtQty(b.qty);
     slot.appendChild(q);
-    slot.title = `${ITEMS[b.id].name} x ${b.qty.toLocaleString()}`;
+    slot.title = `${def?.name ?? b.id} x ${b.qty.toLocaleString()}`;
     slot.onclick = () => bankWithdraw(i, 1);
     slot.oncontextmenu = (e) => {
       e.preventDefault(); e.stopPropagation();
-      const name = ITEMS[b.id].name;
+      const name = def?.name ?? b.id;
       showContextMenu(e.clientX, e.clientY, [
         { label: 'Withdraw-1', target: name, fn: () => bankWithdraw(i, 1) },
         { label: 'Withdraw-5', target: name, fn: () => bankWithdraw(i, 5) },

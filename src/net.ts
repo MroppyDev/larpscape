@@ -9,7 +9,7 @@ import {
   state, msg, setSaveProvider, netLink, combatSnapshot, saveGame,
   netWorldSnapshot, netWorldDelta, netHit, netYouHit, netNpcHitYou,
   netYouKilled, netFx, netShorn, netDeny,
-  netIntent, netGranted,
+  netIntent, netGranted, rejectPendingIntents,
   netPvpHitYou, netPvpYouHit, netPvpHit, netPvpDeath, netPvpKill,
   netDeath, netHpSync, netSpecSync, netPrayerSync,
 } from './game';
@@ -170,10 +170,9 @@ function currentApp(): Record<string, string | null> {
   return app;
 }
 
-function wsSend(obj: any) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    try { ws.send(JSON.stringify(obj)); } catch { /* ignore */ }
-  }
+function wsSend(obj: any): boolean {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+  try { ws.send(JSON.stringify(obj)); return true; } catch { return false; }
 }
 
 function sendChat(text: string) {
@@ -388,7 +387,7 @@ function openWs() {
     if (state.player) wsSend(combatSnapshot());
   };
   ws.onmessage = (ev) => { if (typeof ev.data === 'string') handleWsMessage(ev.data); };
-  ws.onclose = () => { ws = null; netLink.send = null; scheduleReconnect(); };
+  ws.onclose = () => { ws = null; netLink.send = null; rejectPendingIntents(); scheduleReconnect(); };
   ws.onerror = () => { try { ws?.close(); } catch { /* ignore */ } };
 }
 

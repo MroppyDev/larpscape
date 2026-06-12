@@ -136,7 +136,7 @@ async function fetchOffers() {
   try {
     const r = await net.api('/api/ge/offers');
     offers = r.offers ?? [];
-    if (open) redraw();
+    if (open && view === 'offers') redraw();
   } catch (e: any) {
     msg('The Aldgate Exchange clerk shuffles papers: ' + (e?.message ?? 'connection trouble') + '.');
   }

@@ -2,6 +2,9 @@
 
 import { terrain, key, T, MAP_W, MAP_H } from './world';
 import type { PlayerView } from './sim';
+// Imported as a function (invoked at call time) to avoid a module-init cycle:
+// sim.ts imports applyPlayerPoison from here at module load.
+import { getSimTick } from './sim';
 
 export interface PlayerDot {
   every: number;
@@ -19,7 +22,9 @@ export function getPlayerDots(userId: number): PlayerDot[] {
 
 export function applyPlayerPoison(p: PlayerView, every = 5, dmg = 1, hits = 4): void {
   const dots = playerDots.get(p.userId) ?? [];
-  dots.push({ every, dmg, hitsLeft: hits, nextAt: 0, fx: 'bog_poison' });
+  // First tick fires after `every` sim ticks (matching applyDotStack's
+  // nextAt = nowTick + def.every), not on the very next tick.
+  dots.push({ every, dmg, hitsLeft: hits, nextAt: getSimTick() + every, fx: 'bog_poison' });
   playerDots.set(p.userId, dots);
   p.send({ t: 'fx', kind: 'bog_spit', npc: -1, def: 'bog_horror' });
 }

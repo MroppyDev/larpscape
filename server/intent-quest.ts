@@ -288,17 +288,23 @@ export function installQuestKillHook(store: StateStore): void {
     store.withState(by.userId, (state) => {
       for (const def of defs) {
         if (questStage(state, def.parentQuest) !== def.requireStage) continue;
-        if (subVal(state, def.subKey) >= def.target) continue;
-        const next = setSub(state, def.subKey, subVal(state, def.subKey) + 1);
-        questSet[def.subKey] = next;
-        if (def.completeStage !== undefined && next >= def.target
+        // Only bump the counter while it is below target; but re-evaluate the
+        // stage advance on EVERY kill at requireStage so a maxed counter whose
+        // earlier advance never committed still fires (no latent soft-lock).
+        let cur = subVal(state, def.subKey);
+        if (cur < def.target) {
+          cur = setSub(state, def.subKey, cur + 1);
+          questSet[def.subKey] = cur;
+        }
+        if (def.completeStage !== undefined && cur >= def.target
             && questStage(state, def.parentQuest) === def.requireStage) {
           const st = setStageMonotonic(state, def.parentQuest, def.completeStage);
           stageAdvance = { quest: def.parentQuest, stage: st };
         }
       }
     });
-    if (Object.keys(questSet).length === 0) return;
+    // Send if we bumped a counter OR re-fired a stage advance (maxed-counter recovery).
+    if (Object.keys(questSet).length === 0 && !stageAdvance) return;
     const echo: Record<string, unknown> = { t: 'intent', ok: true, kind: 'quest', questSet };
     if (stageAdvance) { echo.quest = stageAdvance.quest; echo.stage = stageAdvance.stage; }
     by.send(echo);

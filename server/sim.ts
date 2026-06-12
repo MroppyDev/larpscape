@@ -342,7 +342,7 @@ function npcAttackRoll(n: SNpc, target: PlayerView): number {
   const atkMult = n.atkDebuffUntil > sim.tick ? n.atkDebuffMult : 1;
   const atk = Math.max(1, Math.floor(n.def.attack * atkMult));
   const hit = rollHit(atk, 0, target.effDef, target.defBonus);
-  const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640) + 1;
+  const maxHit = Math.floor(0.5 + (n.def.strength + 8) * 64 / 640);
   return hit ? Math.floor(Math.random() * (maxHit + 1)) : 0;
 }
 
@@ -716,13 +716,15 @@ export function handleSwing(p: PlayerView, msg: any) {
   const now = Date.now();
   if (now < (nextSwingAt.get(p.userId) ?? 0)) return;
   const speed = prof.attackSpeed;
-  nextSwingAt.set(p.userId, now + speed * 600 - 150);
 
   const prep = prepareSwing(p.userId, mode);
   if (!prep.ok) {
     p.send({ t: 'deny', what: 'swing' });
     return;
   }
+  // Charge the cooldown only after a successful prepareSwing so a swing that
+  // fails on missing ammo/runes does not consume the attack timer.
+  nextSwingAt.set(p.userId, now + speed * 600 - 150);
 
   // eff / bonus / maxHit by mode, all server-derived.
   let eff: number, bonus: number, maxHit: number;
@@ -743,10 +745,26 @@ export function handleSwing(p: PlayerView, msg: any) {
   // Special attack: honoured ONLY if the client requests the player's actually-
   // equipped spec item (profile.specItemId) AND the server-owned spec energy
   // covers its cost (trySpendSpec debits it). No unowned best-in-slot specs (M4).
+  // Conditional-effect specs (stun / drain_def / guaranteed_dot) only do
+  // something when the main hit lands, so their energy debit is deferred until
+  // mainLanded is known (below) — otherwise a whiffed spec drains energy for no
+  // effect. Unconditional specs (double_hit / aoe_adjacent / warcry_aoe_debuff)
+  // debit eagerly since they act regardless of the main roll.
   let spec: SpecDef | null = null;
+  let specDebitPending = false; // conditional spec selected but not yet charged
   if (typeof msg.spec === 'string' && msg.spec === prof.specItemId && prof.specItemId) {
     const sd = ITEMS[prof.specItemId]?.spec;
-    if (sd && isSpecKind(sd.kind) && prof.trySpendSpec(prof.specItemId)) spec = sd;
+    if (sd && isSpecKind(sd.kind)) {
+      const conditional = sd.kind === 'stun' || sd.kind === 'drain_def' || sd.kind === 'guaranteed_dot';
+      if (conditional) {
+        // Selection is provisional: multipliers apply, but energy is only spent
+        // if the main hit lands (and the player still has energy then).
+        spec = sd;
+        specDebitPending = true;
+      } else if (prof.trySpendSpec(prof.specItemId)) {
+        spec = sd;
+      }
+    }
   }
   const sp = spec?.params ?? {};
   const specAcc = clampNum(sp.accMult, 0.25, 3, 1);
@@ -775,7 +793,11 @@ export function handleSwing(p: PlayerView, msg: any) {
     mainLanded = r.landed;
     hits.push(r.dmg);
   }
-  let totalDmg = hits.reduce((s, d) => s + d, 0);
+  // Main-hit damage (the named target) drives lifesteal and combat XP. Splash
+  // damage from aoe_adjacent is added to totalDmg below for the hitsplat/echo,
+  // but must NOT feed sustain or XP — those are single-target by design.
+  const mainDmg = hits.reduce((s, d) => s + d, 0);
+  let totalDmg = mainDmg;
 
   // Ammo recovery (arrows/rounds on the ground) is DISABLED: the spawn was
   // speculative — it trusted the client-named `msg.ammo` with no proof the
@@ -803,6 +825,14 @@ export function handleSwing(p: PlayerView, msg: any) {
   }
 
   // ----- spec side-effects -----
+  // Charge the deferred debit for conditional specs now that we know the main
+  // hit landed. If energy ran out in the meantime, the effect simply does not
+  // apply (and nothing was spent).
+  if (spec && specDebitPending && mainLanded) {
+    if (!prof.trySpendSpec(prof.specItemId!)) {
+      spec = null;
+    }
+  }
   if (spec && mainLanded) {
     if (spec.kind === 'stun') {
       n.stunnedUntil = Math.max(n.stunnedUntil, sim.tick + Math.floor(clampNum(sp.holdTicks, 1, 8, 3)));
@@ -851,17 +881,17 @@ export function handleSwing(p: PlayerView, msg: any) {
     }
   }
 
-  // ----- lifesteal (on total damage this swing) -----
+  // ----- lifesteal (on the main-hit damage only — splash does not heal) -----
   let heal = 0;
   for (const e of effects) {
-    if (e.type === 'lifesteal') heal += Math.floor(totalDmg * clampNum(e.pct, 0, 1, 0));
+    if (e.type === 'lifesteal') heal += Math.floor(mainDmg * clampNum(e.pct, 0, 1, 0));
   }
   if (heal > 0) {
     p.hp = Math.min(p.maxHp, p.hp + heal);
     onHpChanged(p, 'heal');
   }
 
-  const hitXp = totalDmg > 0 ? grantHitXp(p.userId, totalDmg, mode) : [];
+  const hitXp = mainDmg > 0 ? grantHitXp(p.userId, mainDmg, mode) : [];
   const xp = [...(prep.xp ?? []), ...hitXp];
 
   const meta = swingEchoMeta(p.userId);

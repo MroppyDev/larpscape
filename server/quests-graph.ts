@@ -46,7 +46,12 @@ export interface QuestTransition {
   from: number;
   to: number;
   requiredItems?: { id: string; qty: number }[];
-  requiredQuestStages?: { id: string; stage: number }[];
+  // requiredQuestStages: a numeric `stage` is a >= threshold; an optional `mask`
+  // is for BITMASK sub-keys (marks) where the requirement is "these exact bits".
+  // A plain >= let a high bit substitute for required low bits and skip mark
+  // steps (e.g. the q5 lily bit standing in for crate+revenant). When `mask` is
+  // present it is checked as (value & mask) === mask instead of the threshold.
+  requiredQuestStages?: { id: string; stage?: number; mask?: number }[];
 }
 export interface QuestGraphEntry { transitions: QuestTransition[]; }
 export type QuestGraph = Record<string, QuestGraphEntry>;
@@ -101,9 +106,12 @@ export function advanceQuest(state: AuthState, id: string, toStage: number): Adv
   const t = entry.transitions.find((tr) => tr.from === cur && tr.to === to);
   if (!t) return { ok: false, error: 'illegal quest transition' };
 
-  // prerequisite quests
+  // prerequisite quests (numeric threshold) or bitmask sub-keys (exact bits)
   for (const req of t.requiredQuestStages ?? []) {
-    if (questStage(state, req.id) < Math.floor(req.stage)) {
+    const val = questStage(state, req.id);
+    if (typeof req.mask === 'number') {
+      if ((val & req.mask) !== req.mask) return { ok: false, error: `requires progress in ${req.id}` };
+    } else if (val < Math.floor(req.stage ?? 0)) {
       return { ok: false, error: `requires progress in ${req.id}` };
     }
   }

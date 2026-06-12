@@ -24,6 +24,7 @@ interface ViewLike {
   x: number;
   y: number;
   dead: boolean;
+  hp?: number; // live combat HP (RAM); used by HP-mutating intents, see DomainCtx.hp
   send: (msg: unknown) => void;
 }
 
@@ -45,7 +46,7 @@ export function makeIntents(stateStore: StateStore): Intents {
 
 const ctxOf = (v: ViewLike): IntentCtx => ({ userId: v.userId, x: v.x, y: v.y, dead: v.dead });
 const domainCtxOf = (store: StateStore, v: ViewLike): DomainCtx => ({
-  userId: v.userId, x: v.x, y: v.y, dead: v.dead,
+  userId: v.userId, x: v.x, y: v.y, dead: v.dead, hp: v.hp,
   store, frozen: ECONOMY_FROZEN, revOf: (uid) => store.revOf(uid),
 });
 

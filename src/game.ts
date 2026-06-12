@@ -185,11 +185,10 @@ export function registerTickHook(fn: () => void) { tickHooks.push(fn); }
 // ---------------- Server connection hooks (set by net.ts) ----------------
 // game.ts never imports net.ts (net imports game); the websocket sender is
 // injected here once the connection is up.
-export const netLink = { send: null as null | ((m: any) => void) };
+export const netLink = { send: null as null | ((m: any) => boolean) };
 function netSend(m: any): boolean {
   if (!netLink.send) return false;
-  netLink.send(m);
-  return true;
+  return netLink.send(m);
 }
 // raw websocket send for UI features (trading etc.); false when offline
 export function sendWs(m: any): boolean { return netSend(m); }
@@ -752,7 +751,17 @@ export interface IntentEcho {
 // Fire-and-forget callers that don't need the result can ignore the promise;
 // the echo is still applied centrally via applyGrant.
 let nextIntentId = 1;
-const pendingIntents = new Map<number, { resolve: (e: IntentEcho) => void; timer: ReturnType<typeof setTimeout> }>();
+const pendingIntents = new Map<number, { resolve: (e: IntentEcho) => void; timer: ReturnType<typeof setTimeout>; kind: string }>();
+
+// Settle every awaiting intent on websocket disconnect: net.ts calls this from
+// ws.onclose so callers don't hang up to the 8s timeout and timers don't leak.
+export function rejectPendingIntents() {
+  for (const [id, p] of pendingIntents) {
+    clearTimeout(p.timer);
+    p.resolve({ ok: false, kind: p.kind, error: 'offline', id });
+  }
+  pendingIntents.clear();
+}
 
 export function requestIntent(kind: string, payload: Record<string, unknown> = {}): Promise<IntentEcho> {
   const id = nextIntentId++;
@@ -774,7 +783,7 @@ export function requestIntent(kind: string, payload: Record<string, unknown> = {
       pendingIntents.delete(id);
       resolve({ ok: false, kind, error: 'timeout', id });
     }, 8000);
-    pendingIntents.set(id, { resolve, timer });
+    pendingIntents.set(id, { resolve, timer, kind });
   });
 }
 
