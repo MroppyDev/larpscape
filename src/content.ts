@@ -605,11 +605,25 @@ registerObjectAction('bake_stall', 'Steal-from', (o) => {
   // Server-authoritative: validates stall@tile + level, rolls the loot table,
   // grants the food + Thieving xp. The depletion cosmetic stays client-side.
   void requestIntent('thieve', { target: 'bake_stall', x: o.x, y: o.y }).then((echo) => {
-    if (!echo.ok) return;
+    if (!echo.ok) {
+      // Surface the refusal instead of swallowing it. The stall stays clickable
+      // (we only deplete it on a real success below) so the player can retry now.
+      if (echo.error === 'out of range') msg("You're not close enough to the stall — step closer and try again.");
+      else if (echo.error === 'timeout' || echo.error === 'offline') msg('The stall slips out of reach for a moment — try again.');
+      else if (echo.error === 'inventory full') msg("You don't have enough inventory space.");
+      return;
+    }
     const got = echo.granted?.[0]?.id;
-    if (got) { audio.sfx('thieve'); msg(`You steal ${aOrAnWord(lowName(got))} ${lowName(got)} from the bake stall.`); }
+    if (got) {
+      audio.sfx('thieve');
+      msg(`You steal ${aOrAnWord(lowName(got))} ${lowName(got)} from the bake stall.`);
+      // Only deplete the stall on a genuine steal — and only here, after the
+      // server confirms, so a rejected/missed attempt never locks the stall.
+      o.depletedUntil = state.tick + 12;
+    } else {
+      msg('You fail to grab anything before the baker turns around.');
+    }
   });
-  o.depletedUntil = state.tick + 12;
   return 'done';
 });
 

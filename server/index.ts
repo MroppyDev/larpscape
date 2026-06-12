@@ -509,6 +509,14 @@ export const stateStore = createStateStore(db, (ids) => {
 // so item gain/loss is server-owned. HTTP routes (shop/bank/quest) are
 // registered here; the WS skilling intents dispatch from the message handler.
 const intents = makeIntents(stateStore);
+// Rate-limit the transactional HTTP intent routes (bank/shop/equip/quest/generic
+// domain). They each open a withState transaction that rewrites the save row and
+// fires the fence + save_reload broadcast, so an unthrottled client could drive a
+// DB-write/broadcast amplification DoS and superhuman grinding. 240/min/IP is far
+// above any human cadence (the WS path carries the high-frequency skilling) but
+// caps automated floods. Matches the offer/save limiter pattern above.
+const intentRateLimit = ipRateLimit(60_000, 240);
+app.use('/api/intent', intentRateLimit);
 registerIntentRoutes(app, stateStore, intents, requireAuth);
 // Quest sub-progress kill credit (server/intent-quest.ts): server-authoritative
 // kill counters for quest steps (giant_rat / hollow_miner / boss kills, …),
@@ -1665,7 +1673,11 @@ wss.on('connection', (ws, req) => {
     if (!msg || typeof msg !== 'object') return;
     if (msg.t === 'pos') {
       const now = Date.now();
-      if (now - client.lastPos < 200) return; // rate limit
+      // No early-return throttle here: the per-connection token bucket above
+      // already bounds pos to <=30/s, and every update is teleport-clamped to
+      // MAX_POS_STEP below. Dropping sub-200ms updates used to discard the fresh
+      // pos the client flushes immediately before a positional intent (the
+      // bake-stall 'out of range' race), leaving the server view a tile stale.
       client.lastPos = now;
       const MAX_POS_STEP = 12;
       let nx = client.x, ny = client.y;

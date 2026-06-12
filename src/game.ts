@@ -756,6 +756,16 @@ const pendingIntents = new Map<number, { resolve: (e: IntentEcho) => void; timer
 
 export function requestIntent(kind: string, payload: Record<string, unknown> = {}): Promise<IntentEcho> {
   const id = nextIntentId++;
+  // Flush the CURRENT player position over the same socket immediately before
+  // the intent. Position is otherwise only synced on a 600ms heartbeat
+  // (src/net.ts posTimer), so an intent fired the instant the player arrives at
+  // a stall/resource races ahead of its own position update and the server's
+  // range check runs against a tile 1-2 behind — producing intermittent silent
+  // 'out of range' rejections (the bake-stall steal bug). WS message ordering
+  // guarantees this pos lands before the intent dispatches.
+  if (state.player) {
+    netSend({ t: 'pos', x: state.player.x, y: state.player.y, app: undefined, d: state.player.dead });
+  }
   if (!netSend({ t: 'intent', kind, id, ...payload })) {
     return Promise.resolve({ ok: false, kind, error: 'offline', id });
   }

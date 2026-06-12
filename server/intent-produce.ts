@@ -206,7 +206,11 @@ registerIntentDomain('thieve', (ctx, payload) => {
   if (stall) {
     const ox = num(payload.x), oy = num(payload.y);
     if (!objectTypeAt(ox, oy, stall.type)) return fail('thieve', 'no such stall here');
-    if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('thieve', 'out of range');
+    // Tolerance of 4 (not 2): the client's position is reported on a 600ms
+    // heartbeat, so when running (2 tiles/tick) the server view can trail the
+    // real position by a tile or two at the moment the intent arrives. handleSwing
+    // uses the same cadence slack; without it, valid steals fail 'out of range'.
+    if (chebyshev(ctx.x, ctx.y, ox, oy) > 4) return fail('thieve', 'out of range');
     return tx(ctx, 'thieve', (state) => {
       const lvl = skillLevel(state, 'Thieving');
       if (lvl < stall.level) return fail('thieve', `requires Thieving level ${stall.level}`);

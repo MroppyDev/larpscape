@@ -77,7 +77,12 @@ registerObjectAction('gem_stall', 'Steal-from', (o) => {
   if (lvl < 30) { msg('You need a Thieving level of 30 to steal from the gem stall.'); return 'done'; }
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
   void requestIntent('thieve', { target: 'gem_stall', x: o.x, y: o.y }).then((echo) => {
-    if (!echo.ok) return;
+    if (!echo.ok) {
+      if (echo.error === 'out of range') msg("You're not close enough to the stall — step closer and try again.");
+      else if (echo.error === 'timeout' || echo.error === 'offline') msg('The stall slips out of reach for a moment — try again.');
+      else if (echo.error === 'inventory full') msg("You don't have enough inventory space.");
+      return;
+    }
     if (!echo.granted || echo.granted.length === 0) {
       msg('You fumble — the trader catches your wrist and cuffs you smartly.');
       stunnedUntil = state.tick + 3;
