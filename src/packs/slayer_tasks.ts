@@ -261,8 +261,11 @@ export function onSlayerEcho(echo: IntentEcho) {
   if (!echo.ok || echo.kind !== 'slayer') return;
   const snap = reflect(echo);
   if (!snap) return;
+  // Only announce completion when this kill actually credited a task (xp granted)
+  // AND the task is now finished — never on an unrelated kill with no active task.
+  const credited = Array.isArray(echo.xp) && echo.xp.length > 0;
   const t = snap.task ?? state.player.slayerTask;
-  if (!t || t.remaining <= 0) {
+  if (credited && (!t || t.remaining <= 0)) {
     const streak = snap.streak ?? lastStreak;
     msg(
       streak > 0 && streak % 5 === 0

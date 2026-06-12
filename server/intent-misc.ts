@@ -466,7 +466,12 @@ export function installSlayerKillHook(store: StateStore): void {
   npcDeathHooks.push((n: SNpc, by: PlayerView) => {
     const res = store.withState(by.userId, (state) => creditSlayerKill(state, n.def.id));
     if (!res || !res.ok) return;
-    if ((res.xp?.length ?? 0) === 0 && !res.slayer) return;
+    // Only push a slayer echo when THIS kill actually credited the task (xp
+    // granted). creditSlayerKill returns a snapshot on every kill — without this
+    // guard the client received a slayer echo on every unrelated kill and, seeing
+    // no active task, announced "Task complete" each time. Points still stay in
+    // sync via the save_reload that every withState commit triggers.
+    if ((res.xp?.length ?? 0) === 0) return;
     by.send({ t: 'intent', ok: true, kind: 'slayer', xp: res.xp, slayer: (res as Record<string, unknown>).slayer });
   });
 }
