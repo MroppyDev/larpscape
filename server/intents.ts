@@ -132,6 +132,7 @@ export interface IntentResult {
   questSet?: Record<string, number>; // server-owned quest-progress sub-keys to mirror
                           // (kill counters / sounding bitmasks; reflected monotonically)
   equip?: Record<string, { id: string; qty: number } | null>; // equip/unequip: changed slots
+  hp?: number;            // authoritative curHp after eat/heal intents
 }
 
 // ---------------------------------------------------------------------------

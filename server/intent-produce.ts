@@ -45,7 +45,7 @@ function loadJson<T>(rel: string): T {
 // Catalogue (same data the client reads — rates/levels never diverge).
 // ---------------------------------------------------------------------------
 
-interface RawItem { stackable?: boolean; }
+interface RawItem { stackable?: boolean; buryXp?: number; edible?: { heals: number }; }
 const ITEMS: Record<string, RawItem> = loadJson('../data/items.json');
 function isStackable(id: string): boolean { return !!ITEMS[id]?.stackable; }
 
@@ -499,6 +499,45 @@ registerIntentDomain('train', (ctx, payload) => {
       xp: [{ skill: t.skill, amount: t.xp }],
       leveledUp: x.leveledUp ? [{ skill: t.skill, level: x.newLevel }] : [],
     };
+  });
+});
+
+// ===========================================================================
+// BURY — bury bones for Prayer XP (data-driven buryXp from items.json).
+// { item }. The client never supplies the XP amount.
+// ===========================================================================
+registerIntentDomain('bury', (ctx, payload) => {
+  if (ctx.dead) return fail('bury', 'dead');
+  const item = String(payload.item ?? '');
+  const buryXp = ITEMS[item]?.buryXp;
+  if (!buryXp || buryXp <= 0 || !isKnownItem(item)) return fail('bury', 'not buryable');
+  return tx(ctx, 'bury', (state) => {
+    if (!invRemove(state, item, 1)) return fail('bury', 'you have none');
+    const amount = buryXp;
+    const x = addXp(state, 'Prayer', amount);
+    return {
+      ok: true, kind: 'bury',
+      removed: [{ id: item, qty: 1 }],
+      xp: [{ skill: 'Prayer' as SkillName, amount }],
+      leveledUp: x.leveledUp ? [{ skill: 'Prayer' as SkillName, level: x.newLevel }] : [],
+    };
+  });
+});
+
+// ===========================================================================
+// EAT — eat food for HP (data-driven edible.heals from items.json). { item }.
+// ===========================================================================
+registerIntentDomain('eat', (ctx, payload) => {
+  if (ctx.dead) return fail('eat', 'dead');
+  const item = String(payload.item ?? '');
+  const heals = ITEMS[item]?.edible?.heals;
+  if (!heals || heals <= 0 || !isKnownItem(item)) return fail('eat', 'not edible');
+  return tx(ctx, 'eat', (state) => {
+    if (!invRemove(state, item, 1)) return fail('eat', 'you have none');
+    const max = skillLevel(state, 'Hitpoints');
+    const cur = Math.max(0, Math.min(max, state.curHp ?? max));
+    state.curHp = Math.min(max, cur + heals);
+    return { ok: true, kind: 'eat', removed: [{ id: item, qty: 1 }], hp: state.curHp };
   });
 });
 

@@ -720,6 +720,7 @@ export interface IntentEcho {
   equip?: Record<string, { id: string; qty: number } | null>; // changed equip slots
   burned?: boolean;
   source?: string;
+  hp?: number;            // authoritative curHp after eat/heal
 }
 
 // ---- requestIntent: the ONE entry point content code uses to change owned ----
@@ -790,6 +791,10 @@ export function applyGrant(m: IntentEcho) {
     if (!state.player.quests || typeof state.player.quests !== 'object') state.player.quests = {} as Record<string, number>;
     const prev = state.player.quests[m.quest] ?? 0;
     state.player.quests[m.quest] = Math.max(prev, m.stage);
+    events.onStatsChange();
+  }
+  if (typeof m.hp === 'number' && state.player) {
+    state.player.curHp = Math.max(0, Math.floor(m.hp));
     events.onStatsChange();
   }
   if (m.questSet && state.player) {
@@ -1166,23 +1171,23 @@ export function eatFood(slot: number) {
   if (!it) return;
   const def = ITEMS[it.id];
   if (!def.edible) return;
-  removeFromSlot(slot);
-  p.curHp = Math.min(level('Hitpoints'), p.curHp + def.edible.heals);
-  audio.sfx('eat');
-  msg(`You eat the ${def.name.toLowerCase()}. It heals some health.`);
-  events.onStatsChange();
+  void requestIntent('eat', { item: it.id }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('eat');
+    msg(`You eat the ${def.name.toLowerCase()}. It heals some health.`);
+  });
 }
 
 export function buryBones(slot: number) {
   const p = state.player;
   const it = p.inventory[slot];
   if (!it || !ITEMS[it.id].buryXp) return;
-  const xp = ITEMS[it.id].buryXp!;
-  removeFromSlot(slot);
-  audio.sfx('bury');
   msg('You dig a hole in the ground...');
-  msg('You bury the bones.');
-  addXp('Prayer', xp);
+  void requestIntent('bury', { item: it.id }).then((echo) => {
+    if (!echo.ok) return;
+    audio.sfx('bury');
+    msg('You bury the bones.');
+  });
 }
 
 // Equip is server-authoritative (docs/CONVERSION-CONTRACT §2.1): the client
