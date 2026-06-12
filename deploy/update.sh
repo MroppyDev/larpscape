@@ -120,6 +120,19 @@ fi
 
 chown -R larpscape:larpscape "$APP_DIR"
 
+echo "==> Economy freeze (GE + market + shops)"
+mkdir -p /etc/larpscape
+if [[ -f /etc/larpscape/env ]]; then
+  if grep -q '^ECONOMY_FROZEN=' /etc/larpscape/env; then
+    sed -i 's/^ECONOMY_FROZEN=.*/ECONOMY_FROZEN=0/' /etc/larpscape/env
+  else
+    echo 'ECONOMY_FROZEN=0' >> /etc/larpscape/env
+  fi
+else
+  echo 'ECONOMY_FROZEN=0' > /etc/larpscape/env
+fi
+chmod 600 /etc/larpscape/env
+
 if systemctl is-active --quiet larpscape; then
   echo "==> Broadcasting restart warning (${WARN_SECONDS}s)"
   source /etc/larpscape/env

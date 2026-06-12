@@ -225,9 +225,10 @@ registerIntentDomain('thieve', (ctx, payload) => {
       };
     });
   }
-  // NPC pickpocket
+  // NPC pickpocket — must be adjacent to a live instance of that def.
   const pp = NPCS[target]?.pickpocket;
   if (!pp) return fail('thieve', 'cannot pickpocket that');
+  if (!nearNpc(ctx.x, ctx.y, target)) return fail('thieve', 'out of range');
   return tx(ctx, 'thieve', (state) => {
     const lvl = skillLevel(state, 'Thieving');
     if (lvl < pp.level) return fail('thieve', `requires Thieving level ${pp.level}`);
@@ -473,6 +474,9 @@ registerIntentDomain('pick', (ctx, payload) => {
   if (ctx.dead) return fail('pick', 'dead');
   const what = String(payload.what ?? '');
   if (what === 'flax') {
+    const ox = num(payload.x), oy = num(payload.y);
+    if (!objectTypeAt(ox, oy, 'flax_plant')) return fail('pick', 'no flax here');
+    if (chebyshev(ctx.x, ctx.y, ox, oy) > 2) return fail('pick', 'out of range');
     return tx(ctx, 'pick', (state) => {
       if (!hasRoomFor(state, 'flax')) return fail('pick', 'inventory full');
       if (!invAdd(state, 'flax', 1)) return fail('pick', 'inventory full');
@@ -480,6 +484,7 @@ registerIntentDomain('pick', (ctx, payload) => {
     });
   }
   if (what === 'milk') {
+    if (!nearNpc(ctx.x, ctx.y, 'cow')) return fail('pick', 'out of range');
     return tx(ctx, 'pick', (state) => {
       if (!invHas(state, 'bucket', 1)) return fail('pick', 'you need an empty bucket');
       if (!invRemove(state, 'bucket', 1)) return fail('pick', 'you need an empty bucket');

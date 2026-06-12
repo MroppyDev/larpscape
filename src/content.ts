@@ -443,10 +443,10 @@ registerItemOnItem('needle', 'leather', () => {
 });
 
 // Flax picking (feeds bowstring crafting)
-registerObjectAction('flax_plant', 'Pick', () => {
+registerObjectAction('flax_plant', 'Pick', (o) => {
   if (freeSlots() === 0) { msg("You don't have enough inventory space."); return 'done'; }
   // Server-authoritative single-item gather.
-  void requestIntent('pick', { what: 'flax' }).then((echo) => {
+  void requestIntent('pick', { what: 'flax', x: o.x, y: o.y }).then((echo) => {
     if (!echo.ok) return;
     audio.sfx('plant');
     msg('You pick some flax.');

@@ -37,6 +37,7 @@ if [[ ! -f /etc/larpscape/env ]]; then
   cat > /etc/larpscape/env <<EOF
 PORT=8080
 ADMIN_TOKEN=$ADMIN_TOKEN
+ECONOMY_FROZEN=0
 EOF
   chmod 600 /etc/larpscape/env
   echo "    generated ADMIN_TOKEN (stored in /etc/larpscape/env)"

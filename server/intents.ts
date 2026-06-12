@@ -25,7 +25,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ECONOMY_FROZEN } from './econ-freeze';
-import { MAP_W } from './world';
+import { MAP_W, terrain, key, T } from './world';
 import {
   StateStore, AuthState, SkillName, SKILLS, isKnownItem,
   invAdd, invRemove, invRemoveItem, invCount, invHas, getCoins, addCoins, removeCoins,
@@ -100,6 +100,17 @@ function nearObject(cx: number, cy: number, type: string, maxDist = 2): boolean 
     }
   }
   return false;
+}
+
+function tileHasObject(x: number, y: number): boolean {
+  const s = objTypeAt.get(y * MAP_W + x);
+  return !!s && s.size > 0;
+}
+
+function canLightFireHere(x: number, y: number): boolean {
+  if (x < 0 || y < 0 || x >= MAP_W) return false;
+  if (terrain[key(x, y)] === T.FLOOR) return false;
+  return !tileHasObject(x, y);
 }
 
 const chebyshev = (ax: number, ay: number, bx: number, by: number) =>
@@ -346,6 +357,7 @@ export function createIntents(stateStore: StateStore) {
     if (ctx.dead) return fail('firemake', 'dead');
     const fm = FIREMAKING.find((f) => f.log === log);
     if (!fm) return fail('firemake', 'not a log');
+    if (!canLightFireHere(ctx.x, ctx.y)) return fail('firemake', "can't light a fire here");
     const res = stateStore.withState<IntentResult>(ctx.userId, (state) => {
       if (!hasTool(state, 'tinderbox')) return fail('firemake', 'you need a tinderbox');
       if (skillLevel(state, 'Firemaking') < fm.level) return fail('firemake', `requires Firemaking level ${fm.level}`);
@@ -369,7 +381,8 @@ export function createIntents(stateStore: StateStore) {
     if (!r) return fail('make', 'unknown recipe');
     const stationReq = recipe === 'smelt' ? 'furnace'
       : recipe === 'smith' ? 'anvil'
-      : recipe === 'potion' ? null
+      : recipe === 'build' ? 'workbench'
+      : recipe === 'craft' ? r.station
       : null;
     if (stationReq && !nearObject(ctx.x, ctx.y, stationReq)) {
       return fail('make', `not near a ${stationReq}`);
@@ -653,6 +666,7 @@ interface RecipeEntry {
   output: string;
   outputQty: number;
   successChance?: number;
+  station?: string | null;
 }
 
 // Build a unified recipe index keyed by `<recipeClass>|<output>` so the client
@@ -673,7 +687,10 @@ const RECIPE_INDEX: Record<string, RecipeEntry> = (() => {
     // already in the data? It does not — the client adds thread separately. We
     // fold it in here for the station===null (leather) recipes.
     const inputs = c.station === null ? [...c.inputs, { item: 'thread', qty: 1 }] : c.inputs;
-    idx['craft|' + c.output] = { skill: 'Crafting', level: c.level, xp: c.xp, inputs, output: c.output, outputQty: 1 };
+    idx['craft|' + c.output] = {
+      skill: 'Crafting', level: c.level, xp: c.xp, inputs, output: c.output, outputQty: 1,
+      station: c.station ?? null,
+    };
   }
   for (const g of RECIPES.gemCuts) {
     idx['gemcut|' + g.cut] = { skill: 'Crafting', level: g.level, xp: g.xp, tool: 'chisel', inputs: [{ item: g.uncut, qty: 1 }], output: g.cut, outputQty: 1 };
@@ -688,7 +705,11 @@ const RECIPE_INDEX: Record<string, RecipeEntry> = (() => {
     // construction grants no item (donated), modelled as outputQty 0 via a
     // sentinel: we use output 'plank' with qty 0 so nothing is added. Simpler:
     // a dedicated class handled by `make` with outputQty 0 and no grant.
-    idx['build|' + b.name] = { skill: 'Construction', level: b.level, xp: b.xp, tool: 'hammer', inputs: [{ item: 'plank', qty: b.planks }, { item: 'nails', qty: b.nails }], output: '', outputQty: 0 };
+    idx['build|' + b.name] = {
+      skill: 'Construction', level: b.level, xp: b.xp, tool: 'hammer',
+      inputs: [{ item: 'plank', qty: b.planks }, { item: 'nails', qty: b.nails }],
+      output: '', outputQty: 0, station: 'workbench',
+    };
   }
   return idx;
 })();
