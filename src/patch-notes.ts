@@ -98,7 +98,11 @@ export function markPatchNotesSeen(buildId: string) {
 }
 
 function notesForBuild(buildId: string): PatchNoteEntry | null {
-  return NOTES[buildId] ?? null;
+  if (NOTES[buildId]) return NOTES[buildId];
+  const keys = Object.keys(NOTES);
+  if (keys.length === 0) return null;
+  // New deploys without a dedicated entry still show the latest written notes.
+  return NOTES[keys[keys.length - 1]];
 }
 
 function shouldShowPatchNotes(buildId: string): boolean {
