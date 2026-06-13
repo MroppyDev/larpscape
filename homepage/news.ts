@@ -20,6 +20,34 @@ export interface NewsPost {
 
 export const NEWS_POSTS: NewsPost[] = [
   {
+    slug: 'the-resonance-update',
+    title: 'The Resonance Update — Nine New Towns and a World of Skills',
+    category: 'Game Updates',
+    date: '2026-06-13',
+    excerpt:
+      'The biggest content drop in Larpscape history: nine new towns, a mining overhaul, and a real destination for nearly every skill. The whole valley is ringing.',
+    accent: '#2bb0a3',
+    body: `Cantorne was sung into being, and this week the whole valley found its voice. The **Resonance Update** is the largest content drop we have ever shipped — a dedicated home and a real progression for nearly every skill, all at once.
+
+**Mining, rebuilt.** The ore ladder is finally whole: silver, gold, mithril, adamantite and runite are all properly minable now, not just names in a smithing book. A full **pickaxe tier ladder** — iron, steel, mithril, adamant, rune — lets you smith or buy a better pick that genuinely bites faster. And it all centres on **Cairnchime**, a new mining town terraced into three pits: a starter scratch of copper and tin, an iron-and-silver bench, and a deep cut where the rune seams ring.
+
+**Nine new towns, one for every kind of work:**
+
+- **Drummar's Hold** — the Concord Lists. Drill the metronome dummies until every swing lands on the beat; train Attack, Strength or Defence by your chosen stance.
+- **Quillrook**, the Tinnitus Range — a firing line that scores your shot by the note it rings, plus the ammo economy for bow and gun.
+- **Resonne**, the Singing City — the Great Diapason, an altar ring where every element hums at once, with a new spell ladder for the highland wizards.
+- **Resin Hollow** — the Chordwood grove and Emberyard bonfires, the densest stand of timber in Cantorne, with an axe ladder to match.
+- **Saltsong Harbour** — a working fishing village on the coast where the shoals answer a brass bell and the Hearthchoir Galley keeps its kitchens in perfect pitch.
+- **Forgekeep Concord** — eight anvils pitched to a true scale, six furnaces, a weaver's hall and a stavewright's bench: the maker's quarter.
+- **Verdancourt**, the Greening Garth — a terraced garden town humming to a buried root-vein, with a full allotment and a potion ladder.
+- **The Knell** and the **Sundered Choir** beneath it — a clifftop temple where the dead are sung to rest, and a slayer dungeon where the un-sung are put down.
+- **Quaverside** — a district on the river weir that never stops moving: a rooftop agility course, a market row of stalls to lift, hunter grounds and a construction yard.
+
+That is **279 new items, 60 new faces, 22 shops, new spells and prayers, and hundreds of new training spots** packed close so you spend your time skilling, not walking.
+
+Grab a pickaxe and go listen to the valley ring. We will see you out there.`,
+  },
+  {
     slug: 'the-concord-audit',
     title: 'The Concord Audit — We Closed a Hole and Reset the Ledgers',
     category: 'Dev Blog',
