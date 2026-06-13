@@ -35,7 +35,7 @@ import { audio } from '../audio';
 
 const BRIGH = 'Cantor-Surveyor Brigh';
 
-const DUNGEON = { x0: 6, y0: 238, x1: 50, y1: 295 };
+const DUNGEON = { x0: 126, y0: 238, x1: 170, y1: 295 };
 const inDungeon = (x: number, y: number) =>
   x >= DUNGEON.x0 && x <= DUNGEON.x1 && y >= DUNGEON.y0 && y <= DUNGEON.y1;
 
@@ -119,18 +119,18 @@ onKill((defId) => {
 
 interface Link { dest: { x: number; y: number }; doing: string; done: string; gate?: () => boolean }
 const LINKS = new Map<string, Link>([
-  ['44,249', {
-    dest: { x: 43, y: 263 },
+  ['164,249', {
+    dest: { x: 163, y: 263 },
     doing: 'You climb down the \'88-pattern ladder, knocking twice on the timbers...',
     done: 'The Skipped Seam. The silence here arrives slightly before the sound.',
   }],
-  ['44,262', {
-    dest: { x: 43, y: 248 },
+  ['164,262', {
+    dest: { x: 163, y: 248 },
     doing: 'You climb back up toward the Ringing Galleries...',
     done: 'You haul yourself off the ladder.',
   }],
-  ['25,276', {
-    dest: { x: 25, y: 283 },
+  ['145,276', {
+    dest: { x: 145, y: 283 },
     doing: 'You take the knotted rope down into the Resonant Vault...',
     done: 'The air is thick with one held note. Something enormous is ringing below.',
     gate: () => {
@@ -139,8 +139,8 @@ const LINKS = new Map<string, Link>([
       return false;
     },
   }],
-  ['26,282', {
-    dest: { x: 24, y: 275 },
+  ['146,282', {
+    dest: { x: 144, y: 275 },
     doing: 'You climb the rope back up to the Skipped Seam...',
     done: 'You clamber over the ledge.',
   }],

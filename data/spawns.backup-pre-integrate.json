@@ -1,231 +1,6 @@
 {
   "npcSpawns": [
     {
-      "id": "cow",
-      "x": 25,
-      "y": 59
-    },
-    {
-      "id": "cow",
-      "x": 33,
-      "y": 63
-    },
-    {
-      "id": "cow",
-      "x": 30,
-      "y": 56
-    },
-    {
-      "id": "cow",
-      "x": 24,
-      "y": 55
-    },
-    {
-      "id": "cow",
-      "x": 31,
-      "y": 61
-    },
-    {
-      "id": "sheep",
-      "x": 31,
-      "y": 99
-    },
-    {
-      "id": "sheep",
-      "x": 33,
-      "y": 102
-    },
-    {
-      "id": "sheep",
-      "x": 31,
-      "y": 95
-    },
-    {
-      "id": "sheep",
-      "x": 36,
-      "y": 106
-    },
-    {
-      "id": "sheep",
-      "x": 42,
-      "y": 103
-    },
-    {
-      "id": "sheep",
-      "x": 42,
-      "y": 101
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 42
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 39
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 42
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 35
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 42
-    },
-    {
-      "id": "chicken",
-      "x": 23,
-      "y": 42
-    },
-    {
-      "id": "cow",
-      "x": 40,
-      "y": 180
-    },
-    {
-      "id": "cow",
-      "x": 35,
-      "y": 181
-    },
-    {
-      "id": "cow",
-      "x": 36,
-      "y": 181
-    },
-    {
-      "id": "cow",
-      "x": 40,
-      "y": 180
-    },
-    {
-      "id": "sheep",
-      "x": 34,
-      "y": 134
-    },
-    {
-      "id": "sheep",
-      "x": 26,
-      "y": 133
-    },
-    {
-      "id": "sheep",
-      "x": 26,
-      "y": 138
-    },
-    {
-      "id": "sheep",
-      "x": 26,
-      "y": 139
-    },
-    {
-      "id": "sheep",
-      "x": 28,
-      "y": 133
-    },
-    {
-      "id": "giant_rat",
-      "x": 45,
-      "y": 88
-    },
-    {
-      "id": "giant_rat",
-      "x": 45,
-      "y": 87
-    },
-    {
-      "id": "bear",
-      "x": 66,
-      "y": 72
-    },
-    {
-      "id": "bear",
-      "x": 61,
-      "y": 69
-    },
-    {
-      "id": "dire_wolf",
-      "x": 71,
-      "y": 110
-    },
-    {
-      "id": "dire_wolf",
-      "x": 77,
-      "y": 105
-    },
-    {
-      "id": "dire_wolf",
-      "x": 76,
-      "y": 114
-    },
-    {
-      "id": "forest_spider",
-      "x": 57,
-      "y": 150
-    },
-    {
-      "id": "forest_spider",
-      "x": 63,
-      "y": 150
-    },
-    {
-      "id": "forest_spider",
-      "x": 58,
-      "y": 145
-    },
-    {
-      "id": "giant_rat",
-      "x": 59,
-      "y": 25
-    },
-    {
-      "id": "giant_rat",
-      "x": 55,
-      "y": 28
-    },
-    {
-      "id": "giant_rat",
-      "x": 57,
-      "y": 33
-    },
-    {
-      "id": "scorpion",
-      "x": 102,
-      "y": 63
-    },
-    {
-      "id": "scorpion",
-      "x": 106,
-      "y": 57
-    },
-    {
-      "id": "scorpion",
-      "x": 103,
-      "y": 60
-    },
-    {
-      "id": "scorpion",
-      "x": 103,
-      "y": 65
-    },
-    {
-      "id": "dire_wolf",
-      "x": 96,
-      "y": 102
-    },
-    {
-      "id": "dire_wolf",
-      "x": 97,
-      "y": 100
-    },
-    {
       "id": "goblin",
       "x": 176,
       "y": 30
@@ -996,649 +771,824 @@
       "y": 28
     },
     {
-      "id": "banker",
-      "x": 98,
-      "y": 25
-    },
-    {
-      "id": "gem_trader",
-      "x": 106,
-      "y": 25
-    },
-    {
-      "id": "ore_broker_halle",
-      "x": 107,
-      "y": 26
-    },
-    {
-      "id": "armourer",
-      "x": 89,
-      "y": 25
-    },
-    {
-      "id": "foreman_echo",
-      "x": 94,
-      "y": 36
-    },
-    {
-      "id": "hollow_miner",
-      "x": 90,
+      "id": "market_crowd_thug",
+      "x": 408,
       "y": 40
     },
     {
-      "id": "hollow_miner",
-      "x": 105,
+      "id": "market_crowd_thug",
+      "x": 410,
       "y": 40
     },
     {
-      "id": "city_guard",
-      "x": 90,
-      "y": 34
-    },
-    {
-      "id": "miller",
-      "x": 112,
-      "y": 31
-    },
-    {
-      "id": "village_elder",
-      "x": 99,
-      "y": 32
-    },
-    {
-      "id": "man",
-      "x": 106,
-      "y": 31
-    },
-    {
-      "id": "man",
-      "x": 97,
-      "y": 33
-    },
-    {
-      "id": "quillrook_range_master",
-      "x": 34,
-      "y": 28
-    },
-    {
-      "id": "quillrook_fletcher",
-      "x": 45,
-      "y": 32
-    },
-    {
-      "id": "quillrook_gunsmith",
-      "x": 45,
-      "y": 39
-    },
-    {
-      "id": "quillrook_quartermaster",
-      "x": 37,
-      "y": 39
-    },
-    {
-      "id": "echo_hare",
-      "x": 33,
-      "y": 43
-    },
-    {
-      "id": "echo_hare",
-      "x": 35,
-      "y": 44
-    },
-    {
-      "id": "echo_hare",
-      "x": 34,
-      "y": 45
-    },
-    {
-      "id": "echo_hare",
-      "x": 39,
-      "y": 43
-    },
-    {
-      "id": "echo_hare",
-      "x": 40,
-      "y": 44
-    },
-    {
-      "id": "echo_hare",
-      "x": 36,
-      "y": 43
-    },
-    {
-      "id": "range_rat",
-      "x": 38,
-      "y": 45
-    },
-    {
-      "id": "range_rat",
-      "x": 40,
-      "y": 42
-    },
-    {
-      "id": "range_rat",
-      "x": 42,
-      "y": 44
-    },
-    {
-      "id": "range_rat",
-      "x": 35,
-      "y": 45
-    },
-    {
-      "id": "range_rat",
-      "x": 39,
-      "y": 44
-    },
-    {
-      "id": "range_rat",
-      "x": 33,
-      "y": 44
-    },
-    {
-      "id": "resonne_archcantor",
-      "x": 98,
-      "y": 130
-    },
-    {
-      "id": "resonne_runecraft_tutor",
-      "x": 95,
-      "y": 132
-    },
-    {
-      "id": "resonne_magic_clerk",
-      "x": 96,
-      "y": 133
-    },
-    {
-      "id": "resonne_quartermaster",
-      "x": 113,
-      "y": 134
-    },
-    {
-      "id": "resonne_mill_keeper",
-      "x": 113,
-      "y": 145
-    },
-    {
-      "id": "cinder_warden_ysolde",
-      "x": 54,
-      "y": 90
-    },
-    {
-      "id": "quill_the_coalman",
-      "x": 54,
-      "y": 99
-    },
-    {
-      "id": "sawwright_tamsin",
-      "x": 50,
-      "y": 94
-    },
-    {
-      "id": "bole_the_feller",
-      "x": 54,
-      "y": 81
-    },
-    {
-      "id": "drillmaster_concord",
-      "x": 56,
-      "y": 170
-    },
-    {
-      "id": "hold_infirmarian",
-      "x": 69,
-      "y": 183
-    },
-    {
-      "id": "quartermaster_bell",
-      "x": 60,
-      "y": 182
-    },
-    {
-      "id": "valour_steward",
-      "x": 62,
-      "y": 182
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 46,
-      "y": 174
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 48,
-      "y": 174
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 50,
-      "y": 174
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 52,
-      "y": 174
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 46,
-      "y": 176
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 48,
-      "y": 176
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 50,
-      "y": 176
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 52,
-      "y": 176
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 47,
-      "y": 175
-    },
-    {
-      "id": "sparring_recruit",
-      "x": 51,
-      "y": 175
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 56,
-      "y": 174
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 58,
-      "y": 174
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 60,
-      "y": 174
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 61,
-      "y": 174
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 56,
-      "y": 176
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 58,
-      "y": 176
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 60,
-      "y": 176
-    },
-    {
-      "id": "sparring_veteran",
-      "x": 61,
-      "y": 176
-    },
-    {
-      "id": "sparring_champion",
-      "x": 65,
-      "y": 174
-    },
-    {
-      "id": "sparring_champion",
-      "x": 67,
-      "y": 175
-    },
-    {
-      "id": "sparring_champion",
-      "x": 69,
-      "y": 174
-    },
-    {
-      "id": "sparring_champion",
-      "x": 70,
-      "y": 176
-    },
-    {
-      "id": "harbourmaster_sella",
-      "x": 21,
-      "y": 210
-    },
-    {
-      "id": "tackle_keeper_orin",
-      "x": 21,
-      "y": 216
-    },
-    {
-      "id": "tide_token_broker_vey",
-      "x": 19,
-      "y": 219
-    },
-    {
-      "id": "galley_cook_maren",
-      "x": 29,
-      "y": 216
-    },
-    {
-      "id": "fishmonger_pell",
-      "x": 20,
-      "y": 225
-    },
-    {
-      "id": "lighthouse_keeper_brann",
-      "x": 15,
-      "y": 217
-    },
-    {
-      "id": "concord_quartermaster",
-      "x": 102,
-      "y": 218
-    },
-    {
-      "id": "banker",
-      "x": 100,
-      "y": 219
-    },
-    {
-      "id": "gemcutter_yael",
-      "x": 98,
-      "y": 209
-    },
-    {
-      "id": "smith_cantor_branna",
-      "x": 110,
-      "y": 216
-    },
-    {
-      "id": "ore_broker_halle",
-      "x": 112,
-      "y": 222
-    },
-    {
-      "id": "weaver_iseult",
-      "x": 90,
-      "y": 215
-    },
-    {
-      "id": "concord_tanner",
-      "x": 90,
-      "y": 220
-    },
-    {
-      "id": "stavewright_orlin",
-      "x": 99,
-      "y": 229
-    },
-    {
-      "id": "apothecary_vell",
-      "x": 30,
-      "y": 160
-    },
-    {
-      "id": "warden_brisa",
-      "x": 40,
-      "y": 156
-    },
-    {
-      "id": "keeper_thistle",
-      "x": 48,
-      "y": 160
-    },
-    {
-      "id": "master_sustainer_oak",
-      "x": 46,
-      "y": 151
-    },
-    {
-      "id": "blight_warden_mara",
-      "x": 36,
-      "y": 169
-    },
-    {
-      "id": "abbot_threnody",
-      "x": 328,
-      "y": 179
-    },
-    {
-      "id": "sister_plainsong",
-      "x": 344,
-      "y": 179
-    },
-    {
-      "id": "cantor_veil",
-      "x": 324,
-      "y": 191
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 322,
-      "y": 194
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 323,
-      "y": 195
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 324,
-      "y": 194
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 325,
-      "y": 195
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 326,
-      "y": 194
-    },
-    {
-      "id": "gravewail_hound",
-      "x": 327,
-      "y": 195
-    },
-    {
-      "id": "choir_ghast",
-      "x": 322,
-      "y": 196
-    },
-    {
-      "id": "choir_ghast",
-      "x": 324,
-      "y": 196
-    },
-    {
-      "id": "choir_ghast",
-      "x": 326,
-      "y": 196
-    },
-    {
-      "id": "choir_ghast",
-      "x": 328,
-      "y": 195
-    },
-    {
-      "id": "choir_ghast",
-      "x": 321,
-      "y": 195
-    },
-    {
-      "id": "choir_ghast",
-      "x": 327,
-      "y": 194
-    },
-    {
-      "id": "dirgewolf",
-      "x": 321,
-      "y": 200
-    },
-    {
-      "id": "dirgewolf",
-      "x": 323,
-      "y": 201
-    },
-    {
-      "id": "dirgewolf",
-      "x": 322,
-      "y": 202
-    },
-    {
-      "id": "dirgewolf",
-      "x": 324,
-      "y": 200
-    },
-    {
-      "id": "dirgewolf",
-      "x": 325,
-      "y": 202
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 321,
-      "y": 203
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 324,
-      "y": 201
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 326,
-      "y": 201
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 327,
-      "y": 203
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 328,
-      "y": 201
-    },
-    {
-      "id": "dirge_ghoul",
-      "x": 326,
-      "y": 199
-    },
-    {
-      "id": "chordwyrm",
-      "x": 329,
-      "y": 201
-    },
-    {
-      "id": "chordwyrm",
-      "x": 328,
-      "y": 202
-    },
-    {
-      "id": "chordwyrm",
-      "x": 330,
-      "y": 202
-    },
-    {
-      "id": "chordwyrm",
-      "x": 327,
-      "y": 199
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 340,
-      "y": 199
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 343,
-      "y": 198
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 341,
-      "y": 201
-    },
-    {
-      "id": "carillon_revenant",
-      "x": 344,
-      "y": 200
-    },
-    {
-      "id": "choir_warden",
-      "x": 343,
-      "y": 202
-    },
-    {
-      "id": "qv_banker",
-      "x": 238,
-      "y": 77
-    },
-    {
-      "id": "qv_general_clerk",
-      "x": 238,
-      "y": 83
-    },
-    {
-      "id": "qv_thieving_master",
-      "x": 239,
-      "y": 68
-    },
-    {
-      "id": "qv_agility_master",
-      "x": 243,
-      "y": 72
-    },
-    {
-      "id": "qv_construction_master",
-      "x": 261,
-      "y": 84
-    },
-    {
-      "id": "qv_hunter_master",
-      "x": 238,
-      "y": 90
+      "id": "market_crowd_thug",
+      "x": 412,
+      "y": 41
     },
     {
       "id": "silk_merchant",
-      "x": 245,
-      "y": 65
+      "x": 408,
+      "y": 38
     },
     {
       "id": "guild_treasurer",
-      "x": 240,
-      "y": 65
+      "x": 409,
+      "y": 43
     },
     {
       "id": "gilded_noble",
+      "x": 411,
+      "y": 44
+    },
+    {
+      "id": "qv_thieving_master",
+      "x": 414,
+      "y": 37
+    },
+    {
+      "id": "qv_agility_master",
+      "x": 400,
+      "y": 39
+    },
+    {
+      "id": "qv_hunter_master",
+      "x": 394,
+      "y": 53
+    },
+    {
+      "id": "qv_construction_master",
+      "x": 407,
+      "y": 53
+    },
+    {
+      "id": "qv_general_clerk",
+      "x": 404,
+      "y": 50
+    },
+    {
+      "id": "qv_banker",
+      "x": 404,
+      "y": 47
+    },
+    {
+      "id": "harbourmaster_sella",
+      "x": 363,
+      "y": 205
+    },
+    {
+      "id": "tackle_keeper_orin",
+      "x": 358,
+      "y": 200
+    },
+    {
+      "id": "tide_token_broker_vey",
+      "x": 362,
+      "y": 204
+    },
+    {
+      "id": "galley_cook_maren",
+      "x": 369,
+      "y": 200
+    },
+    {
+      "id": "fishmonger_pell",
+      "x": 364,
+      "y": 202
+    },
+    {
+      "id": "lighthouse_keeper_brann",
+      "x": 355,
+      "y": 210
+    },
+    {
+      "id": "warden_brisa",
+      "x": 133,
+      "y": 150
+    },
+    {
+      "id": "apothecary_vell",
+      "x": 133,
+      "y": 144
+    },
+    {
+      "id": "master_sustainer_oak",
+      "x": 141,
+      "y": 140
+    },
+    {
+      "id": "keeper_thistle",
+      "x": 143,
+      "y": 134
+    },
+    {
+      "id": "blight_warden_mara",
+      "x": 154,
+      "y": 135
+    },
+    {
+      "id": "resonne_runecraft_tutor",
+      "x": 328,
+      "y": 67
+    },
+    {
+      "id": "resonne_archcantor",
+      "x": 334,
+      "y": 65
+    },
+    {
+      "id": "resonne_quartermaster",
+      "x": 336,
+      "y": 71
+    },
+    {
+      "id": "resonne_magic_clerk",
+      "x": 332,
+      "y": 71
+    },
+    {
+      "id": "resonne_mill_keeper",
+      "x": 334,
+      "y": 78
+    },
+    {
+      "id": "drillmaster_concord",
+      "x": 333,
+      "y": 190
+    },
+    {
+      "id": "hold_infirmarian",
+      "x": 340,
+      "y": 189
+    },
+    {
+      "id": "quartermaster_bell",
+      "x": 339,
+      "y": 202
+    },
+    {
+      "id": "valour_steward",
+      "x": 343,
+      "y": 202
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 324,
+      "y": 193
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 326,
+      "y": 193
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 328,
+      "y": 193
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 330,
+      "y": 193
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 324,
+      "y": 195
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 326,
+      "y": 195
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 328,
+      "y": 195
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 330,
+      "y": 195
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 325,
+      "y": 197
+    },
+    {
+      "id": "sparring_recruit",
+      "x": 329,
+      "y": 197
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 334,
+      "y": 193
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 336,
+      "y": 193
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 338,
+      "y": 193
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 340,
+      "y": 193
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 334,
+      "y": 195
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 336,
+      "y": 195
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 338,
+      "y": 195
+    },
+    {
+      "id": "sparring_veteran",
+      "x": 340,
+      "y": 195
+    },
+    {
+      "id": "sparring_champion",
+      "x": 345,
+      "y": 193
+    },
+    {
+      "id": "sparring_champion",
+      "x": 348,
+      "y": 193
+    },
+    {
+      "id": "sparring_champion",
+      "x": 345,
+      "y": 196
+    },
+    {
+      "id": "sparring_champion",
+      "x": 348,
+      "y": 196
+    },
+    {
+      "id": "abbot_threnody",
+      "x": 407,
+      "y": 140
+    },
+    {
+      "id": "sister_plainsong",
+      "x": 391,
+      "y": 136
+    },
+    {
+      "id": "cantor_veil",
+      "x": 401,
+      "y": 145
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 393,
+      "y": 150
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 394,
+      "y": 152
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 393,
+      "y": 153
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 395,
+      "y": 150
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 396,
+      "y": 152
+    },
+    {
+      "id": "gravewail_hound",
+      "x": 395,
+      "y": 154
+    },
+    {
+      "id": "choir_ghast",
+      "x": 398,
+      "y": 150
+    },
+    {
+      "id": "choir_ghast",
+      "x": 399,
+      "y": 152
+    },
+    {
+      "id": "choir_ghast",
+      "x": 398,
+      "y": 153
+    },
+    {
+      "id": "choir_ghast",
+      "x": 400,
+      "y": 150
+    },
+    {
+      "id": "choir_ghast",
+      "x": 400,
+      "y": 153
+    },
+    {
+      "id": "choir_ghast",
+      "x": 401,
+      "y": 151
+    },
+    {
+      "id": "dirgewolf",
+      "x": 386,
+      "y": 155
+    },
+    {
+      "id": "dirgewolf",
+      "x": 387,
+      "y": 157
+    },
+    {
+      "id": "dirgewolf",
+      "x": 386,
+      "y": 159
+    },
+    {
+      "id": "dirgewolf",
+      "x": 388,
+      "y": 156
+    },
+    {
+      "id": "dirgewolf",
+      "x": 388,
+      "y": 158
+    },
+    {
+      "id": "dirgewolf",
+      "x": 387,
+      "y": 160
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 390,
+      "y": 155
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 391,
+      "y": 157
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 390,
+      "y": 159
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 392,
+      "y": 156
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 392,
+      "y": 158
+    },
+    {
+      "id": "dirge_ghoul",
+      "x": 391,
+      "y": 160
+    },
+    {
+      "id": "chordwyrm",
+      "x": 393,
+      "y": 155
+    },
+    {
+      "id": "chordwyrm",
+      "x": 394,
+      "y": 157
+    },
+    {
+      "id": "chordwyrm",
+      "x": 393,
+      "y": 159
+    },
+    {
+      "id": "chordwyrm",
+      "x": 394,
+      "y": 160
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 406,
+      "y": 155
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 408,
+      "y": 157
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 406,
+      "y": 158
+    },
+    {
+      "id": "carillon_revenant",
+      "x": 409,
+      "y": 155
+    },
+    {
+      "id": "choir_warden",
+      "x": 410,
+      "y": 159
+    },
+    {
+      "id": "quillrook_range_master",
+      "x": 284,
+      "y": 8
+    },
+    {
+      "id": "quillrook_fletcher",
+      "x": 296,
+      "y": 11
+    },
+    {
+      "id": "quillrook_gunsmith",
+      "x": 299,
+      "y": 11
+    },
+    {
+      "id": "quillrook_quartermaster",
+      "x": 296,
+      "y": 15
+    },
+    {
+      "id": "echo_hare",
+      "x": 282,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 284,
+      "y": 22
+    },
+    {
+      "id": "echo_hare",
+      "x": 286,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 282,
+      "y": 24
+    },
+    {
+      "id": "echo_hare",
+      "x": 288,
+      "y": 20
+    },
+    {
+      "id": "echo_hare",
+      "x": 284,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 287,
+      "y": 22
+    },
+    {
+      "id": "range_rat",
+      "x": 289,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 290,
+      "y": 21
+    },
+    {
+      "id": "range_rat",
+      "x": 291,
+      "y": 23
+    },
+    {
+      "id": "range_rat",
+      "x": 286,
+      "y": 24
+    },
+    {
+      "id": "range_rat",
+      "x": 289,
+      "y": 20
+    },
+    {
+      "id": "smith_cantor_branna",
+      "x": 395,
+      "y": 26
+    },
+    {
+      "id": "ore_broker_halle",
+      "x": 395,
+      "y": 31
+    },
+    {
+      "id": "weaver_iseult",
+      "x": 375,
+      "y": 28
+    },
+    {
+      "id": "concord_tanner",
+      "x": 377,
+      "y": 30
+    },
+    {
+      "id": "stavewright_orlin",
+      "x": 387,
+      "y": 39
+    },
+    {
+      "id": "gemcutter_yael",
+      "x": 384,
+      "y": 19
+    },
+    {
+      "id": "concord_quartermaster",
+      "x": 389,
+      "y": 35
+    },
+    {
+      "id": "banker",
+      "x": 386,
+      "y": 28
+    },
+    {
+      "id": "bole_the_feller",
+      "x": 284,
+      "y": 185
+    },
+    {
+      "id": "cinder_warden_ysolde",
+      "x": 288,
+      "y": 190
+    },
+    {
+      "id": "sawwright_tamsin",
+      "x": 282,
+      "y": 188
+    },
+    {
+      "id": "quill_the_coalman",
+      "x": 283,
+      "y": 194
+    },
+    {
+      "id": "banker",
       "x": 243,
+      "y": 165
+    },
+    {
+      "id": "cow",
+      "x": 25,
+      "y": 59
+    },
+    {
+      "id": "cow",
+      "x": 33,
+      "y": 63
+    },
+    {
+      "id": "cow",
+      "x": 30,
+      "y": 56
+    },
+    {
+      "id": "cow",
+      "x": 24,
+      "y": 55
+    },
+    {
+      "id": "cow",
+      "x": 31,
+      "y": 61
+    },
+    {
+      "id": "sheep",
+      "x": 31,
+      "y": 99
+    },
+    {
+      "id": "sheep",
+      "x": 33,
+      "y": 102
+    },
+    {
+      "id": "sheep",
+      "x": 31,
+      "y": 95
+    },
+    {
+      "id": "sheep",
+      "x": 36,
+      "y": 106
+    },
+    {
+      "id": "sheep",
+      "x": 42,
+      "y": 103
+    },
+    {
+      "id": "sheep",
+      "x": 42,
+      "y": 101
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 42
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 39
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 42
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 35
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 42
+    },
+    {
+      "id": "chicken",
+      "x": 23,
+      "y": 42
+    },
+    {
+      "id": "cow",
+      "x": 40,
+      "y": 180
+    },
+    {
+      "id": "cow",
+      "x": 35,
+      "y": 181
+    },
+    {
+      "id": "cow",
+      "x": 36,
+      "y": 181
+    },
+    {
+      "id": "cow",
+      "x": 40,
+      "y": 180
+    },
+    {
+      "id": "sheep",
+      "x": 34,
+      "y": 134
+    },
+    {
+      "id": "sheep",
+      "x": 26,
+      "y": 133
+    },
+    {
+      "id": "sheep",
+      "x": 26,
+      "y": 138
+    },
+    {
+      "id": "sheep",
+      "x": 26,
+      "y": 139
+    },
+    {
+      "id": "sheep",
+      "x": 28,
+      "y": 133
+    },
+    {
+      "id": "giant_rat",
+      "x": 45,
+      "y": 88
+    },
+    {
+      "id": "giant_rat",
+      "x": 45,
+      "y": 87
+    },
+    {
+      "id": "bear",
+      "x": 66,
+      "y": 72
+    },
+    {
+      "id": "bear",
+      "x": 61,
+      "y": 69
+    },
+    {
+      "id": "dire_wolf",
+      "x": 71,
+      "y": 110
+    },
+    {
+      "id": "dire_wolf",
+      "x": 77,
+      "y": 105
+    },
+    {
+      "id": "dire_wolf",
+      "x": 76,
+      "y": 114
+    },
+    {
+      "id": "forest_spider",
+      "x": 57,
+      "y": 150
+    },
+    {
+      "id": "forest_spider",
+      "x": 63,
+      "y": 150
+    },
+    {
+      "id": "forest_spider",
+      "x": 58,
+      "y": 145
+    },
+    {
+      "id": "giant_rat",
+      "x": 59,
+      "y": 25
+    },
+    {
+      "id": "giant_rat",
+      "x": 55,
+      "y": 28
+    },
+    {
+      "id": "giant_rat",
+      "x": 57,
+      "y": 33
+    },
+    {
+      "id": "scorpion",
+      "x": 102,
+      "y": 63
+    },
+    {
+      "id": "scorpion",
+      "x": 106,
+      "y": 57
+    },
+    {
+      "id": "scorpion",
+      "x": 103,
+      "y": 60
+    },
+    {
+      "id": "scorpion",
+      "x": 103,
       "y": 65
     },
     {
-      "id": "market_crowd_thug",
-      "x": 238,
-      "y": 65
+      "id": "dire_wolf",
+      "x": 96,
+      "y": 102
     },
     {
-      "id": "market_crowd_thug",
-      "x": 247,
-      "y": 65
-    },
-    {
-      "id": "market_crowd_thug",
-      "x": 242,
-      "y": 66
+      "id": "dire_wolf",
+      "x": 97,
+      "y": 100
     }
   ],
   "groundSpawns": [

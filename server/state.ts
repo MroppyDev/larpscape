@@ -166,7 +166,7 @@ export function serverStarterOwned(): AuthState {
   equipment.weapon = { id: 'glock_18', qty: 1 };
   equipment.ammo = { id: 'bronze_round', qty: 50 };
   return {
-    x: 22,
+    x: 142,
     y: 38,
     xp,
     bank: [{ id: 'coins', qty: 25 }],

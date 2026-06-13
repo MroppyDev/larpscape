@@ -57,9 +57,9 @@ function me(...texts: string[]): DialogueLine[] {
 
 // The three road waystones (existing map objects).
 const STONES: { bit: number; x: number; y: number; name: string }[] = [
-  { bit: 1, x: 236, y: 38, name: 'the Aldgate east road' },
-  { bit: 2, x: 263, y: 130, name: 'the corridor road' },
-  { bit: 4, x: 241, y: 202, name: 'the Stonewatch south road' },
+  { bit: 1, x: 356, y: 38, name: 'the Aldgate east road' },
+  { bit: 2, x: 383, y: 130, name: 'the corridor road' },
+  { bit: 4, x: 361, y: 202, name: 'the Stonewatch south road' },
 ];
 function ringCount(): number {
   return STONES.filter((s) => (rings() & s.bit) !== 0).length;
@@ -71,7 +71,7 @@ function stonesLeft(): string {
 // Imber Spire footprint — gates the tinderbox|brazier key so hearth braziers
 // elsewhere in the world stay decorative.
 function atSpire(o: WorldObject): boolean {
-  return o.x >= 263 && o.x <= 277 && o.y >= 5 && o.y <= 23;
+  return o.x >= 383 && o.x <= 397 && o.y >= 5 && o.y <= 23;
 }
 
 // ============================================================

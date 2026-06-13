@@ -10,41 +10,43 @@ export const LEGACY_SIZE = 224;
 export interface Poi { id: string; label: string; x: number; y: number; glyph?: string; }
 
 export const POIS: Poi[] = [
-  // legacy region markers (224×224 box)
-  { id: 'castle', label: 'The Castle', x: 21, y: 37 },
-  { id: 'aldgate', label: 'Aldgate', x: 103, y: 30 },
-  { id: 'warlords_fort', label: "Warlord's Fort", x: 146, y: 21 },
-  { id: 'swamp_mine', label: 'Swamp Mine', x: 22, y: 68 },
-  { id: 'deep_bog', label: 'Deep Bog', x: 24, y: 95 },
-  { id: 'underdeep', label: 'The Underdeep', x: 105, y: 135 },
-  { id: 'river', label: 'River', x: 62, y: 28 },
-  { id: 'hunter_meadow', label: 'Hunter Meadow', x: 64, y: 77 },
-  { id: 'frostpeak', label: 'Frostpeak Mountains', x: 196, y: 55 },
-  { id: 'sunscorch_legacy', label: 'Sunscorch Desert', x: 35, y: 190 },
-  { id: 'port_brackwater', label: 'Port Brackwater', x: 105, y: 196 },
-  { id: 'ashen_depths', label: 'Ashen Depths', x: 190, y: 135 },
+  // legacy region markers (224×224 box) — shifted +120 by the west expansion
+  { id: 'castle', label: 'The Castle', x: 141, y: 37 },
+  { id: 'aldgate', label: 'Aldgate', x: 223, y: 30 },
+  { id: 'warlords_fort', label: "Warlord's Fort", x: 266, y: 21 },
+  { id: 'swamp_mine', label: 'Swamp Mine', x: 142, y: 68 },
+  { id: 'deep_bog', label: 'Deep Bog', x: 144, y: 95 },
+  { id: 'underdeep', label: 'The Underdeep', x: 225, y: 135 },
+  { id: 'river', label: 'River', x: 182, y: 28 },
+  { id: 'hunter_meadow', label: 'Hunter Meadow', x: 184, y: 77 },
+  { id: 'frostpeak', label: 'Frostpeak Mountains', x: 316, y: 55 },
+  { id: 'sunscorch_legacy', label: 'Sunscorch Desert', x: 155, y: 190 },
+  { id: 'port_brackwater', label: 'Port Brackwater', x: 225, y: 196 },
+  { id: 'ashen_depths', label: 'Ashen Depths', x: 310, y: 135 },
   // Phase 5 handcrafted expansion (300×300): east + south new land
-  { id: 'eldermere', label: 'Eldermere', x: 256, y: 84 },
-  { id: 'tanglewood', label: 'The Tanglewood', x: 232, y: 110 },
-  { id: 'stonewatch', label: 'Stonewatch', x: 272, y: 178 },
-  { id: 'gullswreck', label: 'Gullswreck Cove', x: 94, y: 262 },
+  { id: 'eldermere', label: 'Eldermere', x: 376, y: 84 },
+  { id: 'tanglewood', label: 'The Tanglewood', x: 352, y: 110 },
+  { id: 'stonewatch', label: 'Stonewatch', x: 392, y: 178 },
+  { id: 'gullswreck', label: 'Gullswreck Cove', x: 214, y: 262 },
   // world-fill structures pass (scripts/author-structures.ts)
-  { id: 'ravenmoor', label: 'Ravenmoor Manor', x: 238, y: 155 },
-  { id: 'imber_spire', label: 'The Imber Spire', x: 270, y: 12 },
-  { id: 'quiess_tower', label: 'The Quiess Tower', x: 288, y: 86 },
-  { id: 'gullswreck_light', label: 'Gullswreck Light', x: 103, y: 246 },
+  { id: 'ravenmoor', label: 'Ravenmoor Manor', x: 358, y: 155 },
+  { id: 'imber_spire', label: 'The Imber Spire', x: 390, y: 12 },
+  { id: 'quiess_tower', label: 'The Quiess Tower', x: 408, y: 86 },
+  { id: 'gullswreck_light', label: 'Gullswreck Light', x: 223, y: 246 },
   // Content-update skill towns (scripts/merge-content-update.ts) — labels at each
   // town centre (origin + footprint/2).
-  { id: 'cairnchime', label: 'Cairnchime', x: 129, y: 176 },
-  { id: 'drummars_hold', label: "Drummar's Hold", x: 218, y: 191 },
-  { id: 'quillrook', label: 'Quillrook', x: 168, y: 14 },
-  { id: 'resonne', label: 'Resonne', x: 204, y: 75 },
-  { id: 'resin_hollow', label: 'Resin Hollow', x: 174, y: 190 },
-  { id: 'saltsong_harbour', label: 'Saltsong Harbour', x: 248, y: 203 },
-  { id: 'forgekeep_concord', label: 'Forgekeep Concord', x: 266, y: 30 },
-  { id: 'verdancourt', label: 'Verdancourt', x: 23, y: 144 },
-  { id: 'the_knell', label: 'The Knell', x: 279, y: 147 },
-  { id: 'quaverside', label: 'Quaverside', x: 283, y: 49 },
+  { id: 'cairnchime', label: 'Cairnchime', x: 101, y: 37 },
+  { id: 'drummars_hold', label: "Drummar's Hold", x: 59, y: 171 },
+  { id: 'quillrook', label: 'Quillrook', x: 38, y: 35 },
+  { id: 'resonne', label: 'Resonne', x: 102, y: 142 },
+  { id: 'resin_hollow', label: 'Resin Hollow', x: 60, y: 90 },
+  { id: 'saltsong_harbour', label: 'Saltsong Harbour', x: 23, y: 219 },
+  { id: 'forgekeep_concord', label: 'Forgekeep Concord', x: 101, y: 220 },
+  { id: 'verdancourt', label: 'Verdancourt', x: 41, y: 162 },
+  // the_knell + quaverside (east towns) placed in vetted wilderness clearings of
+  // the original world (footprint 30x30 at origin; label = center).
+  { id: 'the_knell', label: 'The Knell', x: 334, y: 190 },
+  { id: 'quaverside', label: 'Quaverside', x: 250, y: 79 },
 ];
 
 // terrain codes

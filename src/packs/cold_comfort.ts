@@ -27,11 +27,11 @@ const WOLVES = 'q6_wolves';     // ice wolves driven off while stage 3
 const COAL_NEEDED = 5;
 const WOLVES_NEEDED = 2;
 
-// The two braziers flanking the spire door (Calder stands at 270,17; the
-// third spire brazier at 269,11 is intentionally NOT part of the reading).
+// The two braziers flanking the spire door (Calder stands at 390,17; the
+// third spire brazier at 389,11 is intentionally NOT part of the reading).
 const DOOR_BRAZIERS: { x: number; y: number; bit: number; mark: string }[] = [
-  { x: 268, y: 16, bit: 1, mark: 'cc_brazier_west' },
-  { x: 272, y: 16, bit: 2, mark: 'cc_brazier_east' },
+  { x: 388, y: 16, bit: 1, mark: 'cc_brazier_west' },
+  { x: 392, y: 16, bit: 2, mark: 'cc_brazier_east' },
 ];
 
 function stage(): number { return questStage(QUEST); }

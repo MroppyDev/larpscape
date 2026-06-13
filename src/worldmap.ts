@@ -74,45 +74,45 @@ const SHOP_POI: PoiDef = { glyph: '€', color: '#1a1a1a', bg: '#c8c060', label:
 
 // fixed markers (npc-based points the object scan can't see)
 const NPC_MARKERS: { x: number; y: number; def: PoiDef }[] = [
-  { x: 30, y: 35, def: QUEST_POI },   // slayer master (Embers Below)
-  { x: 17, y: 43, def: QUEST_POI },   // cook (Empty Larder)
-  { x: 36, y: 23, def: QUEST_POI },   // gardener (Seeds / Heart of the Bog)
-  { x: 89, y: 22, def: QUEST_POI },   // innkeeper (Streets of Aldgate)
-  { x: 79, y: 38, def: QUEST_POI },   // city guard (Warlord's Banner)
-  { x: 146, y: 22, def: BOSS_POI },   // goblin warlord
-  { x: 24, y: 96, def: BOSS_POI },    // bog horror
-  { x: 140, y: 152, def: BOSS_POI },  // shadow drake
-  { x: 35, y: 49, def: SHOP_POI },    // general store
-  { x: 42, y: 30, def: SHOP_POI },    // magic tutor
-  { x: 116, y: 23, def: SHOP_POI },   // armoury
-  { x: 116, y: 44, def: SHOP_POI },   // grocer
+  { x: 150, y: 35, def: QUEST_POI },   // slayer master (Embers Below)
+  { x: 137, y: 43, def: QUEST_POI },   // cook (Empty Larder)
+  { x: 156, y: 23, def: QUEST_POI },   // gardener (Seeds / Heart of the Bog)
+  { x: 209, y: 22, def: QUEST_POI },   // innkeeper (Streets of Aldgate)
+  { x: 199, y: 38, def: QUEST_POI },   // city guard (Warlord's Banner)
+  { x: 266, y: 22, def: BOSS_POI },   // goblin warlord
+  { x: 144, y: 96, def: BOSS_POI },    // bog horror
+  { x: 260, y: 152, def: BOSS_POI },  // shadow drake
+  { x: 155, y: 49, def: SHOP_POI },    // general store
+  { x: 162, y: 30, def: SHOP_POI },    // magic tutor
+  { x: 236, y: 23, def: SHOP_POI },   // armoury
+  { x: 236, y: 44, def: SHOP_POI },   // grocer
   // phase 6 districts
-  { x: 205, y: 20, def: BOSS_POI },   // Maraza the Rimebound (ice queen)
-  { x: 30, y: 200, def: BOSS_POI },   // Saif the Red Smile (bandit king)
-  { x: 210, y: 150, def: BOSS_POI },  // Korr the Molten (magma fiend)
-  { x: 172, y: 54, def: QUEST_POI },  // mountain guide (foothills)
-  { x: 13, y: 178, def: QUEST_POI },  // desert nomad (tent)
-  { x: 118, y: 210, def: QUEST_POI }, // harbormaster (dock end)
-  { x: 18, y: 176, def: QUEST_POI },  // gem trader (rumours)
-  { x: 107, y: 187, def: SHOP_POI },  // fishmonger
-  { x: 12, y: 180, def: SHOP_POI },   // nomad supplies tent
-  { x: 17, y: 178, def: SHOP_POI },   // gem stall
+  { x: 325, y: 20, def: BOSS_POI },   // Maraza the Rimebound (ice queen)
+  { x: 150, y: 200, def: BOSS_POI },  // Saif the Red Smile (bandit king)
+  { x: 330, y: 150, def: BOSS_POI },  // Korr the Molten (magma fiend)
+  { x: 292, y: 54, def: QUEST_POI },  // mountain guide (foothills)
+  { x: 133, y: 178, def: QUEST_POI },  // desert nomad (tent)
+  { x: 238, y: 210, def: QUEST_POI }, // harbormaster (dock end)
+  { x: 138, y: 176, def: QUEST_POI },  // gem trader (rumours)
+  { x: 227, y: 187, def: SHOP_POI },  // fishmonger
+  { x: 132, y: 180, def: SHOP_POI },   // nomad supplies tent
+  { x: 137, y: 178, def: SHOP_POI },   // gem stall
 ];
 
 // legacy hand-placed labels for the original 224x224 region
 const LEGACY_LABELS: { x: number; y: number; text: string }[] = [
-  { x: 21, y: 37, text: 'The Castle' },
-  { x: 103, y: 30, text: 'Aldgate' },
-  { x: 146, y: 21, text: "Warlord's Fort" },
-  { x: 22, y: 68, text: 'Swamp Mine' },
-  { x: 24, y: 95, text: 'Deep Bog' },
-  { x: 105, y: 135, text: 'The Underdeep' },
-  { x: 62, y: 28, text: 'River' },
-  { x: 64, y: 77, text: 'Hunter Meadow' },
-  { x: 196, y: 55, text: 'Frostpeak Mountains' },
-  { x: 35, y: 190, text: 'Sunscorch Desert' },
-  { x: 105, y: 196, text: 'Port Brackwater' },
-  { x: 190, y: 135, text: 'Ashen Depths' },
+  { x: 141, y: 37, text: 'The Castle' },
+  { x: 223, y: 30, text: 'Aldgate' },
+  { x: 266, y: 21, text: "Warlord's Fort" },
+  { x: 142, y: 68, text: 'Swamp Mine' },
+  { x: 144, y: 95, text: 'Deep Bog' },
+  { x: 225, y: 135, text: 'The Underdeep' },
+  { x: 182, y: 28, text: 'River' },
+  { x: 184, y: 77, text: 'Hunter Meadow' },
+  { x: 316, y: 55, text: 'Frostpeak Mountains' },
+  { x: 155, y: 190, text: 'Sunscorch Desert' },
+  { x: 225, y: 196, text: 'Port Brackwater' },
+  { x: 310, y: 135, text: 'Ashen Depths' },
 ];
 
 // legacy labels + entries generated from the world module's POIS export.
@@ -125,7 +125,8 @@ function regionLabels(): { x: number; y: number; text: string }[] {
     const text = p?.label ?? p?.name;
     if (!p || typeof p.x !== 'number' || typeof p.y !== 'number' || !text) continue;
     // skip anything sitting inside the legacy box already covered by hand labels
-    if (p.x < 224 && p.y < 224) continue;
+    // (legacy box right edge shifted +120 by the west expansion: 224 -> 344)
+    if (p.x < 344 && p.y < 224) continue;
     labels.push({ x: p.x, y: p.y, text });
   }
   return labels;

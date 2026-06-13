@@ -439,7 +439,7 @@ function freshPlayer(): Player {
   for (const s of EQUIP_SLOTS) equipment[s] = null;
   return {
     name: 'Adventurer',
-    x: 22, y: 38, prevX: 22, prevY: 38,
+    x: 142, y: 38, prevX: 142, prevY: 38,
     path: [], run: false, energy: 100,
     specEnergy: 100, specArmed: false,
     xp, curHp: 10,

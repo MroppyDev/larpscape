@@ -746,7 +746,7 @@ setOnHpChanged((view, _reason) => {
 // max on the authoritative save and clears the live spec/hp dirty flags. Returns
 // the respawn point. No item/xp penalty is applied (preserves current PvE feel;
 // a softcore xp loss would slot in here via addXp with a negative-after clamp).
-const RESPAWN = { x: 22, y: 38 };
+const RESPAWN = { x: 142, y: 38 };
 
 // Presentation-field position: read from the save on connect, write quietly on
 // disconnect (no rev bump / save_reload — avoids fencing a reconnecting client).

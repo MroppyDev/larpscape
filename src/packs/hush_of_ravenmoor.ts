@@ -43,10 +43,10 @@ const BIT_REVENANT = 2;
 const BIT_LILY = 4;
 
 // Manor geometry (data/map.json): library room band, cellar door, annex crate, chimes.
-const LIB = { x0: 231, x1: 245, y0: 146, y1: 151 };
-const DOOR = { x: 232, y: 159 };
-const ANNEX_CRATE = { x: 233, y: 160 };
-const CHIME = { x: 244, y: 150 };
+const LIB = { x0: 351, x1: 365, y0: 146, y1: 151 };
+const DOOR = { x: 352, y: 159 };
+const ANNEX_CRATE = { x: 353, y: 160 };
+const CHIME = { x: 364, y: 150 };
 
 function stage(): number { return questStage(HUSH); }
 function cellarBits(): number { return auxCount(CELLAR); }

@@ -503,61 +503,63 @@ export const audio = new AudioEngine();
 // Region -> track mapping for auto-play & unlocks
 // Boxes are checked in SPEC order (castle first); map is 224x224 (Phase 6).
 export function trackForRegion(x: number, y: number): string {
-  if (x >= 13 && x <= 28 && y >= 28 && y <= 46) return 'Stonecourt';
-  if (x >= 12 && x <= 32 && y >= 58 && y <= 76) return 'Boghollow';
-  if (x >= 52 && x <= 70 && y >= 22 && y <= 52) return 'Goblin Strut';
+  if (x >= 133 && x <= 148 && y >= 28 && y <= 46) return 'Stonecourt';
+  if (x >= 132 && x <= 152 && y >= 58 && y <= 76) return 'Boghollow';
+  if (x >= 172 && x <= 190 && y >= 22 && y <= 52) return 'Goblin Strut';
   // Phase-5 districts (checked before the open-ended river/north bands).
-  if (x >= 76 && x <= 130 && y >= 8 && y <= 56) return 'Aldgate Streets'; // city
-  if (x >= 132 && x <= 160 && y >= 10 && y <= 34) return 'Warbanner'; // warlord fort
-  if (x >= 60 && x <= 150 && y >= 110 && y <= 160) return 'Underdeep'; // cavern
+  if (x >= 196 && x <= 250 && y >= 8 && y <= 56) return 'Aldgate Streets'; // city
+  if (x >= 252 && x <= 280 && y >= 10 && y <= 34) return 'Warbanner'; // warlord fort
+  if (x >= 180 && x <= 270 && y >= 110 && y <= 160) return 'Underdeep'; // cavern
   // Phase-6 districts. The Ashen Depths check sits AFTER the cavern box above,
   // so the old cavern keeps 'Underdeep' and only the eastern extension is ash.
   // (the three open-ended bands below are clamped to the legacy 224 box so the
   // Phase 5 expansion east/south of it can carry its own music)
-  if (x >= 152 && x < 224 && y >= 108 && y <= 162) return 'Ashfall'; // ashen depths
-  if (x >= 168 && x < 224 && y <= 104) return 'Rimewind'; // frostpeak mountains
-  if (x <= 64 && y >= 168 && y < 224) return 'Sunscorch'; // sunscorch desert
-  if (x >= 70 && x <= 140 && y >= 178 && y <= 223) return 'Brackwater Tide'; // port
-  if (x >= 8 && x <= 40 && y >= 80 && y <= 110) return 'Boghollow'; // deep bog
-  if (x >= 42 && x <= 54 && y < 224) return 'Riverside';
-  if (y < 22 && x < 46) return "Shepherd's Rest";
-  if (x >= 29 && x <= 41 && y >= 40 && y <= 62) return 'Market Day';
-  if (x >= 60 && x <= 70 && y >= 58 && y <= 68) return 'Whispering Stones';
-  if (x >= 56 && x <= 72 && y >= 70 && y <= 84) return 'Quiet Meadow';
-  if (x >= 54 && x <= 68 && y >= 38 && y <= 44) return 'Market Day';
+  if (x >= 272 && x < 344 && y >= 108 && y <= 162) return 'Ashfall'; // ashen depths
+  if (x >= 288 && x < 344 && y <= 104) return 'Rimewind'; // frostpeak mountains
+  if (x <= 184 && y >= 168 && y < 224) return 'Sunscorch'; // sunscorch desert
+  if (x >= 190 && x <= 260 && y >= 178 && y <= 223) return 'Brackwater Tide'; // port
+  if (x >= 128 && x <= 160 && y >= 80 && y <= 110) return 'Boghollow'; // deep bog
+  if (x >= 162 && x <= 174 && y < 224) return 'Riverside';
+  if (y < 22 && x < 166) return "Shepherd's Rest";
+  if (x >= 149 && x <= 161 && y >= 40 && y <= 62) return 'Market Day';
+  if (x >= 180 && x <= 190 && y >= 58 && y <= 68) return 'Whispering Stones';
+  if (x >= 176 && x <= 192 && y >= 70 && y <= 84) return 'Quiet Meadow';
+  if (x >= 174 && x <= 188 && y >= 38 && y <= 44) return 'Market Day';
   // Phase 5 handcrafted expansion (300×300) — checked after all legacy boxes.
   // The Untuned Mine (instanced dungeon carved under the southern sea) sits
   // inside the y>=217 band, so it must be checked before the coast tracks.
-  if (x >= 6 && x <= 50 && y >= 238 && y <= 295) {
+  if (x >= 126 && x <= 170 && y >= 238 && y <= 295) {
     if (y >= 284) return 'The Crystal Heart'; // F3: gate + Resonant Vault + Resonance Gallery
     return 'Untuned Halls'; // F1/F2 galleries
   }
-  if (x >= 96 && x <= 112 && y >= 238 && y <= 252) return 'Beacon Rock'; // Gullswreck Light islet + coast
-  if (x >= 76 && x <= 132 && y >= 250 && y <= 292) return 'Gullswreck Shanty'; // the cove village
+  if (x >= 216 && x <= 232 && y >= 238 && y <= 252) return 'Beacon Rock'; // Gullswreck Light islet + coast
+  if (x >= 196 && x <= 252 && y >= 250 && y <= 292) return 'Gullswreck Shanty'; // the cove village
   if (y >= 217) return 'Brackwater Tide'; // rest of the southern sea
-  if (x >= 224) {
-    if (x >= 262 && x <= 278 && y <= 22) return "Imber's Spire"; // the Imber Spire
+  if (x >= 344) {
+    if (x >= 382 && x <= 398 && y <= 22) return "Imber's Spire"; // the Imber Spire
     if (y <= 26) return 'Rimewind'; // Frostpeak's eastern skirts
-    if (x >= 244 && x <= 272 && y >= 62 && y <= 106) return 'Quiet Meadow'; // Eldermere
-    if (x >= 280 && x <= 296 && y >= 78 && y <= 94) return "Quiess' Rest"; // the Quiess Tower
-    if (x <= 260 && y >= 64 && y <= 136) return 'Tanglewood Depths'; // the Tanglewood
+    if (x >= 364 && x <= 392 && y >= 62 && y <= 106) return 'Quiet Meadow'; // Eldermere
+    if (x >= 400 && x <= 416 && y >= 78 && y <= 94) return "Quiess' Rest"; // the Quiess Tower
+    if (x <= 380 && y >= 64 && y <= 136) return 'Tanglewood Depths'; // the Tanglewood
     if (y <= 62) return 'Harvest Road'; // farm belt on the Aldgate road
-    if (x >= 226 && x <= 252 && y >= 144 && y <= 168) return 'Ravenmoor'; // Ravenmoor Manor grounds
-    if (x >= 256 && y >= 156 && y <= 200) return 'Stonewatch Garrison'; // Stonewatch (duchy garrison)
+    if (x >= 346 && x <= 372 && y >= 144 && y <= 168) return 'Ravenmoor'; // Ravenmoor Manor grounds
+    if (x >= 376 && y >= 156 && y <= 200) return 'Stonewatch Garrison'; // Stonewatch (duchy garrison)
     if (y >= 106 && y <= 156) return 'Wraithrun'; // danger corridor
   }
   // Content-update skill towns (scripts/merge-content-update.ts). Boxes cover each
   // town's footprint (origin .. origin+footprint) and are checked after all the
   // legacy/expansion regions so they only claim their own clearing.
-  if (x >= 115 && x <= 143 && y >= 162 && y <= 190) return 'Cairnchime Dig'; // mining
-  if (x >= 203 && x <= 233 && y >= 176 && y <= 206) return 'Drummer\'s March'; // melee
-  if (x >= 154 && x <= 182 && y >= 1 && y <= 27) return 'Quillrook Wilds'; // ranged
-  if (x >= 188 && x <= 220 && y >= 59 && y <= 91) return 'Resonne Chord'; // magic
-  if (x >= 160 && x <= 188 && y >= 176 && y <= 204) return 'Resin Hollow'; // woodcutting
-  if (x >= 233 && x <= 263 && y >= 189 && y <= 217) return 'Saltsong Tide'; // fishing
-  if (x >= 251 && x <= 281 && y >= 15 && y <= 45) return 'Forgekeep Anvil'; // smithing
-  if (x >= 8 && x <= 38 && y >= 130 && y <= 158) return 'Verdancourt Bloom'; // herblore
-  if (x >= 264 && x <= 294 && y >= 132 && y <= 162) return 'The Knell'; // prayer
-  if (x >= 268 && x <= 298 && y >= 34 && y <= 64) return 'Quaverside'; // utility
+  if (x >= 86 && x <= 116 && y >= 22 && y <= 52) return 'Cairnchime Dig'; // mining
+  if (x >= 44 && x <= 74 && y >= 156 && y <= 186) return 'Drummer\'s March'; // melee
+  if (x >= 24 && x <= 52 && y >= 22 && y <= 48) return 'Quillrook Wilds'; // ranged
+  if (x >= 86 && x <= 118 && y >= 126 && y <= 158) return 'Resonne Chord'; // magic
+  if (x >= 46 && x <= 74 && y >= 76 && y <= 104) return 'Resin Hollow'; // woodcutting
+  if (x >= 8 && x <= 38 && y >= 205 && y <= 233) return 'Saltsong Tide'; // fishing
+  if (x >= 86 && x <= 116 && y >= 205 && y <= 235) return 'Forgekeep Anvil'; // smithing
+  if (x >= 26 && x <= 56 && y >= 148 && y <= 176) return 'Verdancourt Bloom'; // herblore
+  // the_knell + quaverside (east towns) placed in vetted wilderness clearings of
+  // the original world. Boxes cover each 30x30 footprint (origin .. origin+30).
+  if (x >= 319 && x <= 348 && y >= 175 && y <= 204) return 'The Knell'; // prayer
+  if (x >= 235 && x <= 264 && y >= 64 && y <= 93) return 'Quaverside'; // utility
   return 'Newbie Meadow';
 }

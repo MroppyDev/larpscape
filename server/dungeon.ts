@@ -45,10 +45,10 @@ import { blocked } from './world';
 // Geometry (must match scripts/author-dungeon.ts + src/packs/untuned_mine.ts)
 // ---------------------------------------------------------------------------
 
-export const DUNGEON_RECT = { x0: 6, y0: 238, x1: 50, y1: 295 };
-export const ENTRY = { x: 12, y: 245 };           // arrival tile in the entry hall
-export const OVERWORLD_EXIT = { x: 23, y: 76 };   // breach-side tile at the Swamp Mine door
-const RUBBLE_RECT = { x0: 30, y0: 261, x1: 38, y1: 265 }; // 'the Crawl' on F2
+export const DUNGEON_RECT = { x0: 126, y0: 238, x1: 170, y1: 295 };
+export const ENTRY = { x: 132, y: 245 };           // arrival tile in the entry hall
+export const OVERWORLD_EXIT = { x: 143, y: 76 };   // breach-side tile at the Swamp Mine door
+const RUBBLE_RECT = { x0: 150, y0: 261, x1: 158, y1: 265 }; // 'the Crawl' on F2
 
 export function inDungeon(x: number, y: number): boolean {
   return x >= DUNGEON_RECT.x0 && x <= DUNGEON_RECT.x1 && y >= DUNGEON_RECT.y0 && y <= DUNGEON_RECT.y1;
@@ -59,20 +59,20 @@ export function inDungeon(x: number, y: number): boolean {
 // >=5 tiles from connecting-corridor tiles so the corridors stay no-aggro.
 const SPAWN_SET: [string, number, number][] = [
   // F1 — the Ringing Galleries (tutorial pace)
-  ['discord_mote', 25, 242], ['discord_mote', 25, 248],
-  ['untuned_golem', 25, 245],
-  ['discord_mote', 37, 241], ['discord_mote', 43, 243],
-  ['untuned_golem', 38, 245], ['untuned_golem', 42, 241],
+  ['discord_mote', 145, 242], ['discord_mote', 145, 248],
+  ['untuned_golem', 145, 245],
+  ['discord_mote', 157, 241], ['discord_mote', 163, 243],
+  ['untuned_golem', 158, 245], ['untuned_golem', 162, 241],
   // F2 — the Skipped Seam (denser, faster; the Crawl is a hazard zone)
-  ['seam_creeper', 37, 263],
-  ['seam_creeper', 34, 263],
-  ['untuned_golem', 24, 262], ['untuned_golem', 21, 264],
-  ['discord_mote', 27, 260], ['discord_mote', 19, 261],
-  ['seam_creeper', 25, 267], ['seam_creeper', 28, 261],
-  ['foreman_echo', 20, 274],
+  ['seam_creeper', 157, 263],
+  ['seam_creeper', 154, 263],
+  ['untuned_golem', 144, 262], ['untuned_golem', 141, 264],
+  ['discord_mote', 147, 260], ['discord_mote', 139, 261],
+  ['seam_creeper', 145, 267], ['seam_creeper', 148, 261],
+  ['foreman_echo', 140, 274],
   // F3 — the Resonant Vault + the Resonance Gallery (Ch4 quest wing)
-  ['crystal_heart', 24, 289],
-  ['the_dissonant', 41, 290], // def ships in Q4's fragment; skipped if unmerged
+  ['crystal_heart', 144, 289],
+  ['the_dissonant', 161, 290], // def ships in Q4's fragment; skipped if unmerged
 ];
 
 // ---------------------------------------------------------------------------

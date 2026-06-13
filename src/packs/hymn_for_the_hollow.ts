@@ -1,6 +1,6 @@
 // Quest pack Q7: 'A Hymn for the Hollow' — Vesper Hollowell (quiess_wizard,
 // option 'Ask-about-the-chapel') sends the player to the ruined chapel on the
-// corridor road (altar 278,109). A Discord Wars chaplain's soul is snagged on
+// corridor road (altar 398,109). A Discord Wars chaplain's soul is snagged on
 // a hymn that stopped one line short: bury his congregation's bones (x5 on the
 // altar, aux 'q7_buried'), learn the closing verse from Vesper, and sing it.
 // Zero required combat. Stages 0-6 per docs/QUEST-DESIGN.md §8 (doneStage 6).
@@ -19,7 +19,7 @@ import { questStage, advanceQuestStage, claimQuestReward, scriptedGrant, questbG
 
 const HYMN = 'hymn_for_the_hollow';
 const BURIED = 'q7_buried';        // 0-5 burials; 6 = the echo has been heard out
-const ALTAR_X = 278;
+const ALTAR_X = 398;
 const ALTAR_Y = 109;
 const BONES_NEEDED = 5;
 const BONE_MARKS = ['hymn_bone_1', 'hymn_bone_2', 'hymn_bone_3', 'hymn_bone_4', 'hymn_bone_5'];
