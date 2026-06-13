@@ -1389,7 +1389,7 @@ const NATURAL_RE = /^(tree|oak|willow|maple|yew|magic_tree|stump|rocks_|boulder|
 interface Limbs { la: THREE.Group; ra: THREE.Group; ll: THREE.Group; rl: THREE.Group; }
 interface FigureData { limbs: Limbs | null; bob: THREE.Object3D; seed: number; yaw: number; quad: boolean; }
 
-function limbGroup(mesh: THREE.Mesh, x: number, y: number, z: number): THREE.Group {
+function limbGroup(mesh: THREE.Object3D, x: number, y: number, z: number): THREE.Group {
   const g = new THREE.Group();
   g.position.set(x, y, z);
   g.add(mesh);
@@ -2340,9 +2340,1453 @@ function buildNpcTemplate(n: Npc): THREE.Group {
     case 'cantor_surveyor': return makeHumanoid({
       tunic: '#b08a4a', pants: '#5e4a2e', apron: '#3a3430', hair: '#3a2a14', scale: size,
     });
-    default: return makeHumanoid({ tunic: (n.def as any).color ?? '#7a5a3a', hair: '#3a2a14', scale: size });
+    default: {
+      const extra = EXTRA_BUILDERS[id];
+      if (extra) return extra(n, size);
+      return makeHumanoid({ tunic: (n.def as any).color ?? '#7a5a3a', hair: '#3a2a14', scale: size });
+    }
   }
 }
+
+// ============================================================================
+// Resonance Update — per-NPC models. Bespoke low-poly creature builders +
+// individualized humanoid wardrobes for the 89 NPCs that previously fell through
+// to the generic-humanoid default. Authored one-agent-per-NPC; the registry below
+// is consulted from buildNpcTemplate's default branch.
+// ============================================================================
+function make_forest_spider(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // mottled forest palette
+  const dk = '#2f3a22', md = '#3c4a2c', lt = '#4f5e36', leg = '#34402a';
+  const restY = 0.24; // body resting height above splayed legs
+
+  // bulbous abdomen at the rear, sitting low and heavy
+  const abd = lm(sphG(0.34, md, 7, 5, 0.08), 0, restY + 0.02, -0.26);
+  abd.scale.set(0.92, 0.86, 1.12);
+  body.add(abd);
+  // mottling spots on the abdomen (two close shades of darker green)
+  body.add(lm(icoG(0.07, dk, 0), -0.11, restY + 0.18, -0.24));
+  body.add(lm(icoG(0.06, dk, 0), 0.12, restY + 0.16, -0.34));
+  body.add(lm(icoG(0.055, lt, 0), 0, restY + 0.2, -0.18));
+  body.add(lm(icoG(0.05, dk, 0), 0, restY + 0.04, -0.46));
+
+  // narrow pedicel (waist) joining abdomen to cephalothorax
+  body.add(lm(sphG(0.08, dk, 6, 4, 0.08), 0, restY, -0.02));
+
+  // smaller cephalothorax in front, slightly raised and tilted
+  const ceph = lm(sphG(0.21, lt, 7, 5, 0.08), 0, restY + 0.04, 0.18);
+  ceph.scale.set(0.95, 0.7, 1.05);
+  body.add(ceph);
+  // a darker dorsal plate over the cephalothorax
+  const plate = lm(domeG(0.16, md, 0.08), 0, restY + 0.12, 0.18);
+  plate.scale.set(1.0, 0.7, 1.05);
+  body.add(plate);
+
+  // short fangs / chelicerae jutting forward-down at the front
+  for (const sx of [-1, 1]) {
+    body.add(lm(coneG(0.035, 0.12, dk, 5), sx * 0.05, restY - 0.02, 0.38, 1.9, 0, sx * 0.15));
+    // pedipalps — short stubby feelers beside the fangs
+    body.add(lm(cylG(0.018, 0.024, 0.14, leg, 4), sx * 0.11, restY + 0.0, 0.34, 1.3, 0, sx * 0.5));
+  }
+
+  // little cluster of dark eyes with a faint glow
+  body.add(gm(icoG(0.026, '#0e1207', 0), -0.05, restY + 0.12, 0.34));
+  body.add(gm(icoG(0.026, '#0e1207', 0), 0.05, restY + 0.12, 0.34));
+  body.add(gm(icoG(0.02, '#1a2410', 0), -0.09, restY + 0.16, 0.3));
+  body.add(gm(icoG(0.02, '#1a2410', 0), 0.09, restY + 0.16, 0.3));
+
+  // a bent spider leg built as two angled segments fanning outward
+  const mkLeg = (sx: number, fz: number, splay: number, lift: number) => {
+    const g = new THREE.Group();
+    // upper segment angles up-and-out from the joint
+    const up = lm(cylG(0.02, 0.026, 0.24, leg, 4), 0, 0, 0);
+    up.position.set(sx * 0.11, lift, 0);
+    up.rotation.set(0, sx * fz, sx * (splay + 0.5));
+    g.add(up);
+    // knee blob at the elbow
+    g.add(lm(sphG(0.028, leg, 5, 4, 0.08), sx * 0.23, lift - 0.02, Math.sin(fz) * sx * 0.18));
+    // lower segment drops back down to the ground
+    const lo = lm(cylG(0.016, 0.022, 0.28, leg, 4), 0, 0, 0);
+    lo.position.set(sx * 0.27, lift - 0.06, Math.sin(fz) * sx * 0.22);
+    lo.rotation.set(0, sx * fz, sx * (splay - 0.95));
+    g.add(lo);
+    return g;
+  };
+
+  // six STATIC legs (three pairs): front pair forward, middle, rear pair back
+  body.add(mkLeg(-1, 0.55, 0.0, restY + 0.02)); // front-left
+  body.add(mkLeg(1, 0.55, 0.0, restY + 0.02));  // front-right
+  body.add(mkLeg(-1, -0.15, 0.05, restY + 0.0)); // mid-rear-left
+  body.add(mkLeg(1, -0.15, 0.05, restY + 0.0));  // mid-rear-right
+  body.add(mkLeg(-1, -0.7, 0.1, restY - 0.02));  // rear-left
+  body.add(mkLeg(1, -0.7, 0.1, restY - 0.02));   // rear-right
+
+  // animated DIAGONAL pair (one mid-left + one mid-right offset), hung from limbGroup pivots
+  const mkSwingLeg = (sx: number, fz: number) => {
+    const m = new THREE.Group();
+    const up = lm(cylG(0.02, 0.026, 0.24, leg, 4), 0, -0.0, 0);
+    up.position.set(sx * 0.11, 0, 0);
+    up.rotation.set(0, sx * fz, sx * 0.55);
+    m.add(up);
+    m.add(lm(sphG(0.028, leg, 5, 4, 0.08), sx * 0.23, -0.02, Math.sin(fz) * sx * 0.18));
+    const lo = lm(cylG(0.016, 0.022, 0.28, leg, 4), 0, 0, 0);
+    lo.position.set(sx * 0.27, -0.08, Math.sin(fz) * sx * 0.22);
+    lo.rotation.set(0, sx * fz, sx * -0.9);
+    m.add(lo);
+    return limbGroup(m, 0, restY + 0.0, sx === -1 ? 0.2 : -0.18);
+  };
+  // la=front-left, rl=front-right, ll=back-left, ra=back-right (diagonal trot mapping)
+  const la = mkSwingLeg(-1, 0.25);
+  const ra = mkSwingLeg(1, -0.35);
+  body.add(la, ra);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la, ra, ll: la, rl: ra }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  return root;
+}
+
+function make_bear(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+
+  const fur = '#6a4a30';     // base warm brown
+  const dark = '#553b26';    // shadow brown (belly, legs)
+  const light = '#7d5938';   // highlight brown (hump, snout bridge)
+
+  // --- Bulky trunk: barrel chest + rump, with a raised shoulder hump ---
+  const chest = lm(sphG(0.28, fur), 0, 0.5, 0.16);
+  chest.scale.set(0.95, 0.92, 1.25);
+  body.add(chest);
+
+  const rump = lm(sphG(0.25, fur), 0, 0.46, -0.22);
+  rump.scale.set(0.9, 0.85, 1.05);
+  body.add(rump);
+
+  const belly = lm(sphG(0.2, dark), 0, 0.38, -0.02);
+  belly.scale.set(0.78, 0.6, 1.8);
+  body.add(belly);
+
+  // signature heavy shoulder hump, rising above the back over the front legs
+  const hump = lm(icoG(0.21, light, 0), 0, 0.66, 0.22);
+  hump.scale.set(0.95, 0.95, 0.95);
+  body.add(hump);
+
+  // --- Broad lowered head, carried low and forward ---
+  const head = new THREE.Group();
+  head.position.set(0, 0.5, 0.5);
+  const skull = lm(sphG(0.17, fur), 0, 0, 0);
+  skull.scale.set(1.0, 0.92, 1.0);
+  head.add(skull);
+  // blunt snout
+  const snout = lm(capG(0.085, 0.13, light), 0, -0.05, 0.16, Math.PI / 2);
+  snout.scale.set(1.0, 0.85, 1.0);
+  head.add(snout);
+  // nose pad
+  head.add(lm(sphG(0.045, '#1c1612'), 0, -0.05, 0.28));
+  // round ears (spheres, not spikes)
+  head.add(lm(sphG(0.06, fur), -0.12, 0.14, -0.04));
+  head.add(lm(sphG(0.06, fur), 0.12, 0.14, -0.04));
+  head.add(lm(sphG(0.03, dark), -0.12, 0.15, -0.01));
+  head.add(lm(sphG(0.03, dark), 0.12, 0.15, -0.01));
+  // small dark eyes
+  head.add(gm(sphG(0.022, '#2a1d14'), -0.075, 0.04, 0.18));
+  head.add(gm(sphG(0.022, '#2a1d14'), 0.075, 0.04, 0.18));
+  body.add(head);
+
+  // tiny stub tail
+  body.add(lm(sphG(0.06, dark), 0, 0.45, -0.46));
+
+  // --- Thick stocky legs ---
+  const mkLeg = (sx: number, sz: number) => {
+    const leg = lm(capG(0.075, 0.22, sz > 0 ? fur : dark), 0, -0.16, 0);
+    const g = limbGroup(leg, sx * 0.18, 0.34, sz * 0.27);
+    // broad paw
+    g.add(lm(sphG(0.08, dark), 0, -0.33, 0.03));
+    return g;
+  };
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  body.add(fl, fr, bl, br);
+
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  root.scale.setScalar(size);
+  return root;
+}
+
+function make_echo_hare(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  const fur = '#cfc3a8', furD = '#b6a988', furL = '#e2d8c0', dark = '#6a5f4a', echo = '#8fe6e2';
+
+  // rounded compact trunk, chest a touch lower than the big haunch behind
+  const trunk = lm(sphG(0.2, fur), 0, 0.34, 0.04);
+  trunk.scale.set(0.82, 0.78, 1.15);
+  body.add(trunk);
+  // pale belly
+  const belly = lm(sphG(0.15, furL), 0, 0.26, 0.06);
+  belly.scale.set(0.78, 0.55, 1.2);
+  body.add(belly);
+
+  // big powerful back haunches — the hopper's engine
+  for (const sx of [-1, 1]) {
+    const ha = lm(icoG(0.16, furD, 0), sx * 0.13, 0.3, -0.16);
+    ha.scale.set(0.85, 1.05, 1.15);
+    body.add(ha);
+  }
+
+  // head — small, alert, lifted forward and up
+  const head = new THREE.Group();
+  head.position.set(0, 0.5, 0.28);
+  const skull = lm(sphG(0.115, fur));
+  skull.scale.set(0.92, 0.95, 1.0);
+  head.add(skull);
+  // short rounded muzzle + nose
+  const muzzle = lm(sphG(0.06, furL), 0, -0.03, 0.1);
+  muzzle.scale.set(0.85, 0.7, 1.05);
+  head.add(muzzle);
+  head.add(lm(sphG(0.018, '#3a322a'), 0, -0.01, 0.16));
+  // big alert eyes with a faint echo gleam
+  head.add(lm(sphG(0.028, '#241f18'), -0.075, 0.03, 0.075));
+  head.add(lm(sphG(0.028, '#241f18'), 0.075, 0.03, 0.075));
+  head.add(gm(sphG(0.012, echo, 5, 4), -0.082, 0.045, 0.092));
+  head.add(gm(sphG(0.012, echo, 5, 4), 0.068, 0.045, 0.092));
+  // VERY long upright ears — long tapered cones with pale inner lining
+  for (const sx of [-1, 1]) {
+    const ear = lm(coneG(0.045, 0.42, fur, 5), sx * 0.06, 0.27, -0.02, -0.12, 0, sx * 0.16);
+    head.add(ear);
+    const inner = lm(coneG(0.024, 0.34, '#e8b8b0', 5), sx * 0.063, 0.26, 0.0, -0.12, 0, sx * 0.16);
+    head.add(inner);
+  }
+  body.add(head);
+
+  // little fluffy upturned tail
+  const tail = lm(icoG(0.075, furL, 0), 0, 0.36, -0.34);
+  tail.scale.set(1.0, 1.0, 0.85);
+  body.add(tail);
+
+  // faint echo shimmer — a ghostly trailing afterimage of the body, just behind
+  const echoTrunk = gm(sphG(0.2, echo), 0, 0.34, -0.18);
+  echoTrunk.scale.set(0.78, 0.74, 1.1);
+  (echoTrunk.material as any).opacity = 0.14;
+  (echoTrunk.material as any).transparent = true;
+  body.add(echoTrunk);
+  // faint ground resonance ring
+  const glow = gm(ringG(0.18, 0.34, echo), 0, 0.015, -0.02, -Math.PI / 2);
+  (glow.material as any).opacity = 0.18;
+  (glow.material as any).transparent = true;
+  body.add(glow);
+
+  // long springy back legs (folded), short stubby forelegs
+  const mkBack = (sx: number) =>
+    limbGroup(lm(cylG(0.04, 0.055, 0.24, furD, 5), 0, -0.11, 0), sx * 0.135, 0.24, -0.18);
+  const mkFront = (sx: number) =>
+    limbGroup(lm(cylG(0.03, 0.038, 0.18, fur, 5), 0, -0.085, 0), sx * 0.1, 0.18, 0.16);
+  const bl = mkBack(-1), br = mkBack(1);
+  const fl = mkFront(-1), fr = mkFront(1);
+  body.add(bl, br, fl, fr);
+  // little paw tips
+  body.add(lm(sphG(0.035, furL), -0.1, 0.025, 0.18));
+  body.add(lm(sphG(0.035, furL), 0.1, 0.025, 0.18));
+
+  // diagonal trot: la=front-left, ra=back-right, ll=back-left, rl=front-right
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  return root;
+}
+
+function make_range_rat(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+
+  // sooty "archery range" palette: smoke-violet coat with charcoal smudges
+  const coat = '#5a4e60';
+  const coatDk = '#473d4e';
+  const belly = '#6e6172';
+  const skin = '#c4a0aa';   // bald ears/tail/snout flesh
+  const soot = '#33303a';
+
+  // ---- low-slung hunched trunk (sits close to ground) ----
+  const trunk = lm(sphG(0.23, coat), 0, 0.2, -0.06);
+  trunk.scale.set(0.7, 0.62, 1.55);
+  body.add(trunk);
+  // raised rump/haunch hump for a hunched silhouette
+  const rump = lm(sphG(0.18, coat), 0, 0.23, -0.26);
+  rump.scale.set(0.78, 0.78, 0.95);
+  body.add(rump);
+  // pale underbelly
+  const ubelly = lm(sphG(0.14, belly), 0, 0.12, 0.04);
+  ubelly.scale.set(0.66, 0.5, 1.5);
+  body.add(ubelly);
+
+  // charcoal soot smudge along the spine
+  const smudge = lm(sphG(0.1, soot), 0, 0.31, -0.1);
+  smudge.scale.set(0.7, 0.45, 1.5);
+  body.add(smudge);
+
+  // painted concentric "target" brand on the left flank (the range mark)
+  body.add(lm(torusG(0.085, 0.022, '#c44a3a'), -0.16, 0.2, -0.12, 0, Math.PI / 2, 0));
+  body.add(lm(torusG(0.045, 0.018, '#e8e0d2'), -0.165, 0.2, -0.12, 0, Math.PI / 2, 0));
+  body.add(lm(sphG(0.022, '#c44a3a'), -0.17, 0.2, -0.12));
+
+  // ---- head: pointed snout, big ears, whiskers ----
+  const head = new THREE.Group();
+  head.position.set(0, 0.22, 0.36);
+  const skull = lm(sphG(0.13, coat), 0, 0, 0);
+  skull.scale.set(0.82, 0.82, 1.0);
+  head.add(skull);
+  // long pointed snout
+  head.add(lm(coneG(0.085, 0.26, coatDk, 6), 0, -0.02, 0.16, Math.PI / 2));
+  // flesh nose tip
+  head.add(lm(sphG(0.03, skin), 0, -0.02, 0.31));
+  // dark beady eyes
+  head.add(gm(sphG(0.022, '#16141c'), -0.07, 0.04, 0.12));
+  head.add(gm(sphG(0.022, '#16141c'), 0.07, 0.04, 0.12));
+  // big thin round ears (flattened spheres) with pale inner
+  const mkEar = (sx: number) => {
+    const e = new THREE.Group();
+    e.position.set(sx * 0.1, 0.11, -0.02);
+    const outer = lm(sphG(0.085, coat), 0, 0, 0);
+    outer.scale.set(0.95, 1.05, 0.18);
+    e.add(outer);
+    const inner = lm(sphG(0.055, skin), 0, 0, 0.02);
+    inner.scale.set(0.9, 1.0, 0.18);
+    e.add(inner);
+    e.rotation.set(-0.25, sx * 0.35, sx * 0.18);
+    return e;
+  };
+  head.add(mkEar(-1), mkEar(1));
+  // whiskers — thin angled cylinders sweeping back from the snout
+  for (const sx of [-1, 1]) {
+    head.add(lm(cylG(0.004, 0.004, 0.22, '#d8d0c4', 3), sx * 0.06, 0.0, 0.22, 0, sx * 0.6, sx * 0.1));
+    head.add(lm(cylG(0.004, 0.004, 0.2, '#d8d0c4', 3), sx * 0.06, -0.04, 0.22, 0, sx * 0.55, sx * -0.15));
+  }
+  body.add(head);
+
+  // ---- long bald dragging tail (tapered segments to the floor) ----
+  body.add(lm(cylG(0.035, 0.045, 0.18, skin, 5), 0, 0.2, -0.4, Math.PI / 2.1));
+  body.add(lm(cylG(0.022, 0.035, 0.22, skin, 5), 0, 0.13, -0.56, Math.PI / 1.85));
+  body.add(lm(cylG(0.01, 0.022, 0.24, skin, 5), 0, 0.05, -0.72, Math.PI / 1.7));
+
+  // ---- four small scurrying legs (diagonal trot) ----
+  const mkLeg = (sx: number, sz: number) =>
+    limbGroup(lm(cylG(0.028, 0.036, 0.16, coatDk, 5), 0, -0.08, 0), sx * 0.12, 0.15, sz * 0.22);
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  body.add(fl, fr, bl, br);
+
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true };
+  root.scale.setScalar(size);
+  return root;
+}
+
+function make_dire_wolf(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // charcoal / iron grey palette
+  const fur = '#3a3a40';      // body base
+  const fur2 = '#4a4a52';     // lighter ridge/limbs
+  const dark = '#2a2a30';     // shadow / ruff / underside
+  const ruff = '#222228';     // shaggy neck mane (darkest)
+  const bone = '#d8d2c4';     // fangs / claws
+
+  // lean muscular trunk — chest forward, separate haunch behind
+  const chest = lm(sphG(0.24, fur), 0, 0.62, 0.18);
+  chest.scale.set(0.92, 0.92, 1.35);
+  body.add(chest);
+  const haunch = lm(sphG(0.23, fur), 0, 0.6, -0.3);
+  haunch.scale.set(0.88, 0.92, 1.15);
+  body.add(haunch);
+  const belly = lm(sphG(0.16, dark), 0, 0.46, 0.0);
+  belly.scale.set(0.82, 0.62, 1.7);
+  body.add(belly);
+  // raised dorsal spine ridge
+  body.add(lm(boxG(0.05, 0.07, 0.6, fur2, 0.1), 0, 0.84, -0.04));
+
+  // shaggy fur ruff at neck / shoulders — overlapping spiked tufts
+  const mane = lm(sphG(0.27, ruff, 7, 5, 0.14), 0, 0.74, 0.34);
+  mane.scale.set(1.1, 1.05, 0.8);
+  body.add(mane);
+  for (const [mx, my, mz, mr, mrz] of [
+    [-0.22, 0.8, 0.36, 0.13, 0.5], [0.22, 0.8, 0.36, 0.13, -0.5],
+    [-0.12, 0.96, 0.3, 0.12, 0.2], [0.12, 0.96, 0.3, 0.12, -0.2],
+    [0, 0.7, 0.5, 0.12, 0],
+  ] as const) {
+    body.add(lm(coneG(mr, 0.26, ruff, 5), mx, my, mz, -0.4, 0, mrz));
+  }
+
+  // oversized fanged head on a thick lowered neck
+  const head = new THREE.Group();
+  head.position.set(0, 0.78, 0.62);
+  head.rotation.x = 0.12;
+  const skull = lm(sphG(0.18, fur));
+  skull.scale.set(0.95, 0.9, 1.05);
+  head.add(skull);
+  // brow / cheek mass for a meaner blockier head
+  head.add(lm(sphG(0.1, fur2), -0.09, 0.06, 0.04));
+  head.add(lm(sphG(0.1, fur2), 0.09, 0.06, 0.04));
+  // long heavy snout
+  const snout = lm(coneG(0.1, 0.32, fur, 6), 0, -0.07, 0.26, Math.PI / 2);
+  head.add(snout);
+  head.add(lm(sphG(0.04, '#141418'), 0, -0.05, 0.42)); // nose
+  // bared fangs — paired tetra spikes under the snout
+  head.add(lm(tetraG(0.05, bone), -0.05, -0.16, 0.3, Math.PI, 0, 0.2));
+  head.add(lm(tetraG(0.05, bone), 0.05, -0.16, 0.3, Math.PI, 0, -0.2));
+  head.add(lm(tetraG(0.035, bone), -0.04, -0.13, 0.36, Math.PI, 0, 0.2));
+  head.add(lm(tetraG(0.035, bone), 0.04, -0.13, 0.36, Math.PI, 0, -0.2));
+  // tall pointed ears swept back
+  head.add(lm(coneG(0.055, 0.18, dark, 4), -0.11, 0.18, -0.04, -0.45, 0, 0.4));
+  head.add(lm(coneG(0.055, 0.18, dark, 4), 0.11, 0.18, -0.04, -0.45, 0, -0.4));
+  // faint pale glowing eyes
+  head.add(gm(sphG(0.032, '#bcd8e0', 6, 5), -0.085, 0.05, 0.18));
+  head.add(gm(sphG(0.032, '#bcd8e0', 6, 5), 0.085, 0.05, 0.18));
+  body.add(head);
+
+  // bushy tail — layered cones for shag, sweeping back and up
+  body.add(lm(coneG(0.11, 0.34, dark, 5), 0, 0.66, -0.56, Math.PI / 2.3));
+  body.add(lm(coneG(0.09, 0.4, fur, 5), 0, 0.8, -0.74, Math.PI / 2.0));
+  body.add(lm(coneG(0.06, 0.3, fur2, 5), 0, 0.92, -0.9, Math.PI / 1.8));
+
+  // longer legs — diagonal trot pairs, clawed paws
+  const mkLeg = (sx: number, sz: number) => {
+    const leg = lm(cylG(0.05, 0.065, 0.42, fur2, 6), 0, -0.21, 0);
+    const grp = limbGroup(leg, sx * 0.16, 0.46, sz * 0.32);
+    grp.add(lm(sphG(0.07, dark), 0, -0.42, 0.03)); // paw
+    grp.add(lm(tetraG(0.025, bone), 0, -0.44, 0.1, -1.1)); // claw
+    return grp;
+  };
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  body.add(fl, fr, bl, br);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  return root;
+}
+
+function make_dirgewolf(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // ashen graveyard palette
+  const ash = '#4c5560';     // patchy spectral fur / hide (npc color)
+  const bone = '#6a7280';    // skull, spine, leg bone (cool grey)
+  const palebone = '#8b94a0';// exposed bone: ribs, fangs, sockets rim
+  const glow = '#7affb0';    // sickly green-blue grave-light
+
+  // --- lean, gaunt trunk: shrunken chest + sunken-in waist + bony haunch ---
+  const chest = lm(sphG(0.16, ash), 0, 0.42, 0.16);
+  chest.scale.set(0.72, 0.78, 1.15);
+  body.add(chest);
+  const ribcage = lm(sphG(0.13, ash), 0, 0.4, -0.02);
+  ribcage.scale.set(0.66, 0.62, 1.3); // pinched, hollow belly
+  body.add(ribcage);
+  const haunch = lm(sphG(0.15, ash), 0, 0.4, -0.26);
+  haunch.scale.set(0.72, 0.74, 1.0);
+  body.add(haunch);
+
+  // exposed ribs arcing over the flanks (torus arcs read as a rib cage from above)
+  for (let i = 0; i < 4; i++) {
+    const z = 0.14 - i * 0.12;
+    const rib = lm(torusG(0.11, 0.012, palebone), 0, 0.4, z, Math.PI / 2, 0, 0);
+    rib.scale.set(0.62, 0.62, 1);
+    body.add(rib);
+  }
+  // jutting spine ridge bumps down the back
+  for (let i = 0; i < 5; i++) body.add(lm(tetraG(0.028, bone), 0, 0.55 - i * 0.005, 0.24 - i * 0.13, 0.5, 0.78 * i));
+
+  // --- skeletal head: bony skull, long fanged muzzle, sunken grave-light sockets ---
+  const head = new THREE.Group();
+  head.position.set(0, 0.55, 0.46);
+  const skull = lm(sphG(0.1, bone));
+  skull.scale.set(0.82, 0.82, 1.05);
+  head.add(skull);
+  // elongated bony muzzle
+  const muzzle = lm(coneG(0.058, 0.24, bone, 6), 0, -0.05, 0.2, Math.PI / 2);
+  head.add(muzzle);
+  head.add(lm(coneG(0.04, 0.1, palebone, 5), 0, -0.06, 0.33, Math.PI / 2)); // bony nose tip
+  // gaping fanged jaw — small fang spikes top and bottom
+  for (const sx of [-1, 1]) {
+    head.add(lm(tetraG(0.03, palebone), sx * 0.035, -0.09, 0.26, Math.PI, 0, 0)); // lower fangs
+    head.add(lm(tetraG(0.026, palebone), sx * 0.03, -0.015, 0.22, 0, 0, 0));      // upper fangs
+  }
+  // sunken socket rims + glowing grave-light eyes set deep
+  for (const sx of [-1, 1]) {
+    head.add(lm(torusG(0.032, 0.01, palebone), sx * 0.062, 0.03, 0.11, 0, 0, 0));
+    head.add(gm(sphG(0.026, glow, 6, 5), sx * 0.062, 0.03, 0.1));
+  }
+  // tattered, sharp ears
+  head.add(lm(tetraG(0.05, ash), -0.07, 0.13, -0.02, -0.3, 0, 0.35));
+  head.add(lm(tetraG(0.05, ash), 0.07, 0.13, -0.02, -0.3, 0, -0.35));
+  body.add(head);
+
+  // gaunt neck linking shrunken head to chest
+  body.add(lm(cylG(0.06, 0.08, 0.16, ash, 6), 0, 0.5, 0.3, -0.5));
+
+  // --- thin tattered tail: tapered with a couple frayed wisp tips ---
+  body.add(lm(coneG(0.045, 0.34, ash, 5), 0, 0.45, -0.5, Math.PI / 2.3));
+  body.add(lm(coneG(0.022, 0.12, bone, 4), -0.03, 0.5, -0.66, Math.PI / 1.9, 0, 0.3)); // frayed strand
+  body.add(lm(coneG(0.02, 0.1, bone, 4), 0.03, 0.42, -0.66, Math.PI / 2.6, 0, -0.2));  // frayed strand
+
+  // --- faint spectral wisps drifting off the spine ---
+  body.add(gm(coneG(0.03, 0.16, glow, 4, 0.1), -0.06, 0.62, 0.04, -0.2, 0, 0.3));
+  body.add(gm(coneG(0.026, 0.13, glow, 4, 0.1), 0.07, 0.6, -0.18, -0.15, 0, -0.25));
+  body.add(gm(sphG(0.03, glow, 5, 4), 0.0, 0.7, 0.16));
+
+  // faint grave-light ground glow
+  body.add(gm(ringG(0.18, 0.34, glow), 0, 0.012, -0.04, -Math.PI / 2));
+
+  // --- spindly bone legs (diagonal trot) ---
+  const mkLeg = (sx: number, sz: number) =>
+    limbGroup(lm(cylG(0.026, 0.034, 0.28, bone, 5), 0, -0.14, 0), sx * 0.11, 0.28, sz * 0.26);
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  body.add(fl, fr, bl, br);
+
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  root.scale.setScalar(size);
+  return root;
+}
+
+function make_gravewail_hound(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // palette: grave-dirt brown coat, exposed bone, dirt shadow, sickly grave-glow
+  const coat = '#5a4a38', dirt = '#3e342a', bone = '#b8ad94', glow = '#9fe86a';
+
+  // --- emaciated trunk: gaunt chest + sharp protruding hip, sunken belly between ---
+  const chest = lm(sphG(0.16, coat), 0, 0.42, 0.16);
+  chest.scale.set(0.74, 0.92, 1.15);
+  body.add(chest);
+  const hip = lm(sphG(0.15, coat), 0, 0.4, -0.24);
+  hip.scale.set(0.7, 0.95, 1.0);
+  body.add(hip);
+  // pinched, hollow midsection
+  const waist = lm(sphG(0.11, dirt), 0, 0.36, -0.04);
+  waist.scale.set(0.62, 0.7, 1.4);
+  body.add(waist);
+
+  // --- exposed ribs along the flanks (bone slats over the gaunt chest) ---
+  for (const sx of [-1, 1]) {
+    for (let i = 0; i < 4; i++) {
+      const rib = lm(cylG(0.012, 0.012, 0.18, bone, 4), sx * (0.1 - i * 0.005), 0.4, 0.27 - i * 0.13, 0, sx * 0.4, sx * 0.5);
+      body.add(rib);
+    }
+  }
+  // --- exposed spine ridge: row of small bony cones from shoulders to tail ---
+  for (let i = 0; i < 6; i++) {
+    body.add(lm(coneG(0.024, 0.07, bone, 4), 0, 0.5 - i * 0.004, 0.26 - i * 0.1, -0.25));
+  }
+
+  // --- long low-slung head, hung forward and down (mournful droop) ---
+  const head = new THREE.Group();
+  head.position.set(0, 0.42, 0.5);
+  head.rotation.x = 0.34; // nose tips toward the ground
+  const skull = lm(sphG(0.1, coat));
+  skull.scale.set(0.78, 0.78, 1.15);
+  head.add(skull);
+  // long bony upper snout
+  head.add(lm(coneG(0.052, 0.26, bone, 5), 0, 0.0, 0.2, Math.PI / 2));
+  // exposed lower jaw, dropped open and gapped below the snout
+  const jaw = lm(coneG(0.04, 0.22, bone, 4), 0, -0.085, 0.17, Math.PI / 2);
+  jaw.rotation.z = 0.18;
+  head.add(jaw);
+  // a couple of bared fang tips
+  head.add(lm(tetraG(0.02, bone), -0.03, -0.04, 0.26, 0.4));
+  head.add(lm(tetraG(0.02, bone), 0.03, -0.04, 0.26, 0.4));
+  // ragged drooping ears
+  head.add(lm(coneG(0.035, 0.13, dirt, 4), -0.085, 0.05, -0.04, 0.5, 0, 0.7));
+  head.add(lm(coneG(0.035, 0.13, dirt, 4), 0.085, 0.05, -0.04, 0.5, 0, -0.7));
+  // sunken glowing eyes, set deep in the skull
+  head.add(gm(sphG(0.026, glow, 5, 4), -0.058, 0.045, 0.085));
+  head.add(gm(sphG(0.026, glow, 5, 4), 0.058, 0.045, 0.085));
+  body.add(head);
+
+  // --- gaunt drooping neck connecting low head to shoulders ---
+  body.add(lm(cylG(0.06, 0.09, 0.22, coat, 6), 0, 0.45, 0.35, -1.25));
+
+  // --- limp, drooping tail tucked low ---
+  body.add(lm(coneG(0.045, 0.34, coat, 5), 0, 0.34, -0.46, Math.PI / 1.7));
+  body.add(lm(coneG(0.03, 0.16, dirt, 4), 0, 0.18, -0.6, Math.PI / 1.25));
+
+  // --- four thin bony legs (diagonal trot) ---
+  const mkLeg = (sx: number, sz: number) =>
+    limbGroup(lm(cylG(0.026, 0.035, 0.32, coat, 5), 0, -0.16, 0), sx * 0.11, 0.36, sz * 0.24);
+  const fl = mkLeg(-1, 1), fr = mkLeg(1, 1), bl = mkLeg(-1, -1), br = mkLeg(1, -1);
+  // bony paw caps so legs read as gaunt limbs
+  for (const lg of [fl, fr, bl, br]) lg.add(lm(sphG(0.034, bone), 0, -0.34, 0.02));
+  body.add(fl, fr, bl, br);
+
+  root.userData.fig = { limbs: { la: fl, ra: br, ll: bl, rl: fr }, bob: body, seed: 0, yaw: 0, quad: true } as FigureData;
+  root.scale.setScalar(size);
+  return root;
+}
+
+function make_cinder_imp(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // charred basalt palette + ember accent
+  const rock = '#2a211d', rock2 = '#37291f', rock3 = '#46332533'.slice(0, 7) || '#463325';
+  const ember = '#ff7a1e', emberHot = '#ffb742', emberDim = '#ff5a14';
+
+  // --- torso: hunched pot-bellied little demon, leaning forward (+Z) ---
+  const torso = lm(sphG(0.2, rock), 0, 0.42, 0.03, -0.28);
+  torso.scale.set(0.92, 1.05, 0.85);
+  body.add(torso);
+  // rounded belly slung low and forward
+  const belly = lm(icoG(0.16, rock2, 0), 0, 0.3, 0.08);
+  belly.scale.set(1.0, 0.85, 0.95);
+  body.add(belly);
+  // hunched upper back / shoulder hump
+  const hump = lm(icoG(0.14, rock, 0), 0, 0.56, -0.07);
+  hump.scale.set(1.05, 0.8, 0.9);
+  body.add(hump);
+
+  // glowing ember cracks laced across torso (unlit glow accents)
+  body.add(gm(boxG(0.035, 0.22, 0.03, ember), -0.05, 0.4, 0.16, 0.1, 0, 0.5));
+  body.add(gm(boxG(0.03, 0.16, 0.03, emberDim), 0.08, 0.46, 0.13, -0.2, 0, -0.4));
+  body.add(gm(boxG(0.03, 0.13, 0.03, ember), 0.02, 0.3, 0.15, 0, 0, 1.0));
+  body.add(gm(boxG(0.03, 0.18, 0.03, emberDim), 0.0, 0.5, -0.13, 0.3, 0, 0.2)); // back seam
+
+  // --- head: blocky horned demon skull set forward on a stubby neck ---
+  body.add(lm(cylG(0.06, 0.07, 0.08, rock2, 6), 0, 0.62, 0.06, -0.3)); // neck
+  const head = new THREE.Group();
+  head.position.set(0, 0.7, 0.12);
+  const skull = lm(icoG(0.13, rock, 0), 0, 0, 0);
+  skull.scale.set(1.0, 0.95, 1.0);
+  head.add(skull);
+  // heavy brow / jaw block giving a snarling muzzle
+  const jaw = lm(boxG(0.16, 0.07, 0.13, rock2), 0, -0.07, 0.06);
+  jaw.rotation.x = 0.15;
+  head.add(jaw);
+  // two stubby curved horns sweeping back
+  head.add(lm(coneG(0.04, 0.13, rock2, 5), -0.07, 0.11, -0.03, -0.7, 0, 0.4));
+  head.add(lm(coneG(0.04, 0.13, rock2, 5), 0.07, 0.11, -0.03, -0.7, 0, -0.4));
+  // pointed bat ears
+  head.add(lm(tetraG(0.05, rock2), -0.12, 0.04, -0.02, 0.2, 0, 0.8));
+  head.add(lm(tetraG(0.05, rock2), 0.12, 0.04, -0.02, 0.2, 0, -0.8));
+  // glowing furnace eyes + an ember crack down the brow
+  head.add(gm(sphG(0.028, emberHot, 5, 4), -0.055, 0.02, 0.11));
+  head.add(gm(sphG(0.028, emberHot, 5, 4), 0.055, 0.02, 0.11));
+  head.add(gm(boxG(0.022, 0.08, 0.02, ember), 0.0, 0.05, 0.11, 0, 0, 0.15)); // forehead crack
+  // glowing toothy maw line
+  head.add(gm(boxG(0.09, 0.02, 0.02, emberDim), 0, -0.085, 0.12));
+  body.add(head);
+
+  // --- thin whippy tail trailing behind, tipped with an ember barb ---
+  body.add(lm(cylG(0.045, 0.02, 0.32, rock2, 5), 0, 0.34, -0.22, -1.9));
+  body.add(lm(coneG(0.035, 0.12, rock2, 5), 0, 0.22, -0.46, -2.5));
+  body.add(gm(tetraG(0.04, ember), 0, 0.18, -0.52, 0.4, 0.6));
+
+  // --- small leathery bat wings as the animated ARM pair ---
+  const mkWing = (sx: number) => {
+    const w = new THREE.Group();
+    // upper wing-arm bone
+    w.add(lm(cylG(0.03, 0.022, 0.16, rock2, 5), 0, -0.07, 0, 0, 0, sx * 0.25));
+    // membrane fan: flattened faceted blob
+    const mem = lm(icoG(0.14, rock2, 0), sx * 0.09, -0.16, -0.03);
+    mem.scale.set(1.3, 1.05, 0.18);
+    mem.rotation.set(0.1, 0, sx * -0.55);
+    w.add(mem);
+    // wing finger spikes along the trailing edge
+    w.add(lm(coneG(0.022, 0.12, rock, 4), sx * 0.16, -0.22, -0.05, 0.2, 0, sx * -0.9));
+    w.add(lm(coneG(0.02, 0.1, rock, 4), sx * 0.2, -0.13, -0.05, 0.2, 0, sx * -1.15));
+    // a single ember claw hook at the wing's leading joint
+    w.add(gm(tetraG(0.025, emberDim), sx * 0.02, 0.02, 0.04, 0.3, sx));
+    return limbGroup(w, sx * 0.18, 0.54, 0.0);
+  };
+  const la = mkWing(-1), ra = mkWing(1);
+  body.add(la, ra);
+
+  // --- stubby clawed legs ---
+  const mkLeg = (sx: number) => {
+    const l = new THREE.Group();
+    l.add(lm(cylG(0.05, 0.045, 0.22, rock, 6), 0, -0.11, 0)); // shin
+    // splayed clawed foot
+    l.add(lm(boxG(0.1, 0.045, 0.13, rock2), 0, -0.22, 0.04));
+    l.add(lm(coneG(0.02, 0.07, rock2, 4), sx * 0.03, -0.23, 0.12, 1.4)); // toe claws
+    l.add(lm(coneG(0.02, 0.07, rock2, 4), -sx * 0.02, -0.23, 0.12, 1.4));
+    // ankle ember spark
+    l.add(gm(sphG(0.02, ember, 5, 4), 0, -0.07, 0.05));
+    return limbGroup(l, sx * 0.11, 0.27, 0.0);
+  };
+  const ll = mkLeg(-1), rl = mkLeg(1);
+  body.add(ll, rl);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la, ra, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_discord_wisp(size: number): THREE.Group {
+  // A floating discord wisp: a hovering teardrop flame-core of sickly violet,
+  // wrapped in a teal spectral haze, with trailing wispy tendrils dripping
+  // below and a couple of small off-note shards orbiting off to the side.
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+
+  const core = '#b9a7dd';   // pale discord violet (npc color)
+  const coreHot = '#d4a8ff'; // brighter violet heart
+  const teal = '#5fd6c8';   // discordant teal counter-tint
+
+  // hover height for the whole entity
+  const hy = 0.62;
+
+  // --- outer spectral haze: a soft teal shell, stretched into a flame teardrop
+  const haze = gm(sphG(0.26, teal, 7, 5), 0, hy, 0);
+  haze.scale.set(0.9, 1.35, 0.9);
+  body.add(haze);
+
+  // --- main violet core, slightly tapered upward like a guttering flame
+  const flame = gm(sphG(0.2, core, 7, 5), 0, hy + 0.02, 0);
+  flame.scale.set(0.85, 1.25, 0.85);
+  body.add(flame);
+  // flame tip licking upward
+  body.add(gm(coneG(0.1, 0.26, core, 6), 0, hy + 0.26, 0));
+
+  // --- hot inner heart
+  const heart = gm(icoG(0.1, coreHot, 0), 0, hy + 0.02, 0);
+  heart.scale.set(0.9, 1.15, 0.9);
+  body.add(heart);
+
+  // --- faint discordant eye-glints peering from the core
+  body.add(gm(sphG(0.028, '#eafff8', 5, 4), -0.07, hy + 0.06, 0.16));
+  body.add(gm(sphG(0.028, '#eafff8', 5, 4), 0.07, hy + 0.06, 0.16));
+
+  // --- trailing wispy tendrils dripping/curling beneath the core
+  const tendril = (x: number, z: number, len: number, tilt: number, col: string) => {
+    body.add(gm(coneG(0.05, len, col, 5), x, hy - 0.18, z, Math.PI + tilt, 0, tilt * 0.6));
+  };
+  tendril(-0.1, 0.04, 0.34, 0.18, core);
+  tendril(0.12, -0.06, 0.4, -0.22, teal);
+  tendril(0.02, 0.1, 0.28, 0.05, coreHot);
+  tendril(-0.04, -0.12, 0.3, -0.1, core);
+
+  // --- small off-note shards orbiting to the side (the "wrong colour" slivers)
+  const shardA = gm(tetraG(0.055, teal), 0.26, hy + 0.12, 0.06, 0.5, 0.8);
+  body.add(shardA);
+  const shardB = gm(tetraG(0.045, coreHot), -0.24, hy - 0.04, -0.1, 1.1, 0.3);
+  body.add(shardB);
+  // a tiny third mote drifting above
+  body.add(gm(icoG(0.04, '#ff8ad6', 0), 0.05, hy + 0.36, -0.08));
+
+  // --- faint ground-glow ring beneath the hovering wisp
+  const glow = gm(ringG(0.22, 0.3, teal), 0, 0.02, 0, -Math.PI / 2);
+  body.add(glow);
+  const glowInner = gm(ringG(0.1, 0.18, core), 0, 0.025, 0, -Math.PI / 2);
+  body.add(glowInner);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: null, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_choir_ghast(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // pale spectral palette: cool blue-white robe in 3 close shades
+  const robe = '#9fb3cf', robe2 = '#8294b4', shade = '#6d7d9c', voidc = '#26303f';
+  const glow = '#bfe6ff', soul = '#cfe9ff';
+
+  // --- floating ground glow (faint halo where the hem should touch but doesn't) ---
+  const aura = gm(ringG(0.26, 0.42, glow), 0, 0.06, 0, -Math.PI / 2);
+  aura.scale.set(1, 1, 1.05);
+  body.add(aura);
+
+  // --- robe body: a tall draped bell, narrow at shoulders, wide flaring skirt ---
+  const skirt = lm(coneG(0.42, 0.9, robe2, 8, 0.05), 0, 0.5, 0);
+  skirt.scale.set(1, 1, 0.82); // slightly flattened front-to-back so the drape reads
+  body.add(skirt);
+  // overlapping fabric layers for low-poly volume
+  const torso = lm(cylG(0.18, 0.34, 0.5, robe, 8), 0, 0.78, 0.01);
+  torso.scale.set(1, 1, 0.86);
+  body.add(torso);
+  // shoulder mantle / cowl draped over the top
+  const mantle = lm(domeG(0.26, robe, 0.05), 0, 0.96, 0);
+  mantle.scale.set(1.12, 0.78, 1.0);
+  body.add(mantle);
+  // shadowed inner-fold panels down the front (chorister's surplice)
+  body.add(lm(coneG(0.12, 0.62, shade, 5, 0.05), 0, 0.55, 0.18, 0.06));
+  // spectral overlay shimmer on the robe (unlit, gives the see-through ghost feel)
+  const shimmer = gm(coneG(0.4, 0.86, glow, 8), 0, 0.5, 0);
+  shimmer.scale.set(0.99, 1, 0.81);
+  (shimmer.material as any).opacity !== undefined && (((shimmer.material as any).transparent = true), ((shimmer.material as any).opacity = 0.18));
+  body.add(shimmer);
+
+  // --- deep empty hood: raised cowl ring with a dark hollow where a face should be ---
+  const hood = new THREE.Group();
+  hood.position.set(0, 1.04, 0.0);
+  // cowl peak rising behind the opening
+  hood.add(lm(coneG(0.2, 0.34, robe, 7, 0.05), 0, 0.12, -0.04, -0.22));
+  // hood rim ring framing the void
+  hood.add(lm(torusG(0.16, 0.05, robe2), 0, 0.02, 0.08, 1.18));
+  // the void itself — recessed dark interior facing +Z (where a face should be)
+  const hollow = lm(sphG(0.14, voidc, 7, 5), 0, 0.0, 0.05);
+  hollow.scale.set(0.92, 1.05, 0.7);
+  hood.add(hollow);
+  // faint glowing maw + two eye sparks deep within the hood
+  hood.add(gm(sphG(0.045, soul, 6, 5), 0, -0.06, 0.13));      // singing maw, low in the hood
+  hood.add(gm(sphG(0.022, glow, 5, 4), -0.055, 0.05, 0.14));  // eye glints
+  hood.add(gm(sphG(0.022, glow, 5, 4), 0.055, 0.05, 0.14));
+  // soft inner radiance leaking from the void
+  const inner = gm(coneG(0.1, 0.2, soul, 6), 0, -0.04, 0.0, Math.PI / 2);
+  (inner.material as any).transparent = true; (inner.material as any).opacity = 0.4;
+  hood.add(inner);
+  body.add(hood);
+
+  // --- drooping wispy sleeves (no hands; fabric trailing off the shoulders) ---
+  for (const sx of [-1, 1]) {
+    const sleeve = lm(coneG(0.1, 0.46, robe2, 6, 0.05), sx * 0.27, 0.74, 0.04, 0.32, 0, sx * 0.26);
+    body.add(sleeve);
+    // sleeve fades to a spectral wisp tip
+    const tip = gm(coneG(0.045, 0.22, glow, 5), sx * 0.33, 0.5, 0.08, 0.5, 0, sx * 0.3);
+    (tip.material as any).transparent = true; (tip.material as any).opacity = 0.5;
+    body.add(tip);
+  }
+
+  // --- tattered fraying hem: ragged tongues of robe hanging down into nothing ---
+  const hemAng = [-2.4, -1.5, -0.7, 0.0, 0.7, 1.5, 2.4];
+  for (let i = 0; i < hemAng.length; i++) {
+    const a = hemAng[i];
+    const rad = 0.36;
+    const px = Math.sin(a) * rad, pz = Math.cos(a) * rad * 0.82;
+    const len = 0.22 + (i % 2) * 0.16; // uneven, ragged lengths
+    // solid frayed tongue
+    body.add(lm(coneG(0.05, len, shade, 4), px, 0.16 - len * 0.3, pz, Math.PI, 0, 0));
+    // its tip dissolving into a faint wisp
+    const w = gm(coneG(0.03, len * 0.7, glow, 4), px * 1.05, 0.04 - len * 0.4, pz * 1.05, Math.PI, 0, 0);
+    (w.material as any).transparent = true; (w.material as any).opacity = 0.45;
+    body.add(w);
+  }
+  // a few longer back-trailing tatters streaming behind it
+  for (const sx of [-1, 0, 1]) {
+    const t = gm(coneG(0.04, 0.5, glow, 4), sx * 0.16, 0.1, -0.34 - Math.abs(sx) * 0.04, Math.PI - 0.5, 0, 0);
+    (t.material as any).transparent = true; (t.material as any).opacity = 0.4;
+    body.add(t);
+  }
+
+  // lift the whole figure so it hovers above the ground (legless float)
+  body.position.y = 0.18;
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: null, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_ruin_wraith(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // dark slate cloth palette + pale ghost-light
+  const cloth = '#3a434e', cloth2 = '#4a5560', shade = '#2a3038', bone = '#c7cfd6', ghost = '#bfe7ff';
+
+  // --- ground glow: faint spectral pool beneath the hovering shroud ---
+  body.add(gm(ringG(0.22, 0.5, '#9fd4f0'), 0, 0.02, 0, -Math.PI / 2));
+
+  // --- long trailing tatters where legs would be (no feet, frayed downward) ---
+  const tatter = (x: number, z: number, len: number, rad: number, rx: number, rz: number, c: string) =>
+    body.add(lm(coneG(rad, len, c, 5, 0.14), x, 0.42 + len * 0.18, z, Math.PI + rx, 0, rz));
+  tatter(-0.16, 0.04, 0.62, 0.1, 0.18, 0.1, shade);
+  tatter(0.14, -0.02, 0.7, 0.11, -0.12, -0.08, cloth);
+  tatter(0.0, 0.1, 0.56, 0.09, 0.22, 0.0, shade);
+  tatter(-0.04, -0.14, 0.66, 0.1, -0.2, 0.06, cloth);
+  tatter(0.2, 0.08, 0.5, 0.08, 0.1, -0.16, shade);
+  // a couple of thin wispy stragglers
+  tatter(-0.24, -0.06, 0.44, 0.05, -0.3, 0.2, cloth2);
+  tatter(0.26, -0.1, 0.4, 0.045, 0.28, -0.22, cloth2);
+
+  // --- main robed mass: flared shroud, wide at the bottom, narrowing up to the cowl ---
+  const robe = lm(coneG(0.34, 0.78, cloth, 7, 0.1), 0, 0.74, 0);
+  robe.scale.set(1.0, 1.0, 0.86);
+  body.add(robe);
+  // overlapping cloth layer for depth / a draped shoulder mantle
+  const mantle = lm(coneG(0.3, 0.42, cloth2, 7, 0.12), 0, 0.96, 0.02);
+  mantle.scale.set(1.08, 1.0, 0.9);
+  body.add(mantle);
+  // back hump of bunched fabric
+  body.add(lm(sphG(0.2, shade, 7, 5, 0.1), 0, 0.92, -0.16));
+  // jagged hem points around the lower rim
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2 + 0.3;
+    body.add(lm(coneG(0.06, 0.22, i % 2 ? cloth : shade, 4, 0.16),
+      Math.sin(a) * 0.3, 0.42, Math.cos(a) * 0.26 - 0.02, Math.PI - 0.1, 0, 0));
+  }
+
+  // --- the cowl / hood: hollow dark hood with a deep void and cold eyes ---
+  const hood = new THREE.Group();
+  hood.position.set(0, 1.18, 0.04);
+  // outer hood shell — a dome tilted slightly forward
+  const shell = lm(domeG(0.26, shade, 0.1), 0, 0.0, 0, -0.12);
+  shell.scale.set(1.0, 1.15, 1.05);
+  hood.add(shell);
+  // peaked hood tip rising back
+  hood.add(lm(coneG(0.13, 0.34, shade, 6, 0.12), 0, 0.18, -0.1, -0.5));
+  // black void recess of the hood opening (faces +Z)
+  const voidM = lm(sphG(0.17, '#0c0f13', 7, 5, 0.05), 0, -0.04, 0.12);
+  voidM.scale.set(0.92, 1.05, 0.7);
+  hood.add(voidM);
+  // hood front brim framing the face
+  hood.add(lm(coneG(0.2, 0.26, cloth2, 7, 0.12), 0, 0.02, 0.06, 1.45));
+  // two cold glowing eyes deep in the hood
+  hood.add(gm(sphG(0.045, ghost, 6, 4), -0.07, -0.02, 0.18));
+  hood.add(gm(sphG(0.045, ghost, 6, 4), 0.07, -0.02, 0.18));
+  // faint inner glow halo within the cowl
+  hood.add(gm(sphG(0.09, '#6fb8e0', 6, 4), 0, -0.03, 0.08));
+  body.add(hood);
+
+  // --- skeletal claw hands emerging from ragged sleeves on each side ---
+  for (const sx of [-1, 1]) {
+    // ragged drooping sleeve
+    const sleeve = lm(coneG(0.12, 0.4, cloth, 6, 0.14), sx * 0.34, 0.78, 0.12, Math.PI - 0.4, 0, sx * 0.55);
+    body.add(sleeve);
+    // pale bony wrist
+    body.add(lm(cylG(0.03, 0.045, 0.14, bone, 5), sx * 0.5, 0.5, 0.26, 0.5, 0, sx * 0.3));
+    // skeletal palm
+    const palm = lm(icoG(0.05, bone, 0), sx * 0.55, 0.44, 0.33);
+    palm.scale.set(1.0, 0.7, 1.1);
+    body.add(palm);
+    // three splayed claw fingers
+    for (let f = -1; f <= 1; f++) {
+      body.add(lm(coneG(0.014, 0.16, bone, 4, 0.1),
+        sx * 0.55 + f * 0.035, 0.36, 0.4, 0.4 + f * 0.06, sx * 0.2, sx * (0.15 + f * 0.18)));
+    }
+    // a faint spectral wisp clinging to each hand
+    body.add(gm(tetraG(0.03, '#8fd0ee'), sx * 0.55, 0.4, 0.42, 0.5, sx));
+  }
+
+  // --- a few floating torn rags drifting off the shoulders/back ---
+  body.add(lm(tetraG(0.1, cloth2), -0.26, 1.02, -0.18, 0.4, 0.6, 0.3));
+  body.add(lm(tetraG(0.09, shade), 0.28, 0.98, -0.2, -0.3, 0.8, -0.4));
+  body.add(lm(tetraG(0.08, cloth2), 0.0, 1.08, -0.28, 0.5, 0.2, 0.2));
+
+  // FLOATING creature: no swinging limbs; the whole body bobs/hovers
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: null, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_chordwyrm(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // deep teal scales, bronze underbelly/ridges, offnote-purple rune glow
+  const teal = '#1f4d4a', teal2 = '#2a6360', bronze = '#8a5a28', bronze2 = '#a06e36';
+  const rune = '#a07ad8';
+
+  // ---- serpentine spine: stacked rising segments forming a low S-curve ----
+  // each seg: [x, y, z, radius]; tail low/back -> body rises -> dips to neck base
+  const spine: Array<[number, number, number, number]> = [
+    [0, 0.10, -0.92, 0.085],
+    [0, 0.16, -0.74, 0.115],
+    [0.02, 0.24, -0.54, 0.150],
+    [-0.01, 0.30, -0.34, 0.170],
+    [0, 0.30, -0.13, 0.165],
+    [0.01, 0.25, 0.07, 0.150],
+    [0, 0.22, 0.26, 0.125],
+    [0, 0.27, 0.43, 0.100],
+  ];
+  for (let i = 0; i < spine.length; i++) {
+    const [sx, sy, sz, sr] = spine[i];
+    const seg = lm(sphG(sr, i % 2 ? teal2 : teal, 7, 5), sx, sy, sz);
+    seg.scale.set(1.05, 0.92, 1.18); // slightly flattened, elongated
+    body.add(seg);
+    // bronze belly plate under the thicker mid-segments
+    if (sr > 0.11) {
+      const belly = lm(sphG(sr * 0.78, bronze, 6, 4), sx, sy - sr * 0.55, sz);
+      belly.scale.set(0.9, 0.5, 1.3);
+      body.add(belly);
+    }
+    // dorsal ridge spikes (bronze) every other segment, leaning back
+    if (i > 0 && i < spine.length - 1) {
+      body.add(lm(coneG(0.035, 0.13, bronze2, 4), sx, sy + sr * 0.85, sz - 0.02, -0.45));
+    }
+    // glowing resonance rune dots running down the spine
+    if (i >= 1 && i <= spine.length - 1) {
+      body.add(gm(sphG(0.026, rune, 5, 4), sx, sy + sr * 0.62, sz + 0.02));
+    }
+  }
+
+  // ---- tail taper to a point behind ----
+  body.add(lm(coneG(0.07, 0.5, teal, 5), 0, 0.08, -1.0, -Math.PI / 2 + 0.2));
+
+  // ---- short clawed forelimbs (under the raised front of the body) ----
+  const mkForeleg = (sx: number) => {
+    const g = limbGroup(lm(cylG(0.045, 0.06, 0.24, teal2, 6), 0, -0.1, 0, 0.2), sx * 0.16, 0.18, 0.18);
+    // bronze clawed foot
+    g.add(lm(sphG(0.05, bronze, 6, 4), 0, -0.21, 0.03));
+    g.add(lm(tetraG(0.03, bronze2), sx * 0.02, -0.24, 0.07, 0.6, 0, sx * 0.2));
+    g.add(lm(tetraG(0.03, bronze2), -sx * 0.03, -0.24, 0.05, 0.6, 0, -sx * 0.2));
+    return g;
+  };
+  const ll = mkForeleg(-1), rl = mkForeleg(1);
+  body.add(ll, rl);
+
+  // ---- small vestigial wings folded along the rising mid-back ----
+  for (const sx of [-1, 1]) {
+    const w = lm(sphG(0.16, teal2), sx * 0.16, 0.34, -0.24);
+    w.scale.set(0.14, 0.7, 1.2);
+    w.rotation.set(0.25, sx * 0.3, sx * -0.45);
+    body.add(w);
+    // wing finger-claw bronze tip
+    body.add(lm(coneG(0.025, 0.1, bronze2, 4), sx * 0.22, 0.5, -0.18, 0.2, 0, sx * -0.9));
+  }
+
+  // ---- head: fanged, horned, swept forward at the neck tip ----
+  const head = new THREE.Group();
+  head.position.set(0, 0.34, 0.56);
+  head.rotation.set(0.25, 0, 0);
+  const skull = lm(sphG(0.12, teal));
+  skull.scale.set(0.95, 0.82, 1.15);
+  head.add(skull);
+  // bronze snout / jaw
+  head.add(lm(coneG(0.07, 0.2, teal2, 6), 0, -0.025, 0.18, Math.PI / 2));
+  head.add(lm(boxG(0.1, 0.04, 0.16, bronze), 0, -0.06, 0.14)); // lower jaw
+  // fangs
+  head.add(lm(tetraG(0.022, '#e8e0d0'), -0.045, -0.06, 0.24, Math.PI));
+  head.add(lm(tetraG(0.022, '#e8e0d0'), 0.045, -0.06, 0.24, Math.PI));
+  // glowing offnote eyes
+  head.add(gm(sphG(0.028, rune, 5, 4), -0.07, 0.035, 0.08));
+  head.add(gm(sphG(0.028, rune, 5, 4), 0.07, 0.035, 0.08));
+  // pair of small swept-back horns
+  head.add(lm(coneG(0.03, 0.16, bronze2, 5), -0.07, 0.11, -0.04, -0.8, 0, 0.4));
+  head.add(lm(coneG(0.03, 0.16, bronze2, 5), 0.07, 0.11, -0.04, -0.8, 0, -0.4));
+  // crown rune
+  head.add(gm(sphG(0.022, rune, 5, 4), 0, 0.12, 0.04));
+  body.add(head);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la: ll, ra: rl, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_carillon_revenant(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // weathered green-bronze + bone palette
+  const bronze = '#5f7a52';   // verdigris green-bronze (the bell)
+  const bronze2 = '#7d8a4e';  // lighter weathered bronze (rim, pauldrons)
+  const bronzeDk = '#445a3c'; // shadowed bronze / inner bell
+  const bone = '#cabfa0';     // gaunt bone
+  const boneDk = '#a89878';   // shaded bone
+  const glow = '#ffd56a';     // resonant hum (warm)
+
+  // ---- pelvis / hips: thin bone girdle the legs hang from ----
+  body.add(lm(boxG(0.26, 0.1, 0.14, boneDk), 0, 0.62, 0, 0, 0, 0));
+
+  // ---- spine peeking below the bell ----
+  body.add(lm(cylG(0.04, 0.05, 0.16, bone, 6), 0, 0.7, -0.02));
+
+  // ---- THE BELL: great cracked bronze bell worn as a ribcage/torso ----
+  const bellG = new THREE.Group();
+  bellG.position.set(0, 0.78, 0);
+  // main flared bell wall (wide mouth at bottom, narrow at shoulders)
+  const bellWall = lm(cylG(0.17, 0.34, 0.5, bronze, 8, 0.05), 0, 0.0, 0);
+  bellWall.scale.set(1.0, 1.0, 0.86); // slightly ovoid front-to-back
+  bellG.add(bellWall);
+  // crown / shoulder cap of the bell
+  bellG.add(lm(domeG(0.18, bronze2, 0.05), 0, 0.24, 0, 0, 0, 0));
+  // canon (the hanging loop) atop the crown
+  bellG.add(lm(torusG(0.06, 0.022, bronze2), 0, 0.36, 0, Math.PI / 2, 0, 0));
+  // thick flared rim / sound-bow at the mouth
+  bellG.add(lm(cylG(0.36, 0.33, 0.07, bronze2, 8, 0.05), 0, -0.27, 0));
+  // raised moulding bands girdling the bell (rib-look)
+  bellG.add(lm(torusG(0.29, 0.018, bronze2), 0, -0.1, 0, Math.PI / 2, 0, 0));
+  bellG.add(lm(torusG(0.235, 0.016, bronze2), 0, 0.03, 0, Math.PI / 2, 0, 0));
+  // the great crack: a dark wedge split down the front of the bell
+  bellG.add(lm(boxG(0.035, 0.42, 0.04, bronzeDk), 0.02, -0.06, 0.29, 0, 0, 0.18));
+  bellG.add(lm(boxG(0.05, 0.16, 0.04, bronzeDk), 0.06, -0.22, 0.285, 0, 0, 0.5));
+  // resonant glow humming INSIDE the cracked bell (shows through crack + mouth)
+  bellG.add(gm(sphG(0.12, glow, 7, 5), 0, -0.06, 0.0));
+  bellG.add(gm(sphG(0.05, glow, 6, 4), 0.04, -0.08, 0.24)); // bloom at the crack
+  // the clapper hanging in the bell mouth (glints)
+  bellG.add(lm(cylG(0.012, 0.012, 0.22, boneDk, 5), 0, -0.16, 0));
+  bellG.add(lm(sphG(0.05, bronze2, 7, 5), 0, -0.3, 0));
+  body.add(bellG);
+
+  // ---- bell-bronze pauldrons over the shoulders ----
+  for (const sx of [-1, 1]) {
+    const pa = lm(domeG(0.12, bronze2, 0.05), sx * 0.24, 1.02, 0);
+    pa.scale.set(1.15, 0.8, 1.0);
+    pa.rotation.z = sx * 0.5;
+    body.add(pa);
+    // a small bronze spike crowning each pauldron
+    body.add(lm(coneG(0.035, 0.1, bronze, 5), sx * 0.3, 1.1, 0, 0, 0, sx * 0.7));
+  }
+
+  // ---- gaunt skull head on a thin vertebral neck ----
+  body.add(lm(cylG(0.035, 0.045, 0.1, bone, 6), 0, 1.06, 0)); // neck vertebrae
+  const head = new THREE.Group();
+  head.position.set(0, 1.2, 0.01);
+  const skull = lm(sphG(0.12, bone, 7, 6), 0, 0, 0);
+  skull.scale.set(0.92, 1.0, 0.95);
+  head.add(skull);
+  // jaw / muzzle of the skull, jutting forward
+  head.add(lm(boxG(0.13, 0.06, 0.1, boneDk), 0, -0.09, 0.04));
+  head.add(lm(boxG(0.1, 0.04, 0.05, bone), 0, -0.13, 0.07)); // chin
+  // brow ridge
+  head.add(lm(boxG(0.17, 0.03, 0.04, boneDk), 0, 0.04, 0.09, -0.2, 0, 0));
+  // glowing hollow eye sockets
+  head.add(gm(sphG(0.032, glow, 6, 5), -0.055, 0.0, 0.095));
+  head.add(gm(sphG(0.032, glow, 6, 5), 0.055, 0.0, 0.095));
+  // dark socket rims for depth
+  head.add(lm(torusG(0.04, 0.012, boneDk), -0.055, 0.0, 0.085, Math.PI / 2 - 0.2, 0, 0));
+  head.add(lm(torusG(0.04, 0.012, boneDk), 0.055, 0.0, 0.085, Math.PI / 2 - 0.2, 0, 0));
+  // a thin bronze diadem / band across the brow
+  head.add(lm(torusG(0.115, 0.014, bronze2), 0, 0.05, 0, 0.25, 0, 0));
+  body.add(head);
+
+  // ---- skeletal ARMS (animated limbGroups) ----
+  const mkArm = (sx: number) => {
+    const arm = new THREE.Group();
+    // upper arm bone angled outward then down
+    arm.add(lm(capG(0.03, 0.22, bone), 0, -0.13, 0, 0.1, 0, sx * 0.18));
+    // elbow joint
+    arm.add(lm(sphG(0.04, boneDk, 6, 5), 0, -0.26, 0.0));
+    // forearm bone
+    arm.add(lm(capG(0.026, 0.2, bone), 0, -0.38, 0.02, 0.0, 0, 0));
+    // skeletal hand: a small claw of bone fingers
+    for (let f = -1; f <= 1; f++) {
+      arm.add(lm(coneG(0.014, 0.08, boneDk, 4), f * 0.03, -0.5, 0.02, 0.3, 0, f * 0.15));
+    }
+    return limbGroup(arm, sx * 0.27, 0.98, 0);
+  };
+  const la = mkArm(-1), ra = mkArm(1);
+  body.add(la, ra);
+
+  // ---- skeletal LEGS (animated limbGroups) ----
+  const mkLeg = (sx: number) => {
+    const leg = new THREE.Group();
+    // femur
+    leg.add(lm(capG(0.038, 0.26, bone), 0, -0.16, 0));
+    // knee
+    leg.add(lm(sphG(0.045, boneDk, 6, 5), 0, -0.31, 0));
+    // shin
+    leg.add(lm(capG(0.032, 0.24, bone), 0, -0.45, 0.0));
+    // bony foot
+    leg.add(lm(boxG(0.08, 0.045, 0.16, boneDk), 0, -0.58, 0.04));
+    return limbGroup(leg, sx * 0.12, 0.62, 0);
+  };
+  const ll = mkLeg(-1), rl = mkLeg(1);
+  body.add(ll, rl);
+
+  // ---- faint spectral ground glow beneath the revenant ----
+  body.add(gm(ringG(0.18, 0.34, glow), 0, 0.02, 0, -Math.PI / 2, 0, 0));
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la, ra, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+function make_choir_warden(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // palette: bell-bronze, black-violet grave robe, cold grave-light
+  // verdigris bell-bronze (corroded ancient metal) so the vestments read as
+  // METAL, not a brown tunic; cold grave-light against it.
+  const bronze = '#86946a', bronze2 = '#a8ba82', bronzeDk = '#5a6646';
+  const robe = '#2a2434', robe2 = '#3a3046', robeDk = '#1d1826';
+  const grave = '#9ad8e0', graveBright = '#bfe8f0';
+
+  // --- floor-length tattered robe: wide cone skirt rising to the chest ---
+  const skirt = lm(coneG(0.5, 1.1, robe, 9, 0.1), 0, 0.55, 0);
+  body.add(skirt);
+  // robe overlay / shadowed front panel for form
+  const panel = lm(coneG(0.42, 0.95, robe2, 8, 0.1), 0, 0.5, 0.06);
+  panel.scale.set(0.85, 1, 0.7);
+  body.add(panel);
+  // tattered hem points trailing on the floor
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    body.add(lm(coneG(0.075, 0.22, robeDk, 4), Math.sin(a) * 0.46, 0.07, Math.cos(a) * 0.46, Math.PI));
+  }
+
+  // --- bell-bronze vestment chest over the robe ---
+  const chest = lm(sphG(0.32, bronze, 7, 5, 0.07), 0, 1.18, 0.02);
+  chest.scale.set(1.0, 0.95, 0.78);
+  body.add(chest);
+  body.add(lm(boxG(0.34, 0.36, 0.22, bronze2, 0.08), 0, 1.12, 0.06)); // breastplate face
+  // grave-light heart rune set in the breastplate
+  body.add(gm(icoG(0.05, grave, 0), 0, 1.16, 0.2));
+  body.add(gm(ringG(0.07, 0.1, graveBright), 0, 1.16, 0.205));
+
+  // --- mantle / bell-frame across the shoulders ---
+  const mantle = lm(cylG(0.42, 0.46, 0.16, bronzeDk, 9, 0.08), 0, 1.46, 0);
+  mantle.scale.set(1.0, 1.0, 0.78);
+  body.add(mantle);
+  // a frame of small glowing bells hung from the mantle rim
+  for (let i = 0; i < 8; i++) {
+    const a = -Math.PI * 0.62 + (i / 7) * Math.PI * 1.24; // front arc only
+    const bx = Math.sin(a) * 0.42, bz = Math.cos(a) * 0.32 + 0.02;
+    body.add(lm(cylG(0.018, 0.018, 0.03, bronze2, 5), bx, 1.42, bz)); // bell yoke
+    body.add(lm(coneG(0.062, 0.1, bronze, 6), bx, 1.35, bz)); // bell body
+    body.add(gm(sphG(0.03, graveBright, 5, 4), bx, 1.28, bz)); // glowing clapper-light
+  }
+
+  // --- hollow skull-cowl head with grave-light eyes ---
+  const headG = new THREE.Group();
+  headG.position.set(0, 1.78, 0.02);
+  // bronze hood/cowl framing the skull
+  const cowl = lm(domeG(0.2, robe2), 0, 0.05, -0.02);
+  cowl.scale.set(1.05, 1.15, 1.1);
+  headG.add(cowl);
+  headG.add(lm(coneG(0.13, 0.2, bronzeDk, 7), 0, 0.18, -0.02)); // hood crown peak
+  headG.add(gm(icoG(0.03, graveBright, 0), 0, 0.26, -0.02)); // crown grave-light
+  // hollow skull face, recessed in shadow
+  const skull = lm(sphG(0.13, '#cfc6b0', 7, 5, 0.06), 0, 0.0, 0.08);
+  skull.scale.set(0.92, 1.0, 0.85);
+  headG.add(skull);
+  headG.add(lm(boxG(0.11, 0.07, 0.05, '#b8ad94'), 0, -0.1, 0.12)); // jaw
+  // grave-light eyes deep in the sockets
+  headG.add(gm(icoG(0.032, grave, 0), -0.055, 0.02, 0.16));
+  headG.add(gm(icoG(0.032, grave, 0), 0.055, 0.02, 0.16));
+  body.add(headG);
+
+  // --- arms ---
+  // RIGHT arm raised, holding the conductor baton aloft (la slot animates it)
+  const la = limbGroup(lm(cylG(0.06, 0.07, 0.34, robe2, 6, 0.08), 0, -0.14, 0), 0.34, 1.44, 0.04);
+  la.rotation.set(0, 0, -1.15); // raised outward and up
+  la.add(lm(sphG(0.07, bronze, 7, 4), 0, -0.3, 0)); // bronze cuff/hand
+  // the baton: dark slate wand with a glowing grave-light tip
+  la.add(lm(cylG(0.012, 0.016, 0.4, '#1a1620', 5), 0, -0.5, 0.02, 0.1));
+  la.add(gm(icoG(0.04, graveBright, 0), 0.04, -0.7, 0.02)); // baton tip glow
+  la.add(gm(ringG(0.06, 0.085, grave), 0.04, -0.7, 0.02, Math.PI / 2));
+  body.add(la);
+
+  // LEFT arm lowered, conducting — open bronze hand (ra slot)
+  const ra = limbGroup(lm(cylG(0.06, 0.07, 0.36, robe2, 6, 0.08), 0, -0.18, 0), -0.36, 1.44, 0.06);
+  ra.rotation.set(0.5, 0, 0.45); // reaching forward-down
+  ra.add(lm(sphG(0.07, bronze, 7, 4), 0, -0.38, 0)); // bronze hand
+  ra.add(lm(coneG(0.025, 0.09, bronze2, 4), 0, -0.46, 0.04, 0.3)); // pointing finger
+  body.add(ra);
+
+  // --- legs hidden under the robe (swing pivots for the walk cycle) ---
+  const mkLeg = (sx: number) =>
+    limbGroup(lm(cylG(0.07, 0.08, 0.34, robeDk, 6, 0.08), 0, -0.17, 0), sx * 0.16, 0.34, 0);
+  const ll = mkLeg(-1), rl = mkLeg(1);
+  // bronze-shod feet peeking from the hem
+  ll.add(lm(boxG(0.12, 0.06, 0.18, bronzeDk, 0.08), 0, -0.32, 0.04));
+  rl.add(lm(boxG(0.12, 0.06, 0.18, bronzeDk, 0.08), 0, -0.32, 0.04));
+  body.add(ll, rl);
+
+  // faint grave-light pooling at the base
+  body.add(gm(ringG(0.42, 0.56, grave), 0, 0.015, 0, -Math.PI / 2));
+
+  root.userData.fig = { limbs: { la, ra, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  root.scale.setScalar(size);
+  return root;
+}
+
+function make_the_dissonant(size: number): THREE.Group {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  // slate palette + dissonant violet glow
+  const slate = '#4a5160', slate2 = '#5a6272', slate3 = '#363c48';
+  const glow = '#9a5cff', glow2 = '#c69cff';
+  // lift the whole construct so it hovers; strong bob carries the float
+  body.position.y = 0.34;
+
+  // ---- slate-tablet torso: a flat upright stone tablet scrawled with a wrong score
+  const tablet = lm(boxG(0.42, 0.62, 0.12, slate, 0.05), 0, 0.66, 0);
+  tablet.rotation.z = 0.05; // subtly crooked — everything is wrong
+  body.add(tablet);
+  body.add(lm(boxG(0.46, 0.07, 0.14, slate3), 0, 0.96, 0, 0, 0, 0.05)); // top edge cap
+  body.add(lm(boxG(0.46, 0.07, 0.14, slate3), 0, 0.36, 0, 0, 0, 0.05)); // bottom edge cap
+  // glowing staff-lines of the wrong score, drifting off-true
+  for (let i = 0; i < 4; i++) {
+    const ln = gm(boxG(0.34, 0.018, 0.02, glow), 0.01, 0.5 + i * 0.11, 0.065, 0, 0, 0.05 + (i % 2 ? -0.06 : 0.06));
+    ln.name = 'fxflame';
+    body.add(ln);
+  }
+  // scattered "notes" — wrong, jittered glowing marks
+  const notes: Array<[number, number]> = [[-0.1, 0.83], [0.06, 0.69], [-0.04, 0.58], [0.12, 0.5], [-0.13, 0.46]];
+  for (const [nx, ny] of notes) {
+    const nt = gm(sphG(0.028, glow2, 5, 4), nx, ny, 0.075);
+    nt.name = 'fxflame';
+    body.add(nt);
+  }
+
+  // ---- floating slate shoulder + hip shards (detached construct look)
+  for (const sx of [-1, 1]) {
+    const sh = lm(icoG(0.13, slate2, 0), sx * 0.3, 0.9, 0);
+    sh.scale.set(1.1, 0.7, 0.8);
+    sh.rotation.z = sx * 0.4;
+    body.add(sh);
+    body.add(lm(icoG(0.1, slate3, 0), sx * 0.22, 0.34, 0)); // hip nub
+  }
+
+  // ---- cracked stone mask for a face, hovering above the tablet
+  const head = new THREE.Group();
+  head.position.set(0, 1.16, 0.02);
+  const mask = lm(domeG(0.17, slate2), 0, 0, 0.02, 0.25);
+  mask.scale.set(1, 1.15, 0.8);
+  head.add(mask);
+  head.add(lm(boxG(0.3, 0.12, 0.16, slate, 0.05), 0, -0.04, 0.0)); // lower jaw block of mask
+  // jagged crack running down the mask — violet light bleeds through
+  const crack = gm(boxG(0.02, 0.26, 0.02, glow), 0.03, 0.0, 0.14, 0, 0, 0.16);
+  crack.name = 'fxflame';
+  head.add(crack);
+  // hollow glowing eyes (mismatched — dissonant)
+  const eL = gm(boxG(0.06, 0.035, 0.02, glow2), -0.07, 0.03, 0.14, 0, 0, 0.12);
+  const eR = gm(boxG(0.05, 0.05, 0.02, glow2), 0.08, 0.01, 0.14, 0, 0, -0.18);
+  eL.name = 'fxflame'; eR.name = 'fxflame';
+  head.add(eL, eR);
+  // a small broken horn-shard off the mask
+  head.add(lm(tetraG(0.06, slate3), 0.1, 0.13, 0.0, 0.3, 0, -0.5));
+  body.add(head);
+
+  // ---- bundled-wire limbs: thin wrapped cylinders. arms hang from shoulders, legs dangle (floating)
+  const mkWireLimb = (px: number, py: number, len: number, end: number) => {
+    const g = limbGroup(lm(cylG(0.032, 0.045, len, slate3, 5), 0, -len / 2, 0), px, py, 0);
+    // wire wraps — thin violet binding rings
+    g.add(gm(torusG(0.05, 0.012, glow), 0, -len * 0.32, 0));
+    g.add(gm(torusG(0.045, 0.012, glow), 0, -len * 0.68, 0));
+    // slate hand/foot fragment at the tip
+    g.add(lm(icoG(0.07, slate2, 0), 0, -len + 0.01, end));
+    return g;
+  };
+  const la = mkWireLimb(-0.32, 0.84, 0.5, 0.04);
+  const ra = mkWireLimb(0.32, 0.84, 0.5, 0.04);
+  const ll = mkWireLimb(-0.16, 0.34, 0.46, 0);
+  const rl = mkWireLimb(0.16, 0.34, 0.46, 0);
+  body.add(la, ra, ll, rl);
+
+  // ---- jagged fragments orbiting the body (pulsing violet shards)
+  const orbit: Array<[number, number, number, number]> = [
+    [0.46, 1.1, 0.18, 0.07],
+    [-0.5, 0.7, -0.2, 0.06],
+    [0.34, 0.42, 0.32, 0.05],
+    [-0.28, 1.28, 0.0, 0.055],
+  ];
+  for (const [ox, oy, oz, or] of orbit) {
+    const frag = lm(tetraG(or, slate2), ox, oy, oz, ox, oy, oz);
+    body.add(frag);
+    const halo = gm(tetraG(or * 0.6, glow), ox, oy, oz, ox + 1, oy, oz);
+    halo.name = 'fxflame';
+    body.add(halo);
+  }
+
+  // faint violet ground glow beneath the hovering construct
+  const ring = gm(ringG(0.18, 0.42, glow), 0, 0.02, 0, -Math.PI / 2);
+  ring.name = 'fxflame';
+  body.add(ring);
+
+  root.scale.setScalar(size);
+  root.userData.fig = { limbs: { la, ra, ll, rl }, bob: body, seed: 0, yaw: 0, quad: false } as FigureData;
+  return root;
+}
+
+const EXTRA_BUILDERS: Record<string, (n: Npc, size: number) => THREE.Group> = {
+  // --- bespoke creatures ---
+  forest_spider: (_n, size) => make_forest_spider(size),
+  bear: (_n, size) => make_bear(size),
+  echo_hare: (_n, size) => make_echo_hare(size),
+  range_rat: (_n, size) => make_range_rat(size),
+  dire_wolf: (_n, size) => make_dire_wolf(size),
+  dirgewolf: (_n, size) => make_dirgewolf(size),
+  gravewail_hound: (_n, size) => make_gravewail_hound(size),
+  cinder_imp: (_n, size) => make_cinder_imp(size),
+  discord_wisp: (_n, size) => make_discord_wisp(size),
+  choir_ghast: (_n, size) => make_choir_ghast(size),
+  ruin_wraith: (_n, size) => make_ruin_wraith(size),
+  chordwyrm: (_n, size) => make_chordwyrm(size),
+  carillon_revenant: (_n, size) => make_carillon_revenant(size),
+  choir_warden: (_n, size) => make_choir_warden(size),
+  the_dissonant: (_n, size) => make_the_dissonant(size),
+  // --- quillrook ---
+  quillrook_range_master: (_n, size) => makeHumanoid({ skin: '#caa074', hair: '#6b5a3a', beard: '#9a8a6a', tunic: '#7a5a2e', pants: '#4a3a22', bodyKind: 'pelt', hat: 'straw', weapon: 'bow', weaponCol: '#8a6a3a', scale: size }),
+  quillrook_fletcher: (_n, size) => makeHumanoid({ skin: '#d8b088', hair: '#3a2e1e', tunic: '#5a7a3a', pants: '#3a4a26', apron: '#8a9a5a', weapon: 'crystalbow', weaponCol: '#9aba6a', scale: size }),
+  quillrook_gunsmith: (_n, size) => makeHumanoid({ skin: '#c89a6a', hair: '#2a2a2e', tunic: '#3a4a56', pants: '#2a3038', apron: '#5a6a78', eyepatch: true, weapon: 'pistol', weaponCol: '#3a3a40', scale: size }),
+  quillrook_quartermaster: (_n, size) => makeHumanoid({ skin: '#b88a5e', helm: '#3a3a42', helmKind: 'wrap', tunic: '#2e3036', pants: '#22242a', bodyArmor: '#5a5a66', weapon: 'club', weaponCol: '#4a4a52', scale: size }),
+  // --- resonne ---
+  resonne_archcantor: (_n, size) => makeHumanoid({ skin: '#e6c9a8', hair: '#e8e8f0', beard: '#e8e8f0', tunic: '#5a3a9c', bodyKind: 'robes', hat: 'wizard', hatCol: '#3a2470', weapon: 'staff', weaponCol: '#c8c8e0', scale: size }),
+  resonne_quartermaster: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#3a3a5a', tunic: '#2f5099', bodyKind: 'robes', hat: 'wizard', hatCol: '#24407a', weapon: 'staff', weaponCol: '#9aa8d0', shieldCol: '#6a86c8', shieldKind: 'ward', scale: size }),
+  resonne_runecraft_tutor: (_n, size) => makeHumanoid({ skin: '#cda07a', hair: '#6a5a3a', beard: '#6a5a3a', tunic: '#3f86b4', bodyKind: 'robes', hat: 'wizard', hatCol: '#2c6390', weapon: 'staff', weaponCol: '#bfe0ec', scale: size }),
+  resonne_magic_clerk: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#7a6a4a', tunic: '#54549c', pants: '#39395f', bodyKind: 'robes', scale: size }),
+  resonne_mill_keeper: (_n, size) => makeHumanoid({ skin: '#c69a72', hair: '#8a7a5a', beard: '#9a8a6a', tunic: '#46466e', apron: '#b3a684', weapon: 'maul2h', weaponCol: '#8a7a5a', scale: size }),
+  // --- saltsong ---
+  harbourmaster_sella: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#3a3026', tunic: '#2f5d7c', pants: '#22394a', helm: '#1c3a52', helmKind: 'wrap', shieldCol: '#caa84a', shieldKind: 'baton', scale: size }),
+  tackle_keeper_orin: (_n, size) => makeHumanoid({ skin: '#cda06e', hair: '#5a4326', beard: '#6b5234', tunic: '#6b4f2a', pants: '#473418', apron: '#8a7048', hat: 'straw', weapon: 'club', weaponCol: '#7a5a2e', scale: size }),
+  tide_token_broker_vey: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#2a2440', tunic: '#3a2f54', pants: '#241c34', bodyKind: 'robes', helm: '#7c6a9c', helmKind: 'coif', scale: size }),
+  galley_cook_maren: (_n, size) => makeHumanoid({ skin: '#caa278', hair: '#6e3a24', tunic: '#b0563c', pants: '#5a4a3c', apron: '#efe6d2', hat: 'cook', hatCol: '#f4efe4', weapon: 'cleaver', weaponCol: '#cfd4d6', scale: size }),
+  fishmonger_pell: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#705038', tunic: '#4878a0', pants: '#2f4a5e', apron: '#9fb4b0', weapon: 'cutlass', weaponCol: '#c4ccce', scale: size }),
+  lighthouse_keeper_brann: (_n, size) => makeHumanoid({ skin: '#c79c72', hair: '#b9bcae', beard: '#cfd2c6', tunic: '#5a6a55', pants: '#3a4438', helm: '#7a5a2e', helmKind: 'wrap', shieldCol: '#caa84a', shieldKind: 'bell', scale: size }),
+  // --- verdancourt ---
+  warden_brisa: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#7a5a32', tunic: '#5a7a38', pants: '#6a5236', apron: '#9a8048', hat: 'straw', weapon: 'pick', weaponCol: '#8a6a3a', scale: size }),
+  master_sustainer_oak: (_n, size) => makeHumanoid({ skin: '#c8a070', hair: '#d8d4c4', beard: '#d8d4c4', tunic: '#3c5a2c', pants: '#42502e', bodyKind: 'robes', weapon: 'staff', weaponCol: '#6a8a48', scale: size }),
+  apothecary_vell: (_n, size) => makeHumanoid({ skin: '#cf9a6c', hair: '#5a4a30', tunic: '#4a6a4a', pants: '#3c4a38', apron: '#7a9a6a', hat: 'wizard', hatCol: '#446a3a', weapon: 'staff', weaponCol: '#caa84a', scale: size }),
+  keeper_thistle: (_n, size) => makeHumanoid({ skin: '#b88858', hair: '#8a6a3a', beard: '#8a6a3a', tunic: '#7a8a3a', pants: '#5a4a30', apron: '#b0a060', hat: 'straw', weapon: 'sword', weaponCol: '#9a8a5a', scale: size }),
+  blight_warden_mara: (_n, size) => makeHumanoid({ skin: '#b08868', hair: '#4a4030', tunic: '#3a4a30', pants: '#33402a', apron: '#5a5238', helm: '#6a6248', helmKind: 'wrap', weapon: 'axe', weaponCol: '#7a6a44', scale: size }),
+  // --- quaver_vale ---
+  qv_agility_master: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#3a2a1a', tunic: '#3f7d9a', pants: '#2b4a55', helmKind: 'wrap', helm: '#4a8ac0', shieldCol: '#caa44a', shieldKind: 'baton', scale: size }),
+  qv_thieving_master: (_n, size) => makeHumanoid({ skin: '#cda07a', hair: '#241a2e', tunic: '#3a2f4a', pants: '#241d30', helmKind: 'wrap', helm: '#2a2230', weapon: 'fang', weaponCol: '#9aa0a8', scale: size }),
+  qv_hunter_master: (_n, size) => makeHumanoid({ skin: '#c79a6a', hair: '#5a4326', beard: '#5a4326', tunic: '#5e6a3a', pants: '#3e4226', bodyKind: 'pelt', weapon: 'bow', weaponCol: '#7a5a30', scale: size }),
+  qv_construction_master: (_n, size) => makeHumanoid({ skin: '#caa07c', hair: '#7a5638', tunic: '#8a6a3a', pants: '#4d3a24', apron: '#6e4a28', weapon: 'hammer', weaponCol: '#b8a060', scale: size }),
+  qv_general_clerk: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#9a8a5a', tunic: '#b0a070', pants: '#5e5638', apron: '#8a7a4a', scale: size }),
+  qv_banker: (_n, size) => makeHumanoid({ skin: '#cfb088', hair: '#2e2e38', tunic: '#33333f', pants: '#23232c', bodyKind: 'robes', shieldCol: '#caa44a', shieldKind: 'ward', scale: size }),
+  // --- cairnchime_hold ---
+  drillmaster_concord: (_n, size) => makeHumanoid({ skin: '#c89a6a', hair: '#8a8278', bodyArmor: '#9a8050', legArmor: '#7c6a44', tunic: '#8a4a2a', helm: '#b89858', helmKind: 'visor', weapon: 'sword', weaponCol: '#d8c878', shieldCol: '#8a4a2a', shieldKind: 'baton', scale: size }),
+  quartermaster_bell: (_n, size) => makeHumanoid({ skin: '#c9a878', hair: '#5a4a32', beard: '#5a4a32', tunic: '#7a6a3a', pants: '#544a2c', apron: '#5c5040', weapon: 'hammer', weaponCol: '#9aa0a8', scale: size }),
+  valour_steward: (_n, size) => makeHumanoid({ skin: '#caa97c', hair: '#3a342a', bodyKind: 'robes', tunic: '#b09030', pants: '#7a6428', helm: '#c8b04a', helmKind: 'coif', weapon: null, scale: size }),
+  hold_infirmarian: (_n, size) => makeHumanoid({ skin: '#d8c0a0', hair: '#cfd0d8', bodyKind: 'robes', tunic: '#c0c0d8', pants: '#a8a8c0', apron: '#e8e8f0', weapon: null, scale: size }),
+  sparring_recruit: (_n, size) => makeHumanoid({ skin: '#c89a6a', hair: '#9a7a4a', tunic: '#b09a6a', pants: '#7a6a4a', helm: '#a89878', helmKind: 'dome', weapon: 'club', weaponCol: '#8a6a44', shieldCol: '#7a6a4a', shieldKind: 'baton', scale: size }),
+  sparring_veteran: (_n, size) => makeHumanoid({ skin: '#bd8e5e', hair: '#4a4452', beard: '#4a4452', bodyArmor: '#7a7488', legArmor: '#5e5a6c', tunic: '#8a7f9a', helm: '#8a8498', helmKind: 'coif', weapon: 'scimitar', weaponCol: '#aeb4be', shieldCol: '#6e6a80', shieldKind: 'kite', scale: size }),
+  sparring_champion: (_n, size) => makeHumanoid({ skin: '#b8845a', beard: '#2a201a', bodyKind: 'plate', bodyArmor: '#8a3636', legArmor: '#6e2c2c', tunic: '#9a3030', helm: '#a84040', helmKind: 'visor', eyepatch: true, weapon: 'maul2h', weaponCol: '#c8c0c8', shieldCol: '#7a2a2a', shieldKind: 'ward', scale: size }),
+  // --- forgekeep_concord ---
+  smith_cantor_branna: (_n, size) => makeHumanoid({ skin: '#c89878', hair: '#3a2a22', tunic: '#5a4030', apron: '#4a352a', bodyKind: 'slag', weapon: 'hammer', weaponCol: '#9aa0a8', helm: '#7a6a55', helmKind: 'wrap', scale: size }),
+  weaver_iseult: (_n, size) => makeHumanoid({ skin: '#dcb088', hair: '#6a5078', tunic: '#9a7ec0', apron: '#cfc4dc', pants: '#5a4868', scale: size }),
+  stavewright_orlin: (_n, size) => makeHumanoid({ skin: '#cf9c70', hair: '#4a3a26', beard: '#564026', tunic: '#5a7a3e', pants: '#46361f', weapon: 'bow', weaponCol: '#8a6a3a', scale: size }),
+  gemcutter_yael: (_n, size) => makeHumanoid({ skin: '#cf9c70', hair: '#2a2a30', tunic: '#2f8a98', pants: '#3a4046', helm: '#2a5a64', helmKind: 'coif', weapon: 'pick', weaponCol: '#c8cdd4', scale: size }),
+  concord_quartermaster: (_n, size) => makeHumanoid({ skin: '#c0905f', hair: '#3a3026', beard: '#2e261c', tunic: '#4a3a22', apron: '#b07820', helm: '#5a4628', helmKind: 'dome', scale: size }),
+  ore_broker_halle: (_n, size) => makeHumanoid({ skin: '#c2925f', hair: '#5a4a36', tunic: '#a08858', pants: '#6a5436', weapon: 'pick', weaponCol: '#8a8e94', helm: '#7a6038', helmKind: 'wrap', scale: size }),
+  concord_tanner: (_n, size) => makeHumanoid({ skin: '#c08a58', hair: '#4a3422', beard: '#42301e', tunic: '#6a5030', apron: '#7a4a26', pants: '#4a3622', scale: size }),
+  bole_the_feller: (_n, size) => makeHumanoid({ skin: '#cf9c70', hair: '#4a3018', beard: '#5a3a1c', tunic: '#8a5a2c', pants: '#3e2c1a', weapon: 'axe', weaponCol: '#b8bcc2', scale: size }),
+  cinder_warden_ysolde: (_n, size) => makeHumanoid({ skin: '#cf9870', hair: '#7a3318', tunic: '#c45a20', apron: '#7a3a1a', bodyKind: 'slag', weapon: 'staff', weaponCol: '#8a5a2c', helm: '#9a4a20', helmKind: 'wrap', scale: size }),
+  sawwright_tamsin: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#a8843e', tunic: '#a08040', apron: '#c8b070', pants: '#5a4528', hat: 'straw', weapon: 'axe', weaponCol: '#9aa0a8', scale: size }),
+  quill_the_coalman: (_n, size) => makeHumanoid({ skin: '#a8754a', hair: '#2a2622', beard: '#1e1c1a', tunic: '#3c3a38', apron: '#26241f', pants: '#2c2a26', weapon: 'pick', weaponCol: '#5a5e62', scale: size }),
+  // --- the_knell ---
+  cantor_veil: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: undefined, beard: '#3a3640', tunic: '#4a4458', pants: '#2e2b36', bodyKind: 'robes', helm: '#2a2730', helmKind: 'wrap', weapon: 'dirgeblade', weaponCol: '#b8a24a', scale: size * 1.06 }),
+  sister_plainsong: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#6a6470', tunic: '#6d6f82', pants: '#46485a', apron: '#9aa0b2', bodyKind: 'robes', helm: '#8a8da0', helmKind: 'coif', weapon: 'staff', weaponCol: '#7c6a4a', scale: size }),
+  abbot_threnody: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#e6e6ea', beard: '#e6e6ea', tunic: '#3c3848', pants: '#2a2734', bodyKind: 'robes', hat: 'wizard', hatCol: '#52506a', weapon: 'staff', weaponCol: '#5a5468', scale: size * 1.04 }),
+  hollow_miner: (_n, size) => makeHumanoid({ skin: '#c4d0cc', hair: undefined, tunic: '#5a5560', pants: '#3e3a44', bodyKind: 'robes', weapon: 'pick', weaponCol: '#8a8e94', scale: size }),
+  dirge_ghoul: (_n, size) => makeHumanoid({ skin: '#c4d0cc', hair: undefined, tunic: '#4c4a58', pants: '#33323e', bodyKind: 'robes', helm: '#3a3844', helmKind: 'wrap', weapon: 'dirgeblade', weaponCol: '#9aa6a2', shieldCol: '#74706a', shieldKind: 'bell', scale: size * 1.02 }),
+  manor_revenant: (_n, size) => makeHumanoid({ skin: '#c4d0cc', hair: '#b8bcc4', tunic: '#5e5a72', pants: '#42404e', bodyKind: 'robes', weapon: 'sword', weaponCol: '#aeb6ba', scale: size }),
+  chapel_echo: (_n, size) => makeHumanoid({ skin: '#d6e0dc', hair: undefined, tunic: '#aeb6c0', pants: '#9aa2ae', bodyKind: 'robes', scale: size * 0.96 }),
+  // --- legacy_folk ---
+  village_elder: (_n, size) => makeHumanoid({ tunic: '#6a5e44', pants: '#4a4030', bodyKind: 'robes', hair: '#cfcabb', beard: '#cfcabb', skin: '#caa078', weapon: 'staff', weaponCol: '#6e5430', scale: size }),
+  boatman: (_n, size) => makeHumanoid({ tunic: '#3a6080', pants: '#2c4458', hair: '#3a2a18', beard: '#3a2a18', skin: '#c89868', weapon: 'club', weaponCol: '#7a5e3a', scale: size }),
+  trapper: (_n, size) => makeHumanoid({ tunic: '#6a4e30', pants: '#4a3824', bodyKind: 'pelt', hair: '#4a3a24', beard: '#5a4630', skin: '#c89058', weapon: 'axe', weaponCol: '#7a6a5a', scale: size }),
+  wayfarer: (_n, size) => makeHumanoid({ tunic: '#8a6a3a', pants: '#5a4628', bodyKind: 'robes', hat: 'straw', hair: '#6e5836', skin: '#cfa074', weapon: 'staff', weaponCol: '#8a6e44', scale: size }),
+  casino_dealer: (_n, size) => makeHumanoid({ tunic: '#2e2a34', pants: '#22202a', apron: '#e6e0d2', hair: '#1f1a16', skin: '#d8a878', scale: size }),
+  groundskeeper: (_n, size) => makeHumanoid({ tunic: '#5a6a38', pants: '#42502a', apron: '#7a6a4a', hat: 'straw', beard: '#7a7a70', skin: '#c69464', weapon: 'club', weaponCol: '#6e5836', scale: size }),
+  miller: (_n, size) => makeHumanoid({ tunic: '#b89a5e', pants: '#7a6238', apron: '#ece6d6', hat: 'straw', hair: '#8a7450', skin: '#d2a070', scale: size }),
+  light_keeper: (_n, size) => makeHumanoid({ tunic: '#a8843e', pants: '#3a4e5e', hair: '#5a4a32', beard: '#6a5a40', skin: '#c89058', weapon: 'club', weaponCol: '#caa83a', scale: size }),
+  cove_fence: (_n, size) => makeHumanoid({ tunic: '#7a6230', pants: '#3a3024', helm: '#2a2620', helmKind: 'wrap', skin: '#c69464', weapon: 'fang', weaponCol: '#8a8276', scale: size }),
+  market_clerk: (_n, size) => makeHumanoid({ tunic: '#c0a64e', pants: '#6a5a30', apron: '#3a3a30', hair: '#4a3826', skin: '#d8a878', scale: size }),
+  // --- legacy_notables ---
+  danquavious_chimperton: (_n, size) => makeHumanoid({ skin: '#e8c49a', hair: '#e8c84a', tunic: '#6a2c9a', pants: '#4a1e72', bodyArmor: '#e8b830', shieldCol: '#f0d048', shieldKind: 'baton', weapon: 'staff', weaponCol: '#e8b830', scale: size }),
+  chimperton_herald: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#6a4a28', beard: '#6a4a28', tunic: '#caa028', pants: '#5a4018', helm: '#8a6a20', helmKind: 'dome', shieldCol: '#e8c84a', shieldKind: 'bell', weapon: 'staff', weaponCol: '#caa028', scale: size }),
+  dentist_dr_tick: (_n, size) => makeHumanoid({ skin: '#cfd8d8', hair: '#9aa6b0', tunic: '#bcd0e4', pants: '#8a98a8', apron: '#f4f8fc', hat: 'cook', hatCol: '#f4f8fc', weapon: 'pick', weaponCol: '#c8d4dc', scale: size }),
+  lady_ravenmoor: (_n, size) => makeHumanoid({ skin: '#e0d2c4', hair: '#181420', tunic: '#3a2c50', pants: '#241a34', bodyKind: 'robes', shieldCol: null, scale: size }),
+  imber_wizard: (_n, size) => makeHumanoid({ skin: '#d8a878', hair: '#8a4a22', beard: '#8a4a22', tunic: '#c05828', pants: '#7a3618', hat: 'wizard', hatCol: '#d86a2c', weapon: 'staff', weaponCol: '#e8a040', scale: size }),
+  quiess_wizard: (_n, size) => makeHumanoid({ skin: '#c8ccd8', hair: '#aeb6c4', tunic: '#5a6478', pants: '#3a4252', hat: 'wizard', hatCol: '#6a7488', bodyKind: 'robes', weapon: 'dirgeblade', weaponCol: '#9aa6c0', scale: size }),
+  tick_eater_glen: (_n, size) => makeHumanoid({ skin: '#a8b888', hair: '#4a4030', beard: '#4a4030', tunic: '#6a6a3a', pants: '#4a4228', bodyKind: 'pelt', weapon: 'club', weaponCol: '#5a4a30', scale: size }),
+  // --- rogues ---
+  pirate: (_n, size) => makeHumanoid({ skin: '#c89668', hair: '#3a2a20', beard: '#3a2a20', tunic: '#9a3a3a', pants: '#5a4a38', helm: '#c0392b', helmKind: 'wrap', weapon: 'cutlass', weaponCol: '#cdd2d6', scale: size }),
+  pirate_captain: (_n, size) => makeHumanoid({ skin: '#bf8e62', hair: '#8a8076', beard: '#9a9088', tunic: '#7a1f2a', pants: '#3a2e2a', helm: '#5a1620', helmKind: 'wrap', eyepatch: true, weapon: 'cutlass', weaponCol: '#e8c24a', shieldCol: null, scale: size }),
+  market_crowd_thug: (_n, size) => makeHumanoid({ skin: '#a88862', hair: '#4a3a2a', beard: '#4a3a2a', tunic: '#7a6a4a', pants: '#5a4e3a', weapon: 'club', weaponCol: '#6a5236', scale: size }),
+  silk_merchant: (_n, size) => makeHumanoid({ skin: '#caa078', hair: '#2a2030', tunic: '#b04a8a', pants: '#5a3a78', helm: '#d8a0c8', helmKind: 'wrap', weaponCol: '#e0c060', scale: size }),
+  guild_treasurer: (_n, size) => makeHumanoid({ skin: '#cba682', hair: '#52483a', tunic: '#4a4232', pants: '#352e24', bodyArmor: '#5a5038', scale: size }),
+  gilded_noble: (_n, size) => makeHumanoid({ skin: '#dcb48a', hair: '#d8b84a', tunic: '#cf9f2e', pants: '#6a2a78', bodyArmor: '#e6c64a', scale: size }),
+};
+
 
 function metalTint(id: string | undefined | null): string | null {
   if (!id) return null;

@@ -119,14 +119,17 @@ const LEGACY_LABELS: { x: number; y: number; text: string }[] = [
 // world.ts is being rewritten concurrently — read POIS defensively per the SPEC contract.
 function regionLabels(): { x: number; y: number; text: string }[] {
   const labels = [...LEGACY_LABELS];
+  // dedupe against the hand-placed legacy labels BY NAME — the old filter skipped
+  // every POI inside the legacy box, which silently dropped the content-update
+  // towns that now sit there. Skipping by text keeps the new towns while still
+  // suppressing the legacy duplicates (The Castle, Aldgate, ...).
+  const legacyTexts = new Set(LEGACY_LABELS.map((l) => l.text.toLowerCase().trim()));
   const pois: { id: string; label?: string; name?: string; x: number; y: number }[] =
     (world as any).POIS ?? [];
   for (const p of pois) {
     const text = p?.label ?? p?.name;
     if (!p || typeof p.x !== 'number' || typeof p.y !== 'number' || !text) continue;
-    // skip anything sitting inside the legacy box already covered by hand labels
-    // (legacy box right edge shifted +120 by the west expansion: 224 -> 344)
-    if (p.x < 344 && p.y < 224) continue;
+    if (legacyTexts.has(text.toLowerCase().trim())) continue;
     labels.push({ x: p.x, y: p.y, text });
   }
   return labels;
